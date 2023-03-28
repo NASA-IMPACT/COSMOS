@@ -29,5 +29,4 @@ class CollectionDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["candidate_url_tree"] = self.object.candidate_url_tree()
         return context
