@@ -1,0 +1,2812 @@
+[
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "NAVO Registry",
+            "config_folder": "",
+            "url": "",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Coordinate Calculator",
+            "config_folder": "",
+            "url": "http://ned.ipac.caltech.edu/coordinate_calculator",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Extinction Calculator",
+            "config_folder": "",
+            "url": "http://ned.ipac.caltech.edu/extinction_calculator",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Velocity Calculator",
+            "config_folder": "",
+            "url": "http://ned.ipac.caltech.edu/velocity_calculator",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "High Level Science Products",
+            "config_folder": "",
+            "url": "https://archive.stsci.edu/hlsp/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "MAST Web Services",
+            "config_folder": "",
+            "url": "https://archive.stsci.edu/vo/mast_services.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "MAST API Search",
+            "config_folder": "",
+            "url": "https://mast.stsci.edu/api/v0/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Astroquery API Search (MAST Queries)",
+            "config_folder": "",
+            "url": "https://astroquery.readthedocs.io/en/latest/mast/mast.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Exoplanet Atmosphere Observability Table",
+            "config_folder": "",
+            "url": "https://catalogs.mast.stsci.edu/eaot/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Pan-STARRS Catalog",
+            "config_folder": "",
+            "url": "https://catalogs.mast.stsci.edu/panstarrs/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Pan-STARRS Catalog API",
+            "config_folder": "",
+            "url": "https://catalogs.mast.stsci.edu/docs/panstarrs.html#catalog-overview",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "MAST Query/CasJobs",
+            "config_folder": "",
+            "url": "http://mastweb.stsci.edu/mcasjobs/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "exo.MAST",
+            "config_folder": "",
+            "url": "https://exo.mast.stsci.edu/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "MAST Portal",
+            "config_folder": "",
+            "url": "https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Virtual Observatory Information",
+            "config_folder": "",
+            "url": "http://vao.stsci.edu/keyword-search/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Co-plotter",
+            "config_folder": "",
+            "url": "https://archive.stsci.edu/canvas/coplot.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Z.MAST Search",
+            "config_folder": "",
+            "url": "https://z.mast.stsci.edu/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Hubble Source Catalog Search",
+            "config_folder": "",
+            "url": "https://catalogs.mast.stsci.edu/hsc/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Space Telescope Bibliographic Search",
+            "config_folder": "",
+            "url": "https://archive.stsci.edu/bibliography/index.html#/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Archived Synthetic Data",
+            "config_folder": "",
+            "url": "https://archive.stsci.edu/asdi",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Spectral Classes of Like Stars",
+            "config_folder": "",
+            "url": "https://archive.stsci.edu/spec_class/search.php",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Skiff Spectral Catalog Search",
+            "config_folder": "",
+            "url": "https://archive.stsci.edu/spec_class/search2.php",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "IRSA API",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/Gator/GatorAid/irsa/catsearch.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Herschel Data Search",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/Herschel",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "SWAS Spectrum Server",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/SWAS/SWAS/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "SWAS API Search",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/SWAS/SWAS/SWASAid/ProgramInterface.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Atlas API Search",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/Atlas/AtlasProgramInterface.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "SSA Queries",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/ibe/ssa.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "VO Simple Cone Search",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/docs/vo_scs.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "IRSA VOTable Access Protocol",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/docs/program_interface/TAP.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "2MASS Interactive Image Service",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/2MASS/IM/interactive.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "2MASS Image Inventory Search",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/2MASS/IM/inventory.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "2MASS Batch Image Service",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/2MASS/IM/batch.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "2MASS API Search",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/2MASS/IM/docs/siahelp.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Image and Spectrum Server (Atlas)",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/Atlas/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "IPAC Table Validator",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/TblValidator/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Galactic Dust Reddening and Extinction",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/DUST/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Background Model",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/BackgroundModel/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "IRSA IDL Tools",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/tools/irsa_idl.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Image Validation",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/ImageValidate/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Object/Coordinate Lookup",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/Lookup/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Montage Mosaic Engine",
+            "config_folder": "",
+            "url": "http://montage.ipac.caltech.edu/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Planck Data Tools",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/data/Planck/release_1/software/index.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "MOST",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/MOST/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "WISE/NEOWISE Coadder",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/ICORE/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Scanpi",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/Scanpi/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "HIRES",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/applications/Hires/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "HEASARC Browse Batch Interface",
+            "config_folder": "",
+            "url": "https://heasarc.gsfc.nasa.gov/FTP/heasarc/software/web_batch/browse_extract_wget.pl",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "HEASARC Download Scripts",
+            "config_folder": "",
+            "url": "https://heasarc.gsfc.nasa.gov/docs/cookbook/command_line_downloads.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "VAO Datascope",
+            "config_folder": "",
+            "url": "https://heasarc.gsfc.nasa.gov/cgi-bin/vo/datascope/init.pl",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Exoplanet Follow-up Observing Program",
+            "config_folder": "",
+            "url": "https://exofop.ipac.caltech.edu/tess/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "ExoFOP-K2 Campaign 9",
+            "config_folder": "",
+            "url": "https://exofop.ipac.caltech.edu/k2/microlensing/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "KOA Program-Friendly Image Access Service",
+            "config_folder": "",
+            "url": "https://koa.ipac.caltech.edu/UserGuide/program_interface.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PyKOA",
+            "config_folder": "",
+            "url": "https://koa.ipac.caltech.edu/UserGuide/PyKOA/PyKOA.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "NEID Archive",
+            "config_folder": "",
+            "url": "https://neid.ipac.caltech.edu/search.php",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "NEID Solar Radial Velocity Archive",
+            "config_folder": "",
+            "url": "https://neid.ipac.caltech.edu/search_solar.php",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "LBTI Archive",
+            "config_folder": "",
+            "url": "https://lbti.ipac.caltech.edu/cgi-bin/LBTI/nph-lbtiLogin?submitLogin=Login&datalevel=l2&cmd=init",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "CoRoT Exoplanet Archive-ETSS Data Sets",
+            "config_folder": "",
+            "url": "https://exoplanetarchive.ipac.caltech.edu/docs/datasethelp/ETSS_CoRoT.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Contributed Datasets in the Exoplanet Archive",
+            "config_folder": "",
+            "url": "https://exoplanetarchive.ipac.caltech.edu/docs/contributed_data.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "MAST",
+            "config_folder": "",
+            "url": "https://archive.stsci.edu/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "NExScI",
+            "config_folder": "",
+            "url": "https://nexsci.caltech.edu/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "IRSA",
+            "config_folder": "",
+            "url": "https://irsa.ipac.caltech.edu/frontpage/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "MAST Hubble Search",
+            "config_folder": "",
+            "url": "https://mast.stsci.edu/search/ui/#/hst",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Planetary Image Galleries",
+            "config_folder": "",
+            "url": "https://pds-rings.seti.org/galleries.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Viewmaster Data - Volumes",
+            "config_folder": "",
+            "url": "https://pds-rings.seti.org/viewmaster/volumes",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Viewmaster Data - Calibrated",
+            "config_folder": "",
+            "url": "https://pds-rings.seti.org/viewmaster/calibrated",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Viewmaster Data - Previews",
+            "config_folder": "",
+            "url": "https://pds-rings.seti.org/viewmaster/previews",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Viewmaster Data - Diagrams",
+            "config_folder": "",
+            "url": "https://pds-rings.seti.org/viewmaster/diagrams",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Viewmaster Data Archives - Volumes",
+            "config_folder": "",
+            "url": "https://pds-rings.seti.org/viewmaster/archives-volumes",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Viewmaster Data Archives - Calibrated",
+            "config_folder": "",
+            "url": "https://pds-rings.seti.org/viewmaster/archives-calibrated",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Viewmaster Data Archives - Previews",
+            "config_folder": "",
+            "url": "https://pds-rings.seti.org/viewmaster/archives-previews",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Viewmaster Data Archives - Diagrams",
+            "config_folder": "",
+            "url": "https://pds-rings.seti.org/viewmaster/archives-diagrams",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Viewmaster Documents",
+            "config_folder": "",
+            "url": "https://pds-rings.seti.org/viewmaster/documents",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Venus Data Archive",
+            "config_folder": "",
+            "url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/VENUS/venus_matrix.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Small Bodies Node Data by Type of Observation",
+            "config_folder": "",
+            "url": "https://pds-smallbodies.astro.umd.edu/data_sb/by_datatype.shtml",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Small Bodies Node Data by Target Type",
+            "config_folder": "",
+            "url": "https://pds-smallbodies.astro.umd.edu/data_sb/by_target.shtml",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "FTP Access",
+            "config_folder": "",
+            "url": "https://pds-geosciences.wustl.edu/dataserv/anonftp.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Index",
+            "config_folder": "",
+            "url": "https://pds-geosciences.wustl.edu/mro/mro-m-crism-4-speclib-v1/mrocr_90xx/index/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Geosciences Node Community",
+            "config_folder": "",
+            "url": "https://geoweb.rsl.wustl.edu/community/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Data Set Status",
+            "config_folder": "",
+            "url": "https://pds.nasa.gov/datasearch/ds-status/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Data Dictionary Search",
+            "config_folder": "",
+            "url": "https://pds.nasa.gov/tools/dd-search/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Astrophysics Documents",
+            "config_folder": "ASTRO_Astrophysics_Documents_Website",
+            "url": "https://science.nasa.gov/astrophysics/documents",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Exoplanet Program Documents",
+            "config_folder": "ASTRO_Exoplanet_Program_Documents_Website",
+            "url": "https://exoplanets.nasa.gov/exep/resources/documents/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "NED User Guides",
+            "config_folder": "ASTRO_NED_User_Guides_Website",
+            "url": "http://ned.ipac.caltech.edu/Documents/Guides",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "exo.MAST API",
+            "config_folder": "ASTRO_exoMAST_API_Website",
+            "url": "https://exo.mast.stsci.edu/docs/",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "MAST Documentation",
+            "config_folder": "ASTRO_MAST_Documentation_Website",
+            "url": "https://outerspace.stsci.edu/display/MASTDOCS/Portal+Guide",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Z.MAST API",
+            "config_folder": "ASTRO_ZMAST_API_Website",
+            "url": "https://z.mast.stsci.edu/docs/index.html",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Hubble Source Catalog Search API",
+            "config_folder": "ASTRO_Hubble_Source_Catalog_Search_API_Website",
+            "url": "https://catalogs.mast.stsci.edu/docs/hsc.html",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "IRSA Image Cutouts",
+            "config_folder": "ASTRO_Image_Cutouts_Website",
+            "url": "https://irsa.ipac.caltech.edu/applications/Cutouts/",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Spitzer Tools",
+            "config_folder": "ASTRO_Spitzer_Tools_Website",
+            "url": "https://irsa.ipac.caltech.edu/data/SPITZER/docs/sitemap/",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Data Hosted on LAMBDA\n",
+            "config_folder": "ASTRO_Data_Hosted_on_LAMBDA_Website",
+            "url": "http://lambda.gsfc.nasa.gov/product/",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "HEASARC Software",
+            "config_folder": "ASTRO_HEASARC_Software_Website",
+            "url": "https://heasarc.gsfc.nasa.gov/docs/software.html",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "HEASARC Tools",
+            "config_folder": "ASTRO_HEASARC_Tools_Website",
+            "url": "https://heasarc.gsfc.nasa.gov/docs/tools.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "CALDB Documentation",
+            "config_folder": "ASTRO_Calibration_Documentation_Website",
+            "url": "https://heasarc.gsfc.nasa.gov/docs/heasarc/caldb/caldb_doc.html",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Reducing Keck Data",
+            "config_folder": "ASTRO_Data_Reduction_Tools_Website",
+            "url": "https://www2.keck.hawaii.edu/koa/public/drp.html",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "KOA Contributed Datasets",
+            "config_folder": "ASTRO_Contributed_Datasets_Website",
+            "url": "https://koa.ipac.caltech.edu/Datasets/",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "HIRES PRV",
+            "config_folder": "ASTRO_HIRES_PRV_Website",
+            "url": "https://caltech-ipac.github.io/hiresprv/index.html",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "NASA Exoplanet Archive Documents",
+            "config_folder": "ASTRO_NASA_Exoplanet_Archive_Documents_Website",
+            "url": "https://exoplanetarchive.ipac.caltech.edu/applications/DocSet/index.html?doctree=/docs/docmenu.xml&startdoc=item_1_01",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Exoplanet TAP Search",
+            "config_folder": "ASTRO_TAP_Search_Website",
+            "url": "https://exoplanetarchive.ipac.caltech.edu/docs/TAP/usingTAP.html",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Exoplanet API Search",
+            "config_folder": "ASTRO_API_Search_Website",
+            "url": "https://exoplanetarchive.ipac.caltech.edu/docs/program_interfaces.html",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "High-Energy Missions",
+            "config_folder": "ASTRO_High-Energy_Missions_Website",
+            "url": "https://heasarc.gsfc.nasa.gov/docs/heasarc/missions/alphabet.html",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Missions and Data",
+            "config_folder": "ASTRO_Missions_and_Data_Website",
+            "url": "https://archive.stsci.edu/missions-and-data",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "James Webb Space Telescope",
+            "config_folder": "ASTRO_James_Webb_Space_Telescope_Website",
+            "url": "https://webb.nasa.gov/",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "HEASARC",
+            "config_folder": "ASTRO_NAVO_HEASARC",
+            "url": "https://heasarc.gsfc.nasa.gov/",
+            "division": 1,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Planetary Data System (PDS)",
+            "config_folder": "PDS_Planetary_Data_System_(PDS)_Website",
+            "url": "See notes",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Astropedia: Lunar and Planetary Cartographic Catalog",
+            "config_folder": "PDS_Astropedia_Lunar_and_Planetary_Cartographic_Catalog_Website",
+            "url": "https://astrogeology.usgs.gov/search?pmi-target=mercury",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Astromat: Astromaterials Data System",
+            "config_folder": "PDS_Astromat_Astromaterials_Data_System_Website",
+            "url": "https://www.astromat.org/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "ISIS: Integrated Software for Imagers and Spectrometers",
+            "config_folder": "PDS_ISIS_Astro_Website",
+            "url": "https://isis.astrogeology.usgs.gov/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Java Mission-planning and Analysis for Remote Sensing (JMARS)",
+            "config_folder": "PDS_Java_Mission-planning_and_Analysis_for_Remote_Sensing_(JMARS)_Website",
+            "url": "https://jmars.asu.edu/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Astromaterials Acquisition and Curation Office",
+            "config_folder": "PDS_Astromaterials_Acquisition_and_Curation_Office_Website",
+            "url": "https://curator.jsc.nasa.gov/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "High-Resolution Transmission Molecular Absorption Database (HITRAN)",
+            "config_folder": "PDS_High-Resolution_Transmission_Molecular_Absorption_Database_(HITRAN)_Website",
+            "url": "https://hitran.org/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "NASA Space Science Data Coordinated Archive (NSSDCA)",
+            "config_folder": "PDS_NASA_Space_Science_Data_Coordinated_Archive_(NSSDCA)_Website",
+            "url": "https://nssdc.gsfc.nasa.gov/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "NASA Solar System Treks",
+            "config_folder": "PDS_NASA_Solar_System_Treks_Website",
+            "url": "https://trek.nasa.gov/#",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Mars Exploration Program",
+            "config_folder": "PDS_Mars_Exploration_Program_Website",
+            "url": "https://mars.nasa.gov/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "NASA Science Solar System Exploration",
+            "config_folder": "PDS_NASA_Science_Solar_System_Exploration_Website",
+            "url": "https://solarsystem.nasa.gov/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "NASA Science Earth's Moon",
+            "config_folder": "PDS_NASA_Science_Earths_Moon_Website",
+            "url": "https://moon.nasa.gov/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "NASA's Eyes",
+            "config_folder": "PDS_NASAs_Eyes_Website",
+            "url": "https://eyes.nasa.gov/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Solar System Exploration Research Virtual Institute (SSERVI)",
+            "config_folder": "PDS_Solar_System_Exploration_Research_Virtual_Institute_(SSERVI)_Website",
+            "url": "https://sservi.nasa.gov/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Ring-Moon Systems Node On-line Tools",
+            "config_folder": "PDS_Ring-Moon_Systems_Node_On-line_Tools_Website",
+            "url": "https://pds-rings.seti.org/tools/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Ring-Moon Systems Node Open-Source Software",
+            "config_folder": "PDS_Toolkits_Website",
+            "url": "https://pds-rings.seti.org/toolkits/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Planetary Plasma Interactions Data Volumes",
+            "config_folder": "PDS_Data_Volumes_Website",
+            "url": "https://pds-ppi.igpp.ucla.edu/search/?s=*",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Errata",
+            "config_folder": "PDS_Errata_Website",
+            "url": "https://pds-ppi.igpp.ucla.edu/search/?e=",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Annex Data Holdings",
+            "config_folder": "PDS_Annex_Data_Holdings_Website",
+            "url": "https://pds-ppi.igpp.ucla.edu/search/annex/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Missions Archive Page",
+            "config_folder": "PDS_Missions_Archive_Page_Website",
+            "url": "https://pds-ppi.igpp.ucla.edu/mission",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Planetary Plasma Interactions Software",
+            "config_folder": "PDS_PPI_Software_Website",
+            "url": "https://pds-ppi.igpp.ucla.edu/software/index.jsp",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PPI Documents",
+            "config_folder": "PDS_PPI_Documents_Website",
+            "url": "https://pds-ppi.igpp.ucla.edu/doc/index.jsp",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Image Atlas",
+            "config_folder": "PDS_Image_Atlas_Website",
+            "url": "https://pds-imaging.jpl.nasa.gov/search/?fq=-ATLAS_THUMBNAIL_URL%3Abrwsnotavail.jpg&q=*%3A*",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Cartography and Imaging Sciences Node Annex",
+            "config_folder": "PDS_PDS_Annex_Products_Website",
+            "url": "https://astrogeology.usgs.gov/site/annex",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Planetary Image Locator Tool (PILOT)",
+            "config_folder": "PDS_Data_Pilot_Website",
+            "url": "https://pilot.wr.usgs.gov/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Software, Tools, Tutorial, and Viewers",
+            "config_folder": "PDS_Imaging_Software_Website",
+            "url": "https://pds-imaging.jpl.nasa.gov/software/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Cartography and Imaging Node Sciences Node Documentation",
+            "config_folder": "PDS_PDS_Documentation_Website",
+            "url": "https://pds-imaging.jpl.nasa.gov/documentation/documentation.html#(LRO)",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "All Data Holdings",
+            "config_folder": "PDS_All_Data_Holdings_Website",
+            "url": "https://pds-imaging.jpl.nasa.gov/holdings/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Online Data Volumes Index",
+            "config_folder": "PDS_Data_Volumes_Index_Website",
+            "url": "https://pds-imaging.jpl.nasa.gov/volumes/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Atmospheric Escape Chemistry Page",
+            "config_folder": "PDS_Atmospheric_Escape_Chemistry_Page_Website",
+            "url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/hot_ion_escape/hot_ion_escape.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Wind Tunnel Particle Threshold Speed Data",
+            "config_folder": "PDS_Wind_Tunnel_Particle_Threshold_Speed_Data_Website",
+            "url": "https://atmos.nmsu.edu/PDS/data/PDS4/wt_threshold_speed/data/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Pluto and Arrokoth Data Archive",
+            "config_folder": "PDS_Pluto_and_Arrokoth_Data_Archive_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/PLUTO/pluto_matrice.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Neptune Archive Page",
+            "config_folder": "PDS_Neptune_Archive_Page_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/NEPTUNE/neptune_matrix.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Uranus Data Archive",
+            "config_folder": "PDS_Uranus_Data_Archive_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/URANUS/uranus_matrix.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Titan Data Archive",
+            "config_folder": "PDS_Titan_Data_Archive_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/TITAN/titan_matrix.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Saturn Data Archive",
+            "config_folder": "PDS_Saturn_Data_Archive_Website",
+            "url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/SATURN/matrix.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Outer Planets Icy Satellites Archive Page",
+            "config_folder": "PDS_Outer_Planets_Icy_Satellites_Archive_Page_Website",
+            "url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/JUPITER/icy_satellites.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Jupiter Data Archive",
+            "config_folder": "PDS_Jupiter_Data_Archive_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/JUPITER/matrices.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Juno Archive Page",
+            "config_folder": "PDS_Juno_Archive_Page_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/JUNO/juno.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Mars Orbiter Data",
+            "config_folder": "PDS_Mars_Orbiter_Data_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/MARS/mars_orbiter.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Mars Lander Data",
+            "config_folder": "PDS_Mars_Lander_Data_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/MARS/mars_lander.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Lunar Atmospheres Data Archive",
+            "config_folder": "PDS_Lunar_Atmospheres_Data_Archive_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/LADEE/lunar.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Venus Archive Page",
+            "config_folder": "PDS_Venus_Archive_Page_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/Venus/venus.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Mercury Data Archive",
+            "config_folder": "PDS_Mercury_Data_Archive_Website",
+            "url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/MERCURY/mercury.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Messenger MASCS UVVS Archive Page",
+            "config_folder": "PDS_Messenger_MASCS_UVVS_Archive_Page_Website",
+            "url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/MESSENGER/messenger.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Collision Induced Absorption Model",
+            "config_folder": "PDS_Collision_Induced_Absorption_Model_Website",
+            "url": "http://www.astro.ku.dk/~aborysow/programs/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Recently Archived Volumes",
+            "config_folder": "PDS_Recently_Archived_Volumes_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/recent.htm",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Atmospheres Data Set Catalog",
+            "config_folder": "PDS_PDS_Atmospheres_Data_Set_Catalog_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/catalog.htm",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Current Missions",
+            "config_folder": "PDS_Current_Missions_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/current.htm",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Object Access Library",
+            "config_folder": "PDS_Object_Access_Library_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/PDS/OAL/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Integrated Software for Imagers and Spectrometers (ISIS)",
+            "config_folder": "PDS_ISIS_Website",
+            "url": "https://www.usgs.gov/software/integrated-software-imagers-and-spectrometers-isis",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Mars GCM",
+            "config_folder": "PDS_Mars_GCM_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/PDS/data/mogc_0001",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Explicit Planetary Isentropic Coordinate (EPIC) Model",
+            "config_folder": "PDS_EPIC_Model_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/software/epic/epic.htm",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Small Bodies Node Tools, Utilities, and Interfaces",
+            "config_folder": "PDS_SBN_Tools_Utilities_and_Interfaces_Website",
+            "url": "https://pds-smallbodies.astro.umd.edu/tools/software.shtml",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Small Bodies Image Browser",
+            "config_folder": "PDS_Small_Bodies_Image_Browser_Website",
+            "url": "http://sbib.psi.edu/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Small Bodies Node Data by Mission",
+            "config_folder": "PDS_Mission_Data_Archive_Website",
+            "url": "https://pds-smallbodies.astro.umd.edu/data_sb/by_mission.shtml",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Small Bodies Data Ferret",
+            "config_folder": "PDS_Small_Bodies_Data_Ferret_Website",
+            "url": "https://sbnapps.psi.edu/ferret/listDatasets.action",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Analyst's Notebook",
+            "config_folder": "PDS_Analyst_Notebook_Website",
+            "url": "https://an.rsl.wustl.edu/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Geosciences Node Data Holdings",
+            "config_folder": "PDS_Geosciences_Data_Holdings_Website",
+            "url": "https://pds-geosciences.wustl.edu/dataserv/holdings.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Planetary Gravity Models",
+            "config_folder": "PDS_Gravity_Models_Website",
+            "url": "https://pds-geosciences.wustl.edu/dataserv/gravity_models.htm",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Planetary Science Tools",
+            "config_folder": "PDS_Planetary_Science_Tools_Website",
+            "url": "https://pds-geosciences.wustl.edu/tools/default.htm",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Virtual Astronaut",
+            "config_folder": "PDS_Virtual_Astronaut_Website",
+            "url": "https://va.rsl.wustl.edu/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Orbital Data Explorer REST Service",
+            "config_folder": "PDS_ODE_REST_Service_Website",
+            "url": "https://oderest.rsl.wustl.edu/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "2001 Mars Odyssey GRS Data Node",
+            "config_folder": "PDS_Odyssey_GRS_Data_Node_Website",
+            "url": "http://grspds2.lpl.arizona.edu/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "TES Data Tool",
+            "config_folder": "PDS_TES_Data_Node_Website",
+            "url": "http://tes.asu.edu/data_tool/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Geosciences Node Spectral Library",
+            "config_folder": "PDS_Geosciences_Node_Spectral_Library_Website",
+            "url": "https://pds-speclib.rsl.wustl.edu/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "MRO Coordinated Observation",
+            "config_folder": "PDS_MRO_Coordinated_Observation_Website",
+            "url": "https://ode.rsl.wustl.edu/mars/coordinatedobservationsearch.aspx",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Mars Orbital Data Explorer",
+            "config_folder": "PDS_Mars_Orbital_Data_Explorer_Website",
+            "url": "https://ode.rsl.wustl.edu/mars/index.aspx",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Lunar Reconnaissance Orbiter's Lunar Orbiter Laser Altimeter (LOLA) RDR Query",
+            "config_folder": "PDS_LOLA_RDR_Query_Website",
+            "url": "https://ode.rsl.wustl.edu/moon/lrololadataPointSearch.aspx",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Lunar Orbiter Data Explorer",
+            "config_folder": "PDS_Lunar_Orbiter_Data_Explorer_Website",
+            "url": "https://ode.rsl.wustl.edu/moon/index.aspx",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Lunar Reconnaissance Orbiter's Lunar Orbiter Laser Altimeter (LOLA) RDR Query V2.0",
+            "config_folder": "PDS_LOLA_RDR_Query_V20_Website",
+            "url": "https://oderest.rsl.wustl.edu/GDSWeb/GDSLOLARDR.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "DIVINER RDR Query",
+            "config_folder": "PDS_DIVINER_RDR_Query_Website",
+            "url": "https://ode.rsl.wustl.edu/moon/lrodivinerdataPointSearch.aspx",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "DIVINER RDR Query V2.0",
+            "config_folder": "PDS_DIVINER_RDR_Query_V20_Website",
+            "url": "https://oderest.rsl.wustl.edu/GDSWeb/GDSDLRERDR.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Mercury Orbital Data Explorer",
+            "config_folder": "PDS_Mercury_Orbital_Data_Explorer_Website",
+            "url": "https://ode.rsl.wustl.edu/mercury/index.aspx",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Venus Orbital Data Explorer",
+            "config_folder": "PDS_Venus_Orbital_Data_Explorer_Website",
+            "url": "https://ode.rsl.wustl.edu/Venus/index.aspx",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Subscription Service",
+            "config_folder": "PDS_Subscription_Service_Website",
+            "url": "https://pds.nasa.gov/datasearch/subscription-service/top.cfm",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Tool Registry",
+            "config_folder": "PDS_PDS_Tool_Registry_Website",
+            "url": "https://pds.nasa.gov/tools/tool-registry/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS4 JParser",
+            "config_folder": "PDS_PDS4_JParser_Website",
+            "url": "https://nasa-pds.github.io/pds4-jparser/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS4 Local Data Dictionary Tool",
+            "config_folder": "PDS_PDS4_Local_Data_Dictionary_Tool_Website",
+            "url": "https://nasa-pds.github.io/pds4-information-model/model-lddtool/index.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS4 Training Documents",
+            "config_folder": "PDS_PDS4_Training_Documents_Website",
+            "url": "https://pds.nasa.gov/datastandards/training/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS4 Documents",
+            "config_folder": "PDS_PDS4_Documents_Website",
+            "url": "https://pds.nasa.gov/datastandards/documents/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS3 Standards Reference",
+            "config_folder": "PDS_PDS3_Standards_Reference_Website",
+            "url": "https://pds.nasa.gov/datastandards/pds3/standards/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Metadata Injector for PDS Labels",
+            "config_folder": "PDS_Metadata_Injector_for_PDS_Labels_Website",
+            "url": "https://nasa-pds.github.io/mi-label/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Photojournal",
+            "config_folder": "PDS_Photojournal_Website",
+            "url": "https://photojournal.jpl.nasa.gov/index.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Operational Flight/Other Project Kernels",
+            "config_folder": "PDS_Operational_Flight_Other_Project_Kernels_Website",
+            "url": "https://naif.jpl.nasa.gov/naif/data_operational.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Generic Kernels",
+            "config_folder": "PDS_Generic_Kernels_Website",
+            "url": "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS SPICE Archives",
+            "config_folder": "PDS_SPICE_Archives_Website",
+            "url": "https://naif.jpl.nasa.gov/naif/data_archived.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "SPICE Utility and Application Programs",
+            "config_folder": "PDS_SPICE_Utility_and_Application_Programs_Website",
+            "url": "https://naif.jpl.nasa.gov/naif/utilities.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "SPICE Toolkit",
+            "config_folder": "PDS_SPICE_Toolkit_Website",
+            "url": "https://naif.jpl.nasa.gov/naif/toolkit.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "SPICE Toolkit Documentation",
+            "config_folder": "PDS_SPICE_Toolkit_Documentation_Website",
+            "url": "https://naif.jpl.nasa.gov/naif/documentation.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "SPICE-enhanced Cosmographia",
+            "config_folder": "PDS_SPICE-enhanced_Cosmographia_Website",
+            "url": "https://naif.jpl.nasa.gov/naif/cosmographia_components.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "SPICE Tutorials",
+            "config_folder": "PDS_SPICE_Tutorials_Website",
+            "url": "https://naif.jpl.nasa.gov/naif/tutorials.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "SPICE Programming Lessons",
+            "config_folder": "PDS_SPICE_Programming_Lessons_Website",
+            "url": "https://naif.jpl.nasa.gov/naif/lessons.html",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "SPICE Self-Training",
+            "config_folder": "PDS_SPICE_Self-Training_Website",
+            "url": "https://naif.jpl.nasa.gov/naif/self_training.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS API (known as 'Legacy Registry' in the EDP Instance)",
+            "config_folder": "PDS_API_Legacy_All",
+            "url": "",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "ARSET Applied Sciences",
+            "config_folder": "ARSETAppliedSciences",
+            "url": "https://appliedsciences.nasa.gov/join-mission/training",
+            "division": 4,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "CASEI Campaigns",
+            "config_folder": "CASEI_Campaign",
+            "url": "https://admg.nasa-impact.net/api/docs/",
+            "division": 4,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "CASEI Deployments",
+            "config_folder": "CASEI_Deployment",
+            "url": "https://admg.nasa-impact.net/api/docs/",
+            "division": 4,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "CASEI Instruments",
+            "config_folder": "CASEI_Instrument",
+            "url": "https://admg.nasa-impact.net/api/docs/",
+            "division": 4,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "CASEI Platforms",
+            "config_folder": "CASEI_Platform",
+            "url": "https://admg.nasa-impact.net/api/docs/",
+            "division": 4,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "CEOS Instruments",
+            "config_folder": "CEOS_API_I",
+            "url": "https://mims.nasa-impact.net/docs",
+            "division": 4,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "CEOS Missions",
+            "config_folder": "CEOS_API_M",
+            "url": "https://mims.nasa-impact.net/docs",
+            "division": 4,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "CMR",
+            "config_folder": "CMR_API",
+            "url": "https://cmr.earthdata.nasa.gov/",
+            "division": 4,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "EarthData Pathfinders",
+            "config_folder": "DataPathFinder",
+            "url": "https://www.earthdata.nasa.gov/learn/pathfinders",
+            "division": 4,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "NASA Earth Observations",
+            "config_folder": "NasaEarthObservationWebsite",
+            "url": "https://neo.gsfc.nasa.gov/",
+            "division": 4,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "NTRS Publication Database",
+            "config_folder": "NTRS",
+            "url": "https://ntrs.nasa.gov/search",
+            "division": 4,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Autoplot",
+            "config_folder": "Autoplot_Website",
+            "url": "http://autoplot.org/",
+            "division": 2,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "CCMC",
+            "config_folder": "CCMC_Website",
+            "url": "https://ccmc.gsfc.nasa.gov/",
+            "division": 2,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "HAPI",
+            "config_folder": "HAPI_Website",
+            "url": "https://cdaweb.gsfc.nasa.gov/registry/hdp/hapi/",
+            "division": 2,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Heliophysics Events Knowledgebase",
+            "config_folder": "Helio_Events_Knowledgebase_Website",
+            "url": "https://www.lmsal.com/hek/",
+            "division": 2,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Helioviewer",
+            "config_folder": "Helioviewer_Website",
+            "url": "https://www.helioviewer.org/",
+            "division": 2,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PyHC",
+            "config_folder": "PyHC_Website",
+            "url": "https://heliopython.org/",
+            "division": 2,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "SPASE",
+            "config_folder": "SPASE_Website",
+            "url": "https://spase-group.org/",
+            "division": 2,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "SPEDAS",
+            "config_folder": "SPEDAS_Website",
+            "url": "https://spedas.org/blog/",
+            "division": 2,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "GeneLab Github Data Processing",
+            "config_folder": "GENELAB_Github_DataProcessing",
+            "url": "https://github.com/nasa/GeneLab_Data_Processing",
+            "division": 3,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "GeneLab Github Sample Processing",
+            "config_folder": "GENELAB_Github_SampleProcessing",
+            "url": "https://github.com/nasa/GeneLab-sampleProcessing",
+            "division": 3,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "GeneLab Github Training",
+            "config_folder": "GENELAB_Github_Training",
+            "url": "https://github.com/nasa/GeneLab-Training",
+            "division": 3,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "GeneLab Metadata API",
+            "config_folder": "GENELAB_METADATA_Website",
+            "url": "https://genelab.nasa.gov/genelabAPIs#metadata",
+            "division": 3,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "GeneLab Publications",
+            "config_folder": "GENELAB_Publications_Website",
+            "url": "https://genelab.nasa.gov/publications",
+            "division": 3,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "LSDA_Website",
+            "config_folder": "LSDA_Website",
+            "url": "https://nlsp.nasa.gov/explore/lsdahome",
+            "division": 3,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "ASTRO Finder Chart Website",
+            "config_folder": "ASTRO_Finder_Chart_Website",
+            "url": "https://irsa.ipac.caltech.edu/applications/finderchart/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "ASTRO Multi Website",
+            "config_folder": "ASTRO_Multi_Website",
+            "url": "",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "ASTRO Planck Cutout Visualization Website",
+            "config_folder": "ASTRO_Planck_Cutout_Visualization_Website",
+            "url": "https://irsa.ipac.caltech.edu/applications/planck",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "ASTRO WISE Image Service Website",
+            "config_folder": "ASTRO_WISE_Image_Service_Website",
+            "url": "https://irsa.ipac.caltech.edu/applications/wise/",
+            "division": 1,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "CASEI",
+            "config_folder": "CASEI",
+            "url": "https://impact.earthdata.nasa.gov/casei/",
+            "division": 4,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "CODE NASA API",
+            "config_folder": "CODE_NASA_API",
+            "url": "https://impact.earthdata.nasa.gov/casei/",
+            "division": 4,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "ESSCOR API",
+            "config_folder": "ESSCOR_API",
+            "url": "https://impact.earthdata.nasa.gov/casei/",
+            "division": 4,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "GCIS ARTICLE API",
+            "config_folder": "GCIS_ARTICLE_API",
+            "url": "https://impact.earthdata.nasa.gov/casei/",
+            "division": 4,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "GCIS BOOKS API",
+            "config_folder": "GCIS_BOOKS_API",
+            "url": "https://impact.earthdata.nasa.gov/casei/",
+            "division": 4,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "GCIS JOURNAL API",
+            "config_folder": "GCIS_JOURNAL_API",
+            "url": "https://impact.earthdata.nasa.gov/casei/",
+            "division": 4,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "GCIS REPORTS API",
+            "config_folder": "GCIS_REPORTS_API",
+            "url": "https://impact.earthdata.nasa.gov/casei/",
+            "division": 4,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "Helioviewer Documentation Website",
+            "config_folder": "Helioviewer_Documentation_Website",
+            "url": "",
+            "division": 2,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "LSDA Website Trial",
+            "config_folder": "LSDA_Website_Trial",
+            "url": "",
+            "division": 3,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "LSDA Website Trial2",
+            "config_folder": "LSDA_Website_Trial2",
+            "url": "",
+            "division": 3,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Archive Navigator Website",
+            "config_folder": "PDS_Archive_Navigator_Website",
+            "url": "https://arcnav.psi.edu/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Astrogeology Website",
+            "config_folder": "PDS_Astrogeology_Website",
+            "url": "https://astrocloud.wr.usgs.gov/index.php?view=pow",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Cassini Mission Dione (Saturn IV) Website",
+            "config_folder": "PDS_Cassini_Mission_Dione_(Saturn_IV)_Website",
+            "url": "https://sbib.psi.edu/data/PDS-Dione/index.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Cassini Mission Enceladus (Saturn II) Website",
+            "config_folder": "PDS_Cassini_Mission_Enceladus_(Saturn_II)_Website",
+            "url": "https://sbib.psi.edu/data/PDS-Enceladus/index.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Cassini Mission Iapetus (Saturn VIII) Website",
+            "config_folder": "PDS_Cassini_Mission_Iapetus_(Saturn_VIII)_Website",
+            "url": "https://sbib.psi.edu/data/PDS-Iapetus/index.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Cassini Mission Mimas (Saturn I) Website",
+            "config_folder": "PDS_Cassini_Mission_Mimas_(Saturn_I)_Website",
+            "url": "https://sbib.psi.edu/data/PDS-Mimas/index.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Cassini Mission Rhea (Saturn V) Website",
+            "config_folder": "PDS_Cassini_Mission_Rhea_(Saturn_V)_Website",
+            "url": "https://sbib.psi.edu/data/PDS-Rhea/index.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Cassini Mission Saturn Small Satellites Website",
+            "config_folder": "PDS_Cassini_Mission_Saturn_Small_Satellites_Website",
+            "url": "https://sbn.psi.edu/pds/sbib/saturn.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Cassini Mission Tethys (Saturn III) Website",
+            "config_folder": "PDS_Cassini_Mission_Tethys_(Saturn_III)_Website",
+            "url": "https://sbib.psi.edu/data/PDS-Tethys/index.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Cassini Resource Page Website",
+            "config_folder": "PDS_Cassini_Resource_Page_Website",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/Cassini/Cassini.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS CRISM Analysis Toolkit (CAT) Website",
+            "config_folder": "PDS_CRISM_Analysis_Toolkit_(CAT)_Website",
+            "url": "https://pds-geosciences.wustl.edu/missions/mro/crism.htm#Tools",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS CRISM Spectral Library Website",
+            "config_folder": "PDS_CRISM_Spectral_Library_Website",
+            "url": "https://pds-geosciences.wustl.edu/missions/mro/spectral_library.htm",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Data Archive Website",
+            "config_folder": "PDS_Data_Archive_Website",
+            "url": "https://pds-imaging.jpl.nasa.gov/data/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Data Portal Website",
+            "config_folder": "PDS_Data_Portal_Website",
+            "url": "https://pds-imaging.jpl.nasa.gov/portal/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Dawn Mission to Ceres Website",
+            "config_folder": "PDS_Dawn_Mission_to_Ceres_Website",
+            "url": "https://sbib.psi.edu/data/PDS-Ceres/pds-ceres.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Dawn Mission to Vesta Website",
+            "config_folder": "PDS_Dawn_Mission_to_Vesta_Website",
+            "url": "https://sbib.psi.edu/data/PDS-Vesta/pds-vesta.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS LADEE NMS Calibrated Data Search",
+            "config_folder": "PDS_LADEE_NMS_Calibrated_Data_Search",
+            "url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/LADEE/nms_search.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS LADEE NMS Derived Data Search",
+            "config_folder": "PDS_LADEE_NMS_Derived_Data_Search",
+            "url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/LADEE/nms_derived_search.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS LADEE UVS Calibrated Data Search",
+            "config_folder": "PDS_LADEE_UVS_Calibrated_Data_Search",
+            "url": "https://pds-atmospheres.nmsu.edu/data_and_services/atmospheres_data/LADEE/requesting_uvs_2.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Map-a-Planet (MAP) Website",
+            "config_folder": "PDS_Map-a-Planet_(MAP)_Website",
+            "url": "https://astrocloud.wr.usgs.gov/index.php?view=map2",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS MAVEN ACC Data Search",
+            "config_folder": "PDS_MAVEN_ACC_Data_Search",
+            "url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/MAVEN/acc_search.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS MAVEN NGIMS Data Search",
+            "config_folder": "PDS_MAVEN_NGIMS_Data_Search",
+            "url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/MAVEN/ngims_search.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Missions Website",
+            "config_folder": "PDS_Missions_Website",
+            "url": "https://pds-ppi.igpp.ucla.edu/mission",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Models and Simulations Website",
+            "config_folder": "PDS_Models_and_Simulations_Website",
+            "url": "https://pds-ppi.igpp.ucla.edu/search/annex/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Near Earth Asteroid Rendezvous (NEAR) Data Archive Website",
+            "config_folder": "PDS_Near_Earth_Asteroid_Rendezvous_(NEAR)_Data_Archive_Website",
+            "url": "https://arcnav.psi.edu/urn:nasa:pds:context:investigation:mission.near_earth_asteroid_rendezvous",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS NEAR Shoemaker Mission to 433 Eros Website",
+            "config_folder": "PDS_NEAR_Shoemaker_Mission_to_433_Eros_Website",
+            "url": "https://sbib.psi.edu/data/PDS-Eros/pds-eros.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS New Horizons Encounter with Pluto Website",
+            "config_folder": "PDS_New_Horizons_Encounter_with_Pluto_Website",
+            "url": "https://sbib.psi.edu/data/PDS-Pluto/index.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Niels Bohr Institute Website",
+            "config_folder": "PDS_Niels_Bohr_Institute_Website",
+            "url": "https://nbi.ku.dk/english/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Notebook Website",
+            "config_folder": "PDS_Notebook_Website",
+            "url": "https://an.rsl.wustl.edu/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS OMEGA Analysis Toolkit (OAT) Website",
+            "config_folder": "PDS_OMEGA_Analysis_Toolkit_(OAT)_Website",
+            "url": "https://pds-geosciences.wustl.edu/missions/mars_express/omega.htm#OAT",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS OPUS Website",
+            "config_folder": "PDS_OPUS_Website",
+            "url": "https://opus.pds-rings.seti.org/opus/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS OSIRIS-REx Mission to Bennu Website",
+            "config_folder": "PDS_OSIRIS-REx_Mission_to_Bennu_Website",
+            "url": "https://sbib.psi.edu/data/PDS-Bennu/index.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS PDS Small Bodies Node Asteroid Dust Subnode Website",
+            "config_folder": "PDS_PDS_Small_Bodies_Node_Asteroid_Dust_Subnode_Website",
+            "url": "https://sbn.psi.edu/pds/",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS PDS Software Tools Tutorial and Viewers Website",
+            "config_folder": "PDS_PDS_Software_Tools_Tutorial_and_Viewers_Website",
+            "url": "https://pds-imaging.jpl.nasa.gov/software/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Phoebe Saturn IX Website",
+            "config_folder": "PDS_Phoebe_Saturn_IX_Website",
+            "url": "https://sbib.psi.edu/data/PDS-Phoebe/index.html",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Projection on the Web (POW) Service Website",
+            "config_folder": "PDS_Projection_on_the_Web_(POW)_Service_Website",
+            "url": "https://astrocloud.wr.usgs.gov/index.php?view=pow",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Rings Website",
+            "config_folder": "PDS_Rings_Website",
+            "url": "https://pds-rings.seti.org/tools/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS SBIB 3D Website",
+            "config_folder": "PDS_SBIB_3D_Website",
+            "url": "https://sbib3d.psi.edu/ceres",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Subset Tool Website",
+            "config_folder": "PDS_Subset_Tool_Website",
+            "url": "https://naif.jpl.nasa.gov/cgi-bin/subsetds.pl?dataset=clem1-l-spice-6-v1.0/clsp_1000",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Users Guides Website",
+            "config_folder": "PDS_Users_Guides_Website",
+            "url": "https://pds-imaging.jpl.nasa.gov/software/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS USGS Pilot Website",
+            "config_folder": "PDS_USGS_Pilot_Website",
+            "url": "https://pilot.wr.usgs.gov/",
+            "division": 5,
+            "turned_on": true
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "PDS Web Chronos Website",
+            "config_folder": "PDS_Web_Chronos_Website",
+            "url": "https://naif.jpl.nasa.gov/cgi-bin/chronos.pl?setup=chronos",
+            "division": 5,
+            "turned_on": false
+        }
+    },
+    {
+        "model": "sde_collections.collection",
+        "fields": {
+            "name": "TASKBOOK Website",
+            "config_folder": "TASKBOOK_Website",
+            "url": "",
+            "division": 5,
+            "turned_on": false
+        }
+    }
+]
