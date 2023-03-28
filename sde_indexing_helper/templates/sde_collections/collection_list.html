@@ -1,22 +1,71 @@
 {% extends "base.html" %}
 
 
+{% block css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="//cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+{% endblock css %}
+
+{% block javascript %}
+    {{ block.super }}
+    <script
+    src="https://code.jquery.com/jquery-3.6.4.min.js"
+    integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
+    crossorigin="anonymous"></script>
+    <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+{% endblock javascript %}
+
+
 {% block content %}
     <h1>Collections</h1>
 
-    <table class="table">
+    <table id="collection_table" class="table table-striped">
         <thead>
             <tr>
-                <th scope="col">Name</th>
+                <th>Name</th>
+                <th>Has Folder</th>
+                <th>URL</th>
+                <th>Division</th>
+                <th>Enabled in SDE</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for collection in collections %}
                 <tr>
-                    <td>{{ collection.name }}</td>
+                    <td><a target="_blank" href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }}</a></td>
+                    <td>{{ collection.indexed }}</td>
+                    <td><a target="_blank" href="
+                    {% if collection.url %}
+                        {{ collection.url }}
+                    {% endif %}
+                        ">{{ collection.url }}</a></td>
+                    <td>{{ collection.division }}</td>
+                    <td>{{ collection.turned_on }}</td>
+                    <td></td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
 
 {% endblock content %}
+
+{% block inline_javascript %}
+    <script>
+        let table = $('#collection_table').DataTable({
+            "bPaginate": false,
+            "columnDefs": [
+                {
+                    "targets": -1,
+                    "data": null,
+                    "defaultContent": "<button class='btn btn-xs btn-success'>Scrape</button>",
+                },
+            ],
+        });
+
+        $('#collection_table tbody').on('click', 'button', function () {
+            var data = table.row($(this).parents('tr')).data();
+            alert(data[0] + "'s salary is: " + data[5]);
+        });
+    </script>
+{% endblock inline_javascript %}

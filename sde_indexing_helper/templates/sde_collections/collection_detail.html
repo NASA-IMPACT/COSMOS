@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+    <h1>{{ collection.name }}</h1>
+
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <th>URL</th>
+                <td><a target="_blank" href="
+                    {% if collection.url %}
+                        {{ collection.url }}
+                    {% endif %}
+                        ">{{ collection.url }}</a></td>
+            </tr>
+            <tr>
+                <th>Config Folder</th>
+                <td>{{ collection.folder }}</td>
+            </tr>
+            <tr>
+                <th>Division</th>
+                <td>{{ collection.division }}</td>
+            </tr>
+            <tr>
+                <th>Turned On</th>
+                <td>{{ collection.turned_on }}</td>
+            </tr>
+            <tr>
+                <th>Candidate URLs</th>
+                <td><button class="btn btn-sm btn-success">Generate</button></td>
+            </tr>
+        </tbody>
+    </table>
+{% endblock content %}
