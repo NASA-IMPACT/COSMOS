@@ -1,0 +1,37 @@
+[
+    {
+        "model": "sde_collections.division",
+        "pk": 1,
+        "fields": {
+            "name": "Astrophysics"
+        }
+    },
+    {
+        "model": "sde_collections.division",
+        "pk": 2,
+        "fields": {
+            "name": "Heliophysics"
+        }
+    },
+    {
+        "model": "sde_collections.division",
+        "pk": 3,
+        "fields": {
+            "name": "Biological and Physical Sciences"
+        }
+    },
+    {
+        "model": "sde_collections.division",
+        "pk": 4,
+        "fields": {
+            "name": "Earth Science"
+        }
+    },
+    {
+        "model": "sde_collections.division",
+        "pk": 5,
+        "fields": {
+            "name": "Planetary Science"
+        }
+    }
+]
