@@ -32,4 +32,16 @@
             </tr>
         </tbody>
     </table>
+
+    <h1>Candidate URLs</h1>
+
+    <ul>
+        {% for url in candidate_url_tree %}
+            <li>{{ url }}</li>
+            {% for sub in candidate_url_tree.url %}
+                <li>{{ sub }}</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+
 {% endblock content %}

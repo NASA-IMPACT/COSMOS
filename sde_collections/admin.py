@@ -1,6 +1,8 @@
 from django.contrib import admin
+from treebeard.admin import TreeAdmin
+from treebeard.forms import movenodeform_factory
 
-from .models import Collection, Division
+from .models import CandidateURL, Collection, Division
 
 
 @admin.register(Collection)
@@ -18,3 +20,13 @@ class DivisionAdmin(admin.ModelAdmin):
         "id",
         "name",
     )
+
+
+class CandidateURLAdmin(TreeAdmin):
+    """Admin View for CandidateURL"""
+
+    form = movenodeform_factory(CandidateURL)
+    list_display = ("url", "title", "excluded")
+
+
+admin.site.register(CandidateURL, CandidateURLAdmin)

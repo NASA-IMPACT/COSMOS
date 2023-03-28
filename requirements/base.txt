@@ -17,3 +17,7 @@ django-allauth==0.53.1  # https://github.com/pennersr/django-allauth
 django-crispy-forms==2.0  # https://github.com/django-crispy-forms/django-crispy-forms
 crispy-bootstrap5==0.7  # https://github.com/django-crispy-forms/crispy-bootstrap5
 django-redis==5.2.0  # https://github.com/jazzband/django-redis
+
+# project-specific
+scrapy==2.8.0
+django-treebeard==4.6.1

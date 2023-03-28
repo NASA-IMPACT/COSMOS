@@ -1,4 +1,5 @@
 from django.db import models
+from treebeard.mp_tree import MP_Node
 
 
 class Division(models.Model):
@@ -39,3 +40,30 @@ class Collection(models.Model):
     @property
     def indexed(self):
         return self.config_folder != ""
+
+    def candidate_url_tree(self):
+        tree = {}
+        top_level_items = self.candidateurl_set.filter(parent__isnull=True)
+        for item in top_level_items:
+            tree[item.url] = item.get_tree()
+        return tree
+
+
+class CandidateURL(MP_Node):
+    """A candidate URL scraped for a given collection."""
+
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
+    url = models.CharField("URL", max_length=2048)
+    excluded = models.BooleanField(default=False)
+    title = models.CharField("Title", max_length=2048)
+
+    node_order_by = ["url"]
+
+    class Meta:
+        """Meta definition for Candidate URL."""
+
+        verbose_name = "Candidate URL"
+        verbose_name_plural = "Candidate URLs"
+
+    def __str__(self):
+        return self.url
