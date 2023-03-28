@@ -280,3 +280,6 @@ sde_indexing_helper/media/
 .env
 .envs/*
 !.envs/.local/
+
+**/.ipynb_checkpoints/
+**/*.xlsx
