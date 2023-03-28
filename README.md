@@ -21,6 +21,16 @@ Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings
 
 For convenience, you can keep your normal user logged in on Chrome and your superuser logged in on Firefox (or similar), so that you can see how the site behaves for both kinds of users.
 
+### Loading fixtures
+
+-   To load divisions
+
+        docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/divisions.json
+
+-   To load collections
+
+        docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/collections.json
+
 ### Type checks
 
 Running type checks with mypy:
