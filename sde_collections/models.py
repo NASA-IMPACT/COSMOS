@@ -102,7 +102,7 @@ class CandidateURL(MP_Node):
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
     url = models.CharField("URL", max_length=2048)
     excluded = models.BooleanField(default=False)
-    title = models.CharField("Title", max_length=2048)
+    title = models.CharField("Title", max_length=2048, default="", blank=True)
 
     node_order_by = ["url"]
 
@@ -111,6 +111,26 @@ class CandidateURL(MP_Node):
 
         verbose_name = "Candidate URL"
         verbose_name_plural = "Candidate URLs"
+
+    @property
+    def pattern(self):
+        path = ""
+        ancestors = self.get_ancestors()
+        for ancestor in ancestors:
+            path += f"/{ancestor.url}"
+
+        return f"{path}*"
+
+    @classmethod
+    def generate_exclude_pattern(cls, collection_config_folder):
+        patterns = []
+        collection = Collection.objects.get(config_folder=collection_config_folder)
+        excluded_patterns = cls.objects.filter(collection=collection).filter(
+            excluded=True
+        )
+        for excluded_pattern in excluded_patterns:
+            patterns.append(excluded_pattern.pattern)
+        return patterns
 
     def __str__(self):
         return self.url
