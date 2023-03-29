@@ -28,7 +28,7 @@ class Collection(models.Model):
     class SourceChoices(models.IntegerChoices):
         ONLY_IN_ORIGINAL = 1, "Only in original"
         BOTH = 2, "Both"
-        ONLY_IN_SINEQUA_CONFIGS = 3, "Only in Sinequa Configs"
+        ONLY_IN_SINEQUA_CONFIGS = 3, "Only in Sinequa configs"
 
     name = models.CharField("Name", max_length=1024)
     config_folder = models.CharField("Config Folder", max_length=2048)
