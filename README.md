@@ -37,7 +37,7 @@ For convenience, you can keep your normal user logged in on Chrome and your supe
 
 - Then run this:
 
-    docker-compose -f local.yml run --rm django python manage.py load_scraped_urls <config_folder_name>
+      $ docker-compose -f local.yml run --rm django python manage.py load_scraped_urls <config_folder_name>
 
 ### Type checks
 
