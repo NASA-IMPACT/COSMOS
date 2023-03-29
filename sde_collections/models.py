@@ -1,3 +1,5 @@
+import re
+
 from django.db import models
 from treebeard.mp_tree import MP_Node
 
@@ -134,9 +136,28 @@ class CandidateURL(MP_Node):
         excluded_patterns = cls.objects.filter(collection=collection).filter(
             excluded=True
         )
+
         for excluded_pattern in excluded_patterns:
             patterns.append(excluded_pattern.pattern)
-        return patterns
+
+            pattern_set = set(patterns)
+            deletables = set()
+
+            # remove duplicate patterns
+            # needs some work
+            for pattern in pattern_set:
+                filtered_values = list(
+                    filter(lambda v: re.match(pattern, v), pattern_set)
+                )
+                for value in filtered_values[1:]:
+                    deletables.add(value)
+
+            for deletable in deletables:
+                pattern_set.remove(deletable)
+
+            patterns.extend(list(pattern_set))
+
+        return set(patterns)
 
     def __str__(self):
         return self.url
