@@ -27,6 +27,18 @@ For convenience, you can keep your normal user logged in on Chrome and your supe
 
         docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/collections.json
 
+### Loading scraped URLs into CandidateURLs
+
+- First make sure there is a folder in scraper/scraped_urls. There should already be an example folder.
+
+- Then create a new spider for your Collection. An example is mast_spider.py in spiders. In the future, this will be replaced by base_spider.py
+
+- Run the crawler with `scrapy crawl <name of your spider> -o scraped_urls/<config_folder>/urls.jsonl
+
+- Then run this:
+
+    docker-compose -f local.yml run --rm django python manage.py load_scraped_urls <config_folder_name>
+
 ### Type checks
 
 Running type checks with mypy:
