@@ -14,7 +14,14 @@ class CollectionAdmin(admin.ModelAdmin):
 
 @admin.action(description="Exclude URL and all children")
 def exclude_pattern(modeladmin, request, queryset):
-    queryset.update(excluded=True)
+    for candidate_url in queryset.all():
+        candidate_url.set_excluded(True)
+
+
+@admin.action(description="Include URL and all children")
+def include_pattern(modeladmin, request, queryset):
+    for candidate_url in queryset.all():
+        candidate_url.set_excluded(False)
 
 
 class CandidateURLAdmin(TreeAdmin):
@@ -22,7 +29,7 @@ class CandidateURLAdmin(TreeAdmin):
 
     form = movenodeform_factory(CandidateURL)
     list_display = ("url", "title", "excluded")
-    actions = [exclude_pattern]
+    actions = [exclude_pattern, include_pattern]
 
 
 admin.site.register(CandidateURL, CandidateURLAdmin)

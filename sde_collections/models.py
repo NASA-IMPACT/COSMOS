@@ -121,6 +121,12 @@ class CandidateURL(MP_Node):
 
         return f"{path}*"
 
+    def set_excluded(self, excluded):
+        self.excluded = excluded
+        for child in self.get_children():
+            child.set_excluded(excluded)
+        self.save()
+
     @classmethod
     def generate_exclude_pattern(cls, collection_config_folder):
         patterns = []
