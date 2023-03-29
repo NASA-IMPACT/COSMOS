@@ -23,10 +23,6 @@ For convenience, you can keep your normal user logged in on Chrome and your supe
 
 ### Loading fixtures
 
--   To load divisions
-
-        docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/divisions.json
-
 -   To load collections
 
         docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/collections.json
