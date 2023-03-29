@@ -20,16 +20,73 @@
             </tr>
             <tr>
                 <th>Division</th>
-                <td>{{ collection.division }}</td>
+                <td>{{ collection.get_division_display }}</td>
             </tr>
             <tr>
                 <th>Turned On</th>
                 <td>{{ collection.turned_on }}</td>
             </tr>
             <tr>
+                <th>Source</th>
+                <td>{{ collection.get_source_display }}</td>
+            </tr>
+            <tr>
+                <th>Update Frequency</th>
+                <td>{{ collection.get_update_frequency_display }}</td>
+            </tr>
+            <tr>
+                <th>Document Type</th>
+                <td>{{ collection.document_type }}</td>
+            </tr>
+            <tr>
+                <th>Tree Root</th>
+                <td>{{ collection.tree_root }}</td>
+            </tr>
+            <tr>
+                <th>Delete</th>
+                <td>{{ collection.delete }}</td>
+            </tr>
+            <tr>
+                <th>Audit Hierarchy</th>
+                <td>{{ collection.audit_hierarchy }}</td>
+            </tr>
+            <tr>
+                <th>Audit Url</th>
+                <td>{{ collection.audit_url }}</td>
+            </tr>
+            <tr>
+                <th>Audit Mapping</th>
+                <td>{{ collection.audit_mapping }}</td>
+            </tr>
+            <tr>
+                <th>Audit Label</th>
+                <td>{{ collection.audit_label }}</td>
+            </tr>
+            <tr>
+                <th>Audit Query</th>
+                <td>{{ collection.audit_query }}</td>
+            </tr>
+            <tr>
+                <th>Audit Duplicate Results</th>
+                <td>{{ collection.audit_duplicate_results }}</td>
+            </tr>
+            <tr>
+                <th>Audit Metrics</th>
+                <td>{{ collection.audit_metrics }}</td>
+            </tr>
+            <tr>
+                <th>Cleaning Assigned To</th>
+                <td>{{ collection.cleaning_assigned_to }}</td>
+            </tr>
+            <tr>
+                <th>Notes</th>
+                <td>{{ collection.notes }}</td>
+            </tr>
+            <tr>
                 <th>Candidate URLs</th>
                 <td><button class="btn btn-sm btn-success">Generate</button></td>
             </tr>
+
         </tbody>
     </table>
 

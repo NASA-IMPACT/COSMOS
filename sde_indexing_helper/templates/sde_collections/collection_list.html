@@ -26,8 +26,9 @@
                 <th>Has Folder</th>
                 <th>URL</th>
                 <th>Division</th>
-                <th>Enabled in SDE</th>
-                <th>Actions</th>
+                <th>Turned On</th>
+                <th>Source</th>
+                {% comment %} <th>Actions</th> {% endcomment %}
             </tr>
         </thead>
         <tbody>
@@ -40,9 +41,10 @@
                         {{ collection.url }}
                     {% endif %}
                         ">{{ collection.url }}</a></td>
-                    <td>{{ collection.division }}</td>
+                    <td>{{ collection.get_division_display }}</td>
                     <td>{{ collection.turned_on }}</td>
-                    <td></td>
+                    <td>{{ collection.get_source_display }}</td>
+                    {% comment %} <td></td> {% endcomment %}
                 </tr>
             {% endfor %}
         </tbody>
@@ -54,13 +56,13 @@
     <script>
         let table = $('#collection_table').DataTable({
             "bPaginate": false,
-            "columnDefs": [
-                {
-                    "targets": -1,
-                    "data": null,
-                    "defaultContent": "<button class='btn btn-xs btn-success'>Scrape</button>",
-                },
-            ],
+            // "columnDefs": [
+            //     {
+            //         "targets": -1,
+            //         "data": null,
+            //         "defaultContent": "<button class='btn btn-xs btn-success'>Scrape</button>",
+            //     },
+            // ],
         });
 
         $('#collection_table tbody').on('click', 'button', function () {
