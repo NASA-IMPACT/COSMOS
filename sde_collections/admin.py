@@ -36,7 +36,7 @@ class CandidateURLAdmin(TreeAdmin):
 
     form = movenodeform_factory(CandidateURL)
     list_display = ("url", "title", "excluded")
-    list_filter = ("excluded",)
+    list_filter = ("collection", "excluded")
     actions = [exclude_pattern, include_pattern, exclude_and_delete_children]
 
 
