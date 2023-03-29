@@ -4,6 +4,12 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views import defaults as default_views
 
+admin.site.site_header = (
+    "SDE Indexing Administration"  # default: "Django Administration"
+)
+admin.site.index_title = "SDE Indexing"  # default: "Site administration"
+admin.site.site_title = "SDE Indexing"  # default: "Django site admin"
+
 urlpatterns = [
     path("", include("sde_collections.urls", namespace="sde_collections")),
     # Django Admin, use {% url 'admin:index' %}
