@@ -90,4 +90,12 @@
         </tbody>
     </table>
 
+    <h2>Excluded URL Patterns</h2>
+
+    {% for pattern in excluded_patterns  %}
+        <p>{{ pattern }}</p>
+    {% empty %}
+        <p>No excluded patterns</p>
+    {% endfor %}
+
 {% endblock content %}

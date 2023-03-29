@@ -35,9 +35,9 @@ class CandidateURLAdmin(TreeAdmin):
     """Admin View for CandidateURL"""
 
     form = movenodeform_factory(CandidateURL)
-    list_display = ("url", "title", "excluded")
-    list_filter = ("collection", "excluded")
-    actions = [exclude_pattern, include_pattern, exclude_and_delete_children]
+    list_display = ("url", "title", "excluded", "collection")
+    list_filter = ("excluded", "collection")
+    actions = [exclude_and_delete_children]
 
 
 admin.site.register(CandidateURL, CandidateURLAdmin)

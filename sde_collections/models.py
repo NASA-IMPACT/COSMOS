@@ -1,5 +1,3 @@
-import re
-
 from django.db import models
 from treebeard.mp_tree import MP_Node
 
@@ -120,6 +118,7 @@ class CandidateURL(MP_Node):
         ancestors = self.get_ancestors()
         for ancestor in ancestors:
             path += f"/{ancestor.url}"
+        path += f"/{self.url}"
 
         return f"{path}*"
 
@@ -130,32 +129,14 @@ class CandidateURL(MP_Node):
         self.save()
 
     @classmethod
-    def generate_exclude_pattern(cls, collection_config_folder):
+    def exclude_patterns(cls, collection):
         patterns = []
-        collection = Collection.objects.get(config_folder=collection_config_folder)
         excluded_patterns = cls.objects.filter(collection=collection).filter(
             excluded=True
         )
 
         for excluded_pattern in excluded_patterns:
             patterns.append(excluded_pattern.pattern)
-
-            pattern_set = set(patterns)
-            deletables = set()
-
-            # remove duplicate patterns
-            # needs some work
-            for pattern in pattern_set:
-                filtered_values = list(
-                    filter(lambda v: re.match(pattern, v), pattern_set)
-                )
-                for value in filtered_values[1:]:
-                    deletables.add(value)
-
-            for deletable in deletables:
-                pattern_set.remove(deletable)
-
-            patterns.extend(list(pattern_set))
 
         return set(patterns)
 
