@@ -1,0 +1,3 @@
+[submodule "sinequa_configs"]
+	path = sinequa_configs
+	url = git@github.com:NASA-IMPACT/smd-sinequa_backend.git
