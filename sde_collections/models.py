@@ -43,23 +43,33 @@ class Collection(models.Model):
     document_type = models.IntegerField(
         choices=DocumentTypes.choices, null=True, blank=True
     )
-    tree_root = models.CharField("Tree Root", max_length=1024, default="")
+    tree_root = models.CharField("Tree Root", max_length=1024, default="", blank=True)
 
     delete = models.BooleanField(default=False)
 
     # audit columns for production
-    audit_hierarchy = models.CharField("Audit Hierarchy", max_length=2048, default="")
-    audit_url = models.CharField("Audit URL", max_length=2048, default="")
-    audit_mapping = models.CharField("Audit Mapping", max_length=2048, default="")
-    audit_label = models.CharField("Audit Label", max_length=2048, default="")
-    audit_query = models.CharField("Audit Query", max_length=2048, default="")
-    audit_duplicate_results = models.CharField(
-        "Audit Duplicate Results", max_length=2048, default=""
+    audit_hierarchy = models.CharField(
+        "Audit Hierarchy", max_length=2048, default="", blank=True
     )
-    audit_metrics = models.CharField("Audit Metrics", max_length=2048, default="")
+    audit_url = models.CharField("Audit URL", max_length=2048, default="", blank=True)
+    audit_mapping = models.CharField(
+        "Audit Mapping", max_length=2048, default="", blank=True
+    )
+    audit_label = models.CharField(
+        "Audit Label", max_length=2048, default="", blank=True
+    )
+    audit_query = models.CharField(
+        "Audit Query", max_length=2048, default="", blank=True
+    )
+    audit_duplicate_results = models.CharField(
+        "Audit Duplicate Results", max_length=2048, default="", blank=True
+    )
+    audit_metrics = models.CharField(
+        "Audit Metrics", max_length=2048, default="", blank=True
+    )
 
     cleaning_assigned_to = models.CharField(
-        "Cleaning Assigned To", max_length=128, default=""
+        "Cleaning Assigned To", max_length=128, default="", blank=True
     )
 
     notes = models.TextField("Notes", blank=True, default="")
