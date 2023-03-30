@@ -23,7 +23,7 @@ class CollectionAdmin(admin.ModelAdmin):
                     "update_frequency",
                     "source",
                     "turned_on",
-                )
+                ),
             },
         ),
         (
@@ -55,6 +55,7 @@ class CollectionAdmin(admin.ModelAdmin):
         "delete",
     )
     search_fields = ("name", "url")
+    list_per_page = 300
 
 
 @admin.action(description="Exclude URL and all children")
