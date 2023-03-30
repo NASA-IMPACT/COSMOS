@@ -69,7 +69,7 @@ class CollectionAdmin(admin.ModelAdmin):
         "delete",
     )
     search_fields = ("name", "url")
-    list_per_page = 300
+    # list_per_page = 300
     actions = [
         import_sinequa_metadata,
         export_sinequa_metadata,
