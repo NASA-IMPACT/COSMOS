@@ -5,6 +5,20 @@ from treebeard.forms import movenodeform_factory
 from .models import CandidateURL, Collection
 
 
+@admin.action(description="Import metadata from Sinequa configs")
+def import_sinequa_metadata(modeladmin, request, queryset):
+    for collection in queryset.all():
+        # eventually this needs to be done in celery
+        collection.import_metadata_from_sinequa_config()
+
+
+@admin.action(description="Export metadata to Sinequa config")
+def export_sinequa_metadata(modeladmin, request, queryset):
+    for collection in queryset.all():
+        # eventually this needs to be done in celery
+        collection.export_metadata_to_sinequa_config()
+
+
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
     """Admin View for Collection"""
@@ -56,6 +70,10 @@ class CollectionAdmin(admin.ModelAdmin):
     )
     search_fields = ("name", "url")
     list_per_page = 300
+    actions = [
+        import_sinequa_metadata,
+        export_sinequa_metadata,
+    ]
 
 
 @admin.action(description="Exclude URL and all children")

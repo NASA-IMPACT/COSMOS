@@ -1,6 +1,8 @@
 from django.db import models
 from treebeard.mp_tree import MP_Node
 
+from .sinequa_utils import Sinequa
+
 
 class Collection(models.Model):
     """Model definition for Collection."""
@@ -32,7 +34,7 @@ class Collection(models.Model):
 
     name = models.CharField("Name", max_length=1024)
     config_folder = models.CharField("Config Folder", max_length=2048)
-    url = models.URLField("URL", max_length=2048)
+    url = models.URLField("URL", max_length=2048, blank=True)
     division = models.IntegerField(choices=Divisions.choices)
     turned_on = models.BooleanField("Turned On", default=True)
 
@@ -80,6 +82,22 @@ class Collection(models.Model):
 
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
+
+    def import_metadata_from_sinequa_config(self):
+        """Import metadata from Sinequa."""
+        if not self.config_folder:
+            return
+        sinequa = Sinequa(config_folder=self.config_folder)
+        tree_root = sinequa.fetch_treeroot()
+        self.tree_root = tree_root
+        self.save()
+
+    def export_metadata_to_sinequa_config(self):
+        """Export metadata to Sinequa."""
+        if not self.config_folder:
+            return
+        sinequa = Sinequa(config_folder=self.config_folder)
+        sinequa.update_treeroot(self.tree_root)
 
     def __str__(self):
         """Unicode representation of Collection."""
