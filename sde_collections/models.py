@@ -73,7 +73,7 @@ class Collection(models.Model):
     )
 
     notes = models.TextField("Notes", blank=True, default="")
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     class Meta:
         """Meta definition for Collection."""
