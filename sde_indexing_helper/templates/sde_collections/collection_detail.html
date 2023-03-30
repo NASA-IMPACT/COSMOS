@@ -46,7 +46,7 @@
                 <th>Delete</th>
                 <td>{{ collection.delete }}</td>
             </tr>
-            <tr>
+            {% comment %} <tr>
                 <th>Audit Hierarchy</th>
                 <td>{{ collection.audit_hierarchy }}</td>
             </tr>
@@ -73,7 +73,7 @@
             <tr>
                 <th>Audit Metrics</th>
                 <td>{{ collection.audit_metrics }}</td>
-            </tr>
+            </tr> {% endcomment %}
             <tr>
                 <th>Cleaning Assigned To</th>
                 <td>{{ collection.cleaning_assigned_to }}</td>
