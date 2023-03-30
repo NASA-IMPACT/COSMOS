@@ -9,6 +9,43 @@ from .models import CandidateURL, Collection
 class CollectionAdmin(admin.ModelAdmin):
     """Admin View for Collection"""
 
+    fieldsets = (
+        (
+            "Essential information",
+            {
+                "fields": (
+                    "name",
+                    "config_folder",
+                    "url",
+                    "division",
+                    "tree_root",
+                    "document_type",
+                    "update_frequency",
+                    "source",
+                    "turned_on",
+                )
+            },
+        ),
+        (
+            "Advanced options",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "delete",
+                    "audit_hierarchy",
+                    "audit_url",
+                    "audit_mapping",
+                    "audit_label",
+                    "audit_query",
+                    "audit_duplicate_results",
+                    "audit_metrics",
+                    "cleaning_assigned_to",
+                    "notes",
+                ),
+            },
+        ),
+    )
+
     list_display = ("name", "config_folder", "url", "division", "turned_on")
     list_filter = (
         "division",
@@ -17,6 +54,7 @@ class CollectionAdmin(admin.ModelAdmin):
         "document_type",
         "delete",
     )
+    search_fields = ("name", "url")
 
 
 @admin.action(description="Exclude URL and all children")
