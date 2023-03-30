@@ -10,6 +10,13 @@ class CollectionAdmin(admin.ModelAdmin):
     """Admin View for Collection"""
 
     list_display = ("name", "config_folder", "url", "division", "turned_on")
+    list_filter = (
+        "division",
+        "turned_on",
+        "source",
+        "document_type",
+        "delete",
+    )
 
 
 @admin.action(description="Exclude URL and all children")
