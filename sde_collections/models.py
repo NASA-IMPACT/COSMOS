@@ -73,6 +73,7 @@ class Collection(models.Model):
     )
 
     notes = models.TextField("Notes", blank=True, default="")
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         """Meta definition for Collection."""
@@ -85,15 +86,8 @@ class Collection(models.Model):
         return self.name
 
     @property
-    def indexed(self):
+    def has_folder(self):
         return self.config_folder != ""
-
-    def candidate_url_tree(self):
-        tree = {}
-        top_level_items = self.candidateurl_set.filter(parent__isnull=True)
-        for item in top_level_items:
-            tree[item.url] = item.get_tree()
-        return tree
 
 
 class CandidateURL(MP_Node):
