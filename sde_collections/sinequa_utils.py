@@ -1,3 +1,4 @@
+import json
 import xml.etree.ElementTree as ET
 
 from django.conf import settings
@@ -8,6 +9,8 @@ SINEQUA_PATH = settings.BASE_DIR / "sinequa_configs" / "sources" / "SMD"
 class Sinequa:
     def __init__(self, config_folder, *args, **kwargs):
         self.config_folder = config_folder
+        self.collection_config_path = SINEQUA_PATH / self.config_folder / "default.xml"
+        self.metadata = ET.parse(self.collection_config_path)
 
     def _add_declaration(self, config_file_path):
         declaration = """<?xml version="1.0" encoding="utf-8"?>"""
@@ -16,6 +19,16 @@ class Sinequa:
             f.seek(0, 0)
             f.write(declaration.rstrip("\r\n") + "\n" + content)
 
+    def _update_config_xml(self):
+        self.metadata.write(
+            SINEQUA_PATH / self.config_folder / "default.xml",
+            method="html",
+            encoding="utf-8",
+            xml_declaration=True,
+        )
+
+        self._add_declaration(self.collection_config_path)
+
     def _find_treeroot_field(self, metadata):
         treeroot = metadata.find("TreeRoot")
         if treeroot is None:
@@ -23,20 +36,32 @@ class Sinequa:
         return treeroot
 
     def fetch_treeroot(self):
-        metadata = ET.parse(SINEQUA_PATH / self.config_folder / "default.xml")
-        treeroot = self._find_treeroot_field(metadata)
+        treeroot = self._find_treeroot_field(self.metadata)
         return treeroot.text
 
     def update_treeroot(self, treeroot_value):
-        collection_config_path = SINEQUA_PATH / self.config_folder / "default.xml"
-        metadata = ET.parse(collection_config_path)
-        treeroot = self._find_treeroot_field(metadata)
+        treeroot = self._find_treeroot_field(self.metadata)
         treeroot.text = treeroot_value
-        metadata.write(
-            SINEQUA_PATH / self.config_folder / "default.xml",
-            method="html",
-            encoding="utf-8",
-            xml_declaration=True,
-        )
+        self._update_config_xml()
 
-        self._add_declaration(collection_config_path)
+    def fetch_document_type(self):
+        DOCUMENT_TYPE_COLUMN = "sourcestr56"
+        document_type_text = self.metadata.find(
+            f"Mapping[Name='{DOCUMENT_TYPE_COLUMN}']/Value"
+        ).text
+
+        # importing here to avoid circular import
+        from sde_collections.models import Collection
+
+        document_type = Collection.DocumentTypes.lookup_by_text(
+            json.loads(document_type_text)
+        )
+        return document_type
+
+    def update_document_type(self, document_type):
+        DOCUMENT_TYPE_COLUMN = "sourcestr56"
+        document_type_text = self.metadata.find(
+            f"Mapping[Name='{DOCUMENT_TYPE_COLUMN}']/Value"
+        )
+        document_type_text.text = json.dumps(document_type)
+        self._update_config_xml()

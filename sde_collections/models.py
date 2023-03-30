@@ -27,6 +27,13 @@ class Collection(models.Model):
         SOFTWARETOOLS = 4, "Software and Tools"
         MISSIONSINSTRUMENTS = 5, "Missions and Instruments"
 
+        @classmethod
+        def lookup_by_text(cls, text):
+            for choice in cls.choices:
+                if choice[1].lower() == text.lower():
+                    return choice[0]
+            return None
+
     class SourceChoices(models.IntegerChoices):
         ONLY_IN_ORIGINAL = 1, "Only in original"
         BOTH = 2, "Both"
@@ -86,11 +93,20 @@ class Collection(models.Model):
     def import_metadata_from_sinequa_config(self):
         """Import metadata from Sinequa."""
         if not self.config_folder:
-            return
+            return False
         sinequa = Sinequa(config_folder=self.config_folder)
+
+        # tree root
         tree_root = sinequa.fetch_treeroot()
         self.tree_root = tree_root
+
+        # document type
+        document_type = sinequa.fetch_document_type()
+        self.document_type = document_type
+
         self.save()
+
+        return True
 
     def export_metadata_to_sinequa_config(self):
         """Export metadata to Sinequa."""
@@ -98,6 +114,7 @@ class Collection(models.Model):
             return
         sinequa = Sinequa(config_folder=self.config_folder)
         sinequa.update_treeroot(self.tree_root)
+        sinequa.update_document_type(Collection.DocumentTypes(self.document_type).label)
 
     def __str__(self):
         """Unicode representation of Collection."""
