@@ -120,6 +120,10 @@ class Collection(models.Model):
         sinequa.update_treeroot(self.tree_root)
         sinequa.update_document_type(Collection.DocumentTypes(self.document_type).label)
 
+    def generate_candidate_urls(self):
+        """Generate candidate URLs."""
+        pass
+
     def __str__(self):
         """Unicode representation of Collection."""
         return self.name

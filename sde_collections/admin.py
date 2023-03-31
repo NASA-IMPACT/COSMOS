@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
 
@@ -10,6 +10,11 @@ def import_sinequa_metadata(modeladmin, request, queryset):
     for collection in queryset.all():
         # eventually this needs to be done in celery
         collection.import_metadata_from_sinequa_config()
+        messages.add_message(
+            request,
+            messages.INFO,
+            f"Imported metadata for collection: {collection.name}",
+        )
 
 
 @admin.action(description="Export metadata to Sinequa config")
@@ -17,6 +22,22 @@ def export_sinequa_metadata(modeladmin, request, queryset):
     for collection in queryset.all():
         # eventually this needs to be done in celery
         collection.export_metadata_to_sinequa_config()
+        messages.add_message(
+            request,
+            messages.INFO,
+            f"Exported sinequa config for collection: {collection.name}",
+        )
+
+
+@admin.action(description="Generate candidate URLs")
+def generate_candidate_urls(modeladmin, request, queryset):
+    collection = queryset.first()
+    collection.generate_candidate_urls()
+    messages.add_message(
+        request,
+        messages.INFO,
+        f"Started generating candidate URLs for: {collection.name}",
+    )
 
 
 @admin.register(Collection)
@@ -73,6 +94,7 @@ class CollectionAdmin(admin.ModelAdmin):
     actions = [
         import_sinequa_metadata,
         export_sinequa_metadata,
+        generate_candidate_urls,
     ]
 
 

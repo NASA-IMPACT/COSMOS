@@ -1,6 +1,7 @@
 import json
 import xml.etree.ElementTree as ET
 
+# import xmltodict
 from django.conf import settings
 
 SINEQUA_PATH = settings.BASE_DIR / "sinequa_configs" / "sources" / "SMD"
@@ -11,6 +12,7 @@ class Sinequa:
         self.config_folder = config_folder
         self.collection_config_path = SINEQUA_PATH / self.config_folder / "default.xml"
         self.metadata = ET.parse(self.collection_config_path)
+        self.root = self.metadata.getroot()
 
     def _add_declaration(self, config_file_path):
         declaration = """<?xml version="1.0" encoding="utf-8"?>"""
@@ -46,9 +48,12 @@ class Sinequa:
 
     def fetch_document_type(self):
         DOCUMENT_TYPE_COLUMN = "sourcestr56"
-        document_type_text = self.metadata.find(
-            f"Mapping[Name='{DOCUMENT_TYPE_COLUMN}']/Value"
-        ).text
+        try:
+            document_type_text = self.metadata.find(
+                f"Mapping[Name='{DOCUMENT_TYPE_COLUMN}']/Value"
+            ).text
+        except AttributeError:
+            return None
 
         # importing here to avoid circular import
         from sde_collections.models import Collection
@@ -63,5 +68,12 @@ class Sinequa:
         document_type_text = self.metadata.find(
             f"Mapping[Name='{DOCUMENT_TYPE_COLUMN}']/Value"
         )
-        document_type_text.text = json.dumps(document_type)
+        if not document_type_text:
+            # doc_type_element = ET.SubElement(self.root, "Mapping")
+            elements = ["Name", "Value", "Description", "Selection", "DefaultValue"]
+            for element in elements:
+                # element_tag = ET.SubElement(doc_type_element, element)
+                pass
+
+        # document_type_text.text = json.dumps(document_type)
         self._update_config_xml()
