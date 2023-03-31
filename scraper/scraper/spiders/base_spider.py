@@ -1,19 +1,16 @@
 # call a test scraper with scrapy crawl base_spider
 # call a specifc config example with scrapy crawl base_spider -a source_name=<source_name_from_config_here>
 
-import json
 from urllib.parse import urlparse
 
-import yaml
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 
-CONFIGS_PATH = "config.yaml"
+from sde_collections.models import Collection
 
 
 def process_possible_list(possible_list):
-    if possible_list:
-        return [item.strip() for item in possible_list.split(",")]
+    return possible_list
 
 
 def generate_allowed_domains(allowed_domains, start_urls):
@@ -40,32 +37,27 @@ def generate_deny_extensions(extensions):
     return [rf".*\.{extension}$" for extension in extensions]
 
 
-def config_processor(configs_path, source_name="test"):
-    with open(configs_path) as file:
-        configs = yaml.safe_load(file)
-    raw_config = configs[source_name]
+def config_processor(config_folder):
+    # raw_config = configs[config_folder]
+    collection = Collection.objects.get(config_folder=config_folder)
 
-    start_urls = process_possible_list(raw_config["start_urls"])
+    start_urls = process_possible_list([collection.url])
 
     config = {
-        "name": source_name,
+        "name": config_folder,
         "start_urls": start_urls,
-        "allowed_domains": generate_allowed_domains(
-            raw_config.get("allowed_domains", ""), start_urls
-        ),
+        "allowed_domains": generate_allowed_domains([], start_urls),
         "rules": {
-            "deny_extensions": process_possible_list(
-                raw_config["rules"]["deny_extensions"]
-            ),
-            "deny": process_possible_list(raw_config["rules"].get("deny")),
+            "deny_extensions": process_possible_list([]),
+            "deny": process_possible_list([]),
         },
     }
 
     return config
 
 
-def spider_factory(source_name):
-    config = config_processor(CONFIGS_PATH, source_name)
+def spider_factory(config_folder):
+    config = config_processor(config_folder)
 
     class FactorySpider(CrawlSpider):
         name = "base_spider"
@@ -82,10 +74,9 @@ def spider_factory(source_name):
         )
 
         def parse_item(self, response):
-            info = json.dumps(
-                {"url": response.url, "title": response.css("title::text").get()}
-            )
-            print(info)
-            self.logger.critical(info)
+            yield {
+                "url": response.url,
+                "title": response.css("title::text").get(),
+            }
 
     return FactorySpider
