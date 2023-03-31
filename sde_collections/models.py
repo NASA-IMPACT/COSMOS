@@ -39,11 +39,15 @@ class Collection(models.Model):
         BOTH = 2, "Both"
         ONLY_IN_SINEQUA_CONFIGS = 3, "Only in Sinequa configs"
 
+    class ConnectorChoices(models.IntegerChoices):
+        crawler2 = 1, "Web crawler paralle"
+
     name = models.CharField("Name", max_length=1024)
     config_folder = models.CharField("Config Folder", max_length=2048)
     url = models.URLField("URL", max_length=2048, blank=True)
     division = models.IntegerField(choices=Divisions.choices)
     turned_on = models.BooleanField("Turned On", default=True)
+    connector = models.IntegerField(choices=ConnectorChoices.choices, default=1)
 
     source = models.IntegerField(choices=SourceChoices.choices)
     update_frequency = models.IntegerField(
