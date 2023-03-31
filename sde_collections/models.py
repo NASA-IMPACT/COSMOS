@@ -153,7 +153,7 @@ class CandidateURL(MP_Node):
             path += f"/{ancestor.url}"
         path += f"/{self.url}"
 
-        return f"{path}*"
+        return f"*{path.strip('*')}*"
 
     def set_excluded(self, excluded):
         self.excluded = excluded
