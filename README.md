@@ -64,7 +64,14 @@ Moved to [Live reloading and SASS compilation](https://cookiecutter-django.readt
 ### Install  Celery
 Make sure Celery is installed  in your environment.
 To install,
-pip install celery
+    pip install celery
+
+### Install all requirements
+Install all packages listed in a 'requirements' file
+
+    pip install -r requirements/*.txt
+
+
 
 ### Celery
 
