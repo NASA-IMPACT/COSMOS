@@ -138,8 +138,17 @@ class CandidateURL(MP_Node):
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
     url = models.CharField("URL", max_length=2048)
+    full_url = models.CharField("Full URL", max_length=4096, default="", blank=True)
     excluded = models.BooleanField(default=False)
     title = models.CharField("Title", max_length=2048, default="", blank=True)
+    replacement_title = models.CharField(
+        "Replacement Title",
+        max_length=2048,
+        default="",
+        blank=True,
+        help_text="If set, this title will be used instead of the scraped title."
+        " You can use the original title in the replacement title like so: {title}.",
+    )
 
     node_order_by = ["url"]
 
@@ -165,17 +174,36 @@ class CandidateURL(MP_Node):
             child.set_excluded(excluded)
         self.save()
 
-    @classmethod
-    def exclude_patterns(cls, collection):
-        patterns = []
-        excluded_patterns = cls.objects.filter(collection=collection).filter(
-            excluded=True
-        )
+    # @classmethod
+    # def exclude_patterns(cls, collection):
+    #     patterns = []
+    #     excluded_patterns = cls.objects.filter(collection=collection).filter(
+    #         excluded=True
+    #     )
 
-        for excluded_pattern in excluded_patterns:
-            patterns.append(excluded_pattern.pattern)
+    #     for excluded_pattern in excluded_patterns:
+    #         patterns.append(excluded_pattern.pattern)
 
-        return set(patterns)
+    #     return set(patterns)
 
     def __str__(self):
         return self.url
+
+
+class ExcludePattern(models.Model):
+    """A pattern to exclude from Sinequa."""
+
+    collection = models.ForeignKey(
+        Collection, on_delete=models.CASCADE, related_name="exclude_patterns"
+    )
+    pattern = models.CharField("Pattern", max_length=2048)
+    reason = models.TextField("Reason for excluding", default="", blank=True)
+
+    class Meta:
+        """Meta definition for ExcludePattern."""
+
+        verbose_name = "Exclude Pattern"
+        verbose_name_plural = "Exclude Patterns"
+
+    def __str__(self):
+        return self.pattern
