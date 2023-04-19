@@ -1,7 +1,7 @@
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
-from .models import CandidateURL, Collection
+from .models import Collection
 
 
 class CollectionListView(ListView):
@@ -29,5 +29,4 @@ class CollectionDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["excluded_patterns"] = CandidateURL.exclude_patterns(self.object)
         return context

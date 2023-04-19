@@ -92,8 +92,8 @@
 
     <h2>Excluded URL Patterns</h2>
 
-    {% for pattern in excluded_patterns  %}
-        <p>{{ pattern }}</p>
+    {% for pattern in collection.exclude_patterns.all  %}
+        <p>{{ pattern.pattern }}</p>
     {% empty %}
         <p>No excluded patterns</p>
     {% endfor %}
