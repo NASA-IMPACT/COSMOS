@@ -67,6 +67,7 @@ class Command(BaseCommand):
                         path = f"{parsed.path}"
                         if parsed.query:
                             path += f"?{parsed.query}"
+                        level = path.count("/")
 
                         title = candidate_url_dict["title"]
                         if not title:
@@ -79,6 +80,7 @@ class Command(BaseCommand):
                             url=path,
                             full_url=full_url,
                             title=title,
+                            level=level,
                         )
 
             except FileNotFoundError:
