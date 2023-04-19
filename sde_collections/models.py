@@ -40,7 +40,7 @@ class Collection(models.Model):
         ONLY_IN_SINEQUA_CONFIGS = 3, "Only in Sinequa configs"
 
     class ConnectorChoices(models.IntegerChoices):
-        crawler2 = 1, "Web crawler paralle"
+        crawler2 = 1, "Web crawler parallel"
 
     name = models.CharField("Name", max_length=1024)
     config_folder = models.CharField("Config Folder", max_length=2048)
