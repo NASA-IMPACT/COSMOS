@@ -1,0 +1,131 @@
+Missions Archive Page:
+    start_urls: https://pds-ppi.igpp.ucla.edu/mission
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+NASA Power:
+    start_urls: https://power.larc.nasa.gov/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+EMAC Exoplanet Modeling and Analysis Center:
+    start_urls: https://emac.gsfc.nasa.gov/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+Earth Science Decadal Surveys:
+    start_urls: https://science.nasa.gov/earth-science/decadal-surveys/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+Exoplanet Opacities Database:
+    start_urls: https://science.data.nasa.gov/opacities/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+Interactive Multi-Instrument Database of Solar Flares:
+    start_urls: https://data.nas.nasa.gov/helio/portals/solarflares/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+General Coordinates Network (GCN):
+    start_urls: https://gcn.nasa.gov/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+
+###### Old Stuff Below Here ########
+
+test:
+    start_urls: https://quotes.toscrape.com/
+    rules:
+        deny_extensions: jy, xml, ico
+        deny: tag, author
+
+impact:
+    start_urls: http://impact.earthdata.nasa.gov/
+    rules:
+        deny_extensions: jy, xml, ico
+
+James Webb Space Telescope:
+    start_urls: https://webb.nasa.gov/
+    rules:
+        deny_extensions: jy, xml, ico
+
+Astro Multi:
+    start_urls: http://ned.ipac.caltech.edu
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+Naif:
+    start_urls: https://naif.jpl.nasa.gov/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+        deny: https://naif.jpl.nasa.gov/pub, https://naif.jpl.nasa.gov/cgi-bin/subsetds.pl, https://naif.jpl.nasa.gov/mailman, https://naif.jpl.nasa.gov/naif/feedback.html, sitemap.html, https://naif.jpl.nasa.gov/pipermail
+
+Virtual Astronaut:
+    start_urls: https://va.rsl.wustl.edu/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+Solar System Exploration Research Virtual Institute:
+    start_urls: https://sservi.nasa.gov/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+pyHC: # fast!
+    start_urls: https://heliopython.org/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+Mars Exploration Program:
+    start_urls: https://mars.nasa.gov/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+        deny: raw_images, raw-images, confrm, mission-update, resources # only the raw images should actually be removed
+
+SPEDAS:
+    start_urls: https://spedas.org/blog/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+NASA Community Coordinated Modeling Center:
+    start_urls: https://ccmc.gsfc.nasa.gov/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+USGS ISIS:
+    start_urls: https://isis.astrogeology.usgs.gov/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+Full Example:
+    start_urls: https://naif.jpl.nasa.gov/
+    frequency: weekly
+    tree_root: thing/thing/thing
+    rules:
+        deny_extensions: jy, xml, ico, gz
+        deny: https://naif.jpl.nasa.gov/pub, https://naif.jpl.nasa.gov/cgi-bin/subsetds.pl, https://naif.jpl.nasa.gov/mailman, https://naif.jpl.nasa.gov/naif/feedback.html, sitemap.html, https://naif.jpl.nasa.gov/pipermail
+    mappings:
+        tree_root:
+            - value, pattern
+            - value, pattern
+        title:
+            - value, pattern
+            - value, pattern
+
+CALDB Documentation:
+    start_urls: https://heasarc.gsfc.nasa.gov/docs/heasarc/caldb/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+        deny: https://heasarc.gsfc.nasa.gov/xamin
+
+Astromat Astromaterials Data System:
+    start_urls: https://www.astromat.org/
+    rules:
+        deny_extensions: jy, xml, ico, gz
+
+ISIS Integrated Software for Imagers and Spectrometers:
+    start_urls: https://isis.astrogeology.usgs.gov/
+    rules:
+        deny_extensions: jy, xml, ico, gz
