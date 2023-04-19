@@ -1,36 +1,31 @@
-import argparse
-
 from generate_logfile_csv import process_logfile_and_generate_csv
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
 from sde_scraper.spiders.base_spider import spider_factory
 
-parser = argparse.ArgumentParser(description="Scrapy spider runner.")
-parser.add_argument(
-    "name", help="Name for the spider configuration, log file, and CSV file."
-)
-args = parser.parse_args()
 
-name = args.name
-logfile_name = name
-config_name = name
+def run_scraper(name, url):
+    """Runs the scraper and generates an output CSV of candidated URLs
 
-settings = get_project_settings()
-settings.set("LOG_FILE", f"raw_logfiles/{logfile_name}.log")
-settings.set("LOG_LEVEL", "CRITICAL")
-settings.set("LOG_FILE_APPEND", False)
-settings.set("LOG_FORMAT", "%(message)s")
+    Args:
+        name (str): Machine readable name of the collection, from collection.folder
+        url (str): collection.url
+    """
 
-process = CrawlerProcess(settings)
-process.crawl(spider_factory(config_name))
-process.start()
+    # run the scraper
+    settings = get_project_settings()
+    settings.set("LOG_FILE", f"raw_logfiles/{name}.log")
+    settings.set("LOG_LEVEL", "CRITICAL")
+    settings.set("LOG_FILE_APPEND", False)
+    settings.set("LOG_FORMAT", "%(message)s")
 
-process_logfile_and_generate_csv(logfile_name)
+    process = CrawlerProcess(settings)
+    process.crawl(spider_factory(name, url))
+    process.start()
 
+    # generate the csv
+    process_logfile_and_generate_csv(name)
 
-# if you wanted to loop through the config files, you could use this code
-# configs_path = 'config.yaml'
-# with open(configs_path, 'r') as file:
-#     configs = yaml.safe_load(file)
-# source_names = list(configs.keys())
+    # add the urls directly to the database
+    # TODO
