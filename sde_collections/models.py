@@ -154,6 +154,7 @@ class CandidateURL(models.Model):
 
         verbose_name = "Candidate URL"
         verbose_name_plural = "Candidate URLs"
+        ordering = ["url"]
 
     def __str__(self):
         return self.url
