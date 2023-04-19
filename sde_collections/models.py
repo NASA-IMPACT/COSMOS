@@ -148,6 +148,9 @@ class CandidateURL(models.Model):
         help_text="If set, this title will be used instead of the scraped title."
         " You can use the original title in the replacement title like so: {title}.",
     )
+    level = models.IntegerField(
+        "Level", default=0, blank=True, help_text="Level in the tree. Based on /."
+    )
 
     class Meta:
         """Meta definition for Candidate URL."""
