@@ -136,18 +136,24 @@ class CandidateURL(models.Model):
     """A candidate URL scraped for a given collection."""
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
-    url = models.CharField("Path", max_length=2048, default="", blank=True)
-    full_url = models.CharField("Full URL", max_length=4096, default="", blank=True)
-    excluded = models.BooleanField(default=False)
-    title = models.CharField("Title", max_length=2048, default="", blank=True)
-    replacement_title = models.CharField(
-        "Replacement Title",
+    url = models.CharField("URL", max_length=2048)
+    scraped_title = models.CharField(
+        "Scraped Title",
         max_length=2048,
         default="",
         blank=True,
-        help_text="If set, this title will be used instead of the scraped title."
-        " You can use the original title in the replacement title like so: {title}.",
+        help_text="This is the original title scraped by Sinequa",
     )
+    generated_title = models.CharField(
+        "Generated Title",
+        max_length=2048,
+        default="",
+        blank=True,
+        help_text="This is the title generated based on a Title Pattern",
+    )
+    excluded = models.BooleanField(default=False)
+
+    node_order_by = ["url"]
 
     class Meta:
         """Meta definition for Candidate URL."""
@@ -165,7 +171,12 @@ class ExcludePattern(models.Model):
     collection = models.ForeignKey(
         Collection, on_delete=models.CASCADE, related_name="exclude_patterns"
     )
-    pattern = models.CharField("Pattern", max_length=2048)
+    match_pattern = models.CharField(
+        "Pattern",
+        max_length=2048,
+        help_text="This pattern is compared against the URL of all the documents in the collection "
+        "and documents with a matching URL are excluded.",
+    )
     reason = models.TextField("Reason for excluding", default="", blank=True)
 
     class Meta:
@@ -175,4 +186,33 @@ class ExcludePattern(models.Model):
         verbose_name_plural = "Exclude Patterns"
 
     def __str__(self):
-        return self.pattern
+        return self.match_pattern
+
+
+class TitlePattern(models.Model):
+    """A title pattern to overwrite."""
+
+    collection = models.ForeignKey(
+        Collection, on_delete=models.CASCADE, related_name="title_patterns"
+    )
+    match_pattern = models.CharField(
+        "Pattern",
+        max_length=2048,
+        help_text="This pattern is compared against the URL of all the documents in the collection "
+        "and matching documents will have their title overwritten with the title_pattern",
+    )
+    title_pattern = models.CharField(
+        "New Title Pattern",
+        max_length=2048,
+        help_text="This is the pattern for the new title. You can write your own text, as well as "
+        "add references to a specific xpath or the orignal title. For example 'James Webb {scraped_title}: {xpath}'",
+    )
+
+    class Meta:
+        """Meta definition for TitlePattern."""
+
+        verbose_name = "Title Re-Write Pattern"
+        verbose_name_plural = "Title Re-Write Patterns"
+
+    def __str__(self):
+        return f"{self.match_pattern}: {self.title_pattern}"
