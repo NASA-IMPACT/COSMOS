@@ -1,8 +1,6 @@
 from django import forms
 from django.contrib import admin, messages
 from django.db import models
-from treebeard.admin import TreeAdmin
-from treebeard.forms import movenodeform_factory
 
 from .models import CandidateURL, Collection, ExcludePattern
 
@@ -128,14 +126,11 @@ def exclude_and_delete_children(modeladmin, request, queryset):
         candidate_url.get_children().delete()
 
 
-class CandidateURLAdmin(TreeAdmin):
+class CandidateURLAdmin(admin.ModelAdmin):
     """Admin View for CandidateURL"""
 
-    form = movenodeform_factory(CandidateURL)
-    list_display = ("url", "title", "excluded", "collection")
-    list_editable = ("excluded",)
+    list_display = ("full_url", "title", "excluded", "collection")
     list_filter = ("excluded", "collection")
-    actions = [exclude_and_delete_children]
 
 
 admin.site.register(CandidateURL, CandidateURLAdmin)
