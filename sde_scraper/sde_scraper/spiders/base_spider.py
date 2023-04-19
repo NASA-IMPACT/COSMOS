@@ -1,10 +1,6 @@
-# call a test scraper with scrapy crawl base_spider
-# call a specifc config example with scrapy crawl base_spider -a source_name=<source_name_from_config_here>
-
 import json
 from urllib.parse import urlparse
 
-import yaml
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 
@@ -40,15 +36,15 @@ def generate_deny_extensions(extensions):
     return [rf".*\.{extension}$" for extension in extensions]
 
 
-def config_processor(configs_path, source_name="test"):
-    with open(configs_path) as file:
-        configs = yaml.safe_load(file)
-    raw_config = configs[source_name]
+def config_processor(collection_name, url):
+    # TODO: later we might grab connector specific excludes/extensions from the models
+    # but for now we will hardcode and leave the old yaml config structure in place
+    raw_config = {"start_urls": url, "rules": {"deny_extensions": "jy, xml, ico, gz"}}
 
     start_urls = process_possible_list(raw_config["start_urls"])
 
     config = {
-        "name": source_name,
+        "name": collection_name,
         "start_urls": start_urls,
         "allowed_domains": generate_allowed_domains(
             raw_config.get("allowed_domains", ""), start_urls
@@ -64,16 +60,14 @@ def config_processor(configs_path, source_name="test"):
     return config
 
 
-def spider_factory(source_name):
-    config = config_processor(CONFIGS_PATH, source_name)
+def spider_factory(collection_name, url):
+    config = config_processor(collection_name, url)
 
     class FactorySpider(CrawlSpider):
         name = "base_spider"
 
         allowed_domains = config["allowed_domains"]
         start_urls = config["start_urls"]
-        # allowed_domains = ['heasarc.gsfc.nasa.gov']
-        # start_urls = ['https://heasarc.gsfc.nasa.gov/docs/heasarc/caldb/']
 
         rules = (
             Rule(
@@ -82,14 +76,6 @@ def spider_factory(source_name):
                 follow=True,
             ),
         )
-
-        # rules = (
-        #     Rule(
-        #         LinkExtractor(allow=r'heasarc\.gsfc\.nasa\.gov/docs/heasarc/caldb/.*'),
-        #         callback='parse_item',
-        #         follow=True,
-        #     ),
-        # )
 
         def parse_item(self, response):
             info = json.dumps(
