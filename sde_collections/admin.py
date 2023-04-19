@@ -129,7 +129,7 @@ def exclude_and_delete_children(modeladmin, request, queryset):
 class CandidateURLAdmin(admin.ModelAdmin):
     """Admin View for CandidateURL"""
 
-    list_display = ("full_url", "title", "excluded", "collection")
+    list_display = ("url", "scraped_title", "excluded", "collection")
     list_filter = ("excluded", "collection")
 
 
