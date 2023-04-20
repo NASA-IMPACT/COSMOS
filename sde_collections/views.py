@@ -20,7 +20,7 @@ class CollectionListView(ListView):
 
 class CollectionDetailView(DetailView):
     """
-    Display a list of collections in the system
+    Display an individual collection in the system
     """
 
     model = Collection
