@@ -4,7 +4,7 @@ from django.db import migrations, models
 
 
 def update_machine_names(apps, schema_editor):
-    Collection = apps.get_model("your_app_name", "Collection")
+    Collection = apps.get_model("sde_collections", "Collection")
     for collection in Collection.objects.all():
         collection.save()
 
