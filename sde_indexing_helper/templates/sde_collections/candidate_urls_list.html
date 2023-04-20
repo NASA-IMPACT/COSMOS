@@ -2,27 +2,26 @@
 
 {% block css %}
     {{ block.super }}
-    <link rel="stylesheet" href="//cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
 {% endblock css %}
 
 
 {% block javascript %}
     {{ block.super }}
-    <script
-    src="https://code.jquery.com/jquery-3.6.4.min.js"
-    integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
-    crossorigin="anonymous"></script>
-    <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 {% endblock javascript %}
 
 {% block content %}
-
     {% for candidate_url in candidate_urls %}
         <p>
             {% for i in "x"|rjust:candidate_url.level %}
                 &nbsp;&nbsp;&nbsp;&nbsp;
             {% endfor %}
-            <a href="{{ candidate_url.full_url }}" target="_blank">{{ candidate_url }}</a>
+
+            {% for splt in candidate_url.splits %}
+                <button class="btn btn-sm btn-success">{{ splt }}</button>
+                {% if not forloop.last %} > {% endif %}
+            {% endfor %}
+
+            | <a href="{{ candidate_url.full_url }}" target="_blank">Visit</a> | <input type="text" id="someid1" value="{{ candidate_url.title }}">
         </p>
     {% empty %}
         <p>No candidate urls found</p>

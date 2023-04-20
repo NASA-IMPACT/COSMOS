@@ -159,6 +159,10 @@ class CandidateURL(models.Model):
         verbose_name_plural = "Candidate URLs"
         ordering = ["url"]
 
+    def splits(self):
+        """Split the path into multiple collections."""
+        return list(part for part in self.url.split("/") if part)
+
     def __str__(self):
         return self.url
 
