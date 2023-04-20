@@ -1,6 +1,8 @@
 from django.db import models
 from treebeard.mp_tree import MP_Node
 
+from sde_collections.tasks import generate_candidate_urls_async
+
 from .sinequa_utils import Sinequa
 
 
@@ -43,6 +45,11 @@ class Collection(models.Model):
         crawler2 = 1, "Web crawler paralle"
 
     name = models.CharField("Name", max_length=1024)
+    machine_name = models.CharField(
+        "Machine Name",
+        max_length=1024,
+        help_text="This is the Name value, but with only alphanumeric characters and _ instead of spaces",
+    )
     config_folder = models.CharField("Config Folder", max_length=2048)
     url = models.URLField("URL", max_length=2048, blank=True)
     division = models.IntegerField(choices=Divisions.choices)
@@ -94,6 +101,19 @@ class Collection(models.Model):
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
 
+    def generate_machine_name(self):
+        """
+        Take the human readable `self.name` and create a standardized machine format
+        The output will be the self.name, but only alphanumeric with _ instead of spaces
+        """
+
+        machine_name = self.name.lower().replace(" ", "_")
+        machine_name = "".join(
+            char for char in machine_name if char.isalnum() or char == "_"
+        )
+
+        return machine_name
+
     def import_metadata_from_sinequa_config(self):
         """Import metadata from Sinequa."""
         if not self.config_folder:
@@ -122,7 +142,7 @@ class Collection(models.Model):
 
     def generate_candidate_urls(self):
         """Generate candidate URLs."""
-        pass
+        generate_candidate_urls_async(self.machine_name, self.url)
 
     def __str__(self):
         """Unicode representation of Collection."""
@@ -131,6 +151,13 @@ class Collection(models.Model):
     @property
     def has_folder(self):
         return self.config_folder != ""
+
+    def save(self, *args, **kwargs):
+        # Call the function to generate the value for the generated_field based on the original_field
+        self.machine_name = self.generate_machine_name()
+
+        # Call the parent class's save method
+        super().save(*args, **kwargs)
 
 
 class CandidateURL(MP_Node):
