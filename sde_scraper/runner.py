@@ -1,8 +1,11 @@
-from generate_logfile_csv import process_logfile_and_generate_csv
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
-from sde_scraper.spiders.base_spider import spider_factory
+from sde_scraper.generate_logfile_csv import (
+    generate_logfile_path,
+    process_logfile_and_generate_csv,
+)
+from sde_scraper.sde_scraper.spiders.base_spider import spider_factory
 
 
 def run_scraper(name, url):
@@ -15,7 +18,7 @@ def run_scraper(name, url):
 
     # run the scraper
     settings = get_project_settings()
-    settings.set("LOG_FILE", f"raw_logfiles/{name}.log")
+    settings.set("LOG_FILE", generate_logfile_path(name))
     settings.set("LOG_LEVEL", "CRITICAL")
     settings.set("LOG_FILE_APPEND", False)
     settings.set("LOG_FORMAT", "%(message)s")

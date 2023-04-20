@@ -1,5 +1,6 @@
 import csv
 import json
+import os
 from urllib.parse import urlparse
 
 
@@ -21,9 +22,17 @@ def parse_url(url):
     }
 
 
+def generate_logfile_path(name):
+    return os.path.join("sde_scraper/raw_logfiles", f"{name}.log")
+
+
+def generate_csv_path(name):
+    return os.path.join("sde_scraper/processed_csvs", f"{name}.csv")
+
+
 def load_logfile(logfile_name):
     """opens the .log file and converts it to a list of dict entries"""
-    logfile_path = f"raw_logfiles/{logfile_name}.log"
+    logfile_path = generate_logfile_path(logfile_name)
 
     with open(logfile_path) as f:
         logfile = f.readlines()
@@ -87,7 +96,7 @@ def process_logfile(logfile):
 
 
 def save_csv(processed_log_file, logfile_name):
-    with open(f"processed_csvs/{logfile_name}.csv", "w") as csv_file:
+    with open(generate_csv_path(logfile_name), "w") as csv_file:
         writer = csv.writer(csv_file, delimiter=",")
         for line in processed_log_file:
             writer.writerow(line)
