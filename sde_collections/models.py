@@ -39,7 +39,7 @@ class Collection(models.Model):
         ONLY_IN_SINEQUA_CONFIGS = 3, "Only in Sinequa configs"
 
     class ConnectorChoices(models.IntegerChoices):
-        crawler2 = 1, "Web crawler paralle"
+        crawler2 = 1, "Web crawler parallel"
 
     name = models.CharField("Name", max_length=1024)
     config_folder = models.CharField("Config Folder", max_length=2048)
@@ -151,15 +151,20 @@ class CandidateURL(models.Model):
         blank=True,
         help_text="This is the title generated based on a Title Pattern",
     )
-    excluded = models.BooleanField(default=False)
-
-    node_order_by = ["url"]
+    level = models.IntegerField(
+        "Level", default=0, blank=True, help_text="Level in the tree. Based on /."
+    )
 
     class Meta:
         """Meta definition for Candidate URL."""
 
         verbose_name = "Candidate URL"
         verbose_name_plural = "Candidate URLs"
+        ordering = ["url"]
+
+    def splits(self):
+        """Split the path into multiple collections."""
+        return list(part for part in self.url.split("/") if part)
 
     def __str__(self):
         return self.url
