@@ -59,11 +59,29 @@ class Command(BaseCommand):
 
             try:
                 with open(f"{SCRAPED_URLS_DIR}/{config_folder}/urls.jsonl") as f:
-                    urls = self.parse_jsonl(f.readlines())
-                    d = self._make_tree(urls)
-                    bulk_data = self._make_bulk_data(d)
+                    urls = f.readlines()
+                    for url in urls:
+                        candidate_url_dict = json.loads(url)
+                        full_url = candidate_url_dict["url"]
+                        parsed = urlparse(full_url)
+                        path = f"{parsed.path}"
+                        if parsed.query:
+                            path += f"?{parsed.query}"
+                        level = path.count("/")
 
-                    CandidateURL.load_bulk(bulk_data)
+                        title = candidate_url_dict["title"]
+                        if not title:
+                            title = ""
+                        collection_id = self.collection.id
+                        collection = Collection.objects.get(id=collection_id)
+
+                        CandidateURL.objects.get_or_create(
+                            collection=collection,
+                            url=path,
+                            full_url=full_url,
+                            title=title,
+                            level=level,
+                        )
 
             except FileNotFoundError:
                 raise CommandError('No scraped URLs found for "%s"' % config_folder)

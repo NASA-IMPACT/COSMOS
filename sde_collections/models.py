@@ -1,5 +1,4 @@
 from django.db import models
-from treebeard.mp_tree import MP_Node
 
 from .sinequa_utils import Sinequa
 
@@ -133,49 +132,55 @@ class Collection(models.Model):
         return self.config_folder != ""
 
 
-class CandidateURL(MP_Node):
+class CandidateURL(models.Model):
     """A candidate URL scraped for a given collection."""
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
-    url = models.CharField("URL", max_length=2048)
+    url = models.CharField("Path", max_length=2048, default="", blank=True)
+    full_url = models.CharField("Full URL", max_length=4096, default="", blank=True)
     excluded = models.BooleanField(default=False)
     title = models.CharField("Title", max_length=2048, default="", blank=True)
-
-    node_order_by = ["url"]
+    replacement_title = models.CharField(
+        "Replacement Title",
+        max_length=2048,
+        default="",
+        blank=True,
+        help_text="If set, this title will be used instead of the scraped title."
+        " You can use the original title in the replacement title like so: {title}.",
+    )
+    level = models.IntegerField(
+        "Level", default=0, blank=True, help_text="Level in the tree. Based on /."
+    )
 
     class Meta:
         """Meta definition for Candidate URL."""
 
         verbose_name = "Candidate URL"
         verbose_name_plural = "Candidate URLs"
+        ordering = ["url"]
 
-    @property
-    def pattern(self):
-        path = ""
-        ancestors = self.get_ancestors()
-        for ancestor in ancestors:
-            path += f"/{ancestor.url}"
-        path += f"/{self.url}"
-
-        return f"*{path.strip('*')}*"
-
-    def set_excluded(self, excluded):
-        self.excluded = excluded
-        for child in self.get_children():
-            child.set_excluded(excluded)
-        self.save()
-
-    @classmethod
-    def exclude_patterns(cls, collection):
-        patterns = []
-        excluded_patterns = cls.objects.filter(collection=collection).filter(
-            excluded=True
-        )
-
-        for excluded_pattern in excluded_patterns:
-            patterns.append(excluded_pattern.pattern)
-
-        return set(patterns)
+    def splits(self):
+        """Split the path into multiple collections."""
+        return list(part for part in self.url.split("/") if part)
 
     def __str__(self):
         return self.url
+
+
+class ExcludePattern(models.Model):
+    """A pattern to exclude from Sinequa."""
+
+    collection = models.ForeignKey(
+        Collection, on_delete=models.CASCADE, related_name="exclude_patterns"
+    )
+    pattern = models.CharField("Pattern", max_length=2048)
+    reason = models.TextField("Reason for excluding", default="", blank=True)
+
+    class Meta:
+        """Meta definition for ExcludePattern."""
+
+        verbose_name = "Exclude Pattern"
+        verbose_name_plural = "Exclude Patterns"
+
+    def __str__(self):
+        return self.pattern

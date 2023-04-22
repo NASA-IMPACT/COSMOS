@@ -1,8 +1,8 @@
+from django import forms
 from django.contrib import admin, messages
-from treebeard.admin import TreeAdmin
-from treebeard.forms import movenodeform_factory
+from django.db import models
 
-from .models import CandidateURL, Collection
+from .models import CandidateURL, Collection, ExcludePattern
 
 
 @admin.action(description="Import metadata from Sinequa configs")
@@ -38,6 +38,14 @@ def generate_candidate_urls(modeladmin, request, queryset):
         messages.INFO,
         f"Started generating candidate URLs for: {collection.name}",
     )
+
+
+class ExcludePatternInline(admin.TabularInline):
+    model = ExcludePattern
+    extra = 1
+    formfield_overrides = {
+        models.TextField: {"widget": forms.Textarea(attrs={"rows": 2, "cols": 40})},
+    }
 
 
 @admin.register(Collection)
@@ -96,6 +104,7 @@ class CollectionAdmin(admin.ModelAdmin):
         export_sinequa_metadata,
         generate_candidate_urls,
     ]
+    inlines = [ExcludePatternInline]
 
 
 @admin.action(description="Exclude URL and all children")
@@ -117,14 +126,11 @@ def exclude_and_delete_children(modeladmin, request, queryset):
         candidate_url.get_children().delete()
 
 
-class CandidateURLAdmin(TreeAdmin):
+class CandidateURLAdmin(admin.ModelAdmin):
     """Admin View for CandidateURL"""
 
-    form = movenodeform_factory(CandidateURL)
-    list_display = ("url", "title", "excluded", "collection")
-    list_editable = ("title", "excluded")
+    list_display = ("full_url", "title", "excluded", "collection")
     list_filter = ("excluded", "collection")
-    actions = [exclude_and_delete_children]
 
 
 admin.site.register(CandidateURL, CandidateURLAdmin)

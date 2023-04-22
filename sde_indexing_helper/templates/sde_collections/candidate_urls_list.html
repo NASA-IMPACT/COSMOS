@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block css %}
+    {{ block.super }}
+{% endblock css %}
+
+
+{% block javascript %}
+    {{ block.super }}
+{% endblock javascript %}
+
+{% block content %}
+    {% for candidate_url in candidate_urls %}
+        <p>
+            {% for i in "x"|rjust:candidate_url.level %}
+                &nbsp;&nbsp;&nbsp;&nbsp;
+            {% endfor %}
+
+            {% for splt in candidate_url.splits %}
+                <button class="btn btn-sm btn-success">{{ splt }}</button>
+                {% if not forloop.last %} > {% endif %}
+            {% endfor %}
+
+            | <a href="{{ candidate_url.full_url }}" target="_blank">Visit</a> | <input type="text" id="someid1" value="{{ candidate_url.title }}">
+        </p>
+    {% empty %}
+        <p>No candidate urls found</p>
+    {% endfor %}
+
+{% endblock content %}
