@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Sinequa>
-    <Description></Description>
+    <Description>Default crawler to create a URL candidate list</Description>
     <visibility></visibility>
     <Connector>crawler2</Connector>
     <Identity></Identity>
@@ -9,7 +9,7 @@
     <Domain></Domain>
     <TreeRoot>fake treeroot</TreeRoot>
     <ForceReindexation>false</ForceReindexation>
-    <Plugin>change me</Plugin>
+    <Plugin>SMD_Plugins/Sinequa.Plugin.ListCandidateUrls</Plugin>
     <IncludedExtensions></IncludedExtensions>
     <ExcludedExtensions></ExcludedExtensions>
     <IncludedFilenames></IncludedFilenames>
@@ -276,4 +276,13 @@
         <ProxyDomain></ProxyDomain>
     </UrlAccess>
     <DeleteOnNetworkOrServerError>false</DeleteOnNetworkOrServerError>
+    <EnableNeuralIndexing>false</EnableNeuralIndexing>
+    <NeuralSearchSelectionQuery></NeuralSearchSelectionQuery>
+    <Mapping>
+        <Name>id</Name>
+        <Value>doc.url1</Value>
+        <Description></Description>
+        <Selection></Selection>
+        <DefaultValue></DefaultValue>
+    </Mapping>
 </Sinequa>
