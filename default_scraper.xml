@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Sinequa>
     <Description></Description>
+    <visibility></visibility>
     <Connector>crawler2</Connector>
-    <Identity>NodeIndexer3/identity0</Identity>
+    <Identity></Identity>
     <Indexers></Indexers>
     <Index></Index>
     <Domain></Domain>
     <TreeRoot>fake treeroot</TreeRoot>
     <ForceReindexation>false</ForceReindexation>
-    <Plugin>change_me</Plugin>
-    <IncludedExtensions>htm;html</IncludedExtensions>
+    <Plugin>change me</Plugin>
+    <IncludedExtensions></IncludedExtensions>
     <ExcludedExtensions></ExcludedExtensions>
     <IncludedFilenames></IncludedFilenames>
     <ExcludedFilenames></ExcludedFilenames>
@@ -31,10 +32,8 @@
         <SynchThumbnailGen>false</SynchThumbnailGen>
         <StoreInCollectionCache>false</StoreInCollectionCache>
         <GetFilePropertiesFromConverter>false</GetFilePropertiesFromConverter>
-        <CollectionStateParallelRowFetch></CollectionStateParallelRowFetch>
     </Indexation>
     <System>
-        <LogLevel>20</LogLevel>
     </System>
     <DisplayLongProperties>false</DisplayLongProperties>
     <LongPropertyLimit></LongPropertyLimit>
@@ -53,8 +52,6 @@
     <IndexerClient>
         <Simulate>false</Simulate>
         <SimulateGetCollectionState>false</SimulateGetCollectionState>
-        <New>true</New>
-        <SendThreadCount></SendThreadCount>
         <QueueMaxCount></QueueMaxCount>
         <DirectFileAccess>false</DirectFileAccess>
         <UseCompression>false</UseCompression>
@@ -88,13 +85,19 @@
     <RealTimeIncrementalState>true</RealTimeIncrementalState>
     <RealTimeInfoOnError>false</RealTimeInfoOnError>
     <ConversionProxies></ConversionProxies>
-    <ConversionPlan></ConversionPlan>
+    <ConversionPlan>_Advanced</ConversionPlan>
     <AddBaseHref>true</AddBaseHref>
     <AddMetaContentType>false</AddMetaContentType>
     <Throttle></Throttle>
     <DocumentClass></DocumentClass>
     <ConnectorLanguage></ConnectorLanguage>
     <ClearHttpRequestCanonicalizeAsFilePath>true</ClearHttpRequestCanonicalizeAsFilePath>
+    <PdfGen>
+        <ConverterType></ConverterType>
+        <TimeoutSmall></TimeoutSmall>
+        <TimeoutMedium></TimeoutMedium>
+        <TimeoutLarge></TimeoutLarge>
+    </PdfGen>
     <IndexZipContent>false</IndexZipContent>
     <IndexPdfAttachments>false</IndexPdfAttachments>
     <IndexOleAttachments>false</IndexOleAttachments>
@@ -133,28 +136,74 @@
     <GraphBoostPower></GraphBoostPower>
     <GraphBoostAdd></GraphBoostAdd>
     <UseFieldPermissions>false</UseFieldPermissions>
-    <ShardIndexes>@SMD_ASTRO_Repository_1,@SMD_ASTRO_Repository_2</ShardIndexes>
-    <ShardingStrategy>Balanced</ShardingStrategy>
+    <ShardIndexes></ShardIndexes>
+    <ShardingStrategy></ShardingStrategy>
     <ShardSelections></ShardSelections>
     <CurationType></CurationType>
     <CurationIdPattern></CurationIdPattern>
     <RunIndexMiningInIndexer>false</RunIndexMiningInIndexer>
     <Namespace></Namespace>
-    <Json>
-        <MasterFileToIndex></MasterFileToIndex>
-        <MasterUrlToIndex></MasterUrlToIndex>
-        <FileToIndexSep></FileToIndexSep>
-        <FileToIndexUseMasterVersion>false</FileToIndexUseMasterVersion>
-        <UrlToIndexSep></UrlToIndexSep>
-        <UrlToIndexUseMasterVersion>false</UrlToIndexUseMasterVersion>
-    </Json>
-    <FSIncludedExtensions></FSIncludedExtensions>
-    <FSExcludedExtensions></FSExcludedExtensions>
-    <FSIncludedFilenames></FSIncludedFilenames>
-    <FSExcludedFilenames></FSExcludedFilenames>
-    <FSIncludedFolders></FSIncludedFolders>
-    <FSExcludedFolders></FSExcludedFolders>
-    <HtmlBuilderType></HtmlBuilderType>
+    <WorkerCount>8</WorkerCount>
+    <MaxWorkerPerHost></MaxWorkerPerHost>
+    <Url>enter your url here</Url>
+    <UrlList></UrlList>
+    <DynamicUrlList></DynamicUrlList>
+    <UrlStayInside>true</UrlStayInside>
+    <UrlRefererStayInside>true</UrlRefererStayInside>
+    <FollowLinks>true</FollowLinks>
+    <MaxLevel>100</MaxLevel>
+    <MaxToIndex>100000</MaxToIndex>
+    <MaxToCrawl>100000</MaxToCrawl>
+    <MaxRedirection>10</MaxRedirection>
+    <CrawlMaxSize>-1</CrawlMaxSize>
+    <CrawlTimeout>-1</CrawlTimeout>
+    <NormalizeUrls>true</NormalizeUrls>
+    <CorrectDomainCookies>false</CorrectDomainCookies>
+    <IgnoreSessionCookies>false</IgnoreSessionCookies>
+    <DownloadImages>false</DownloadImages>
+    <DownloadMedia>false</DownloadMedia>
+    <DownloadCss>false</DownloadCss>
+    <DownloadFtp>true</DownloadFtp>
+    <DownloadFile>true</DownloadFile>
+    <IndexJs>false</IndexJs>
+    <FollowJs>true</FollowJs>
+    <CrawlFlash>true</CrawlFlash>
+    <IndexEmptyPages>true</IndexEmptyPages>
+    <CrawlWebsphereSeedlist>true</CrawlWebsphereSeedlist>
+    <KeepHashFragmentInUrl>false</KeepHashFragmentInUrl>
+    <RetryCount>1</RetryCount>
+    <RetryPause>0 ms</RetryPause>
+    <UseIfModifiedSince>true</UseIfModifiedSince>
+    <UseIfNoneMatch>no</UseIfNoneMatch>
+    <AcceptWeakETag>false</AcceptWeakETag>
+    <ForcedEncoding></ForcedEncoding>
+    <UseCompression>false</UseCompression>
+    <UseUnsafeHeaderParsing>false</UseUnsafeHeaderParsing>
+    <NormalizeSecureSchemesWhenTestingVisited>false</NormalizeSecureSchemesWhenTestingVisited>
+    <ExactDeduplication>false</ExactDeduplication>
+    <NearDeduplication>false</NearDeduplication>
+    <CrawlPauseDelay></CrawlPauseDelay>
+    <CrawlPauseCount></CrawlPauseCount>
+    <UseRuntimeAutoRedirect>false</UseRuntimeAutoRedirect>
+    <RememberDnsFailure>true</RememberDnsFailure>
+    <RememberConnectFailure>true</RememberConnectFailure>
+    <RememberTrustFailure>true</RememberTrustFailure>
+    <RememberProxyNameResolutionFailure>false</RememberProxyNameResolutionFailure>
+    <UseRobotsNoIndex>true</UseRobotsNoIndex>
+    <UseRobotsNoFollow>true</UseRobotsNoFollow>
+    <UseRobotsTxt>false</UseRobotsTxt>
+    <RobotsTxtCaseSensitive>false</RobotsTxtCaseSensitive>
+    <LoadRobotsTxtSitemapUrls>false</LoadRobotsTxtSitemapUrls>
+    <CheckSitemapUrlLastmodInRealtimeMode>false</CheckSitemapUrlLastmodInRealtimeMode>
+    <AddRobotsTxtAllowUrlsToSeedList>false</AddRobotsTxtAllowUrlsToSeedList>
+    <UseCanonicalLinks>false</UseCanonicalLinks>
+    <UseRelNoFollow>false</UseRelNoFollow>
+    <UrlIndexExcluded>*.rtf,*.jy,*.xml,*.ico,*.gz,*.act</UrlIndexExcluded>
+    <DownloadSelectionQuery></DownloadSelectionQuery>
+    <FollowSelectionQuery></FollowSelectionQuery>
+    <IndexSelectionQuery></IndexSelectionQuery>
+    <LoadDefaultTags>true</LoadDefaultTags>
+    <LoadDefaultJsTransforms>true</LoadDefaultJsTransforms>
     <UrlAccess>
         <UseDefaultCredentials>true</UseDefaultCredentials>
         <UseDefaultNetworkCredentials>false</UseDefaultNetworkCredentials>
@@ -181,6 +230,8 @@
         <BrowserForWebRequestsMaxTotalDelay></BrowserForWebRequestsMaxTotalDelay>
         <BrowserForWebRequestsMaxResourcesDelay></BrowserForWebRequestsMaxResourcesDelay>
         <BrowserForWebRequestsLogLevel></BrowserForWebRequestsLogLevel>
+        <BrowserForWebRequestsViewportWidth></BrowserForWebRequestsViewportWidth>
+        <BrowserForWebRequestsViewportHeight></BrowserForWebRequestsViewportHeight>
         <WebConnectionPluginName></WebConnectionPluginName>
         <PostLoginUrl></PostLoginUrl>
         <PostLoginData></PostLoginData>
@@ -217,95 +268,12 @@
         <ProxyAddress></ProxyAddress>
         <ProxyBypassOnLocal>true</ProxyBypassOnLocal>
         <ProxyServer></ProxyServer>
-        <ProxyPort></ProxyPort>
+        <ProxyPort>80</ProxyPort>
         <ProxyUseDefaultCredentials>true</ProxyUseDefaultCredentials>
         <ProxyUseDefaultNetworkCredentials>false</ProxyUseDefaultNetworkCredentials>
         <ProxyUser></ProxyUser>
         <ProxyPassword></ProxyPassword>
         <ProxyDomain></ProxyDomain>
-        <HttpHeader>
-            <Name>Cache-Control</Name>
-            <Value>no-cache</Value>
-        </HttpHeader>
-        <HttpHeader>
-            <Name>Accept</Name>
-            <Value>*/*</Value>
-        </HttpHeader>
-        <HttpHeader>
-            <Name>Accept-Encoding</Name>
-            <Value>gzip,deflate,br</Value>
-        </HttpHeader>
-        <HttpHeader>
-            <Name>Connection</Name>
-            <Value>keep-alive</Value>
-        </HttpHeader>
     </UrlAccess>
-    <WorkerCount>8</WorkerCount>
-    <MaxWorkerPerHost></MaxWorkerPerHost>
-    <UrlList></UrlList>
-    <DynamicUrlList></DynamicUrlList>
-    <UrlStayInside>true</UrlStayInside>
-    <UrlRefererStayInside>true</UrlRefererStayInside>
-    <FollowLinks>true</FollowLinks>
-    <MaxLevel></MaxLevel>
-    <MaxToIndex></MaxToIndex>
-    <MaxToCrawl></MaxToCrawl>
-    <MaxRedirection></MaxRedirection>
-    <CrawlMaxSize></CrawlMaxSize>
-    <CrawlTimeout></CrawlTimeout>
-    <NormalizeUrls>true</NormalizeUrls>
-    <CorrectDomainCookies>false</CorrectDomainCookies>
-    <IgnoreSessionCookies>false</IgnoreSessionCookies>
-    <DownloadImages>false</DownloadImages>
-    <DownloadMedia>false</DownloadMedia>
-    <DownloadCss>false</DownloadCss>
-    <DownloadFtp>true</DownloadFtp>
-    <DownloadFile>true</DownloadFile>
-    <IndexJs>false</IndexJs>
-    <FollowJs>true</FollowJs>
-    <CrawlFlash>true</CrawlFlash>
-    <IndexEmptyPages>true</IndexEmptyPages>
-    <CrawlWebsphereSeedlist>true</CrawlWebsphereSeedlist>
-    <KeepHashFragmentInUrl>false</KeepHashFragmentInUrl>
-    <RetryCount></RetryCount>
-    <RetryPause></RetryPause>
-    <UseIfModifiedSince>true</UseIfModifiedSince>
-    <UseIfNoneMatch>no</UseIfNoneMatch>
-    <AcceptWeakETag>false</AcceptWeakETag>
-    <ForcedEncoding></ForcedEncoding>
-    <UseCompression>false</UseCompression>
-    <UseUnsafeHeaderParsing>false</UseUnsafeHeaderParsing>
-    <NormalizeSecureSchemesWhenTestingVisited>false</NormalizeSecureSchemesWhenTestingVisited>
-    <ExactDeduplication>false</ExactDeduplication>
-    <NearDeduplication>false</NearDeduplication>
-    <CrawlPauseDelay></CrawlPauseDelay>
-    <CrawlPauseCount></CrawlPauseCount>
-    <UseRuntimeAutoRedirect>false</UseRuntimeAutoRedirect>
-    <RememberDnsFailure>true</RememberDnsFailure>
-    <RememberConnectFailure>true</RememberConnectFailure>
-    <RememberTrustFailure>true</RememberTrustFailure>
-    <RememberProxyNameResolutionFailure>false</RememberProxyNameResolutionFailure>
-    <UseRobotsNoIndex>false</UseRobotsNoIndex>
-    <UseRobotsNoFollow>true</UseRobotsNoFollow>
-    <UseRobotsTxt>false</UseRobotsTxt>
-    <RobotsTxtCaseSensitive>false</RobotsTxtCaseSensitive>
-    <LoadRobotsTxtSitemapUrls>false</LoadRobotsTxtSitemapUrls>
-    <CheckSitemapUrlLastmodInRealtimeMode>false</CheckSitemapUrlLastmodInRealtimeMode>
-    <AddRobotsTxtAllowUrlsToSeedList>false</AddRobotsTxtAllowUrlsToSeedList>
-    <UseCanonicalLinks>false</UseCanonicalLinks>
-    <UseRelNoFollow>false</UseRelNoFollow>
-    <DownloadSelectionQuery></DownloadSelectionQuery>
-    <FollowSelectionQuery></FollowSelectionQuery>
-    <IndexSelectionQuery></IndexSelectionQuery>
-    <LoadDefaultTags>true</LoadDefaultTags>
-    <LoadDefaultJsTransforms>true</LoadDefaultJsTransforms>
-    <visibility>Public</visibility>
-    <PdfGen>
-        <ConverterType></ConverterType>
-        <TimeoutSmall></TimeoutSmall>
-        <TimeoutMedium></TimeoutMedium>
-        <TimeoutLarge></TimeoutLarge>
-    </PdfGen>
-    <Url>add your url here</Url>
-    <UrlIndexIncluded></UrlIndexIncluded>
+    <DeleteOnNetworkOrServerError>false</DeleteOnNetworkOrServerError>
 </Sinequa>
