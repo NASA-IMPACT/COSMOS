@@ -1,3 +1,5 @@
+from urllib.parse import urlparse
+
 from django.db import models
 
 from .sinequa_utils import Sinequa
@@ -164,7 +166,21 @@ class CandidateURL(models.Model):
 
     def splits(self):
         """Split the path into multiple collections."""
-        return list(part for part in self.url.split("/") if part)
+        parts = []
+        part_string = ""
+        for part in self.path.split("/"):
+            if part:
+                part_string += f"/{part}"
+                parts.append((part_string, part))
+        return parts
+
+    @property
+    def path(self) -> str:
+        parsed = urlparse(self.url)
+        path = f"{parsed.path}"
+        if parsed.query:
+            path += f"?{parsed.query}"
+        return path
 
     def __str__(self):
         return self.url
