@@ -151,6 +151,9 @@ class CandidateURL(models.Model):
         blank=True,
         help_text="This is the title generated based on a Title Pattern",
     )
+    level = models.IntegerField(
+        "Level", default=0, blank=True, help_text="Level in the tree. Based on /."
+    )
 
     class Meta:
         """Meta definition for Candidate URL."""
