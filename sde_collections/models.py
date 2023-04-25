@@ -1,7 +1,5 @@
 from django.db import models
 
-from sde_collections.tasks import generate_candidate_urls_async
-
 from .sinequa_utils import Sinequa
 
 
@@ -138,10 +136,6 @@ class Collection(models.Model):
         sinequa = Sinequa(config_folder=self.config_folder)
         sinequa.update_treeroot(self.tree_root)
         sinequa.update_document_type(Collection.DocumentTypes(self.document_type).label)
-
-    def generate_candidate_urls(self):
-        """Generate candidate URLs."""
-        generate_candidate_urls_async(self.machine_name, self.url)
 
     def __str__(self):
         """Unicode representation of Collection."""
