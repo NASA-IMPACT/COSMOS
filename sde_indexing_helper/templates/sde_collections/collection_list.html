@@ -1,24 +1,18 @@
 {% extends "base.html" %}
-
-
 {% block css %}
     {{ block.super }}
-    <link rel="stylesheet" href="//cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <link rel="stylesheet"
+          href="//cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
 {% endblock css %}
-
 {% block javascript %}
     {{ block.super }}
-    <script
-    src="https://code.jquery.com/jquery-3.6.4.min.js"
-    integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
-    crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"
+            integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
+            crossorigin="anonymous"></script>
     <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 {% endblock javascript %}
-
-
 {% block content %}
     <h1>Collections</h1>
-
     <table id="collection_table" class="table table-striped">
         <thead>
             <tr>
@@ -34,13 +28,15 @@
         <tbody>
             {% for collection in collections %}
                 <tr>
-                    <td><a target="_blank" href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }}</a></td>
+                    <td>
+                        <a target="_blank"
+                           href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }}</a>
+                    </td>
                     <td>{{ collection.indexed }}</td>
-                    <td><a target="_blank" href="
-                    {% if collection.url %}
-                        {{ collection.url }}
-                    {% endif %}
-                        ">{{ collection.url }}</a></td>
+                    <td>
+                        <a target="_blank"
+                           href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{ collection.url }}</a>
+                    </td>
                     <td>{{ collection.get_division_display }}</td>
                     <td>{{ collection.turned_on }}</td>
                     <td>{{ collection.get_source_display }}</td>
@@ -49,9 +45,7 @@
             {% endfor %}
         </tbody>
     </table>
-
 {% endblock content %}
-
 {% block inline_javascript %}
     <script>
         let table = $('#collection_table').DataTable({
