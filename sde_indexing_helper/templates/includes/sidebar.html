@@ -1,0 +1,21 @@
+<div class="sidebar"
+     data-color="purple"
+     data-background-color="white"
+     data-image="/static/images/sidebar-1.jpg">
+  <div class="logo">
+    <a rel="noopener noreferrer" href="#" class="simple-text logo-normal">SDE Indexing Helper</a>
+  </div>
+  <div class="sidebar-wrapper">
+    <ul class="nav">
+      {% if request.user.is_authenticated %}
+        <li class="nav-item {% if 'collections' in segment %}active{% endif %}">
+          <a class="nav-link" href="{% url 'sde_collections:list' %}">
+            <i class="material-icons">list</i>
+            <p>Collections</p>
+          </a>
+        </li>
+      {% else %}
+      {% endif %}
+    </ul>
+  </div>
+</div>

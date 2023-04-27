@@ -1,0 +1,62 @@
+<!--
+=========================================================
+ Material Dashboard - v2.1.2
+=========================================================
+
+ Product Page: https://www.creative-tim.com/product/material-dashboard
+ Copyright 2019 Creative Tim (https://www.creative-tim.com)
+ Licensed under MIT (https://github.com/creativetimofficial/material-dashboard/blob/master/LICENSE.md)
+
+ Coded by Creative Tim
+
+=========================================================
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon"
+          type="image/png"
+          href="/static/images/favicons/favicon.ico">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>
+      SDE Indexing Helper -
+      {% block title %}{% endblock %}
+    </title>
+    <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no'
+          name='viewport' />
+    <!--     Fonts and icons     -->
+    <link rel="stylesheet"
+          type="text/css"
+          href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
+    <!-- CSS Files -->
+    <link href="/static/css/material-dashboard.css?v=2.1.2" rel="stylesheet" />
+    <!-- Specific Page CSS goes HERE  -->
+    {% block stylesheets %}
+    {% endblock stylesheets %}
+  </head>
+  <body class="">
+    <div class="wrapper ">
+      {% include 'includes/sidebar.html' %}
+      <div class="main-panel">
+        {% include 'includes/navigation.html' %}
+        <!-- End Navbar -->
+        <div class="content">
+          <div class="container-fluid">
+            {% block content %}
+            {% endblock content %}
+          </div>
+        </div>
+        {% include 'includes/footer.html' %}
+      </div>
+    </div>
+    {% include 'includes/scripts.html' %}
+    {% include 'includes/scripts-sidebar.html' %}
+    <!-- Specific Page JS goes HERE  -->
+    {% block javascripts %}
+    {% endblock javascripts %}
+  </body>
+</html>
