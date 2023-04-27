@@ -2,6 +2,7 @@
 {% load static i18n %}
 {% block css %}
     {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/candidate_url_list.css' %}" />
 {% endblock css %}
 {% block javascript %}
     {{ block.super }}
@@ -11,68 +12,68 @@
             crossorigin="anonymous"></script>
 {% endblock javascript %}
 {% block content %}
-    <div class="container">
-        <div class="row">
-            <div class="col-8">
-                <div class="form-check">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           value=""
-                           id="visited_bool"
-                           checked>
-                    <label class="form-check-label" for="visited_bool">Hide Visited</label>
+    <div class="row" id="top_pattern_bar">
+        <div class="col">
+            <input class="form-check-input"
+                   type="checkbox"
+                   value=""
+                   id="visited_bool"
+                   checked>
+            Hide Visited&nbsp;
+            <input class="form-check-input"
+                   type="checkbox"
+                   value=""
+                   id="excluded_bool"
+                   checked>
+            Hide Excluded
+            <input class="form-check-input" type="checkbox" value="" id="excluded_bool">
+            Only empty titles
+            <input class="form-check-input" type="checkbox" value="" id="excluded_bool">
+            Only duplicate titles
+        </div>
+        <div class="col">
+            <h2>
+                Exclude Patterns
+                <button id="add_exclude_pattern">+</button>
+            </h2>
+            <form id="exclude_patterns">
+            </form>
+        </div>
+        <div class="col">
+            <h2>
+                Title Patterns
+                <button id="add_exclude_pattern">+</button>
+            </h2>
+        </div>
+        <hr>
+    </div>
+    <div class="row">
+        <div class="col">
+            {% for candidate_url in candidate_urls %}
+                <div class="row">
+                    <div class="col-8">
+                        <p>
+                            {% for i in "x"|rjust:candidate_url.level %}
+                                &nbsp;&nbsp;
+                            {% endfor %}
+                            <a href="{{ candidate_url.url }}" target="_blank">Visit</a>
+                            {% for part_string, part in candidate_url.splits %}
+                                <button class="btn btn-sm btn-success url_part_button"
+                                        value="{{ part_string }}">{{ part }}</button>
+                                {% if not forloop.last %}>{% endif %}
+                            {% endfor %}
+                            | <span>{{ candidate_url.scraped_title }}</span>
+                        </p>
+                    </div>
+                    <div class="col">
+                        <input class="form-control new-title"
+                               type="text"
+                               value="{{ candidate_url.scraped_title }}">
+                    </div>
                 </div>
-                <div class="form-check">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           value=""
-                           id="excluded_bool"
-                           checked>
-                    <label class="form-check-label" for="excluded_bool">Hide Excluded</label>
-                </div>
-                <br />
-                {% for candidate_url in candidate_urls %}
-                    <p>
-                        {% for i in "x"|rjust:candidate_url.level %}
-                            &nbsp;&nbsp;
-                        {% endfor %}
-                        {% for part_string, part in candidate_url.splits %}
-                            <button class="btn btn-sm btn-success url_part_button"
-                                    value="{{ part_string }}">{{ part }}</button>
-                            {% if not forloop.last %}>{% endif %}
-                        {% endfor %}
-                        | <a href="{{ candidate_url.url }}" target="_blank">Visit</a> |
-                        <input type="text" id="someid1" value="{{ candidate_url.scraped_title }}">
-                    </p>
-                {% empty %}
-                    <p>No candidate urls found</p>
-                {% endfor %}
-            </div>
-            <div class="col">
-                <h2>
-                    Exclude Patterns
-                    <button id="add_exclude_pattern">+</button>
-                </h2>
-                <form id="exclude_patterns">
-                    {% comment %} <div class="row pattern_row">
-                        <div class="col-8">
-                            <input class="form-control" value="hey" />
-                        </div>
-                        <div class="col">
-                            <button type="button" class="btn btn-danger btn-sm delete_input">x</button>
-                        </div>
-                    </div> {% endcomment %}
-                </form>
-                <br>
-                <h2>Title Patterns</h2>
-                <form id="title_patterns">
-                    <input value="hey" />
-                    <input value="hey" />
-                </form>
-                <br>
-                <br>
-                <button class="btn btn-success btn-sm">Save</button>
-            </div>
+            {% empty %}
+                <p>No candidate urls found</p>
+            {% endfor %}
         </div>
     </div>
 {% endblock content %}

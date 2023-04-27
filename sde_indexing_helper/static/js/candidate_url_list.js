@@ -54,3 +54,19 @@ $("body").on("click", ".delete_input", function () {
     console.log("here");
     $(this).parents(".pattern_row").remove();
 });
+
+$(".new-title").on("change", function () {
+    let title = $(this).val();
+    let url = $(this).attr("data-url");
+    $.ajax({
+        url: url,
+        type: "POST",
+        data: {
+            title: title,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function (data) {
+            console.log(data);
+        },
+    });
+});
