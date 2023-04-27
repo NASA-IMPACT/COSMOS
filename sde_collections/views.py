@@ -1,7 +1,13 @@
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
+from rest_framework import viewsets
 
-from .models import CandidateURL, Collection
+from .models import CandidateURL, Collection, ExcludePattern, TitlePattern
+from .serializers import (
+    CandidateURLSerializer,
+    ExcludePatternSerializer,
+    TitlePatternSerializer,
+)
 
 
 class CollectionListView(ListView):
@@ -51,3 +57,18 @@ class CandidateURLsListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
+
+class CandidateURLViewSet(viewsets.ModelViewSet):
+    queryset = CandidateURL.objects.all()
+    serializer_class = CandidateURLSerializer
+
+
+class ExcludePatternViewSet(viewsets.ModelViewSet):
+    queryset = ExcludePattern.objects.all()
+    serializer_class = ExcludePatternSerializer
+
+
+class TitlePatternViewSet(viewsets.ModelViewSet):
+    queryset = TitlePattern.objects.all()
+    serializer_class = TitlePatternSerializer
