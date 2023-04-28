@@ -211,6 +211,7 @@ class ExcludePattern(models.Model):
 
         verbose_name = "Exclude Pattern"
         verbose_name_plural = "Exclude Patterns"
+        unique_together = ("collection", "match_pattern")
 
     def __str__(self):
         return self.match_pattern

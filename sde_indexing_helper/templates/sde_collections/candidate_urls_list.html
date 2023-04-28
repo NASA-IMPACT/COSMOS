@@ -1,7 +1,7 @@
 {% extends "layouts/base.html" %}
 {% load static i18n %}
 {% block title %}
-    {{ title }} Candidate URLs
+    {{ collection.name }} Candidate URLs
 {% endblock title %}
 {% block stylesheets %}
     {{ block.super }}
@@ -45,6 +45,19 @@
                 </button>
             </h2>
             <form id="exclude_patterns">
+                {% for pattern in collection.exclude_patterns.all %}
+                    <div class="row pattern_row">
+                        <div class="col-8">
+                            <input class="form-control" value="{{ pattern }}" disabled />
+                        </div>
+                        <div class="col">
+                            <button type="button"
+                                    class="btn btn-danger btn-sm delete_input"
+                                    hx-delete="/api/exclude-patterns"
+                                    hx-confirm="Are you sure you wish to delete this pattern?">x</button>
+                        </div>
+                    </div>
+                {% endfor %}
             </form>
         </div>
         <div class="col">

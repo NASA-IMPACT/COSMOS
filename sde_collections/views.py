@@ -51,16 +51,12 @@ class CandidateURLsListView(ListView):
 
     def get_queryset(self):
         self.collection = Collection.objects.get(pk=self.kwargs["pk"])
-        return (
-            super()
-            .get_queryset()
-            .filter(collection=Collection.objects.get(pk=self.kwargs["pk"]))
-        )
+        return super().get_queryset().filter(collection=self.collection)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["segment"] = "candidate-url-list"
-        context["title"] = self.collection
+        context["collection"] = self.collection
         return context
 
 
