@@ -1,4 +1,7 @@
 {% extends "layouts/base.html" %}
+{% block title %}
+    {{ collection.name }}
+{% endblock title %}
 {% block content %}
     <h1>{{ collection.name }}</h1>
     <table class="table table-striped">
