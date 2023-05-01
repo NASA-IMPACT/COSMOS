@@ -45,7 +45,7 @@ $('#add_exclude_pattern').on('click', function () {
                 </div>
                 <div class="col">
                     <button type="button" class="btn btn-danger btn-sm delete_input">
-                        <i class="material-icons">delete</i>
+                        x
                     </button>
                 </div>
             </div>

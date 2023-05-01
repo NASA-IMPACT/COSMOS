@@ -16,19 +16,11 @@
 {% endblock javascripts %}
 {% block content %}
     <div class="row" id="top_pattern_bar">
-        <div class="col">
-            <input class="form-check-input"
-                   type="checkbox"
-                   value=""
-                   id="visited_bool"
-                   checked>
+        {% comment %} <div class="col">
+            <input class="form-check-input" type="checkbox" value="" id="visited_bool" checked>
             Hide Visited
             <br>
-            <input class="form-check-input"
-                   type="checkbox"
-                   value=""
-                   id="excluded_bool"
-                   checked>
+            <input class="form-check-input" type="checkbox" value="" id="excluded_bool" checked>
             Hide Excluded
             <br>
             <input class="form-check-input" type="checkbox" value="" id="excluded_bool">
@@ -36,38 +28,7 @@
             <br>
             <input class="form-check-input" type="checkbox" value="" id="excluded_bool">
             Only duplicate titles
-        </div>
-        <div class="col">
-            <h2>
-                Exclude Patterns
-                <button id="add_exclude_pattern" class="btn btn-sm btn-primary">
-                    <i class="material-icons">add</i>
-                </button>
-            </h2>
-            <form id="exclude_patterns">
-                {% for pattern in collection.exclude_patterns.all %}
-                    <div class="row pattern_row">
-                        <div class="col-8">
-                            <input class="form-control" value="{{ pattern }}" disabled />
-                        </div>
-                        <div class="col">
-                            <button type="button"
-                                    class="btn btn-danger btn-sm delete_input"
-                                    hx-delete="/api/exclude-patterns"
-                                    hx-confirm="Are you sure you wish to delete this pattern?">x</button>
-                        </div>
-                    </div>
-                {% endfor %}
-            </form>
-        </div>
-        <div class="col">
-            <h2>
-                Title Patterns
-                <button id="add_exclude_pattern" class="btn btn-sm btn-primary">
-                    <i class="material-icons">add</i>
-                </button>
-            </h2>
-        </div>
+        </div> {% endcomment %}
         <hr>
     </div>
     <div class="row">
@@ -100,3 +61,47 @@
         </div>
     </div>
 {% endblock content %}
+{% block sidebar %}
+    <div class="sidebar"
+         data-color="purple"
+         data-background-color="white"
+         data-image="/static/images/sidebar-1.jpg">
+        <div class="logo">
+            <a rel="noopener noreferrer" href="#" class="simple-text logo-normal">SDE Indexing Helper</a>
+        </div>
+        <div class="sidebar-wrapper">
+            <ul class="nav">
+                {% if request.user.is_authenticated %}
+                    <div class="col">
+                        <h4>
+                            Exclude Patterns
+                            <button id="add_exclude_pattern" class="btn btn-primary btn-sm">+</button>
+                        </h4>
+                        <form id="exclude_patterns">
+                            {% for pattern in collection.exclude_patterns.all %}
+                                <div class="row pattern_row">
+                                    <div class="col-8">
+                                        <input class="form-control" value="{{ pattern }}" disabled />
+                                    </div>
+                                    <div class="col">
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm delete_input"
+                                                hx-delete="/api/exclude-patterns"
+                                                hx-confirm="Are you sure you wish to delete this pattern?">x</button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </form>
+                    </div>
+                    <div class="col">
+                        <h4>
+                            Title Patterns
+                            <button id="add_exclude_pattern" class="btn btn-sm btn-primary">+</button>
+                        </h4>
+                    </div>
+                {% else %}
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+{% endblock sidebar %}

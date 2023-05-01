@@ -188,6 +188,10 @@ class CandidateURL(models.Model):
             path += f"?{parsed.query}"
         return path
 
+    @property
+    def excluded(self):
+        return self.excludes.count() > 0
+
     def __str__(self):
         return self.url
 
