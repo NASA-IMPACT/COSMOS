@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from rest_framework import viewsets
@@ -10,7 +11,7 @@ from .serializers import (
 )
 
 
-class CollectionListView(ListView):
+class CollectionListView(LoginRequiredMixin, ListView):
     """
     Display a list of collections in the system
     """
@@ -25,7 +26,7 @@ class CollectionListView(ListView):
         return context
 
 
-class CollectionDetailView(DetailView):
+class CollectionDetailView(LoginRequiredMixin, DetailView):
     """
     Display a list of collections in the system
     """
@@ -40,7 +41,7 @@ class CollectionDetailView(DetailView):
         return context
 
 
-class CandidateURLsListView(ListView):
+class CandidateURLsListView(LoginRequiredMixin, ListView):
     """
     Display a list of collections in the system
     """
