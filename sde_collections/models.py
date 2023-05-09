@@ -94,6 +94,7 @@ class Collection(models.Model):
 
     notes = models.TextField("Notes", blank=True, default="")
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    new_collection = models.BooleanField(default=False)
 
     class Meta:
         """Meta definition for Collection."""
