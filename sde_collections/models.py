@@ -42,6 +42,11 @@ class Collection(models.Model):
         crawler2 = 1, "Web crawler parallel"
 
     name = models.CharField("Name", max_length=1024)
+    machine_name = models.CharField(
+        "Machine Name",
+        max_length=1024,
+        help_text="This is the Name value, but with only alphanumeric characters and _ instead of spaces",
+    )
     config_folder = models.CharField("Config Folder", max_length=2048)
     url = models.URLField("URL", max_length=2048, blank=True)
     division = models.IntegerField(choices=Divisions.choices)
@@ -93,6 +98,19 @@ class Collection(models.Model):
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
 
+    def generate_machine_name(self):
+        """
+        Take the human readable `self.name` and create a standardized machine format
+        The output will be the self.name, but only alphanumeric with _ instead of spaces
+        """
+
+        machine_name = self.name.lower().replace(" ", "_")
+        machine_name = "".join(
+            char for char in machine_name if char.isalnum() or char == "_"
+        )
+
+        return machine_name
+
     def import_metadata_from_sinequa_config(self):
         """Import metadata from Sinequa."""
         if not self.config_folder:
@@ -119,10 +137,6 @@ class Collection(models.Model):
         sinequa.update_treeroot(self.tree_root)
         sinequa.update_document_type(Collection.DocumentTypes(self.document_type).label)
 
-    def generate_candidate_urls(self):
-        """Generate candidate URLs."""
-        pass
-
     def __str__(self):
         """Unicode representation of Collection."""
         return self.name
@@ -131,22 +145,32 @@ class Collection(models.Model):
     def has_folder(self):
         return self.config_folder != ""
 
+    def save(self, *args, **kwargs):
+        # Call the function to generate the value for the generated_field based on the original_field
+        self.machine_name = self.generate_machine_name()
+
+        # Call the parent class's save method
+        super().save(*args, **kwargs)
+
 
 class CandidateURL(models.Model):
     """A candidate URL scraped for a given collection."""
 
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
-    url = models.CharField("Path", max_length=2048, default="", blank=True)
-    full_url = models.CharField("Full URL", max_length=4096, default="", blank=True)
-    excluded = models.BooleanField(default=False)
-    title = models.CharField("Title", max_length=2048, default="", blank=True)
-    replacement_title = models.CharField(
-        "Replacement Title",
+    url = models.CharField("URL", max_length=2048)
+    scraped_title = models.CharField(
+        "Scraped Title",
         max_length=2048,
         default="",
         blank=True,
-        help_text="If set, this title will be used instead of the scraped title."
-        " You can use the original title in the replacement title like so: {title}.",
+        help_text="This is the original title scraped by Sinequa",
+    )
+    generated_title = models.CharField(
+        "Generated Title",
+        max_length=2048,
+        default="",
+        blank=True,
+        help_text="This is the title generated based on a Title Pattern",
     )
     level = models.IntegerField(
         "Level", default=0, blank=True, help_text="Level in the tree. Based on /."
@@ -173,7 +197,12 @@ class ExcludePattern(models.Model):
     collection = models.ForeignKey(
         Collection, on_delete=models.CASCADE, related_name="exclude_patterns"
     )
-    pattern = models.CharField("Pattern", max_length=2048)
+    match_pattern = models.CharField(
+        "Pattern",
+        max_length=2048,
+        help_text="This pattern is compared against the URL of all the documents in the collection "
+        "and documents with a matching URL are excluded.",
+    )
     reason = models.TextField("Reason for excluding", default="", blank=True)
 
     class Meta:
@@ -183,4 +212,33 @@ class ExcludePattern(models.Model):
         verbose_name_plural = "Exclude Patterns"
 
     def __str__(self):
-        return self.pattern
+        return self.match_pattern
+
+
+class TitlePattern(models.Model):
+    """A title pattern to overwrite."""
+
+    collection = models.ForeignKey(
+        Collection, on_delete=models.CASCADE, related_name="title_patterns"
+    )
+    match_pattern = models.CharField(
+        "Pattern",
+        max_length=2048,
+        help_text="This pattern is compared against the URL of all the documents in the collection "
+        "and matching documents will have their title overwritten with the title_pattern",
+    )
+    title_pattern = models.CharField(
+        "New Title Pattern",
+        max_length=2048,
+        help_text="This is the pattern for the new title. You can write your own text, as well as "
+        "add references to a specific xpath or the orignal title. For example 'James Webb {scraped_title}: {xpath}'",
+    )
+
+    class Meta:
+        """Meta definition for TitlePattern."""
+
+        verbose_name = "Title Re-Write Pattern"
+        verbose_name_plural = "Title Re-Write Patterns"
+
+    def __str__(self):
+        return f"{self.match_pattern}: {self.title_pattern}"
