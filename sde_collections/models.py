@@ -246,8 +246,7 @@ class ExcludePattern(models.Model):
         """Apply the exclude pattern to the collection. Unapply happens when the exclude pattern is deleted."""
         applied = []
         for candidate_url in self.collection.candidate_urls.all():
-            safe_match_pattern = re.escape(self.match_pattern.lstrip("*"))
-            if re.search(safe_match_pattern, candidate_url.url):
+            if re.search(self.match_pattern.lstrip("*"), candidate_url.url):
                 applied_exclude = AppliedExclude.objects.create(
                     candidate_url=candidate_url, exclude_pattern=self
                 )

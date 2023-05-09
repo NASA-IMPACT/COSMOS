@@ -42,7 +42,7 @@
                             {% endfor %}
                             <a href="{{ candidate_url.url }}" target="_blank">Visit</a>
                             {% for part_string, part in candidate_url.splits %}
-                                <button class="btn btn-sm btn-success url_part_button"
+                                <button class="btn btn-sm btn-{% if candidate_url.excluded %}danger{% else %}success{% endif %} url_part_button"
                                         value="{{ part_string }}">{{ part }}</button>
                                 {% if not forloop.last %}>{% endif %}
                             {% endfor %}
@@ -74,7 +74,14 @@
                 {% if request.user.is_authenticated %}
                     <div class="col">
                         <h4>
-                            Exclude Patterns
+                            <input type="checkbox" value="" id="excluded_bool">
+                            Hide Excluded
+                        </h4>
+                    </div>
+                    <hr>
+                    <div class="col">
+                        <h4>
+                            <strong>Exclude Patterns</strong>
                             <button id="add_exclude_pattern" class="btn btn-primary btn-sm">+</button>
                         </h4>
                         <form id="exclude_patterns">
@@ -93,9 +100,10 @@
                             {% endfor %}
                         </form>
                     </div>
+                    <hr>
                     <div class="col">
                         <h4>
-                            Title Patterns
+                            <strong>Title Patterns</strong>
                             <button id="add_exclude_pattern" class="btn btn-sm btn-primary">+</button>
                         </h4>
                     </div>

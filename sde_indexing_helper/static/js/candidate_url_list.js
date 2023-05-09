@@ -1,3 +1,49 @@
+$(document).ready(function () {
+    // Get the value of the "param" GET parameter from the URL
+    var paramValue = getParameterByName("is_excluded");
+
+    // If the "param" GET parameter exists and its value is "true"
+    if (paramValue === "false") {
+        // Check the checkbox with ID "myCheckbox"
+        $("#excluded_bool").prop("checked", true);
+    }
+});
+
+// Function to get the value of a GET parameter by its name
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return "";
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+$("#excluded_bool").on("click", function () {
+    if ($(this).prop("checked")) {
+        // Get the current URL
+        var url = window.location.href;
+
+        // Add a GET parameter
+        var newUrl = url + "?is_excluded=false";
+
+        // Redirect to the new URL
+        window.location.href = newUrl;
+    } else {
+        // Get the current URL
+        var url = window.location.href;
+
+        // Remove all GET parameters
+        var newUrl = url.split("?")[0];
+
+        // Redirect to the new URL
+        window.location.href = newUrl;
+    };
+});
+
+
+
 $("#excluded_bool").on("click", function () {
     if ($(this).prop("checked")) {
         $("#excluded").val("True");
