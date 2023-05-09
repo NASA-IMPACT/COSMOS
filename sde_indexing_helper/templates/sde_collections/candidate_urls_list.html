@@ -36,18 +36,21 @@
             {% for candidate_url in candidate_urls %}
                 <div class="row">
                     <div class="col-8">
-                        <p>
-                            {% for i in "x"|rjust:candidate_url.level %}
-                                &nbsp;&nbsp;
-                            {% endfor %}
-                            <a href="{{ candidate_url.url }}" target="_blank">Visit</a>
-                            {% for part_string, part in candidate_url.splits %}
-                                <button class="btn btn-sm btn-{% if candidate_url.excluded %}danger{% else %}success{% endif %} url_part_button"
-                                        value="{{ part_string }}">{{ part }}</button>
-                                {% if not forloop.last %}>{% endif %}
-                            {% endfor %}
-                            | <span>{{ candidate_url.scraped_title }}</span>
-                        </p>
+                        <form>
+                            <p>
+                                {% for i in "x"|rjust:candidate_url.level %}
+                                    &nbsp;&nbsp;
+                                {% endfor %}
+                                <a href="{{ candidate_url.url }}" target="_blank">Visit</a>
+                                {% for part_string, part in candidate_url.splits %}
+                                    <button type="button"
+                                            class="btn btn-sm btn-{% if candidate_url.excluded %}danger disabled{% else %}success{% endif %} url_part_button"
+                                            value="{{ part_string }}">{{ part }}</button>
+                                    {% if not forloop.last %}>{% endif %}
+                                {% endfor %}
+                                | <span>{{ candidate_url.scraped_title }}</span>
+                            </p>
+                        </form>
                     </div>
                     <div class="col">
                         <input class="form-control new-title"
@@ -94,7 +97,7 @@
                                     <div class="col">
                                         <button type="button"
                                                 class="btn btn-danger btn-sm delete_input"
-                                                hx-delete="/api/exclude-patterns"
+                                                hx-delete="/api/exclude-patterns/{{ pattern.id }}/"
                                                 hx-confirm="Are you sure you wish to delete this pattern?">x</button>
                                     </div>
                                 </div>

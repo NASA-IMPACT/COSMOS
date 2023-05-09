@@ -43,7 +43,7 @@ The above copyright notice and this permission notice shall be included in all c
     {% block stylesheets %}
     {% endblock stylesheets %}
   </head>
-  <body class="">
+  <body class="" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     <div class="wrapper ">
       {% block sidebar %}
         {% include 'includes/sidebar.html' %}

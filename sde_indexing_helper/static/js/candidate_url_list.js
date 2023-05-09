@@ -73,6 +73,8 @@ $(".url_part_button").on("click", function () {
     });
 });
 
+
+
 function add_exclude_pattern(pattern) {
     let input = $(
         `
@@ -97,8 +99,8 @@ $('#add_exclude_pattern').on('click', function () {
                     <input class="form-control" />
                 </div>
                 <div class="col">
-                    <button type="button" class="btn btn-danger btn-sm delete_input">
-                        x
+                    <button type="button" class="btn btn-success btn-sm add_new_pattern">
+                        ✔
                     </button>
                 </div>
             </div>
@@ -109,6 +111,27 @@ $('#add_exclude_pattern').on('click', function () {
 
 $("body").on("click", ".delete_input", function () {
     $(this).parents(".pattern_row").remove();
+    window.location.reload();
+    // $.delete('/api/exclude-patterns/', {
+    //     collection: '85',
+    //     match_pattern: $(this).attr("value"),
+    //     csrfmiddlewaretoken: csrftoken
+    // }, function (response) {
+    //     console.log(response);
+    //     window.location.reload();
+    // });
+});
+
+$("body").on("click", ".add_new_pattern", function () {
+    let pattern = $(this).parents(".pattern_row").find("input").val();
+    $.post('/api/exclude-patterns/', {
+        collection: '85',
+        match_pattern: pattern,
+        csrfmiddlewaretoken: csrftoken
+    }, function (response) {
+        console.log(response);
+        window.location.reload();
+    });
 });
 
 $(".new-title").on("change", function () {
