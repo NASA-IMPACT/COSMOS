@@ -246,30 +246,32 @@ class ExcludePattern(models.Model):
         """Apply the exclude pattern to the collection."""
         applied = []
         for candidate_url in self.collection.candidate_urls.all():
-            if re.search(self.match_pattern, candidate_url.url):
+            if re.search(self.match_pattern.lstrip("*"), candidate_url.url):
                 applied_exclude = AppliedExclude.objects.create(
                     candidate_url=candidate_url, exclude_pattern=self
                 )
                 applied.append(applied_exclude)
         return applied
 
-    def unapply(self):
-        """Unapply the exclude pattern to the collection."""
-        applied = []
-        for candidate_url in self.collection.candidate_urls.all():
-            if re.search(self.match_pattern, candidate_url.url):
-                applied_exclude = AppliedExclude.objects.filter(
-                    candidate_url=candidate_url, exclude_pattern=self
-                ).first()
-                if applied_exclude:
-                    applied_exclude.delete()
-                    applied.append(applied_exclude)
-        return applied
+    # def unapply(self):
+    #     """Unapply the exclude pattern to the collection."""
+    #     AppliedExclude.objects.filter(exclude_pattern=self).delete()
 
     def save(self, *args, **kwargs):
         """Save the exclude pattern."""
         super().save(*args, **kwargs)
         self.apply()
+
+    # def delete(self, *args, **kwargs):
+    #     """
+    #     Unapply this exclude pattern before deleting it.
+    #     """
+    #     self.unapply()
+    #     super().delete(*args, **kwargs)
+
+    @property
+    def sinequa_pattern(self):
+        return f"{self.collection.url}{self.match_pattern}"
 
 
 class AppliedExclude(models.Model):

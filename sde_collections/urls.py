@@ -6,11 +6,13 @@ from .views import (
     CandidateURLViewSet,
     CollectionDetailView,
     CollectionListView,
+    CollectionViewSet,
     ExcludePatternViewSet,
     TitlePatternViewSet,
 )
 
 router = routers.DefaultRouter()
+router.register(r"collections", CollectionViewSet)
 router.register(r"candidate-urls", CandidateURLViewSet)
 router.register(r"exclude-patterns", ExcludePatternViewSet)
 router.register(r"title-patterns", TitlePatternViewSet)

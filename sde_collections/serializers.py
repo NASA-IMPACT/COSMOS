@@ -4,6 +4,11 @@ from .models import CandidateURL, ExcludePattern, TitlePattern
 
 
 class CandidateURLSerializer(serializers.ModelSerializer):
+    is_excluded = serializers.SerializerMethodField()
+
+    def get_is_excluded(self, obj):
+        return obj.appliedexclude_set.exists()
+
     class Meta:
         model = CandidateURL
         fields = (
@@ -13,6 +18,7 @@ class CandidateURLSerializer(serializers.ModelSerializer):
             "scraped_title",
             "generated_title",
             "level",
+            "is_excluded",
         )
 
 
