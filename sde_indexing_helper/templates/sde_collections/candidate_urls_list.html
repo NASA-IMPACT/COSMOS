@@ -30,36 +30,22 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td class="text-center">
-                    <i class="material-icons done-color" style="color: green;">done</i>
-                </td>
-                <td>
-                    <a href="https://astrogeology.usgs.gov/facilities/meteor-crater-sample-collection/meteor-crater-drill-cores"
-                       target="_blank">https://astrogeology.usgs.gov/facilities/meteor-crater-sample-collection/meteor-crater-drill-cores</a>
-                </td>
-                <td>Meteor Crater Drill Cores | USGS Astrogeology Science Center</td>
-            </tr>
-            <tr>
-                <td class="text-center">
-                    <i class="material-icons done-color" style="color: green;">done</i>
-                </td>
-                <td>
-                    <a href="https://astrogeology.usgs.gov/facilities/meteor-crater-sample-collection/meteor-crater-drill-cores"
-                       target="_blank">https://astrogeology.usgs.gov/facilities/meteor-crater-sample-collection/meteor-crater-drill-cores</a>
-                </td>
-                <td>Meteor Crater Drill Cores | USGS Astrogeology Science Center</td>
-            </tr>
-            <tr>
-                <td class="text-center">
-                    <i class="material-icons done-color" style="color: green;">done</i>
-                </td>
-                <td>
-                    <a href="https://astrogeology.usgs.gov/facilities/meteor-crater-sample-collection/meteor-crater-drill-cores"
-                       target="_blank">https://astrogeology.usgs.gov/facilities/meteor-crater-sample-collection/meteor-crater-drill-cores</a>
-                </td>
-                <td>Meteor Crater Drill Cores | USGS Astrogeology Science Center</td>
-            </tr>
+            {% for candidate_url in candidate_urls %}
+                <tr>
+                    <td class="text-center">
+                        {% comment %} <i class="material-icons" style="color: green;">done</i> {% endcomment %}
+                    </td>
+                    <td>
+                        <a href="{{ candidate_url.url }}" target="_blank">{{ candidate_url.url }}</a>
+                    </td>
+                    <td>
+                        <input class="form-control new-title"
+                               type="text"
+                               title="{{ candidate_url.scraped_title }}"
+                               value="{{ candidate_url.scraped_title }}">
+                    </td>
+                </tr>
+            {% endfor %}
         </tbody>
     </table>
     {% comment %}
