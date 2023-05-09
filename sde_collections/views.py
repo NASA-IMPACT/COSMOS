@@ -29,5 +29,25 @@ class CollectionDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["excluded_patterns"] = CandidateURL.exclude_patterns(self.object)
+        return context
+
+
+class CandidateURLsListView(ListView):
+    """
+    Display a list of collections in the system
+    """
+
+    model = CandidateURL
+    template_name = "sde_collections/candidate_urls_list.html"
+    context_object_name = "candidate_urls"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(collection=Collection.objects.get(pk=self.kwargs["pk"]))
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         return context
