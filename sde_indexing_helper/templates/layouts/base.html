@@ -1,24 +1,11 @@
-<!--
-=========================================================
- Material Dashboard - v2.1.2
-=========================================================
-
- Product Page: https://www.creative-tim.com/product/material-dashboard
- Copyright 2019 Creative Tim (https://www.creative-tim.com)
- Licensed under MIT (https://github.com/creativetimofficial/material-dashboard/blob/master/LICENSE.md)
-
- Coded by Creative Tim
-
-=========================================================
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <link rel="icon"
           type="image/png"
-          href="/static/images/favicons/favicon.ico">
+          href="{% static 'images/favicons/favicon.ico' %}">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <title>
       {% block title %}
@@ -30,11 +17,11 @@ The above copyright notice and this permission notice shall be included in all c
     <!--     Fonts and icons     -->
     <link rel="stylesheet"
           type="text/css"
-          href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
+          href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
     <link rel="stylesheet"
-          href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
+          href="//maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
     <!-- CSS Files -->
-    <link href="/static/css/material-dashboard.css?v=2.1.2"
+    <link href="{% static 'css/material-dashboard.css' %}"
           rel="stylesheet"
           type="text/css" />
     <script src="//cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js"
