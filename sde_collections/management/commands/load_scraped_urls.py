@@ -78,7 +78,7 @@ class Command(BaseCommand):
                         CandidateURL.objects.get_or_create(
                             collection=collection,
                             url=url,
-                            scraped_title=title,
+                            scraped_title=title.strip(),
                             level=level,
                         )
 

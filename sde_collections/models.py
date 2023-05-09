@@ -2,6 +2,7 @@ import re
 from urllib.parse import urlparse
 
 from django.db import models
+from django.db.models import Case, Count, When
 
 from .sinequa_utils import Sinequa
 
@@ -157,6 +158,23 @@ class Collection(models.Model):
         super().save(*args, **kwargs)
 
 
+class CandidateURLManager(models.Manager):
+    def get_queryset(self):
+        # Annotate the queryset with whether the count of the many-to-many field is zero
+        return (
+            super()
+            .get_queryset()
+            .annotate(
+                excluded=Case(
+                    When(excluded__isnull=True, then=False),
+                    When(Count("excluded") == 0, then=False),
+                    default=True,
+                    output_field=models.BooleanField(),
+                )
+            )
+        )
+
+
 class CandidateURL(models.Model):
     """A candidate URL scraped for a given collection."""
 
@@ -230,6 +248,7 @@ class ExcludePattern(models.Model):
         help_text="This pattern is compared against the URL of all the documents in the collection "
         "and documents with a matching URL are excluded.",
     )
+    candidate_urls = models.ManyToManyField(CandidateURL, through="AppliedExclude")
     reason = models.TextField("Reason for excluding", default="", blank=True)
 
     class Meta:

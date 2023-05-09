@@ -10,65 +10,80 @@
 {% block javascripts %}
     {{ block.super }}
     <script defer src="{% static 'js/candidate_url_list.js' %}"></script>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"
-            integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
-            crossorigin="anonymous"></script>
+    {% comment %}
+    <script src="//code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+    {% endcomment %}
 {% endblock javascripts %}
 {% block content %}
-    <div class="row" id="top_pattern_bar">
-        {% comment %} <div class="col">
-            <input class="form-check-input" type="checkbox" value="" id="visited_bool" checked>
-            Hide Visited
-            <br>
-            <input class="form-check-input" type="checkbox" value="" id="excluded_bool" checked>
-            Hide Excluded
-            <br>
-            <input class="form-check-input" type="checkbox" value="" id="excluded_bool">
-            Only empty titles
-            <br>
-            <input class="form-check-input" type="checkbox" value="" id="excluded_bool">
-            Only duplicate titles
-        </div> {% endcomment %}
-        <hr>
-    </div>
-    <div class="row">
-        <div class="col">
-            {% for candidate_url in candidate_urls %}
-                <div class="row">
-                    <div class="col-8">
-                        <form>
-                            <p>
-                                {% for i in "x"|rjust:candidate_url.level %}
-                                    &nbsp;&nbsp;
-                                {% endfor %}
-                                <a href="{{ candidate_url.url }}" target="_blank">Visit</a>
-                                {% for part_string, part in candidate_url.splits %}
-                                    <button type="button"
-                                            class="btn btn-sm btn-{% if candidate_url.excluded %}danger disabled{% else %}success{% endif %} url_part_button"
-                                            value="{{ part_string }}">{{ part }}</button>
-                                    {% if not forloop.last %}>{% endif %}
-                                {% endfor %}
-                                | <span>{{ candidate_url.scraped_title }}</span>
-                            </p>
-                        </form>
-                    </div>
-                    <div class="col">
-                        <input class="form-control new-title"
-                               type="text"
-                               value="{{ candidate_url.scraped_title }}">
-                    </div>
-                </div>
-            {% empty %}
-                <p>No candidate urls found</p>
-            {% endfor %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col" class="text-center">
+                    <strong>Visited</strong>
+                </th>
+                <th scope="col" class="text-center">
+                    <strong>URL</strong>
+                </th>
+                <th scope="col" class="text-center">
+                    <strong>Scraped Title</strong>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-center">
+                    <i class="material-icons done-color" style="color: green;">done</i>
+                </td>
+                <td>
+                    <a href="https://astrogeology.usgs.gov/facilities/meteor-crater-sample-collection/meteor-crater-drill-cores"
+                       target="_blank">https://astrogeology.usgs.gov/facilities/meteor-crater-sample-collection/meteor-crater-drill-cores</a>
+                </td>
+                <td>Meteor Crater Drill Cores | USGS Astrogeology Science Center</td>
+            </tr>
+            <tr>
+                <td class="text-center">
+                    <i class="material-icons done-color" style="color: green;">done</i>
+                </td>
+                <td>
+                    <a href="https://astrogeology.usgs.gov/facilities/meteor-crater-sample-collection/meteor-crater-drill-cores"
+                       target="_blank">https://astrogeology.usgs.gov/facilities/meteor-crater-sample-collection/meteor-crater-drill-cores</a>
+                </td>
+                <td>Meteor Crater Drill Cores | USGS Astrogeology Science Center</td>
+            </tr>
+            <tr>
+                <td class="text-center">
+                    <i class="material-icons done-color" style="color: green;">done</i>
+                </td>
+                <td>
+                    <a href="https://astrogeology.usgs.gov/facilities/meteor-crater-sample-collection/meteor-crater-drill-cores"
+                       target="_blank">https://astrogeology.usgs.gov/facilities/meteor-crater-sample-collection/meteor-crater-drill-cores</a>
+                </td>
+                <td>Meteor Crater Drill Cores | USGS Astrogeology Science Center</td>
+            </tr>
+        </tbody>
+    </table>
+    {% comment %}
+    {% for candidate_url in candidate_urls %}
+        <div class="row">
+            <div class="col-8">
+                <form>
+                    <a href="{{ candidate_url.url }}" target="_blank">{{ candidate_url.url }}</a>
+                </form>
+            </div>
+            <div class="col">
+                <input class="form-control new-title" type="text" title="{{ candidate_url.scraped_title }}" value="{{ candidate_url.scraped_title }}">
+            </div>
         </div>
-    </div>
+    {% empty %}
+        <p>No candidate urls found</p>
+    {% endfor %}
+    {% endcomment %}
 {% endblock content %}
 {% block sidebar %}
     <div class="sidebar"
          data-color="purple"
          data-background-color="white"
-         data-image="/static/images/sidebar-1.jpg">
+         data-image="{% static 'images/sidebar-1.jpg' %}">
         <div class="logo">
             <a rel="noopener noreferrer"
                href="{% url 'sde_collections:list' %}"
