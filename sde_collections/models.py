@@ -243,7 +243,7 @@ class ExcludePattern(models.Model):
         return self.match_pattern
 
     def apply(self):
-        """Apply the exclude pattern to the collection."""
+        """Apply the exclude pattern to the collection. Unapply happens when the exclude pattern is deleted."""
         applied = []
         for candidate_url in self.collection.candidate_urls.all():
             safe_match_pattern = re.escape(self.match_pattern.lstrip("*"))
@@ -254,21 +254,10 @@ class ExcludePattern(models.Model):
                 applied.append(applied_exclude)
         return applied
 
-    # def unapply(self):
-    #     """Unapply the exclude pattern to the collection."""
-    #     AppliedExclude.objects.filter(exclude_pattern=self).delete()
-
     def save(self, *args, **kwargs):
         """Save the exclude pattern."""
         super().save(*args, **kwargs)
         self.apply()
-
-    # def delete(self, *args, **kwargs):
-    #     """
-    #     Unapply this exclude pattern before deleting it.
-    #     """
-    #     self.unapply()
-    #     super().delete(*args, **kwargs)
 
     @property
     def sinequa_pattern(self):
