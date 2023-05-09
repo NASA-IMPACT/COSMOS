@@ -85,6 +85,7 @@
                             <button id="add_exclude_pattern" class="btn btn-primary btn-sm">+</button>
                         </h4>
                         <form id="exclude_patterns">
+                            {% csrf_token %}
                             {% for pattern in collection.exclude_patterns.all %}
                                 <div class="row pattern_row">
                                     <div class="col-8">

@@ -9,6 +9,8 @@ $(document).ready(function () {
     }
 });
 
+var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
+
 // Function to get the value of a GET parameter by its name
 function getParameterByName(name, url) {
     if (!url) url = window.location.href;
@@ -61,9 +63,14 @@ $("#visited_bool").on("click", function () {
 });
 
 $(".url_part_button").on("click", function () {
-    add_exclude_pattern($(this).attr("value"));
-    $(this).removeClass('btn-success');
-    $(this).addClass('btn-danger');
+    $.post('/api/exclude-patterns/', {
+        collection: '85',
+        match_pattern: $(this).attr("value"),
+        csrfmiddlewaretoken: csrftoken
+    }, function (response) {
+        console.log(response);
+        window.location.reload();
+    });
 });
 
 function add_exclude_pattern(pattern) {
