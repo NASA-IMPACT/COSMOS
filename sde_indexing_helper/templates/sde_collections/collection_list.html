@@ -1,58 +1,51 @@
-{% extends "base.html" %}
-
-
-{% block css %}
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+{% block title %}Collections{% endblock %}
+{% block stylesheets %}
     {{ block.super }}
-    <link rel="stylesheet" href="//cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-{% endblock css %}
-
-{% block javascript %}
-    {{ block.super }}
-    <script
-    src="https://code.jquery.com/jquery-3.6.4.min.js"
-    integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
-    crossorigin="anonymous"></script>
-    <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-{% endblock javascript %}
-
-
+    <link rel="stylesheet"
+          href="//cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="{% static 'css/collections_list.css' %}">
+{% endblock stylesheets %}
 {% block content %}
-    <h1>Collections</h1>
-
     <table id="collection_table" class="table table-striped">
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Has Folder</th>
+                <th>Config Folder</th>
                 <th>URL</th>
                 <th>Division</th>
                 <th>Turned On</th>
                 <th>Source</th>
+                <th>New?</th>
                 {% comment %} <th>Actions</th> {% endcomment %}
             </tr>
         </thead>
         <tbody>
             {% for collection in collections %}
                 <tr>
-                    <td><a target="_blank" href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }}</a></td>
-                    <td>{{ collection.indexed }}</td>
-                    <td><a target="_blank" href="
-                    {% if collection.url %}
-                        {{ collection.url }}
-                    {% endif %}
-                        ">{{ collection.url }}</a></td>
+                    <td>
+                        <a target="_blank"
+                           href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }}</a>
+                    </td>
+                    <td>{{ collection.config_folder }}</td>
+                    <td>
+                        <a target="_blank"
+                           href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{ collection.url }}</a>
+                    </td>
                     <td>{{ collection.get_division_display }}</td>
                     <td>{{ collection.turned_on }}</td>
                     <td>{{ collection.get_source_display }}</td>
+                    <td>{{ collection.new_collection }}</td>
                     {% comment %} <td></td> {% endcomment %}
                 </tr>
             {% endfor %}
         </tbody>
     </table>
-
 {% endblock content %}
-
-{% block inline_javascript %}
+{% block javascripts %}
+    <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script>
         let table = $('#collection_table').DataTable({
             "bPaginate": false,
@@ -65,9 +58,9 @@
             // ],
         });
 
-        $('#collection_table tbody').on('click', 'button', function () {
-            var data = table.row($(this).parents('tr')).data();
-            alert(data[0] + "'s salary is: " + data[5]);
-        });
+        // $('#collection_table tbody').on('click', 'button', function () {
+        //    var data = table.row($(this).parents('tr')).data();
+        //    alert(data[0] + "'s salary is: " + data[5]);
+        // });
     </script>
-{% endblock inline_javascript %}
+{% endblock javascripts %}

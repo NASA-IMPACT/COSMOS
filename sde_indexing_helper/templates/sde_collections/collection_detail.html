@@ -1,18 +1,17 @@
-{% extends "base.html" %}
-
-
+{% extends "layouts/base.html" %}
+{% block title %}
+    {{ collection.name }}
+{% endblock title %}
 {% block content %}
     <h1>{{ collection.name }}</h1>
-
     <table class="table table-striped">
         <tbody>
             <tr>
                 <th>URL</th>
-                <td><a target="_blank" href="
-                    {% if collection.url %}
-                        {{ collection.url }}
-                    {% endif %}
-                        ">{{ collection.url }}</a></td>
+                <td>
+                    <a target="_blank"
+                       href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{ collection.url }}</a>
+                </td>
             </tr>
             <tr>
                 <th>Config Folder</th>
@@ -46,56 +45,24 @@
                 <th>Delete</th>
                 <td>{{ collection.delete }}</td>
             </tr>
-            {% comment %} <tr>
-                <th>Audit Hierarchy</th>
-                <td>{{ collection.audit_hierarchy }}</td>
-            </tr>
-            <tr>
-                <th>Audit Url</th>
-                <td>{{ collection.audit_url }}</td>
-            </tr>
-            <tr>
-                <th>Audit Mapping</th>
-                <td>{{ collection.audit_mapping }}</td>
-            </tr>
-            <tr>
-                <th>Audit Label</th>
-                <td>{{ collection.audit_label }}</td>
-            </tr>
-            <tr>
-                <th>Audit Query</th>
-                <td>{{ collection.audit_query }}</td>
-            </tr>
-            <tr>
-                <th>Audit Duplicate Results</th>
-                <td>{{ collection.audit_duplicate_results }}</td>
-            </tr>
-            <tr>
-                <th>Audit Metrics</th>
-                <td>{{ collection.audit_metrics }}</td>
-            </tr> {% endcomment %}
-            <tr>
-                <th>Cleaning Assigned To</th>
-                <td>{{ collection.cleaning_assigned_to }}</td>
-            </tr>
             <tr>
                 <th>Notes</th>
                 <td>{{ collection.notes }}</td>
             </tr>
             <tr>
                 <th>Candidate URLs</th>
-                <td><a href="{% url 'sde_collections:candidate_urls' collection.pk %}"><button class="btn btn-sm btn-success">View</button></a></td>
+                <td>
+                    <a href="{% url 'sde_collections:candidate_urls' collection.pk %}">
+                        <button class="btn btn-sm btn-success">View</button>
+                    </a>
+                </td>
             </tr>
-
         </tbody>
     </table>
-
     <h2>Excluded URL Patterns</h2>
-
     {% for pattern in collection.exclude_patterns.all  %}
         <p>{{ pattern.pattern }}</p>
     {% empty %}
         <p>No excluded patterns</p>
     {% endfor %}
-
 {% endblock content %}

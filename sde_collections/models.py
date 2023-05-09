@@ -1,3 +1,6 @@
+import re
+from urllib.parse import urlparse
+
 from django.db import models
 
 from .sinequa_utils import Sinequa
@@ -91,6 +94,7 @@ class Collection(models.Model):
 
     notes = models.TextField("Notes", blank=True, default="")
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    new_collection = models.BooleanField(default=False)
 
     class Meta:
         """Meta definition for Collection."""
@@ -156,7 +160,9 @@ class Collection(models.Model):
 class CandidateURL(models.Model):
     """A candidate URL scraped for a given collection."""
 
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
+    collection = models.ForeignKey(
+        Collection, on_delete=models.CASCADE, related_name="candidate_urls"
+    )
     url = models.CharField("URL", max_length=2048)
     scraped_title = models.CharField(
         "Scraped Title",
@@ -175,6 +181,9 @@ class CandidateURL(models.Model):
     level = models.IntegerField(
         "Level", default=0, blank=True, help_text="Level in the tree. Based on /."
     )
+    excludes = models.ManyToManyField(
+        "ExcludePattern", through="AppliedExclude", blank=True
+    )
 
     class Meta:
         """Meta definition for Candidate URL."""
@@ -185,7 +194,25 @@ class CandidateURL(models.Model):
 
     def splits(self):
         """Split the path into multiple collections."""
-        return list(part for part in self.url.split("/") if part)
+        parts = []
+        part_string = ""
+        for part in self.path.split("/"):
+            if part:
+                part_string += f"/{part}"
+                parts.append((part_string, part))
+        return parts
+
+    @property
+    def path(self) -> str:
+        parsed = urlparse(self.url)
+        path = f"{parsed.path}"
+        if parsed.query:
+            path += f"?{parsed.query}"
+        return path
+
+    @property
+    def excluded(self):
+        return self.excludes.count() > 0
 
     def __str__(self):
         return self.url
@@ -210,9 +237,49 @@ class ExcludePattern(models.Model):
 
         verbose_name = "Exclude Pattern"
         verbose_name_plural = "Exclude Patterns"
+        unique_together = ("collection", "match_pattern")
 
     def __str__(self):
         return self.match_pattern
+
+    def apply(self):
+        """Apply the exclude pattern to the collection. Unapply happens when the exclude pattern is deleted."""
+        applied = []
+        for candidate_url in self.collection.candidate_urls.all():
+            if re.search(self.match_pattern.lstrip("*"), candidate_url.url):
+                applied_exclude = AppliedExclude.objects.create(
+                    candidate_url=candidate_url, exclude_pattern=self
+                )
+                applied.append(applied_exclude)
+        return applied
+
+    def save(self, *args, **kwargs):
+        """Save the exclude pattern."""
+        super().save(*args, **kwargs)
+        self.apply()
+
+    @property
+    def sinequa_pattern(self):
+        return f"{self.collection.url}{self.match_pattern}"
+
+
+class AppliedExclude(models.Model):
+    """
+    When an exclude pattern is applied to a candidate URL, it creates one of these objects.
+    The purpose is to keep track of what was excluded and why.
+    """
+
+    candidate_url = models.ForeignKey(CandidateURL, on_delete=models.CASCADE)
+    exclude_pattern = models.ForeignKey(
+        ExcludePattern, on_delete=models.CASCADE, related_name="applied_excludes"
+    )
+
+    class Meta:
+        verbose_name = "Applied Exclude"
+        verbose_name_plural = "Applied Excludes"
+
+    def __str__(self):
+        return f"{self.candidate_url} was excluded by {self.exclude_pattern}"
 
 
 class TitlePattern(models.Model):

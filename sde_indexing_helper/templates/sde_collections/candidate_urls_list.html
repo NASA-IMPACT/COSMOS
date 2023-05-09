@@ -1,30 +1,119 @@
-{% extends "base.html" %}
-
-{% block css %}
+{% extends "layouts/base.html" %}
+{% load static i18n %}
+{% block title %}
+    {{ collection.name }} Candidate URLs
+{% endblock title %}
+{% block stylesheets %}
     {{ block.super }}
-{% endblock css %}
-
-
-{% block javascript %}
+    <link rel="stylesheet" href="{% static 'css/candidate_url_list.css' %}" />
+{% endblock stylesheets %}
+{% block javascripts %}
     {{ block.super }}
-{% endblock javascript %}
-
+    <script defer src="{% static 'js/candidate_url_list.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"
+            integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
+            crossorigin="anonymous"></script>
+{% endblock javascripts %}
 {% block content %}
-    {% for candidate_url in candidate_urls %}
-        <p>
-            {% for i in "x"|rjust:candidate_url.level %}
-                &nbsp;&nbsp;&nbsp;&nbsp;
+    <div class="row" id="top_pattern_bar">
+        {% comment %} <div class="col">
+            <input class="form-check-input" type="checkbox" value="" id="visited_bool" checked>
+            Hide Visited
+            <br>
+            <input class="form-check-input" type="checkbox" value="" id="excluded_bool" checked>
+            Hide Excluded
+            <br>
+            <input class="form-check-input" type="checkbox" value="" id="excluded_bool">
+            Only empty titles
+            <br>
+            <input class="form-check-input" type="checkbox" value="" id="excluded_bool">
+            Only duplicate titles
+        </div> {% endcomment %}
+        <hr>
+    </div>
+    <div class="row">
+        <div class="col">
+            {% for candidate_url in candidate_urls %}
+                <div class="row">
+                    <div class="col-8">
+                        <form>
+                            <p>
+                                {% for i in "x"|rjust:candidate_url.level %}
+                                    &nbsp;&nbsp;
+                                {% endfor %}
+                                <a href="{{ candidate_url.url }}" target="_blank">Visit</a>
+                                {% for part_string, part in candidate_url.splits %}
+                                    <button type="button"
+                                            class="btn btn-sm btn-{% if candidate_url.excluded %}danger disabled{% else %}success{% endif %} url_part_button"
+                                            value="{{ part_string }}">{{ part }}</button>
+                                    {% if not forloop.last %}>{% endif %}
+                                {% endfor %}
+                                | <span>{{ candidate_url.scraped_title }}</span>
+                            </p>
+                        </form>
+                    </div>
+                    <div class="col">
+                        <input class="form-control new-title"
+                               type="text"
+                               value="{{ candidate_url.scraped_title }}">
+                    </div>
+                </div>
+            {% empty %}
+                <p>No candidate urls found</p>
             {% endfor %}
-
-            {% for splt in candidate_url.splits %}
-                <button class="btn btn-sm btn-success">{{ splt }}</button>
-                {% if not forloop.last %} > {% endif %}
-            {% endfor %}
-
-            | <a href="{{ candidate_url.full_url }}" target="_blank">Visit</a> | <input type="text" id="someid1" value="{{ candidate_url.title }}">
-        </p>
-    {% empty %}
-        <p>No candidate urls found</p>
-    {% endfor %}
-
+        </div>
+    </div>
 {% endblock content %}
+{% block sidebar %}
+    <div class="sidebar"
+         data-color="purple"
+         data-background-color="white"
+         data-image="/static/images/sidebar-1.jpg">
+        <div class="logo">
+            <a rel="noopener noreferrer" href="#" class="simple-text logo-normal">SDE Indexing Helper</a>
+        </div>
+        <div class="sidebar-wrapper">
+            <ul class="nav">
+                {% if request.user.is_authenticated %}
+                    <div class="col">
+                        <h4>
+                            <input type="checkbox" value="" id="excluded_bool">
+                            Hide Excluded
+                        </h4>
+                    </div>
+                    <hr>
+                    <div class="col">
+                        <h4>
+                            <strong>Exclude Patterns</strong>
+                            <button id="add_exclude_pattern" class="btn btn-primary btn-sm">+</button>
+                        </h4>
+                        <form id="exclude_patterns">
+                            {% csrf_token %}
+                            {% for pattern in collection.exclude_patterns.all %}
+                                <div class="row pattern_row">
+                                    <div class="col-8">
+                                        <input class="form-control" value="{{ pattern }}" disabled />
+                                    </div>
+                                    <div class="col">
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm delete_input"
+                                                hx-delete="/api/exclude-patterns/{{ pattern.id }}/"
+                                                hx-confirm="Are you sure you wish to delete this pattern?">x</button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </form>
+                    </div>
+                    <hr>
+                    <div class="col">
+                        <h4>
+                            <strong>Title Patterns</strong>
+                            <button id="add_exclude_pattern" class="btn btn-sm btn-primary">+</button>
+                        </h4>
+                    </div>
+                {% else %}
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+{% endblock sidebar %}

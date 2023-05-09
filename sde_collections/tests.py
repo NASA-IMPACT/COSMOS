@@ -2,6 +2,7 @@ import json
 import os
 
 from django.test import TestCase
+from rest_framework.test import APIRequestFactory
 
 from .models import Collection
 from .sinequa_utils import Sinequa
@@ -43,3 +44,12 @@ class GenerateURLsTestCase(TestCase):
             line = json.loads(f.readlines()[0])
 
         self.assertEqual(line["url"], "https://exo.mast.stsci.edu/docs/")
+
+
+class CreateExcludePatternTestCase(TestCase):
+    def test_create_exclude_pattern(self):
+        factory = APIRequestFactory()
+        response = factory.post(
+            "/api/create-exclude-pattern", {"title": "new idea"}, format="json"
+        )
+        self.assertCountEqual(response, "hey")
