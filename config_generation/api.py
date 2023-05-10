@@ -17,10 +17,12 @@ class Api:
 
         if response.status_code == 200:
             print("Data retrieved successfully!")
-            print(response.json())
+            meaningful_response = response.json()
         else:
             print(f"Request failed with status code: {response.status_code}")
-            print(response.text)
+            meaningful_response = response.text
+
+        return meaningful_response
 
     def query(self, term: str) -> None:
         url = f"{self.base_url}/api/v1/search.query"
@@ -36,7 +38,9 @@ class Api:
             "pretty": "true",
         }
 
-        self.process_response(url, payload)
+        response = self.process_response(url, payload)
+
+        return response
 
     def run_indexer(self, source_name: str, collection_name: str) -> None:
         """Starts indexing on the given collection. Equivalent to pressing the play button in the
@@ -53,7 +57,9 @@ class Api:
             "collection": f"/{source_name}/{collection_name}/",
         }
 
-        self.process_response(url, payload)
+        response = self.process_response(url, payload)
+
+        return response
 
 
 if __name__ == "__main__":
