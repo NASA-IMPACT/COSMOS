@@ -45,11 +45,6 @@ class Collection(models.Model):
         crawler2 = 1, "Web crawler parallel"
 
     name = models.CharField("Name", max_length=1024)
-    machine_name = models.CharField(
-        "Machine Name",
-        max_length=1024,
-        help_text="This is the Name value, but with only alphanumeric characters and _ instead of spaces",
-    )
     config_folder = models.CharField("Config Folder", max_length=2048)
     url = models.URLField("URL", max_length=2048, blank=True)
     division = models.IntegerField(choices=Divisions.choices)
@@ -102,18 +97,18 @@ class Collection(models.Model):
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
 
-    def generate_machine_name(self):
+    def generate_config_folder(self):
         """
         Take the human readable `self.name` and create a standardized machine format
         The output will be the self.name, but only alphanumeric with _ instead of spaces
         """
 
-        machine_name = self.name.lower().replace(" ", "_")
-        machine_name = "".join(
-            char for char in machine_name if char.isalnum() or char == "_"
+        config_folder = self.name.lower().replace(" ", "_")
+        config_folder = "".join(
+            char for char in config_folder if char.isalnum() or char == "_"
         )
 
-        return machine_name
+        return config_folder
 
     def import_metadata_from_sinequa_config(self):
         """Import metadata from Sinequa."""
@@ -151,7 +146,7 @@ class Collection(models.Model):
 
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
-        self.machine_name = self.generate_machine_name()
+        self.config_folder = self.generate_config_folder()
 
         # Call the parent class's save method
         super().save(*args, **kwargs)
