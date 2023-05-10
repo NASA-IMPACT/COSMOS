@@ -10,23 +10,25 @@
 {% block javascripts %}
     {{ block.super }}
     <script defer src="{% static 'js/candidate_url_list.js' %}"></script>
-    {% comment %}
-    <script src="//code.jquery.com/jquery-3.6.4.min.js" integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
-    {% endcomment %}
+    <script src="//code.jquery.com/jquery-3.6.4.min.js"
+            integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
+            crossorigin="anonymous"></script>
 {% endblock javascripts %}
 {% block content %}
-    <table class="table table-sm table-responsive caption-top">
-        <caption>List of candidate URLs</caption>
+    <h3>
+        Candidate URLs for <strong>{{ collection.name }}</strong>
+    </h3>
+    <table class="table">
         <thead>
             <tr>
-                <th scope="col" class="text-center">
-                    <strong>Visited</strong>
+                <th scope="col" class="text-center col-1">
+                    <strong>VISITED</strong>
                 </th>
-                <th scope="col" class="text-center">
+                <th scope="col" class="text-center col-7">
                     <strong>URL</strong>
                 </th>
-                <th scope="col" class="text-center">
-                    <strong>Scraped Title</strong>
+                <th scope="col" class="text-center col-4">
+                    <strong>TITLE</strong>
                 </th>
             </tr>
         </thead>
@@ -34,10 +36,17 @@
             {% for candidate_url in candidate_urls %}
                 <tr>
                     <td class="text-center">
-                        {% comment %} <i class="material-icons" style="color: green;">done</i> {% endcomment %}
+                        {% if candidate_url.visited %}
+                            <i class="material-icons" style="color: green;">done</i>
+                        {% else %}
+                            <i class="material-icons" style="color: red;">close</i>
+                        {% endif %}
                     </td>
                     <td>
-                        <a href="{{ candidate_url.url }}" target="_blank">{{ candidate_url.url }}</a>
+                        <a href="{{ candidate_url.url }}"
+                           target="_blank"
+                           data-url="/api/candidate-urls/{{ candidate_url.id }}/"
+                           class="url_link">{{ candidate_url.url }}</a>
                     </td>
                     <td>
                         <input class="form-control new-title"
@@ -49,22 +58,6 @@
             {% endfor %}
         </tbody>
     </table>
-    {% comment %}
-    {% for candidate_url in candidate_urls %}
-        <div class="row">
-            <div class="col-8">
-                <form>
-                    <a href="{{ candidate_url.url }}" target="_blank">{{ candidate_url.url }}</a>
-                </form>
-            </div>
-            <div class="col">
-                <input class="form-control new-title" type="text" title="{{ candidate_url.scraped_title }}" value="{{ candidate_url.scraped_title }}">
-            </div>
-        </div>
-    {% empty %}
-        <p>No candidate urls found</p>
-    {% endfor %}
-    {% endcomment %}
 {% endblock content %}
 {% block sidebar %}
     <div class="sidebar"
@@ -99,8 +92,7 @@
                                         <input class="form-control"
                                                value="{{ pattern }}"
                                                title="{{ pattern }}"
-                                               disabled
-                                               style="direction: rtl" />
+                                               disabled />
                                     </div>
                                     <div class="col">
                                         <button type="button"

@@ -13,12 +13,11 @@ class CandidateURLSerializer(serializers.ModelSerializer):
         model = CandidateURL
         fields = (
             "id",
-            "collection",
-            "url",
             "scraped_title",
             "generated_title",
             "level",
             "is_excluded",
+            "visited",
         )
 
 

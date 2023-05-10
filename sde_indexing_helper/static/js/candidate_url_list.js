@@ -149,3 +149,23 @@ $(".new-title").on("change", function () {
         },
     });
 });
+
+$(".url_link").on("click", function () {
+    let url = $(this).attr("data-url");
+    console.log(url);
+    $.ajax({
+        url: url,
+        type: "PUT",
+        data: {
+            visited: true,
+            csrfmiddlewaretoken: csrftoken
+        },
+        headers: {
+            'X-CSRFToken': csrftoken
+        },
+        success: function (data) {
+            console.log(data);
+            window.location.reload();
+        },
+    });
+});

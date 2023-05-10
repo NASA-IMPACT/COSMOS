@@ -202,6 +202,7 @@ class CandidateURL(models.Model):
     excludes = models.ManyToManyField(
         "ExcludePattern", through="AppliedExclude", blank=True
     )
+    visited = models.BooleanField(default=False)
 
     class Meta:
         """Meta definition for Candidate URL."""
