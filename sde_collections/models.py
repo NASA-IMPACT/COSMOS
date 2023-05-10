@@ -146,7 +146,8 @@ class Collection(models.Model):
 
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
-        self.config_folder = self.generate_config_folder()
+        if not self.config_folder:
+            self.config_folder = self.generate_config_folder()
 
         # Call the parent class's save method
         super().save(*args, **kwargs)
