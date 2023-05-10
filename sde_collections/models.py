@@ -45,7 +45,7 @@ class Collection(models.Model):
         crawler2 = 1, "Web crawler parallel"
 
     name = models.CharField("Name", max_length=1024)
-    config_folder = models.CharField("Config Folder", max_length=2048)
+    config_folder = models.CharField("Config Folder", max_length=2048, unique=True)
     url = models.URLField("URL", max_length=2048, blank=True)
     division = models.IntegerField(choices=Divisions.choices)
     turned_on = models.BooleanField("Turned On", default=True)
