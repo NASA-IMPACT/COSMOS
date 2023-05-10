@@ -1,16 +1,18 @@
+from typing import Any
+
 import requests
 
 from config import token
 
 
 class Api:
-    def __init__(self):
-        self.headers = {"Authorization": f"Bearer {token}"}
-        self.app_name = "nasa-sba-smd"
-        self.query_name = "query-smd-primary"
-        self.base_url = "http://sde-renaissance.nasa-impact.net"
+    def __init__(self) -> None:
+        self.headers: dict[str, str] = {"Authorization": f"Bearer {token}"}
+        self.app_name: str = "nasa-sba-smd"
+        self.query_name: str = "query-smd-primary"
+        self.base_url: str = "http://sde-renaissance.nasa-impact.net"
 
-    def process_response(self, url, payload):
+    def process_response(self, url: str, payload: dict[str, Any]) -> None:
         response = requests.post(url, headers=self.headers, json=payload)
 
         if response.status_code == 200:
@@ -20,7 +22,7 @@ class Api:
             print(f"Request failed with status code: {response.status_code}")
             print(response.text)
 
-    def query(self, term):
+    def query(self, term: str) -> None:
         url = f"{self.base_url}/api/v1/search.query"
         payload = {
             "app": self.app_name,
@@ -36,8 +38,8 @@ class Api:
 
         self.process_response(url, payload)
 
-    def run_indexer(self, source_name, collection_name):
-        """Starts indexing on the given collection. Equivelent to pressing the play button in the
+    def run_indexer(self, source_name: str, collection_name: str) -> None:
+        """Starts indexing on the given collection. Equivalent to pressing the play button in the
         interface. This function will return the response from the sinequa server and then the
         server will run the collection on it's own without restraining the python execution.
 
