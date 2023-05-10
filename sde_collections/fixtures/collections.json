@@ -3,7 +3,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "NAVO Registry",
-            "config_folder": "",
+            "config_folder": "navo_registry",
             "url": "",
             "turned_on": false,
             "division": 1,
@@ -26,7 +26,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Coordinate Calculator",
-            "config_folder": "",
+            "config_folder": "coordinate_calculator",
             "url": "http://ned.ipac.caltech.edu/coordinate_calculator",
             "turned_on": false,
             "division": 1,
@@ -49,7 +49,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Extinction Calculator",
-            "config_folder": "",
+            "config_folder": "extinction_calculator",
             "url": "http://ned.ipac.caltech.edu/extinction_calculator",
             "turned_on": false,
             "division": 1,
@@ -72,7 +72,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Velocity Calculator",
-            "config_folder": "",
+            "config_folder": "velocity_calculator",
             "url": "http://ned.ipac.caltech.edu/velocity_calculator",
             "turned_on": false,
             "division": 1,
@@ -95,7 +95,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "High Level Science Products",
-            "config_folder": "",
+            "config_folder": "high_level_science_products",
             "url": "https://archive.stsci.edu/hlsp/",
             "turned_on": false,
             "division": 1,
@@ -118,7 +118,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "MAST Web Services",
-            "config_folder": "",
+            "config_folder": "mast_web_services",
             "url": "https://archive.stsci.edu/vo/mast_services.html",
             "turned_on": false,
             "division": 1,
@@ -141,7 +141,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "MAST API Search",
-            "config_folder": "",
+            "config_folder": "mast_api_search",
             "url": "https://mast.stsci.edu/api/v0/",
             "turned_on": false,
             "division": 1,
@@ -164,7 +164,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Astroquery API Search (MAST Queries)",
-            "config_folder": "",
+            "config_folder": "astroquery_api_search_mast_queries",
             "url": "https://astroquery.readthedocs.io/en/latest/mast/mast.html",
             "turned_on": false,
             "division": 1,
@@ -187,7 +187,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Exoplanet Atmosphere Observability Table",
-            "config_folder": "",
+            "config_folder": "exoplanet_atmosphere_observability_table",
             "url": "https://catalogs.mast.stsci.edu/eaot/",
             "turned_on": false,
             "division": 1,
@@ -210,7 +210,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Pan-STARRS Catalog",
-            "config_folder": "",
+            "config_folder": "pan_starrs_catalog",
             "url": "https://catalogs.mast.stsci.edu/panstarrs/",
             "turned_on": false,
             "division": 1,
@@ -233,7 +233,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Pan-STARRS Catalog API",
-            "config_folder": "",
+            "config_folder": "pan_starrs_catalog_api",
             "url": "https://catalogs.mast.stsci.edu/docs/panstarrs.html#catalog-overview",
             "turned_on": false,
             "division": 1,
@@ -256,7 +256,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "MAST Query/CasJobs",
-            "config_folder": "",
+            "config_folder": "mast_query_casjobs",
             "url": "http://mastweb.stsci.edu/mcasjobs/",
             "turned_on": false,
             "division": 1,
@@ -279,7 +279,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "exo.MAST",
-            "config_folder": "",
+            "config_folder": "exo_mast",
             "url": "https://exo.mast.stsci.edu/",
             "turned_on": false,
             "division": 1,
@@ -302,7 +302,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "MAST Portal",
-            "config_folder": "",
+            "config_folder": "mast_portal",
             "url": "https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html",
             "turned_on": false,
             "division": 1,
@@ -325,7 +325,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Virtual Observatory Information",
-            "config_folder": "",
+            "config_folder": "virtual_observatory_information",
             "url": "http://vao.stsci.edu/keyword-search/",
             "turned_on": false,
             "division": 1,
@@ -348,7 +348,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Co-plotter",
-            "config_folder": "",
+            "config_folder": "co_plotter",
             "url": "https://archive.stsci.edu/canvas/coplot.html",
             "turned_on": false,
             "division": 1,
@@ -371,7 +371,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Z.MAST Search",
-            "config_folder": "",
+            "config_folder": "z_mast_search",
             "url": "https://z.mast.stsci.edu/",
             "turned_on": false,
             "division": 1,
@@ -394,7 +394,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Hubble Source Catalog Search",
-            "config_folder": "",
+            "config_folder": "hubble_source_catalog_search",
             "url": "https://catalogs.mast.stsci.edu/hsc/",
             "turned_on": false,
             "division": 1,
@@ -417,7 +417,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Space Telescope Bibliographic Search",
-            "config_folder": "",
+            "config_folder": "space_telescope_bibliographic_search",
             "url": "https://archive.stsci.edu/bibliography/index.html#/",
             "turned_on": false,
             "division": 1,
@@ -440,7 +440,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Archived Synthetic Data",
-            "config_folder": "",
+            "config_folder": "archived_synthetic_data",
             "url": "https://archive.stsci.edu/asdi",
             "turned_on": false,
             "division": 1,
@@ -463,7 +463,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Spectral Classes of Like Stars",
-            "config_folder": "",
+            "config_folder": "spectral_classes_of_like_stars",
             "url": "https://archive.stsci.edu/spec_class/search.php",
             "turned_on": false,
             "division": 1,
@@ -486,7 +486,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Skiff Spectral Catalog Search",
-            "config_folder": "",
+            "config_folder": "skiff_spectral_catalog_search",
             "url": "https://archive.stsci.edu/spec_class/search2.php",
             "turned_on": false,
             "division": 1,
@@ -509,7 +509,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "IRSA API",
-            "config_folder": "",
+            "config_folder": "irsa_api",
             "url": "https://irsa.ipac.caltech.edu/applications/Gator/GatorAid/irsa/catsearch.html",
             "turned_on": false,
             "division": 1,
@@ -532,7 +532,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Herschel Data Search",
-            "config_folder": "",
+            "config_folder": "herschel_data_search",
             "url": "https://irsa.ipac.caltech.edu/applications/Herschel",
             "turned_on": false,
             "division": 1,
@@ -555,7 +555,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "SWAS Spectrum Server",
-            "config_folder": "",
+            "config_folder": "swas_spectrum_server",
             "url": "https://irsa.ipac.caltech.edu/applications/SWAS/SWAS/",
             "turned_on": false,
             "division": 1,
@@ -578,7 +578,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "SWAS API Search",
-            "config_folder": "",
+            "config_folder": "swas_api_search",
             "url": "https://irsa.ipac.caltech.edu/applications/SWAS/SWAS/SWASAid/ProgramInterface.html",
             "turned_on": false,
             "division": 1,
@@ -601,7 +601,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Atlas API Search",
-            "config_folder": "",
+            "config_folder": "atlas_api_search",
             "url": "https://irsa.ipac.caltech.edu/applications/Atlas/AtlasProgramInterface.html",
             "turned_on": false,
             "division": 1,
@@ -624,7 +624,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "SSA Queries",
-            "config_folder": "",
+            "config_folder": "ssa_queries",
             "url": "https://irsa.ipac.caltech.edu/ibe/ssa.html",
             "turned_on": false,
             "division": 1,
@@ -647,7 +647,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "VO Simple Cone Search",
-            "config_folder": "",
+            "config_folder": "vo_simple_cone_search",
             "url": "https://irsa.ipac.caltech.edu/docs/vo_scs.html",
             "turned_on": false,
             "division": 1,
@@ -670,7 +670,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "IRSA VOTable Access Protocol",
-            "config_folder": "",
+            "config_folder": "irsa_votable_access_protocol",
             "url": "https://irsa.ipac.caltech.edu/docs/program_interface/TAP.html",
             "turned_on": false,
             "division": 1,
@@ -693,7 +693,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "2MASS Interactive Image Service",
-            "config_folder": "",
+            "config_folder": "2mass_interactive_image_service",
             "url": "https://irsa.ipac.caltech.edu/applications/2MASS/IM/interactive.html",
             "turned_on": false,
             "division": 1,
@@ -716,7 +716,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "2MASS Image Inventory Search",
-            "config_folder": "",
+            "config_folder": "2mass_image_inventory_search",
             "url": "https://irsa.ipac.caltech.edu/applications/2MASS/IM/inventory.html",
             "turned_on": false,
             "division": 1,
@@ -739,7 +739,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "2MASS Batch Image Service",
-            "config_folder": "",
+            "config_folder": "2mass_batch_image_service",
             "url": "https://irsa.ipac.caltech.edu/applications/2MASS/IM/batch.html",
             "turned_on": false,
             "division": 1,
@@ -762,7 +762,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "2MASS API Search",
-            "config_folder": "",
+            "config_folder": "2mass_api_search",
             "url": "https://irsa.ipac.caltech.edu/applications/2MASS/IM/docs/siahelp.html",
             "turned_on": false,
             "division": 1,
@@ -785,7 +785,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Image and Spectrum Server (Atlas)",
-            "config_folder": "",
+            "config_folder": "image_and_spectrum_server_atlas",
             "url": "https://irsa.ipac.caltech.edu/applications/Atlas/",
             "turned_on": false,
             "division": 1,
@@ -808,7 +808,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "IPAC Table Validator",
-            "config_folder": "",
+            "config_folder": "ipac_table_validator",
             "url": "https://irsa.ipac.caltech.edu/applications/TblValidator/",
             "turned_on": false,
             "division": 1,
@@ -831,7 +831,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Galactic Dust Reddening and Extinction",
-            "config_folder": "",
+            "config_folder": "galactic_dust_reddening_and_extinction",
             "url": "https://irsa.ipac.caltech.edu/applications/DUST/",
             "turned_on": false,
             "division": 1,
@@ -854,7 +854,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Background Model",
-            "config_folder": "",
+            "config_folder": "background_model",
             "url": "https://irsa.ipac.caltech.edu/applications/BackgroundModel/",
             "turned_on": false,
             "division": 1,
@@ -877,7 +877,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "IRSA IDL Tools",
-            "config_folder": "",
+            "config_folder": "irsa_idl_tools",
             "url": "https://irsa.ipac.caltech.edu/tools/irsa_idl.html",
             "turned_on": false,
             "division": 1,
@@ -900,7 +900,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Image Validation",
-            "config_folder": "",
+            "config_folder": "image_validation",
             "url": "https://irsa.ipac.caltech.edu/applications/ImageValidate/",
             "turned_on": false,
             "division": 1,
@@ -923,7 +923,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Object/Coordinate Lookup",
-            "config_folder": "",
+            "config_folder": "object_coordinate_lookup",
             "url": "https://irsa.ipac.caltech.edu/applications/Lookup/",
             "turned_on": false,
             "division": 1,
@@ -946,7 +946,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Montage Mosaic Engine",
-            "config_folder": "",
+            "config_folder": "montage_mosaic_engine",
             "url": "http://montage.ipac.caltech.edu/",
             "turned_on": false,
             "division": 1,
@@ -969,7 +969,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Planck Data Tools",
-            "config_folder": "",
+            "config_folder": "planck_data_tools",
             "url": "https://irsa.ipac.caltech.edu/data/Planck/release_1/software/index.html",
             "turned_on": false,
             "division": 1,
@@ -992,7 +992,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "MOST",
-            "config_folder": "",
+            "config_folder": "most",
             "url": "https://irsa.ipac.caltech.edu/applications/MOST/",
             "turned_on": false,
             "division": 1,
@@ -1015,7 +1015,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "WISE/NEOWISE Coadder",
-            "config_folder": "",
+            "config_folder": "wise_neowise_coadder",
             "url": "https://irsa.ipac.caltech.edu/applications/ICORE/",
             "turned_on": false,
             "division": 1,
@@ -1038,7 +1038,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Scanpi",
-            "config_folder": "",
+            "config_folder": "scanpi",
             "url": "https://irsa.ipac.caltech.edu/applications/Scanpi/",
             "turned_on": false,
             "division": 1,
@@ -1061,7 +1061,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "HIRES",
-            "config_folder": "",
+            "config_folder": "hires",
             "url": "https://irsa.ipac.caltech.edu/applications/Hires/",
             "turned_on": false,
             "division": 1,
@@ -1084,7 +1084,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "HEASARC Browse Batch Interface",
-            "config_folder": "",
+            "config_folder": "heasarc_browse_batch_interface",
             "url": "https://heasarc.gsfc.nasa.gov/FTP/heasarc/software/web_batch/browse_extract_wget.pl",
             "turned_on": false,
             "division": 1,
@@ -1107,7 +1107,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "HEASARC Download Scripts",
-            "config_folder": "",
+            "config_folder": "heasarc_download_scripts",
             "url": "https://heasarc.gsfc.nasa.gov/docs/cookbook/command_line_downloads.html",
             "turned_on": false,
             "division": 1,
@@ -1130,7 +1130,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "VAO Datascope",
-            "config_folder": "",
+            "config_folder": "vao_datascope",
             "url": "https://heasarc.gsfc.nasa.gov/cgi-bin/vo/datascope/init.pl",
             "turned_on": false,
             "division": 1,
@@ -1153,7 +1153,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Exoplanet Follow-up Observing Program",
-            "config_folder": "",
+            "config_folder": "exoplanet_follow_up_observing_program",
             "url": "https://exofop.ipac.caltech.edu/tess/",
             "turned_on": false,
             "division": 1,
@@ -1176,7 +1176,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "ExoFOP-K2 Campaign 9",
-            "config_folder": "",
+            "config_folder": "exofop_k2_campaign_9",
             "url": "https://exofop.ipac.caltech.edu/k2/microlensing/",
             "turned_on": false,
             "division": 1,
@@ -1199,7 +1199,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "KOA Program-Friendly Image Access Service",
-            "config_folder": "",
+            "config_folder": "koa_program_friendly_image_access_service",
             "url": "https://koa.ipac.caltech.edu/UserGuide/program_interface.html",
             "turned_on": false,
             "division": 1,
@@ -1222,7 +1222,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "PyKOA",
-            "config_folder": "",
+            "config_folder": "pykoa",
             "url": "https://koa.ipac.caltech.edu/UserGuide/PyKOA/PyKOA.html",
             "turned_on": false,
             "division": 1,
@@ -1245,7 +1245,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "NEID Archive",
-            "config_folder": "",
+            "config_folder": "neid_archive",
             "url": "https://neid.ipac.caltech.edu/search.php",
             "turned_on": false,
             "division": 1,
@@ -1268,7 +1268,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "NEID Solar Radial Velocity Archive",
-            "config_folder": "",
+            "config_folder": "neid_solar_radial_velocity_archive",
             "url": "https://neid.ipac.caltech.edu/search_solar.php",
             "turned_on": false,
             "division": 1,
@@ -1291,7 +1291,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "LBTI Archive",
-            "config_folder": "",
+            "config_folder": "lbti_archive",
             "url": "https://lbti.ipac.caltech.edu/cgi-bin/LBTI/nph-lbtiLogin?submitLogin=Login&datalevel=l2&cmd=init",
             "turned_on": false,
             "division": 1,
@@ -1314,7 +1314,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "CoRoT Exoplanet Archive-ETSS Data Sets",
-            "config_folder": "",
+            "config_folder": "corot_exoplanet_archive_etss_data_sets",
             "url": "https://exoplanetarchive.ipac.caltech.edu/docs/datasethelp/ETSS_CoRoT.html",
             "turned_on": false,
             "division": 1,
@@ -1337,7 +1337,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Contributed Datasets in the Exoplanet Archive",
-            "config_folder": "",
+            "config_folder": "contributed_datasets_in_the_exoplanet_archive",
             "url": "https://exoplanetarchive.ipac.caltech.edu/docs/contributed_data.html",
             "turned_on": false,
             "division": 1,
@@ -1360,7 +1360,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "MAST",
-            "config_folder": "",
+            "config_folder": "mast",
             "url": "https://archive.stsci.edu/",
             "turned_on": false,
             "division": 1,
@@ -1383,7 +1383,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "NExScI",
-            "config_folder": "",
+            "config_folder": "nexsci",
             "url": "https://nexsci.caltech.edu/",
             "turned_on": false,
             "division": 1,
@@ -1406,7 +1406,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "IRSA",
-            "config_folder": "",
+            "config_folder": "irsa",
             "url": "https://irsa.ipac.caltech.edu/frontpage/",
             "turned_on": false,
             "division": 1,
@@ -1429,7 +1429,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "MAST Hubble Search",
-            "config_folder": "",
+            "config_folder": "mast_hubble_search",
             "url": "https://mast.stsci.edu/search/ui/#/hst",
             "turned_on": false,
             "division": 1,
@@ -1452,7 +1452,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Planetary Image Galleries",
-            "config_folder": "",
+            "config_folder": "planetary_image_galleries",
             "url": "https://pds-rings.seti.org/galleries.html",
             "turned_on": false,
             "division": 5,
@@ -1475,7 +1475,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Viewmaster Data - Volumes",
-            "config_folder": "",
+            "config_folder": "viewmaster_data_volumes",
             "url": "https://pds-rings.seti.org/viewmaster/volumes",
             "turned_on": false,
             "division": 5,
@@ -1498,7 +1498,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Viewmaster Data - Calibrated",
-            "config_folder": "",
+            "config_folder": "viewmaster_data_calibrated",
             "url": "https://pds-rings.seti.org/viewmaster/calibrated",
             "turned_on": false,
             "division": 5,
@@ -1521,7 +1521,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Viewmaster Data - Previews",
-            "config_folder": "",
+            "config_folder": "viewmaster_data_previews",
             "url": "https://pds-rings.seti.org/viewmaster/previews",
             "turned_on": false,
             "division": 5,
@@ -1544,7 +1544,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Viewmaster Data - Diagrams",
-            "config_folder": "",
+            "config_folder": "viewmaster_data_diagrams",
             "url": "https://pds-rings.seti.org/viewmaster/diagrams",
             "turned_on": false,
             "division": 5,
@@ -1567,7 +1567,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Viewmaster Data Archives - Volumes",
-            "config_folder": "",
+            "config_folder": "viewmaster_data_archives_volumes",
             "url": "https://pds-rings.seti.org/viewmaster/archives-volumes",
             "turned_on": false,
             "division": 5,
@@ -1590,7 +1590,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Viewmaster Data Archives - Calibrated",
-            "config_folder": "",
+            "config_folder": "viewmaster_data_archives_calibrated",
             "url": "https://pds-rings.seti.org/viewmaster/archives-calibrated",
             "turned_on": false,
             "division": 5,
@@ -1613,7 +1613,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Viewmaster Data Archives - Previews",
-            "config_folder": "",
+            "config_folder": "viewmaster_data_archives_previews",
             "url": "https://pds-rings.seti.org/viewmaster/archives-previews",
             "turned_on": false,
             "division": 5,
@@ -1636,7 +1636,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Viewmaster Data Archives - Diagrams",
-            "config_folder": "",
+            "config_folder": "viewmaster_data_archives_diagrams",
             "url": "https://pds-rings.seti.org/viewmaster/archives-diagrams",
             "turned_on": false,
             "division": 5,
@@ -1659,7 +1659,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Viewmaster Documents",
-            "config_folder": "",
+            "config_folder": "viewmaster_documents",
             "url": "https://pds-rings.seti.org/viewmaster/documents",
             "turned_on": false,
             "division": 5,
@@ -1682,7 +1682,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Venus Data Archive",
-            "config_folder": "",
+            "config_folder": "venus_data_archive",
             "url": "https://atmos.nmsu.edu/data_and_services/atmospheres_data/VENUS/venus_matrix.html",
             "turned_on": false,
             "division": 5,
@@ -1705,7 +1705,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Small Bodies Node Data by Type of Observation",
-            "config_folder": "",
+            "config_folder": "small_bodies_node_data_by_type_of_observation",
             "url": "https://pds-smallbodies.astro.umd.edu/data_sb/by_datatype.shtml",
             "turned_on": false,
             "division": 5,
@@ -1728,7 +1728,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Small Bodies Node Data by Target Type",
-            "config_folder": "",
+            "config_folder": "small_bodies_node_data_by_target_type",
             "url": "https://pds-smallbodies.astro.umd.edu/data_sb/by_target.shtml",
             "turned_on": false,
             "division": 5,
@@ -1751,7 +1751,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "FTP Access",
-            "config_folder": "",
+            "config_folder": "ftp_access",
             "url": "https://pds-geosciences.wustl.edu/dataserv/anonftp.html",
             "turned_on": false,
             "division": 5,
@@ -1774,7 +1774,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Index",
-            "config_folder": "",
+            "config_folder": "index",
             "url": "https://pds-geosciences.wustl.edu/mro/mro-m-crism-4-speclib-v1/mrocr_90xx/index/",
             "turned_on": false,
             "division": 5,
@@ -1797,7 +1797,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "PDS Geosciences Node Community",
-            "config_folder": "",
+            "config_folder": "pds_geosciences_node_community",
             "url": "https://geoweb.rsl.wustl.edu/community/",
             "turned_on": false,
             "division": 5,
@@ -1820,7 +1820,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "Data Set Status",
-            "config_folder": "",
+            "config_folder": "data_set_status",
             "url": "https://pds.nasa.gov/datasearch/ds-status/",
             "turned_on": false,
             "division": 5,
@@ -1843,7 +1843,7 @@
         "model": "sde_collections.collection",
         "fields": {
             "name": "PDS Data Dictionary Search",
-            "config_folder": "",
+            "config_folder": "pds_data_dictionary_search",
             "url": "https://pds.nasa.gov/tools/dd-search/",
             "turned_on": false,
             "division": 5,
