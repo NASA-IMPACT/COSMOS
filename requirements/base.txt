@@ -20,6 +20,6 @@ django-redis==5.2.0  # https://github.com/jazzband/django-redis
 
 # project-specific
 django-treebeard==4.7
-scrapy==2.8.0
+scrapy==2.9.0
 xmltodict==0.13.0
 djangorestframework==3.14.0
