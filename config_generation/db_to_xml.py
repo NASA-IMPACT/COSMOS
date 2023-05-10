@@ -1,3 +1,4 @@
+import os
 import re
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -18,13 +19,48 @@ class XmlEditor:
         """takes the path of an xml file and opens it as an ElementTree object"""
         return ET.parse(xml_path)
 
-    def write_xml(self, output_path: str) -> None:
-        """takes the self.xml_tree ElementTree object and writes it to an output path"""
+    def _write_xml(self, output_path: str) -> None:
+        """
+        takes the self.xml_tree ElementTree object and writes it to an output path
+
+        although this function can be used on it's own to write a one-off file, most
+        config files are actually called default.xml and nested inside a folder,
+        therefore create_config_folder_and_default is the usual way to make files
+        """
+
         xml_root = self.xml_tree.getroot()
         pretty_xml = self.prettify(xml_root)
 
         with open(output_path, "w", encoding="utf-8") as output_file:
             output_file.write(pretty_xml)
+
+    def create_folder_if_needed(self, folder_path: str):
+        """
+        sinequa configs are source_name/collection_name/default.xml
+        this function helps make the collection_name folder
+        folder path is a full exact path ending in a potential collection_name folder
+        """
+
+        try:
+            os.makedirs(folder_path)
+        except FileExistsError:
+            pass
+        except OSError as error:
+            print(f"Error creating folder '{folder_path}': {error}")
+
+    def create_config_folder_and_default(self, source_name, collection_name):
+        """
+        sinequa configs are source_name/collection_name/default.xml
+        makes a folder named after the collection with a default.xml inside of it
+        does this inside of the the specified source folder
+        """
+
+        # Create a folder named after source inside the desired directory
+        config_folder_path = os.path.join(source_name, collection_name)
+        self.create_folder_if_needed(config_folder_path)
+        xml_path = os.path.join(config_folder_path, "default.xml")
+
+        self._write_xml(xml_path)
 
     def expand_empty_tags(self, xml_string: str) -> str:
         """
@@ -98,81 +134,44 @@ class XmlEditor:
         """
         self.update_or_add_element_value("Url", url)
 
-    # def add_title_mapping(
-    #     self, title_value: str, title_criteria: str
-    # ) -> ET.ElementTree:
-    #     xml_root = self.xml_tree.getroot()
+    def add_title_mapping(
+        self, title_value: str, title_criteria: str
+    ) -> ET.ElementTree:
+        xml_root = self.xml_tree.getroot()
 
-    #     mapping = ET.Element("Mapping")
-    #     ET.SubElement(mapping, "Name").text = "title"
-    #     ET.SubElement(mapping, "Description").text = "Custom title for certain criteria"
-    #     ET.SubElement(mapping, "Value").text = title_value
-    #     ET.SubElement(mapping, "Selection").text = title_criteria
-    #     xml_root.append(mapping)
+        # create a title mapping
+        mapping = ET.Element("Mapping")
+        ET.SubElement(mapping, "Name").text = "title"
+        ET.SubElement(mapping, "Description").text = "Custom title for certain criteria"
+        ET.SubElement(mapping, "Value").text = f"&quot;{title_value}&quot;"
+        ET.SubElement(mapping, "Selection").text = f"url1 = {title_criteria}"
 
-    #     # TODO: is this function correct?
-    #     self.xml_tree = xml_tree
+        # add the mapping to the xml
+        xml_root.append(mapping)
 
-    # def add_indexing_filter(self, xpath: str) -> ET.ElementTree:
-    #     # TODO: is this function correct?
-    #     xml_root = self.xml_tree.getroot()
+    def add_xpath_indexing_filter(self, xpath: str) -> ET.ElementTree:
+        # TODO: take in selection as an arg
+        """filters out the content of an xpath from being indexed along with the document"""
 
-    #     mapping = ET.Element("IndexingFilter")
-    #     ET.SubElement(mapping, "XPath").text = xpath
+        xml_root = self.xml_tree.getroot()
 
-    #     xml_root.append(mapping)
+        mapping = ET.Element("IndexingFilter")
+        ET.SubElement(mapping, "XPath").text = xpath
+        ET.SubElement(mapping, "IncludeMode").text = "false"
+        ET.SubElement(mapping, "Selection").text = ""
+        xml_root.append(mapping)
 
-    #     self.xml_tree = xml_root
-    #     return xml_tree
-
-    # def add_tree_root(xml_tree: ET.ElementTree, tree_root: str) -> ET.ElementTree:
-    #     xml_root = xml_tree.getroot()
-    #     ET.SubElement(xml_root, "TreeRoot").text = tree_root
-    #     return xml_tree
-
-    # def add_url_exclude(xml_tree: ET.ElementTree, url: str) -> ET.ElementTree:
-    #     # TODO: replace this with the linking exclude
-    #     xml_root = xml_tree.getroot()
-    #     ET.SubElement(xml_root, "UrlIndexExcluded").text = url
-    #     return xml_tree
+    def add_url_exclude(self, url_pattern: str) -> ET.ElementTree:
+        """
+        excludes a url or url pattern, such as
+        - https://webb.nasa.gov/content/forEducators/realworld*
+        - https://webb.nasa.gov/content/features/index.html
+        - *.rtf
+        """
+        xml_root = self.xml_tree.getroot()
+        ET.SubElement(
+            xml_root, "UrlIndexExcluded"
+        ).text = url_pattern  # this adds an indexing rule (doesn't overwrite)
 
 
-# def example_full_create() -> None:
-#     tree_root = "/Webb/"
-#     primary_url = "https://webb.nasa.gov/"
-#     title_data = [
-#         {"title_value": "My Custom Title", "title_criteria": "my pattern"},
-#     ]
-#     indexing_filters = [
-#         {
-#             "xpath": '//*[@id="jwstFooter"]',
-#         },
-#         {"xpath": '//*[@id="ssdBgWrapper"]/header'},
-#     ]
-
-#     url_excludes = [
-#         "https://webb.nasa.gov/content/forEducators/realworld*",
-#         "*.rtf",
-#         "https://webb.nasa.gov/content/features/index.html",
-#         "https://webb.nasa.gov/content/features/jwstArt/index.html",
-#         "https://webb.nasa.gov/content/webbLaunch/whereIsWebb*",
-#         "https://webb.nasa.gov/content/webbLaunch/news.html",
-#         "https://webb.nasa.gov/index.html",
-#         "https://webb.nasa.gov/index.html",
-#         "https://webb.nasa.gov/content/news/webbBuildStatusArchive.html",
-#         "https://webb.nasa.gov/content/news/index.html",
-#         "https://webb.nasa.gov/content/news/",
-#     ]
-
-#     xml_tree = get_tree()
-
-#     xml_tree = add_primary_url(xml_tree, primary_url)
-#     xml_tree = add_tree_root(xml_tree, tree_root)
-#     for url in url_excludes:
-#         xml_tree = add_url_exclude(xml_tree, url)
-#     for title_dict in title_data:
-#         xml_tree = add_title_mapping(xml_tree=xml_tree, **title_dict)
-#     for indexing_dict in indexing_filters:
-#         xml_tree = add_indexing_filter(xml_tree=xml_tree, **indexing_dict)
-
-#     write_xml(xml_tree, "output.xml")
+# todo: get rid of htm,html when making scrapers
