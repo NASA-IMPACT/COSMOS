@@ -73,6 +73,17 @@ $(".url_part_button").on("click", function () {
     });
 });
 
+$('.exclude_individual_url').on("click", function () {
+    $.post('/api/exclude-patterns/', {
+        collection: collection_id,
+        match_pattern: $(this).attr("value"),
+        csrfmiddlewaretoken: csrftoken
+    }, function (response) {
+        console.log(response);
+        window.location.reload();
+    });
+});
+
 
 
 function add_exclude_pattern(pattern) {

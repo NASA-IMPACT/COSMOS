@@ -41,6 +41,10 @@
                         {% endif %}
                     </td>
                     <td>
+                        <button class="btn btn-xs btn-danger exclude_individual_url"
+                                value="{{ candidate_url.url }}">
+                            <i class="material-icons">delete</i>
+                        </button>
                         <a href="{{ candidate_url.url }}"
                            target="_blank"
                            data-url="/api/candidate-urls/{{ candidate_url.id }}/"
