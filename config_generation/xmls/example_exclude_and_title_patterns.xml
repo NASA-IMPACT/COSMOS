@@ -21,6 +21,15 @@
     <DefaultValue />
 </Mapping>
 
+<!-- set title based on if empty + xpath criteria -->
+<Mapping>
+    <Name>title</Name>
+    <Value>IfEmpty(Concat(xpath:/html/body/div/div/div/p[1]/font, ' ',
+        xpath:/html/body/div/div/div/p[1]/font[2]),xpath:/html/head/title)</Value>
+    <Description>Helio Events Title</Description>
+    <Selection></Selection>
+    <DefaultValue></DefaultValue>
+</Mapping>
 
 <!-- exclude an exact url -->
 <UrlIndexExcluded>https://webb.nasa.gov/content/news/webbBuildStatusArchive.html</UrlIndexExcluded>
