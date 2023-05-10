@@ -54,12 +54,12 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         self.collection = Collection.objects.get(pk=self.kwargs["pk"])
-        self.hide_excluded = self.request.GET.get("is_excluded")
+        self.is_excluded = self.request.GET.get("is_excluded")
         queryset = super().get_queryset().filter(collection=self.collection)
-        if self.hide_excluded == "true":
-            queryset = queryset.filter(excluded=False)
-        elif self.hide_excluded == "false":
+        if self.is_excluded == "true":
             queryset = queryset.exclude(excluded=False)
+        elif self.is_excluded == "false":
+            queryset = queryset.filter(excluded=False)
         return queryset
 
     def get_context_data(self, **kwargs):
