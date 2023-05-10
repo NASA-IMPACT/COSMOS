@@ -64,7 +64,7 @@ $("#visited_bool").on("click", function () {
 
 $(".url_part_button").on("click", function () {
     $.post('/api/exclude-patterns/', {
-        collection: '85',
+        collection: collection_id,
         match_pattern: $(this).attr("value"),
         csrfmiddlewaretoken: csrftoken
     }, function (response) {
@@ -125,7 +125,7 @@ $("body").on("click", ".delete_input", function () {
 $("body").on("click", ".add_new_pattern", function () {
     let pattern = $(this).parents(".pattern_row").find("input").val();
     $.post('/api/exclude-patterns/', {
-        collection: '85',
+        collection: collection_id,
         match_pattern: pattern,
         csrfmiddlewaretoken: csrftoken
     }, function (response) {
@@ -150,8 +150,9 @@ $(".new-title").on("change", function () {
     });
 });
 
-$(".url_link").on("click", function () {
+$(".url_link").on("click", function (event) {
     let url = $(this).attr("data-url");
+    let $mylink = $(this);
     console.log(url);
     $.ajax({
         url: url,
@@ -164,8 +165,8 @@ $(".url_link").on("click", function () {
             'X-CSRFToken': csrftoken
         },
         success: function (data) {
-            console.log(data);
-            window.location.reload();
+            $mylink.closest('tr').find('.text-center i').css('color', 'green').text('done');
         },
     });
+    return true;
 });
