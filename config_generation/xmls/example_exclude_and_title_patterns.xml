@@ -1,0 +1,31 @@
+<!-- exclude xpaths within a document -->
+<IndexingFilter>
+    <XPath>//*[@id=&quot;ssdBgWrapper&quot;]/header</XPath>
+    <IncludeMode>false</IncludeMode>
+    <Selection />
+</IndexingFilter>
+
+<IndexingFilter>
+    <XPath>//*[@id=&quot;jwstFooter&quot;]</XPath>
+    <IncludeMode>false</IncludeMode>
+    <Selection />
+</IndexingFilter>
+
+
+<!-- set an exact title for an exact url -->
+<Mapping>
+    <Name>title</Name>
+    <Value>&quot;Images of James Web for Press&quot;</Value>
+    <Description />
+    <Selection>url1 = 'https://webb.nasa.gov/content/forPress/index.html'</Selection>
+    <DefaultValue />
+</Mapping>
+
+
+<!-- exclude an exact url -->
+<UrlIndexExcluded>https://webb.nasa.gov/content/news/webbBuildStatusArchive.html</UrlIndexExcluded>
+
+
+<!-- exclude a url based on a star pattern -->
+<UrlIndexExcluded>https://webb.nasa.gov/content/forEducators/realworld*</UrlIndexExcluded>
+<UrlIndexExcluded>*.rtf</UrlIndexExcluded>
