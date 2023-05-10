@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import models
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from rest_framework import viewsets
@@ -21,6 +22,14 @@ class CollectionListView(LoginRequiredMixin, ListView):
     model = Collection
     template_name = "sde_collections/collection_list.html"
     context_object_name = "collections"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .annotate(num_candidate_urls=models.Count("candidate_urls"))
+            .order_by("-num_candidate_urls")
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
