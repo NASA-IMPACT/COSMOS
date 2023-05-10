@@ -36,11 +36,19 @@ class Api:
 
         self.process_response(url, payload)
 
-    def run_indexer(self, collection_name="quotes"):
+    def run_indexer(self, source_name, collection_name):
+        """Starts indexing on the given collection. Equivelent to pressing the play button in the
+        interface. This function will return the response from the sinequa server and then the
+        server will run the collection on it's own without restraining the python execution.
+
+        Args:
+            source_name (str): this is the name of the source in sinequa, for example, Scraping or SMD
+            collection_name (str): for example astro_home_page
+        """
         url = f"{self.base_url}/api/v1/operation.collectionStart"
 
         payload = {
-            "collection": f"/Scraping/{collection_name}/",
+            "collection": f"/{source_name}/{collection_name}/",
         }
 
         self.process_response(url, payload)
