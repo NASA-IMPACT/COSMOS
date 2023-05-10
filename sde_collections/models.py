@@ -2,7 +2,6 @@ import re
 from urllib.parse import urlparse
 
 from django.db import models
-from django.db.models import Case, Count, When
 
 from .sinequa_utils import Sinequa
 
@@ -158,21 +157,20 @@ class Collection(models.Model):
         super().save(*args, **kwargs)
 
 
-class CandidateURLManager(models.Manager):
-    def get_queryset(self):
-        # Annotate the queryset with whether the count of the many-to-many field is zero
-        return (
-            super()
-            .get_queryset()
-            .annotate(
-                excluded=Case(
-                    When(excluded__isnull=True, then=False),
-                    When(Count("excluded") == 0, then=False),
-                    default=True,
-                    output_field=models.BooleanField(),
+class CandidateURLQuerySet(models.QuerySet):
+    def with_exclusion_status(self):
+        return self.annotate(
+            excluded=models.Exists(
+                ExcludePattern.candidate_urls.through.objects.filter(
+                    candidateurl=models.OuterRef("pk")
                 )
             )
         )
+
+
+class CandidateURLManager(models.Manager):
+    def get_queryset(self):
+        return CandidateURLQuerySet(self.model, using=self._db).with_exclusion_status()
 
 
 class CandidateURL(models.Model):
@@ -200,6 +198,7 @@ class CandidateURL(models.Model):
         "Level", default=0, blank=True, help_text="Level in the tree. Based on /."
     )
     visited = models.BooleanField(default=False)
+    objects = CandidateURLManager()
 
     class Meta:
         """Meta definition for Candidate URL."""

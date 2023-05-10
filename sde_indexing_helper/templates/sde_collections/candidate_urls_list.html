@@ -9,6 +9,7 @@
 {% endblock stylesheets %}
 {% block javascripts %}
     {{ block.super }}
+    <script>var collection_id = "{{ collection.id }}";</script>
     <script defer src="{% static 'js/candidate_url_list.js' %}"></script>
     <script src="//code.jquery.com/jquery-3.6.4.min.js"
             integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
@@ -16,7 +17,7 @@
 {% endblock javascripts %}
 {% block content %}
     <h3>
-        Candidate URLs for <strong>{{ collection.name }}</strong>
+        Showing {{ candidate_urls.count }} Candidate URLs for <strong>{{ collection.name }}</strong>
     </h3>
     <table class="table">
         <thead>
@@ -34,7 +35,7 @@
         </thead>
         <tbody>
             {% for candidate_url in candidate_urls %}
-                <tr>
+                <tr {% if candidate_url.excluded %}class="table-danger"{% endif %}>
                     <td class="text-center">
                         {% if candidate_url.visited %}
                             <i class="material-icons" style="color: green;">done</i>
