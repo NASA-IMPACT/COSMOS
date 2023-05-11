@@ -19,6 +19,23 @@ class XmlEditor:
         """takes the path of an xml file and opens it as an ElementTree object"""
         return ET.parse(xml_path)
 
+    def _add_declaration(self, output_path):
+        declaration = """<?xml version="1.0" encoding="utf-8"?>"""
+        with open(output_path, "r+") as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(declaration.rstrip("\r\n") + "\n" + content)
+
+    def _update_config_xml(self, output_path):
+        self.xml_tree.write(
+            output_path,
+            method="html",
+            encoding="utf-8",
+            xml_declaration=True,
+        )
+
+        self._add_declaration(output_path)
+
     def _write_xml(self, output_path: str) -> None:
         """
         takes the self.xml_tree ElementTree object and writes it to an output path
@@ -60,7 +77,8 @@ class XmlEditor:
         self.create_folder_if_needed(config_folder_path)
         xml_path = os.path.join(config_folder_path, "default.xml")
 
-        self._write_xml(xml_path)
+        # self._write_xml(xml_path)
+        self._update_config_xml(xml_path)
 
     def expand_empty_tags(self, xml_string: str) -> str:
         """
@@ -130,6 +148,7 @@ class XmlEditor:
     def convert_scraper_to_indexer(self) -> None:
         # this is specialized for the production instance right now
         self.update_or_add_element_value("Indexers", "")
+        self.update_or_add_element_value("Plugin", "")
         self.update_or_add_element_value(
             "Identity", "NodeIndexer1/identity0"
         )  # maybe make this blank?
@@ -148,7 +167,13 @@ class XmlEditor:
         """
         self.update_or_add_element_value("Url", url)
 
-    def _generic_mapping(self, name="", description="", value="", selection=""):
+    def _generic_mapping(
+        self,
+        name: str = "",
+        description: str = "",
+        value: str = "",
+        selection: str = "",
+    ):
         """
         most mappings take the same fields, so this gives a generic way to make a mapping
         """
@@ -167,8 +192,8 @@ class XmlEditor:
     ) -> ET.ElementTree:
         self._generic_mapping(
             name="title",
-            value=f"&quot;{title_value}&quot;",
-            selection=f"url1 = {title_criteria}",
+            value=f'"{title_value}"',
+            selection=f'url1="{title_criteria}"',
         )
 
     def add_id(self) -> None:
