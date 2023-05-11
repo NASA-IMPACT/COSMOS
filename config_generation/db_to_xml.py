@@ -127,6 +127,20 @@ class XmlEditor:
             "Simulate", "true", parent_element_name="IndexerClient"
         )
 
+    def convert_scraper_to_indexer(self) -> None:
+        # this is specialized for the production instance right now
+        self.update_or_add_element_value("Indexers", "")
+        self.update_or_add_element_value(
+            "Identity", "NodeIndexer1/identity0"
+        )  # maybe make this blank?
+        self.update_or_add_element_value("ShardIndexes", "")
+        self.update_or_add_element_value("ShardingStrategy", "")
+        self.update_or_add_element_value("WorkerCount", "8")
+        self.update_or_add_element_value("LogLevel", "20", parent_element_name="System")
+        self.update_or_add_element_value(
+            "Simulate", "false", parent_element_name="IndexerClient"
+        )
+
     def convert_template_to_scraper(self, url: str) -> None:
         """
         assuming this class has been instantiated with the scraper_template.xml
@@ -134,22 +148,42 @@ class XmlEditor:
         """
         self.update_or_add_element_value("Url", url)
 
+    def _generic_mapping(self, name="", description="", value="", selection=""):
+        """
+        most mappings take the same fields, so this gives a generic way to make a mapping
+        """
+        xml_root = self.xml_tree.getroot()
+
+        mapping = ET.Element("Mapping")
+        ET.SubElement(mapping, "Name").text = name
+        ET.SubElement(mapping, "Description").text = description
+        ET.SubElement(mapping, "Value").text = value
+        ET.SubElement(mapping, "Selection").text = selection
+        ET.SubElement(mapping, "DefaultValue").text = ""
+        xml_root.append(mapping)
+
     def add_title_mapping(
         self, title_value: str, title_criteria: str
     ) -> ET.ElementTree:
-        xml_root = self.xml_tree.getroot()
+        self._generic_mapping(
+            name="title",
+            value=f"&quot;{title_value}&quot;",
+            selection=f"url1 = {title_criteria}",
+        )
 
-        # create a title mapping
-        mapping = ET.Element("Mapping")
-        ET.SubElement(mapping, "Name").text = "title"
-        ET.SubElement(mapping, "Description").text = "Custom title for certain criteria"
-        ET.SubElement(mapping, "Value").text = f"&quot;{title_value}&quot;"
-        ET.SubElement(mapping, "Selection").text = f"url1 = {title_criteria}"
+    def add_id(self) -> None:
+        self._generic_mapping(
+            name="id",
+            value="doc.url1",
+        )
 
-        # add the mapping to the xml
-        xml_root.append(mapping)
+    def add_document_type(self, document_type: str) -> None:
+        self._generic_mapping(
+            name="sourcestr56",
+            value=f'"{document_type}"',
+        )
 
-    def add_xpath_indexing_filter(self, xpath: str) -> ET.ElementTree:
+    def add_xpath_indexing_filter(self, xpath: str, selection: str = "") -> None:
         # TODO: take in selection as an arg
         """filters out the content of an xpath from being indexed along with the document"""
 
@@ -158,20 +192,18 @@ class XmlEditor:
         mapping = ET.Element("IndexingFilter")
         ET.SubElement(mapping, "XPath").text = xpath
         ET.SubElement(mapping, "IncludeMode").text = "false"
-        ET.SubElement(mapping, "Selection").text = ""
+        ET.SubElement(mapping, "Selection").text = selection
         xml_root.append(mapping)
 
-    def add_url_exclude(self, url_pattern: str) -> ET.ElementTree:
+    def add_url_exclude(self, url_pattern: str) -> None:
         """
         excludes a url or url pattern, such as
         - https://webb.nasa.gov/content/forEducators/realworld*
         - https://webb.nasa.gov/content/features/index.html
         - *.rtf
         """
+
         xml_root = self.xml_tree.getroot()
         ET.SubElement(
             xml_root, "UrlIndexExcluded"
         ).text = url_pattern  # this adds an indexing rule (doesn't overwrite)
-
-
-# todo: get rid of htm,html when making scrapers
