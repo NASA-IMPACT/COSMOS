@@ -135,7 +135,9 @@ class Collection(models.Model):
             "Biological and Physical Sciences": "@@BiologicalAndPhysicalSciences",
         }
 
-        SINEQUA_SOURCES_FOLDER = settings.BASE_DIR / "sinequa_configs" / "sources"
+        SINEQUA_SOURCES_FOLDER = (
+            settings.BASE_DIR / "sinequa_configs" / "sources" / "SMD"
+        )
 
         # collection metadata adding
         editor = XmlEditor(ORIGINAL_CONFIG_PATH)
