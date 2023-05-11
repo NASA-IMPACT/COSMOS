@@ -7,18 +7,17 @@ class CandidateURLSerializer(serializers.ModelSerializer):
     is_excluded = serializers.SerializerMethodField()
 
     def get_is_excluded(self, obj):
-        return obj.appliedexclude_set.exists()
+        return obj.excludepattern_set.exists()
 
     class Meta:
         model = CandidateURL
         fields = (
             "id",
-            "collection",
-            "url",
             "scraped_title",
             "generated_title",
             "level",
             "is_excluded",
+            "visited",
         )
 
 

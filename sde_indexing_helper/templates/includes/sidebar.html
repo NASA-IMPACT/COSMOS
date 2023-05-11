@@ -1,7 +1,8 @@
+{% load static %}
 <div class="sidebar"
      data-color="purple"
      data-background-color="white"
-     data-image="/static/images/sidebar-1.jpg">
+     data-image="{% static 'images/sidebar-1.jpg' %}">
   <div class="logo">
     <a rel="noopener noreferrer"
        href="{% url 'sde_collections:list' %}"

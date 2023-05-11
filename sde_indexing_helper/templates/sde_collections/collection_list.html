@@ -13,12 +13,13 @@
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Config Folder</th>
                 <th>URL</th>
                 <th>Division</th>
+                <th>Candidate URLs</th>
                 <th>Turned On</th>
                 <th>Source</th>
                 <th>New?</th>
+                <th>Config Folder</th>
                 {% comment %} <th>Actions</th> {% endcomment %}
             </tr>
         </thead>
@@ -29,16 +30,16 @@
                         <a target="_blank"
                            href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }}</a>
                     </td>
-                    <td>{{ collection.config_folder }}</td>
                     <td>
                         <a target="_blank"
                            href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{ collection.url }}</a>
                     </td>
                     <td>{{ collection.get_division_display }}</td>
+                    <td>{{ collection.num_candidate_urls }}</td>
                     <td>{{ collection.turned_on }}</td>
                     <td>{{ collection.get_source_display }}</td>
                     <td>{{ collection.new_collection }}</td>
-                    {% comment %} <td></td> {% endcomment %}
+                    <td>{{ collection.config_folder }}</td>
                 </tr>
             {% endfor %}
         </tbody>

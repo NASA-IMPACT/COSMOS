@@ -9,68 +9,68 @@
 {% endblock stylesheets %}
 {% block javascripts %}
     {{ block.super }}
+    <script>var collection_id = "{{ collection.id }}";</script>
     <script defer src="{% static 'js/candidate_url_list.js' %}"></script>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"
-            integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
-            crossorigin="anonymous"></script>
 {% endblock javascripts %}
 {% block content %}
-    <div class="row" id="top_pattern_bar">
-        {% comment %} <div class="col">
-            <input class="form-check-input" type="checkbox" value="" id="visited_bool" checked>
-            Hide Visited
-            <br>
-            <input class="form-check-input" type="checkbox" value="" id="excluded_bool" checked>
-            Hide Excluded
-            <br>
-            <input class="form-check-input" type="checkbox" value="" id="excluded_bool">
-            Only empty titles
-            <br>
-            <input class="form-check-input" type="checkbox" value="" id="excluded_bool">
-            Only duplicate titles
-        </div> {% endcomment %}
-        <hr>
-    </div>
-    <div class="row">
-        <div class="col">
+    <h3>
+        Showing {{ candidate_urls.count }} Candidate URLs for <strong>{{ collection.name }}</strong>
+    </h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col" class="text-center col-1">
+                    <strong>VISITED</strong>
+                </th>
+                <th scope="col" class="text-center col-7">
+                    <strong>URL</strong>
+                </th>
+                <th scope="col" class="text-center col-4">
+                    <strong>TITLE</strong>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
             {% for candidate_url in candidate_urls %}
-                <div class="row">
-                    <div class="col-8">
-                        <form>
-                            <p>
-                                {% for i in "x"|rjust:candidate_url.level %}
-                                    &nbsp;&nbsp;
-                                {% endfor %}
-                                <a href="{{ candidate_url.url }}" target="_blank">Visit</a>
-                                {% for part_string, part in candidate_url.splits %}
-                                    <button type="button"
-                                            class="btn btn-sm btn-{% if candidate_url.excluded %}danger disabled{% else %}success{% endif %} url_part_button"
-                                            value="{{ part_string }}">{{ part }}</button>
-                                    {% if not forloop.last %}>{% endif %}
-                                {% endfor %}
-                                | <span>{{ candidate_url.scraped_title }}</span>
-                            </p>
-                        </form>
-                    </div>
-                    <div class="col">
+                <tr {% if candidate_url.excluded %}class="table-danger"{% endif %}>
+                    <td class="text-center">
+                        {% if candidate_url.visited %}
+                            <i class="material-icons" style="color: green;">done</i>
+                        {% else %}
+                            <i class="material-icons" style="color: red;">close</i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-danger exclude_individual_url"
+                                value="{{ candidate_url.url }}"
+                                title="Exclude from indexing">
+                            <i class="material-icons">delete</i>
+                        </button>
+                        <a href="{{ candidate_url.url }}"
+                           target="_blank"
+                           data-url="/api/candidate-urls/{{ candidate_url.id }}/"
+                           class="url_link">{{ candidate_url.url }}</a>
+                    </td>
+                    <td>
                         <input class="form-control new-title"
                                type="text"
+                               title="{{ candidate_url.scraped_title }}"
                                value="{{ candidate_url.scraped_title }}">
-                    </div>
-                </div>
-            {% empty %}
-                <p>No candidate urls found</p>
+                    </td>
+                </tr>
             {% endfor %}
-        </div>
-    </div>
+        </tbody>
+    </table>
 {% endblock content %}
 {% block sidebar %}
     <div class="sidebar"
          data-color="purple"
          data-background-color="white"
-         data-image="/static/images/sidebar-1.jpg">
+         data-image="{% static 'images/sidebar-1.jpg' %}">
         <div class="logo">
-            <a rel="noopener noreferrer" href="#" class="simple-text logo-normal">SDE Indexing Helper</a>
+            <a rel="noopener noreferrer"
+               href="{% url 'sde_collections:list' %}"
+               class="simple-text logo-normal">SDE Indexing Helper</a>
         </div>
         <div class="sidebar-wrapper">
             <ul class="nav">
@@ -92,7 +92,10 @@
                             {% for pattern in collection.exclude_patterns.all %}
                                 <div class="row pattern_row">
                                     <div class="col-8">
-                                        <input class="form-control" value="{{ pattern }}" disabled />
+                                        <input class="form-control"
+                                               value="{{ pattern }}"
+                                               title="{{ pattern }}"
+                                               disabled />
                                     </div>
                                     <div class="col">
                                         <button type="button"

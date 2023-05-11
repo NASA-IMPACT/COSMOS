@@ -45,12 +45,7 @@ class Collection(models.Model):
         crawler2 = 1, "Web crawler parallel"
 
     name = models.CharField("Name", max_length=1024)
-    machine_name = models.CharField(
-        "Machine Name",
-        max_length=1024,
-        help_text="This is the Name value, but with only alphanumeric characters and _ instead of spaces",
-    )
-    config_folder = models.CharField("Config Folder", max_length=2048)
+    config_folder = models.CharField("Config Folder", max_length=2048, unique=True)
     url = models.URLField("URL", max_length=2048, blank=True)
     division = models.IntegerField(choices=Divisions.choices)
     turned_on = models.BooleanField("Turned On", default=True)
@@ -102,18 +97,18 @@ class Collection(models.Model):
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
 
-    def generate_machine_name(self):
+    def generate_config_folder(self):
         """
         Take the human readable `self.name` and create a standardized machine format
         The output will be the self.name, but only alphanumeric with _ instead of spaces
         """
 
-        machine_name = self.name.lower().replace(" ", "_")
-        machine_name = "".join(
-            char for char in machine_name if char.isalnum() or char == "_"
+        config_folder = self.name.lower().replace(" ", "_")
+        config_folder = "".join(
+            char for char in config_folder if char.isalnum() or char == "_"
         )
 
-        return machine_name
+        return config_folder
 
     def import_metadata_from_sinequa_config(self):
         """Import metadata from Sinequa."""
@@ -151,10 +146,27 @@ class Collection(models.Model):
 
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
-        self.machine_name = self.generate_machine_name()
+        if not self.config_folder:
+            self.config_folder = self.generate_config_folder()
 
         # Call the parent class's save method
         super().save(*args, **kwargs)
+
+
+class CandidateURLQuerySet(models.QuerySet):
+    def with_exclusion_status(self):
+        return self.annotate(
+            excluded=models.Exists(
+                ExcludePattern.candidate_urls.through.objects.filter(
+                    candidateurl=models.OuterRef("pk")
+                )
+            )
+        )
+
+
+class CandidateURLManager(models.Manager):
+    def get_queryset(self):
+        return CandidateURLQuerySet(self.model, using=self._db).with_exclusion_status()
 
 
 class CandidateURL(models.Model):
@@ -181,9 +193,8 @@ class CandidateURL(models.Model):
     level = models.IntegerField(
         "Level", default=0, blank=True, help_text="Level in the tree. Based on /."
     )
-    excludes = models.ManyToManyField(
-        "ExcludePattern", through="AppliedExclude", blank=True
-    )
+    visited = models.BooleanField(default=False)
+    objects = CandidateURLManager()
 
     class Meta:
         """Meta definition for Candidate URL."""
@@ -210,10 +221,6 @@ class CandidateURL(models.Model):
             path += f"?{parsed.query}"
         return path
 
-    @property
-    def excluded(self):
-        return self.excludes.count() > 0
-
     def __str__(self):
         return self.url
 
@@ -230,6 +237,7 @@ class ExcludePattern(models.Model):
         help_text="This pattern is compared against the URL of all the documents in the collection "
         "and documents with a matching URL are excluded.",
     )
+    candidate_urls = models.ManyToManyField(CandidateURL)
     reason = models.TextField("Reason for excluding", default="", blank=True)
 
     class Meta:
@@ -243,13 +251,11 @@ class ExcludePattern(models.Model):
         return self.match_pattern
 
     def apply(self):
-        """Apply the exclude pattern to the collection. Unapply happens when the exclude pattern is deleted."""
+        """Apply the exclude pattern to the collection."""
         applied = []
         for candidate_url in self.collection.candidate_urls.all():
-            if re.search(self.match_pattern.lstrip("*"), candidate_url.url):
-                applied_exclude = AppliedExclude.objects.create(
-                    candidate_url=candidate_url, exclude_pattern=self
-                )
+            if re.search(re.escape(self.match_pattern.lstrip("*")), candidate_url.url):
+                applied_exclude = self.candidate_urls.add(candidate_url)
                 applied.append(applied_exclude)
         return applied
 
@@ -261,25 +267,6 @@ class ExcludePattern(models.Model):
     @property
     def sinequa_pattern(self):
         return f"{self.collection.url}{self.match_pattern}"
-
-
-class AppliedExclude(models.Model):
-    """
-    When an exclude pattern is applied to a candidate URL, it creates one of these objects.
-    The purpose is to keep track of what was excluded and why.
-    """
-
-    candidate_url = models.ForeignKey(CandidateURL, on_delete=models.CASCADE)
-    exclude_pattern = models.ForeignKey(
-        ExcludePattern, on_delete=models.CASCADE, related_name="applied_excludes"
-    )
-
-    class Meta:
-        verbose_name = "Applied Exclude"
-        verbose_name_plural = "Applied Excludes"
-
-    def __str__(self):
-        return f"{self.candidate_url} was excluded by {self.exclude_pattern}"
 
 
 class TitlePattern(models.Model):
