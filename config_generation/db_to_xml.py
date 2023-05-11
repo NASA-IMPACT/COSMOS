@@ -190,10 +190,16 @@ class XmlEditor:
     def add_title_mapping(
         self, title_value: str, title_criteria: str
     ) -> ET.ElementTree:
+        title_criteria = title_criteria.rstrip("/")
+        if "xpath" not in title_value:
+            # exact title replacements need quotes
+            # xpath title rules need to NOT have quotes
+            title_value = f'"{title_value}"'
+
         self._generic_mapping(
             name="title",
-            value=f'"{title_value}"',
-            selection=f'url1="{title_criteria}"',
+            value=title_value,
+            selection=f'doc.url1 match "{title_criteria}"',
         )
 
     def add_id(self) -> None:
