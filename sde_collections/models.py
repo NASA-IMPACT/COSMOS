@@ -1,6 +1,7 @@
 import re
 from urllib.parse import urlparse
 
+from db_to_xml import XmlEditor
 from django.db import models
 
 from .sinequa_utils import Sinequa
@@ -96,6 +97,40 @@ class Collection(models.Model):
 
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
+
+    def export_config(self):
+        """Export the config to XML."""
+        config_folder = self.config_folder
+        document_type = self.document_type
+        name = self.name
+        tree_root = self.tree_root
+        url = self.url
+
+        URL_EXCLUDES = self.exclude_patterns.values_list("match_pattern", flat=True)
+
+        TITLE_RULES = []
+
+        ORIGINAL_CONFIG_PATH = "xmls/scraper_template.xml"
+
+        # collection metadata adding
+        editor = XmlEditor(ORIGINAL_CONFIG_PATH)
+        editor.convert_scraper_to_indexer()
+        # editor.add_id()
+        editor.add_document_type(document_type)
+        editor.update_or_add_element_value("visibility", "publicCollection")
+        editor.update_or_add_element_value("Description", f"Webcrawler for the {name}")
+        editor.update_or_add_element_value("Url", url)
+        editor.update_or_add_element_value("TreeRoot", tree_root)
+        editor.update_or_add_element_value(
+            "ShardIndexes", "@SMD_ASTRO_Repository_1,@SMD_ASTRO_Repository_2"
+        )
+        editor.update_or_add_element_value("ShardingStrategy", "Balanced")
+
+        # rule adding
+        [editor.add_url_exclude(url) for url in URL_EXCLUDES]
+        [editor.add_title_mapping(**title_rule) for title_rule in TITLE_RULES]
+
+        editor.create_config_folder_and_default("indexing_configs", config_folder)
 
     def generate_config_folder(self):
         """
