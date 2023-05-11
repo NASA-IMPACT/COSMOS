@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Sinequa>
     <Description>Webcrawler for the EMAC: Exoplanet Modeling and Analysis Center</Description>
-    <visibility></visibility>
+    <visibility>publicCollection</visibility>
     <Connector>crawler2</Connector>
     <Identity>NodeIndexer1/identity0</Identity>
     <Indexers></Indexers>
     <Index></Index>
     <Domain></Domain>
-    <TreeRoot>Astrophysics/Models/EMAC/</TreeRoot>
+    <TreeRoot>Astrophysics/Models/EMAC: Exoplanet Modeling and Analysis Center/</TreeRoot>
     <ForceReindexation>false</ForceReindexation>
     <Plugin></Plugin>
     <IncludedExtensions></IncludedExtensions>
@@ -289,4 +289,76 @@
         <Selection></Selection>
         <DefaultValue></DefaultValue>
     </Mapping>
-<Mapping><Name>id</Name><Description></Description><Value>doc.url1</Value><Selection></Selection><DefaultValue></DefaultValue></Mapping><Mapping><Name>sourcestr56</Name><Description></Description><Value>"Software and Tools"</Value><Selection></Selection><DefaultValue></DefaultValue></Mapping><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=df13b6d8-4670-4fcd-8978-20ec5a419636</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=1fac4c84-9855-4c98-ad96-9851afa631fe</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=7f767d67-67db-4308-973e-2e91cc4cc74b</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=6b2255c2-cde8-46a3-8152-9adcec4f578f</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=9e015de1-f0d6-452b-b740-6862d68ff46a</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=7d08589f-b654-47e8-be3a-ebad9aca2640</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=0f3f0b46-9660-46a6-ba92-f27b75229b6e</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=ce7a2612-986d-430d-a0de-07128c014f5b</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=42435cc7-ba52-460e-93df-fbdc71c9b061</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=2995fe1f-ff3d-4ba3-b951-5d0e63906c7d</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=2eb1dcd2-ae79-459c-a5da-d0a7fd0c9e01</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=24ff76eb-e42d-44e5-af41-a2e4721d35b2</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=d77aeaf0-5d69-455c-8c78-f056ae728f23</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=21ea436a-3c5a-477c-81d8-06549c7bb3b2</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=e430c5de-b542-4a2f-ace9-00333a3f03a4</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=1b3ed3dc-6b84-4717-9f7d-8519236bd12d</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=88f2a333-d081-4bcd-908d-14c4d8cf702f</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=bd857f5b-cc9a-4ae4-a7ad-b2e506e54740</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=417d1844-72d9-4614-b200-9d6f606c0b77</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=c9539dbb-fd84-4eeb-8606-3cb2440edffb</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=a4e1297f-09eb-43ca-9d32-3fec8b322dda</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=479f0b6c-d191-49b3-9066-910cca188e16</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=33f94adf-513f-4d79-8fec-476e6dfaa915</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=da0480c1-32c4-4e8c-9a42-7931d3f4b088</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=6cb8ee25-4d3d-438a-aad6-29f0ddb011ac</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=f56dff02-56b6-4374-84d6-cb59abf48602</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=a87ea5c0-1647-4936-85ee-3f629fe3b6a5</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=d25fc293-8ad8-49a3-af8e-ddf86dc34acc</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=0e6e852b-8bfe-4213-98c5-4136cad15c98</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=b4ed2732-f128-4962-84f2-9aab960140f0</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=6602dbe5-e5d8-43e2-8816-2e062bc7f033</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=2266c18c-f059-40e3-9c54-960cb423f4ac</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=e6b635b8-53c3-43ac-9ff4-63c47b8fe19c</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=6e4f684a-cfa0-45db-90fa-23f2a38f582f</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=6fdbe6b7-ea6c-4ad3-8c16-8cf4a5fa97ca</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=8ef3e9d0-05a4-4e6a-ba0b-c0139b186676</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=16158121-c49b-4f61-b918-4222fe0d4076</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=765ab561-a499-45b2-862c-7f5b6d0f6fa0</UrlIndexExcluded><UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=f476b21b-8365-49f3-97ab-0f19785affef</UrlIndexExcluded><Mapping><Name>title</Name><Description></Description><Value>"EMAC - Tool Category Subscription"</Value><Selection>url1="https://emac.gsfc.nasa.gov/subscriptions/"</Selection><DefaultValue></DefaultValue></Mapping><Mapping><Name>title</Name><Description></Description><Value>"EMAC - Resource Submission"</Value><Selection>url1="https://emac.gsfc.nasa.gov/submissions/"</Selection><DefaultValue></DefaultValue></Mapping><Mapping><Name>title</Name><Description></Description><Value>"EMAC - Frequently Asked Questions"</Value><Selection>url1="https://emac.gsfc.nasa.gov/FAQ/"</Selection><DefaultValue></DefaultValue></Mapping><Mapping><Name>title</Name><Description></Description><Value>"EMAC - Team"</Value><Selection>url1="https://emac.gsfc.nasa.gov/team/"</Selection><DefaultValue></DefaultValue></Mapping><Mapping><Name>title</Name><Description></Description><Value>"EMAC - Software Best Practices and Challenges"</Value><Selection>url1="https://emac.gsfc.nasa.gov/developers/"</Selection><DefaultValue></DefaultValue></Mapping><Mapping><Name>title</Name><Description></Description><Value>"EMAC - Workshop"</Value><Selection>url1="https://emac.gsfc.nasa.gov/workshop/"</Selection><DefaultValue></DefaultValue></Mapping><Mapping><Name>title</Name><Description></Description><Value>"EMAC - WebApp"</Value><Selection>url1="https://emac.gsfc.nasa.gov/lightkurve/"</Selection><DefaultValue></DefaultValue></Mapping><Mapping><Name>title</Name><Description></Description><Value>"EMAC - Published Resource List"</Value><Selection>url1="https://emac.gsfc.nasa.gov/?sort=date"</Selection><DefaultValue></DefaultValue></Mapping><Mapping><Name>title</Name><Description></Description><Value>"xpath://*[@id="resource_content"]/div[3]/div/div[1]/div[2]/p[1]/text()"</Value><Selection>url1="https://emac.gsfc.nasa.gov/?cid=*"</Selection><DefaultValue></DefaultValue></Mapping><Mapping><Name>title</Name><Description></Description><Value>"xpath:/html/body/div[6]/div/div[2]/div/div/h1"</Value><Selection>url1="https://emac.gsfc.nasa.gov/news/*"</Selection><DefaultValue></DefaultValue></Mapping></Sinequa>
+    <Mapping>
+        <Name>sourcestr56</Name>
+        <Description></Description>
+        <Value>"Software and Tools"</Value>
+        <Selection></Selection>
+        <DefaultValue></DefaultValue>
+    </Mapping>
+    <UrlIndexExcluded>https://emac.gsfc.nasa.gov/?related_resource=*</UrlIndexExcluded>
+    <UrlIndexExcluded>https://emac.gsfc.nasa.gov/news/rss/</UrlIndexExcluded>
+    <Mapping>
+        <Name>title</Name>
+        <Description></Description>
+        <Value>"EMAC - Tool Category Subscription"</Value>
+        <Selection>doc.url1 match "https://emac.gsfc.nasa.gov/subscriptions"</Selection>
+        <DefaultValue></DefaultValue>
+    </Mapping>
+    <Mapping>
+        <Name>title</Name>
+        <Description></Description>
+        <Value>"EMAC - Resource Submission"</Value>
+        <Selection>doc.url1 match "https://emac.gsfc.nasa.gov/submissions"</Selection>
+        <DefaultValue></DefaultValue>
+    </Mapping>
+    <Mapping>
+        <Name>title</Name>
+        <Description></Description>
+        <Value>"EMAC - Frequently Asked Questions"</Value>
+        <Selection>doc.url1 match "https://emac.gsfc.nasa.gov/FAQ"</Selection>
+        <DefaultValue></DefaultValue>
+    </Mapping>
+    <Mapping>
+        <Name>title</Name>
+        <Description></Description>
+        <Value>"EMAC - Team"</Value>
+        <Selection>doc.url1 match "https://emac.gsfc.nasa.gov/team"</Selection>
+        <DefaultValue></DefaultValue>
+    </Mapping>
+    <Mapping>
+        <Name>title</Name>
+        <Description></Description>
+        <Value>"EMAC - Software Best Practices and Challenges"</Value>
+        <Selection>doc.url1 match "https://emac.gsfc.nasa.gov/developers"</Selection>
+        <DefaultValue></DefaultValue>
+    </Mapping>
+    <Mapping>
+        <Name>title</Name>
+        <Description></Description>
+        <Value>"EMAC - Workshop"</Value>
+        <Selection>doc.url1 match "https://emac.gsfc.nasa.gov/workshop"</Selection>
+        <DefaultValue></DefaultValue>
+    </Mapping>
+    <Mapping>
+        <Name>title</Name>
+        <Description></Description>
+        <Value>"EMAC - WebApp"</Value>
+        <Selection>doc.url1 match "https://emac.gsfc.nasa.gov/lightkurve"</Selection>
+        <DefaultValue></DefaultValue>
+    </Mapping>
+    <Mapping>
+        <Name>title</Name>
+        <Description></Description>
+        <Value>"EMAC - Published Resource List"</Value>
+        <Selection>doc.url1 match "https://emac.gsfc.nasa.gov/?sort=date"</Selection>
+        <DefaultValue></DefaultValue>
+    </Mapping>
+    <Mapping>
+        <Name>title</Name>
+        <Description></Description>
+        <Value>xpath://*[@id="resource_content"]/div[1]/div[1]/div[2]/div</Value>
+        <Selection>doc.url1 match "https://emac.gsfc.nasa.gov/?cid=*"</Selection>
+        <DefaultValue></DefaultValue>
+    </Mapping>
+</Sinequa>
