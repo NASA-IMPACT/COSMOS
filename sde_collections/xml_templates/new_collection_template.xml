@@ -180,7 +180,7 @@
     <ForcedEncoding></ForcedEncoding>
     <UseCompression>false</UseCompression>
     <UseUnsafeHeaderParsing>false</UseUnsafeHeaderParsing>
-    <NormalizeSecureSchemesWhenTestingVisited>True</NormalizeSecureSchemesWhenTestingVisited>
+    <NormalizeSecureSchemesWhenTestingVisited>true</NormalizeSecureSchemesWhenTestingVisited>
     <ExactDeduplication>false</ExactDeduplication>
     <NearDeduplication>false</NearDeduplication>
     <CrawlPauseDelay></CrawlPauseDelay>
