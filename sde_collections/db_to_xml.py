@@ -3,6 +3,8 @@ import re
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
+import xmltodict
+
 
 class XmlEditor:
     """
@@ -238,3 +240,12 @@ class XmlEditor:
         ET.SubElement(
             xml_root, "UrlIndexExcluded"
         ).text = url_pattern  # this adds an indexing rule (doesn't overwrite)
+
+    def prettify_config(self, folder, file):
+        xml_path = f"{folder}/{file}/default.xml"
+        pretty_xml = xmltodict.unparse(
+            xmltodict.parse(open(xml_path).read()),
+            pretty=True,
+        )
+        with open(xml_path, "w") as f:
+            f.write(pretty_xml)

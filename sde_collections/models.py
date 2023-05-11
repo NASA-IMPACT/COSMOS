@@ -1,9 +1,10 @@
 import re
 from urllib.parse import urlparse
 
-from db_to_xml import XmlEditor
+from django.conf import settings
 from django.db import models
 
+from .db_to_xml import XmlEditor
 from .sinequa_utils import Sinequa
 
 
@@ -98,19 +99,43 @@ class Collection(models.Model):
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
 
+    def _process_exclude_list(self):
+        """Process the exclude list."""
+        exclude_list = []
+        for exclude_pattern in self.exclude_patterns.all():
+            if exclude_pattern.match_pattern.strip("*").strip().startswith("http"):
+                exclude_list.append(f"{exclude_pattern.match_pattern}*")
+            else:
+                exclude_list.append(f"*{exclude_pattern.match_pattern}*")
+        return exclude_list
+
     def export_config(self):
         """Export the config to XML."""
         config_folder = self.config_folder
         document_type = self.document_type
+        division = self.get_division_display()
         name = self.name
         tree_root = self.tree_root
         url = self.url
 
-        URL_EXCLUDES = self.exclude_patterns.values_list("match_pattern", flat=True)
+        URL_EXCLUDES = self._process_exclude_list()
 
         TITLE_RULES = []
 
-        ORIGINAL_CONFIG_PATH = "xmls/scraper_template.xml"
+        ORIGINAL_CONFIG_PATH = (
+            settings.BASE_DIR
+            / "sde_collections/xml_templates/new_collection_template.xml"
+        )
+
+        DIVISION_INDEX_MAPPING = {
+            "Astrophysics": "@@Astrophysics",
+            "Planetary Science": "@@Planetary",
+            "Earth Science": "@@EarthScience",
+            "Heliophysics": "@@Heliophysics",
+            "Biological and Physical Sciences": "@@BiologicalAndPhysicalSciences",
+        }
+
+        SINEQUA_SOURCES_FOLDER = settings.BASE_DIR / "sinequa_configs" / "sources"
 
         # collection metadata adding
         editor = XmlEditor(ORIGINAL_CONFIG_PATH)
@@ -122,7 +147,7 @@ class Collection(models.Model):
         editor.update_or_add_element_value("Url", url)
         editor.update_or_add_element_value("TreeRoot", tree_root)
         editor.update_or_add_element_value(
-            "ShardIndexes", "@SMD_ASTRO_Repository_1,@SMD_ASTRO_Repository_2"
+            "ShardIndexes", DIVISION_INDEX_MAPPING[division]
         )
         editor.update_or_add_element_value("ShardingStrategy", "Balanced")
 
@@ -130,7 +155,8 @@ class Collection(models.Model):
         [editor.add_url_exclude(url) for url in URL_EXCLUDES]
         [editor.add_title_mapping(**title_rule) for title_rule in TITLE_RULES]
 
-        editor.create_config_folder_and_default("indexing_configs", config_folder)
+        editor.create_config_folder_and_default(SINEQUA_SOURCES_FOLDER, config_folder)
+        editor.prettify_config(SINEQUA_SOURCES_FOLDER, config_folder)
 
     def generate_config_folder(self):
         """
