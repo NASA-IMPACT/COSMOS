@@ -254,7 +254,7 @@ class ExcludePattern(models.Model):
         """Apply the exclude pattern to the collection."""
         applied = []
         for candidate_url in self.collection.candidate_urls.all():
-            if re.search(self.match_pattern.lstrip("*"), candidate_url.url):
+            if re.search(re.escape(self.match_pattern.lstrip("*")), candidate_url.url):
                 applied_exclude = self.candidate_urls.add(candidate_url)
                 applied.append(applied_exclude)
         return applied
