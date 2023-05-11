@@ -8,7 +8,7 @@ url = "https://emac.gsfc.nasa.gov/"
 division = "Astrophysics"
 update_frequency = "Monthly"
 document_type = "Software and Tools"
-tree_root = "Astrophysics/Models/EMAC"
+tree_root = "Astrophysics/Models/EMAC/"
 
 # rule_metadata
 URL_EXCLUDES = [
