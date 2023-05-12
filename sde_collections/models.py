@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 
 from django.conf import settings
 from django.db import models
+from slugify import slugify
 
 from .db_to_xml import XmlEditor
 from .sinequa_utils import Sinequa
@@ -160,18 +161,13 @@ class Collection(models.Model):
         editor.create_config_folder_and_default(SINEQUA_SOURCES_FOLDER, config_folder)
         editor.prettify_config(SINEQUA_SOURCES_FOLDER, config_folder)
 
-    def generate_config_folder(self):
+    def _compute_config_folder_name(self):
         """
         Take the human readable `self.name` and create a standardized machine format
         The output will be the self.name, but only alphanumeric with _ instead of spaces
         """
 
-        config_folder = self.name.lower().replace(" ", "_")
-        config_folder = "".join(
-            char for char in config_folder if char.isalnum() or char == "_"
-        )
-
-        return config_folder
+        return slugify(self.name, separator="_")
 
     def import_metadata_from_sinequa_config(self):
         """Import metadata from Sinequa."""
@@ -210,7 +206,7 @@ class Collection(models.Model):
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
         if not self.config_folder:
-            self.config_folder = self.generate_config_folder()
+            self.config_folder = self._compute_config_folder_name()
 
         # Call the parent class's save method
         super().save(*args, **kwargs)
