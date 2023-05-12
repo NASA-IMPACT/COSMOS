@@ -17,6 +17,7 @@
                 <th>Division</th>
                 <th>Candidate URLs</th>
                 <th>New?</th>
+                <th>Cleaning Order</th>
                 <th>Config Folder</th>
             </tr>
         </thead>
@@ -44,6 +45,7 @@
                             <i class="material-icons" style="color:red;">close</i>
                         {% endif %}
                     </td>
+                    <td>{{ collection.cleaning_order }}</td>
                     <td>{{ collection.config_folder }}</td>
                 </tr>
             {% endfor %}
@@ -53,8 +55,7 @@
 {% block javascripts %}
     <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script>let table = $('#collection_table').DataTable({
-        order: [[3, 'desc']],
-        stateSave: true,
+        order: [[5, 'asc']],
         columnDefs: [
             {
                 target: -1,
