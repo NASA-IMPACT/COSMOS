@@ -1,8 +1,11 @@
 import re
 from urllib.parse import urlparse
 
+from django.conf import settings
 from django.db import models
+from slugify import slugify
 
+from .db_to_xml import XmlEditor
 from .sinequa_utils import Sinequa
 
 
@@ -97,18 +100,74 @@ class Collection(models.Model):
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
 
-    def generate_config_folder(self):
+    def _process_exclude_list(self):
+        """Process the exclude list."""
+        exclude_list = []
+        for exclude_pattern in self.exclude_patterns.all():
+            if exclude_pattern.match_pattern.strip("*").strip().startswith("http"):
+                exclude_list.append(f"{exclude_pattern.match_pattern}*")
+            else:
+                exclude_list.append(f"*{exclude_pattern.match_pattern}*")
+        return exclude_list
+
+    def generate_new_config(self):
+        """Generates a new config based on the new collection template."""
+        config_folder = self.config_folder
+        document_type = self.document_type
+        division = self.get_division_display()
+        name = self.name
+        tree_root = self.tree_root
+        url = self.url
+
+        URL_EXCLUDES = self._process_exclude_list()
+
+        TITLE_RULES = []
+
+        ORIGINAL_CONFIG_PATH = (
+            settings.BASE_DIR
+            / "sde_collections/xml_templates/new_collection_template.xml"
+        )
+
+        DIVISION_INDEX_MAPPING = {
+            "Astrophysics": "@@Astrophysics",
+            "Planetary Science": "@@Planetary",
+            "Earth Science": "@@EarthScience",
+            "Heliophysics": "@@Heliophysics",
+            "Biological and Physical Sciences": "@@BiologicalAndPhysicalSciences",
+        }
+
+        SINEQUA_SOURCES_FOLDER = (
+            settings.BASE_DIR / "sinequa_configs" / "sources" / "SMD"
+        )
+
+        # collection metadata adding
+        editor = XmlEditor(ORIGINAL_CONFIG_PATH)
+        editor.convert_scraper_to_indexer()
+        # editor.add_id()
+        editor.add_document_type(document_type)
+        editor.update_or_add_element_value("visibility", "publicCollection")
+        editor.update_or_add_element_value("Description", f"Webcrawler for the {name}")
+        editor.update_or_add_element_value("Url", url)
+        editor.update_or_add_element_value("TreeRoot", tree_root)
+        editor.update_or_add_element_value(
+            "ShardIndexes", DIVISION_INDEX_MAPPING[division]
+        )
+        editor.update_or_add_element_value("ShardingStrategy", "Balanced")
+
+        # rule adding
+        [editor.add_url_exclude(url) for url in URL_EXCLUDES]
+        [editor.add_title_mapping(**title_rule) for title_rule in TITLE_RULES]
+
+        editor.create_config_folder_and_default(SINEQUA_SOURCES_FOLDER, config_folder)
+        editor.prettify_config(SINEQUA_SOURCES_FOLDER, config_folder)
+
+    def _compute_config_folder_name(self):
         """
         Take the human readable `self.name` and create a standardized machine format
         The output will be the self.name, but only alphanumeric with _ instead of spaces
         """
 
-        config_folder = self.name.lower().replace(" ", "_")
-        config_folder = "".join(
-            char for char in config_folder if char.isalnum() or char == "_"
-        )
-
-        return config_folder
+        return slugify(self.name, separator="_")
 
     def import_metadata_from_sinequa_config(self):
         """Import metadata from Sinequa."""
@@ -147,7 +206,7 @@ class Collection(models.Model):
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
         if not self.config_folder:
-            self.config_folder = self.generate_config_folder()
+            self.config_folder = self._compute_config_folder_name()
 
         # Call the parent class's save method
         super().save(*args, **kwargs)
