@@ -31,8 +31,9 @@
                            href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }}</a>
                     </td>
                     <td>
-                        <a target="_blank"
-                           href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{ collection.url }}</a>
+                        {% if collection.url %}
+                            {{ collection.url }}<a target="_blank" href=" {{ collection.url }} "> <i class="material-icons">open_in_new</i></a>
+                        {% endif %}
                     </td>
                     <td>{{ collection.get_division_display }}</td>
                     <td>{{ collection.num_candidate_urls }}</td>
