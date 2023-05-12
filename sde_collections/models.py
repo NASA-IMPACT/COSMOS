@@ -235,17 +235,15 @@ class CandidateURL(models.Model):
     collection = models.ForeignKey(
         Collection, on_delete=models.CASCADE, related_name="candidate_urls"
     )
-    url = models.CharField("URL", max_length=2048)
+    url = models.CharField("URL")
     scraped_title = models.CharField(
         "Scraped Title",
-        max_length=2048,
         default="",
         blank=True,
         help_text="This is the original title scraped by Sinequa",
     )
     generated_title = models.CharField(
         "Generated Title",
-        max_length=2048,
         default="",
         blank=True,
         help_text="This is the title generated based on a Title Pattern",
