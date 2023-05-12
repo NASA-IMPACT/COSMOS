@@ -93,6 +93,7 @@ class Collection(models.Model):
     notes = models.TextField("Notes", blank=True, default="")
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     new_collection = models.BooleanField(default=False)
+    cleaning_order = models.IntegerField(default=0, blank=True)
 
     class Meta:
         """Meta definition for Collection."""
