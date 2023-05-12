@@ -109,8 +109,8 @@ class Collection(models.Model):
                 exclude_list.append(f"*{exclude_pattern.match_pattern}*")
         return exclude_list
 
-    def export_config(self):
-        """Export the config to XML."""
+    def generate_new_config(self):
+        """Generates a new config based on the new collection template."""
         config_folder = self.config_folder
         document_type = self.document_type
         division = self.get_division_display()
