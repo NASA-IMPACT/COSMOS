@@ -3,66 +3,62 @@
     {{ collection.name }}
 {% endblock title %}
 {% block content %}
-    <h1>{{ collection.name }}</h1>
-    <table class="table table-striped">
-        <tbody>
-            <tr>
-                <th>URL</th>
-                <td>
-                    <a target="_blank"
-                       href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{ collection.url }}</a>
-                </td>
-            </tr>
-            <tr>
-                <th>Config Folder</th>
-                <td>{{ collection.config_folder }}</td>
-            </tr>
-            <tr>
-                <th>Division</th>
-                <td>{{ collection.get_division_display }}</td>
-            </tr>
-            <tr>
-                <th>Turned On</th>
-                <td>{{ collection.turned_on }}</td>
-            </tr>
-            <tr>
-                <th>Source</th>
-                <td>{{ collection.get_source_display }}</td>
-            </tr>
-            <tr>
-                <th>Update Frequency</th>
-                <td>{{ collection.get_update_frequency_display }}</td>
-            </tr>
-            <tr>
-                <th>Document Type</th>
-                <td>{{ collection.document_type }}</td>
-            </tr>
-            <tr>
-                <th>Tree Root</th>
-                <td>{{ collection.tree_root }}</td>
-            </tr>
-            <tr>
-                <th>Delete</th>
-                <td>{{ collection.delete }}</td>
-            </tr>
-            <tr>
-                <th>Notes</th>
-                <td>{{ collection.notes }}</td>
-            </tr>
-            <tr>
-                <th>Candidate URLs</th>
-                <td>
-                    <a href="{% url 'sde_collections:candidate_urls' collection.pk %}">
-                        <button class="btn btn-sm btn-success">View</button>
-                    </a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <h2>Excluded URL Patterns</h2>
-    {% for pattern in collection.exclude_patterns.all  %}
-        <p>{{ pattern.pattern }}</p>
-    {% empty %}
-        <p>No excluded patterns</p>
-    {% endfor %}
+    <div class="container">
+        <h1>{{ collection.name }}</h1>
+        <table class="table table-striped">
+            <tbody>
+                <tr>
+                    <th>URL</th>
+                    <td>
+                        <a target="_blank"
+                           href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{ collection.url }}</a>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Config Folder</th>
+                    <td>{{ collection.config_folder }}</td>
+                </tr>
+                <tr>
+                    <th>Division</th>
+                    <td>{{ collection.get_division_display }}</td>
+                </tr>
+                <tr>
+                    <th>Update Frequency</th>
+                    <td>{{ collection.get_update_frequency_display }}</td>
+                </tr>
+                <tr>
+                    <th>Document Type</th>
+                    <td>{{ collection.get_document_type_display }}</td>
+                </tr>
+                <tr>
+                    <th>Tree Root</th>
+                    <td>{{ collection.tree_root }}</td>
+                </tr>
+                <tr>
+                    <th>Notes</th>
+                    <td>{{ collection.notes }}</td>
+                </tr>
+                <tr>
+                    <th>Candidate URLs</th>
+                    <td>
+                        <a href="{% url 'sde_collections:candidate_urls' collection.pk %}">
+                            <button class="btn btn-sm btn-success">View</button>
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <h2>Excluded URL Patterns</h2>
+        {% for pattern in collection.exclude_patterns.all %}
+            <p>{{ pattern.pattern }}</p>
+        {% empty %}
+            <p>No excluded patterns</p>
+        {% endfor %}
+        <h2>Title Patterns</h2>
+        {% for pattern in collection.exclude_patterns.all %}
+            <p>{{ pattern.pattern }}</p>
+        {% empty %}
+            <p>No title patterns</p>
+        {% endfor %}
+    </div>
 {% endblock content %}
