@@ -16,19 +16,15 @@
                 <th>URL</th>
                 <th>Division</th>
                 <th>Candidate URLs</th>
-                <th>Turned On</th>
-                <th>Source</th>
                 <th>New?</th>
                 <th>Config Folder</th>
-                {% comment %} <th>Actions</th> {% endcomment %}
             </tr>
         </thead>
         <tbody>
             {% for collection in collections %}
                 <tr>
                     <td>
-                        <a target="_blank"
-                           href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }}</a>
+                        <a href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }} <i class="material-icons">chevron_right</i></a>
                     </td>
                     <td>
                         {% if collection.url %}
@@ -36,10 +32,18 @@
                         {% endif %}
                     </td>
                     <td>{{ collection.get_division_display }}</td>
-                    <td>{{ collection.num_candidate_urls }}</td>
-                    <td>{{ collection.turned_on }}</td>
-                    <td>{{ collection.get_source_display }}</td>
-                    <td>{{ collection.new_collection }}</td>
+                    <td>
+                        <a href=" {% if collection.num_candidate_urls > 0 %} {% url 'sde_collections:candidate_urls' collection.pk %} {% endif %} "
+                           class="btn btn-sm {% if collection.num_candidate_urls > 0 %}btn-primary {% else %}disabled{% endif %}"
+                           role="button">{{ collection.num_candidate_urls }}</a>
+                    </td>
+                    <td>
+                        {% if collection.new_collection %}
+                            <i class="material-icons" style="color:green;">check</i>
+                        {% else %}
+                            <i class="material-icons" style="color:red;">close</i>
+                        {% endif %}
+                    </td>
                     <td>{{ collection.config_folder }}</td>
                 </tr>
             {% endfor %}
@@ -48,21 +52,15 @@
 {% endblock content %}
 {% block javascripts %}
     <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    <script>
-        let table = $('#collection_table').DataTable({
-            "bPaginate": false,
-            // "columnDefs": [
-            //     {
-            //         "targets": -1,
-            //         "data": null,
-            //         "defaultContent": "<button class='btn btn-xs btn-success'>Scrape</button>",
-            //     },
-            // ],
-        });
-
-        // $('#collection_table tbody').on('click', 'button', function () {
-        //    var data = table.row($(this).parents('tr')).data();
-        //    alert(data[0] + "'s salary is: " + data[5]);
-        // });
+    <script>let table = $('#collection_table').DataTable({
+        order: [[3, 'desc']],
+        stateSave: true,
+        columnDefs: [
+            {
+                target: -1,
+                visible: false,
+            },
+        ],
+    });
     </script>
 {% endblock javascripts %}
