@@ -58,18 +58,26 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
     """
 
     model = CandidateURL
-    template_name = "sde_collections/candidate_urls_list.html"
+    template_name = "sde_collections/candidate_urls_list_test.html"
     context_object_name = "candidate_urls"
-    paginate_by = 1000
+    # paginate_by = 1000
+
+    def _filter_by_is_exluded(self, queryset, is_excluded):
+        if is_excluded == "true":
+            queryset = queryset.filter(appliedexclude__isnull=False)
+        elif is_excluded == "false":
+            queryset = queryset.exclude(appliedexclude__isnull=False)
+        return queryset
 
     def get_queryset(self):
         self.collection = Collection.objects.get(pk=self.kwargs["pk"])
-        self.is_excluded = self.request.GET.get("is_excluded")
         queryset = super().get_queryset().filter(collection=self.collection)
-        if self.is_excluded == "true":
-            queryset = queryset.exclude(excluded=False)
-        elif self.is_excluded == "false":
-            queryset = queryset.filter(excluded=False)
+
+        # Filter based on exclusion status
+        is_excluded = self.request.GET.get("is_excluded")
+        if is_excluded:
+            queryset = self._filter_by_is_exluded(queryset, is_excluded)
+
         return queryset
 
     def get_context_data(self, **kwargs):
