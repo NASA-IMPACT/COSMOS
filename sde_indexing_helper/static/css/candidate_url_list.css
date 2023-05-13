@@ -10,3 +10,20 @@
 .close_color {
     color: red;
 }
+
+#test_url {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+}
+
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: none;
+    border: none;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 0em;
+}
