@@ -60,6 +60,7 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
     model = CandidateURL
     template_name = "sde_collections/candidate_urls_list.html"
     context_object_name = "candidate_urls"
+    paginate_by = 1000
 
     def get_queryset(self):
         self.collection = Collection.objects.get(pk=self.kwargs["pk"])
