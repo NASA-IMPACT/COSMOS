@@ -94,6 +94,18 @@ class CandidateURLViewSet(viewsets.ModelViewSet):
     queryset = CandidateURL.objects.all()
     serializer_class = CandidateURLSerializer
 
+    def get_queryset(self):
+        if not self.request.method == "GET":
+            return super().get_queryset()
+
+        try:
+            collection_id = self.request.GET.get("collection_id")
+            collection = Collection.objects.get(pk=collection_id)
+        except Collection.DoesNotExist:
+            # just return an empty list
+            return super().get_queryset().filter(collection__isnull=True)
+        return super().get_queryset().filter(collection=collection).order_by("url")
+
 
 class ExcludePatternViewSet(viewsets.ModelViewSet):
     queryset = ExcludePattern.objects.all()
