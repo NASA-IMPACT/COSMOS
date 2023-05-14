@@ -286,15 +286,19 @@ class CandidateURL(models.Model):
 class ExcludePattern(models.Model):
     """A pattern to exclude from Sinequa."""
 
+    class PatternTypeChoices(models.IntegerChoices):
+        INDIVIDUAL_URL = 1, "Individual URL"
+        REGEX_PATTERN = 2, "Regex Pattern"
+
     collection = models.ForeignKey(
         Collection, on_delete=models.CASCADE, related_name="exclude_patterns"
     )
     match_pattern = models.CharField(
         "Pattern",
-        max_length=2048,
         help_text="This pattern is compared against the URL of all the documents in the collection "
         "and documents with a matching URL are excluded.",
     )
+    pattern_type = models.IntegerField(choices=PatternTypeChoices.choices, default=1)
     candidate_urls = models.ManyToManyField(CandidateURL)
     reason = models.TextField("Reason for excluding", default="", blank=True)
 
@@ -310,12 +314,10 @@ class ExcludePattern(models.Model):
 
     def apply(self):
         """Apply the exclude pattern to the collection."""
-        applied = []
-        for candidate_url in self.collection.candidate_urls.all():
-            if re.search(re.escape(self.match_pattern.lstrip("*")), candidate_url.url):
-                applied_exclude = self.candidate_urls.add(candidate_url)
-                applied.append(applied_exclude)
-        return applied
+        for candidate_url in self.collection.candidate_urls.filter(
+            url__regex=f'{re.escape(self.match_pattern.lstrip("*"))}$'
+        ):
+            self.candidate_urls.add(candidate_url)
 
     def save(self, *args, **kwargs):
         """Save the exclude pattern."""
