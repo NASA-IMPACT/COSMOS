@@ -60,6 +60,9 @@
                     <strong>Pattern Type</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
+                    <strong>Affected URLs</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
                     <strong>Actions</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
@@ -76,10 +79,13 @@
                     <strong>Match Pattern</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
+                    <strong>Match Pattern Type</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
                     <strong>Title Pattern</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
-                    <strong>Pattern Type</strong>
+                    <strong>Title Pattern Type</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
                     <strong>Actions</strong>
@@ -94,4 +100,59 @@
         <li data-action="exclude-pattern" class="list-group-item">Create Exclude Pattern</li>
         <li data-action="title-pattern" class="list-group-item">Create Title Pattern</li>
     </ul>
+    <div class="modal fade"
+         id="titlePatternModal"
+         data-backdrop="static"
+         data-keyboard="false"
+         tabindex="-1"
+         aria-labelledby="titlePatternModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="titlePatternModalLabel">Title Pattern Form</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="title_pattern_form">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="match_pattern_input">Match Pattern*</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="match_pattern_input"
+                                   required
+                                   name="match_pattern">
+                        </div>
+                        {% comment %} <label for="title_pattern_type">Title Pattern Type</label> {% endcomment %}
+                        <div class="form-group">
+                            <label for="title_pattern_input">Title Pattern*</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="title_pattern_input"
+                                   required
+                                   name="title_pattern">
+                        </div>
+                        <div class="pattern_type">
+                            <label>Pattern Type*</label>
+                            <br>
+                            <input type="radio"
+                                   name="title_pattern_type"
+                                   id="title_pattern_type_modifier"
+                                   value="2"
+                                   checked>
+                            <label for="title_pattern_type_modifier">Modifier</label>
+                            <input type="radio" name="title_pattern_type" id="title_pattern_type_xpath" value="3">
+                            <label for="title_pattern_type_xpath">Xpath</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock content %}

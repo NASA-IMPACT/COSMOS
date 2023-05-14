@@ -40,13 +40,14 @@ function initializeDataTable() {
     var exclude_patterns_table = $('#exclude_patterns_table').DataTable({
         "scrollY": true,
         "serverSide": true,
-        "stateSave": true,
         "ajax": `/api/exclude-patterns/?format=datatables&collection_id=${collection_id}`,
         "columns": [
             { "data": "match_pattern" },
-            { "data": "pattern_type_display", "class": "text-center" },
+            { "data": "pattern_type_display", "class": "text-center", "sortable": false },
+            { "data": "candidate_urls_count", "class": "text-center", "sortable": false },
             {
                 "data": null,
+                "sortable": false,
                 "class": "text-center",
                 "render": function (data, type, row) {
                     return `<button class="btn btn-danger btn-sm delete-exclude-pattern-button" data-row-id="${row['id']}"><i class="material-icons">delete</i></button >`;
@@ -59,14 +60,15 @@ function initializeDataTable() {
     var title_patterns_table = $('#title_patterns_table').DataTable({
         "scrollY": true,
         "serverSide": true,
-        "stateSave": true,
         "ajax": `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
         "columns": [
             { "data": "match_pattern" },
+            { "data": "match_pattern_type_display", "class": "text-center", "sortable": false },
             { "data": "title_pattern" },
-            { "data": "pattern_type_display", "class": "text-center" },
+            { "data": "title_pattern_type_display", "class": "text-center", "sortable": false },
             {
                 "data": null,
+                "sortable": false,
                 "class": "text-center",
                 "render": function (data, type, row) {
                     return `<button class="btn btn-danger btn-sm delete-title-pattern-button" data-row-id="${row['id']}"><i class="material-icons">delete</i></button >`;
@@ -197,7 +199,7 @@ function handleNewTitleChange() {
     $("body").on("change", ".individual_title_input", function () {
         var match_pattern = $(this).data('url');
         var title_pattern = $(this).val();
-        postIndividualTitle(match_pattern, title_pattern);
+        postTitlePatterns(match_pattern, title_pattern, match_pattern_type = 1, title_pattern_type = 1);
     });
 }
 
@@ -225,9 +227,14 @@ function postExcludePatterns(match_pattern, pattern_type = 0) {
     });
 }
 
-function postIndividualTitle(match_pattern, title_pattern) {
+function postTitlePatterns(match_pattern, title_pattern, match_pattern_type = 1, title_pattern_type = 1) {
     if (!match_pattern) {
         toastr.error('Please highlight a pattern to change the title.');
+        return;
+    }
+
+    if (!title_pattern) {
+        toastr.error('Please enter a title pattern.');
         return;
     }
 
@@ -237,13 +244,18 @@ function postIndividualTitle(match_pattern, title_pattern) {
         data: {
             collection: collection_id,
             match_pattern: match_pattern,
+            match_pattern_type: match_pattern_type,
             title_pattern: title_pattern,
-            pattern_type: 1, // individual
+            title_pattern_type: title_pattern_type,
             csrfmiddlewaretoken: csrftoken
         },
         success: function (data) {
             window.location.reload();
         },
+        error: function (xhr, status, error) {
+            var errorMessage = xhr.responseText;
+            toastr.error(errorMessage);
+        }
     });
 }
 
@@ -362,17 +374,33 @@ function get_selection() {
     return text;
 }
 
+function title_pattern_form(selected_text) {
+    // postTitlePatterns(match_pattern = selected_text.trim(), title_pattern = "hey", match_pattern_type = 2, title_pattern_type = 2)
+    // postTitlePatterns(match_pattern = selected_text.trim(), title_pattern = "hey", match_pattern_type = 2, title_pattern_type = 3) // xpath
+    $modal = $('#titlePatternModal').modal();
+    $modal.find('#match_pattern_input').val(selected_text);
+}
+
 // If the menu element is clicked
 $(".custom-menu li").click(function () {
 
     // This is the triggered action name
     switch ($(this).attr("data-action")) {
-
-        // A case for each action. Your actions here
         case "exclude-pattern": postExcludePatterns(selected_text.trim(), pattern_type = 2); break;
-        case "title-pattern": alert("title"); break;
+        case "title-pattern": title_pattern_form(selected_text.trim()); break;
     }
 
     // Hide it AFTER the action was triggered
     $(".custom-menu").hide(100);
+});
+
+$('#title_pattern_form').on('submit', function (e) {
+    e.preventDefault();
+    inputs = {};
+    input_serialized = $(this).serializeArray();
+    input_serialized.forEach(field => {
+        inputs[field.name] = field.value;
+    });
+
+    postTitlePatterns(match_pattern = inputs.match_pattern, title_pattern = inputs.title_pattern, match_pattern_type = 2, title_pattern_type = inputs.title_pattern_type);
 });

@@ -335,9 +335,14 @@ class ExcludePattern(models.Model):
 class TitlePattern(models.Model):
     """A title pattern to overwrite."""
 
-    class PatternTypeChoices(models.IntegerChoices):
+    class MatchPatternTypeChoices(models.IntegerChoices):
         INDIVIDUAL_URL = 1, "Individual URL"
         REGEX_PATTERN = 2, "Regex Pattern"
+
+    class TitlePatternTypeChoices(models.IntegerChoices):
+        PLAIN_TEXT = 1, "Plain Text"
+        MODIFIER = 2, "Modifier"
+        XPATH = 3, "Xpath"
 
     collection = models.ForeignKey(
         Collection, on_delete=models.CASCADE, related_name="title_patterns"
@@ -357,12 +362,21 @@ class TitlePattern(models.Model):
 
     # keep track of which urls the pattern is applied to so it's easy to unapply
     # candidate_urls = models.ManyToManyField(CandidateURL)
-    pattern_type = models.IntegerField(choices=PatternTypeChoices.choices, default=1)
+    match_pattern_type = models.IntegerField(
+        choices=MatchPatternTypeChoices.choices, default=1
+    )
+
+    title_pattern_type = models.IntegerField(
+        choices=TitlePatternTypeChoices.choices, default=1
+    )
 
     def apply(self):
         """Apply the title pattern to the collection."""
         regex_search_string = f'{re.escape(self.match_pattern.strip("*"))}'
-        if self.pattern_type == ExcludePattern.PatternTypeChoices.INDIVIDUAL_URL:
+        if (
+            self.match_pattern_type
+            == TitlePattern.MatchPatternTypeChoices.INDIVIDUAL_URL
+        ):
             regex_search_string += r"$"
         self.collection.candidate_urls.filter(url__regex=regex_search_string).update(
             generated_title=self.title_pattern
@@ -371,7 +385,10 @@ class TitlePattern(models.Model):
     def unapply(self):
         """Unapply the title pattern to the collection."""
         regex_search_string = f'{re.escape(self.match_pattern.strip("*"))}'
-        if self.pattern_type == ExcludePattern.PatternTypeChoices.INDIVIDUAL_URL:
+        if (
+            self.match_pattern_type
+            == TitlePattern.MatchPatternTypeChoices.INDIVIDUAL_URL
+        ):
             regex_search_string += r"$"
         self.collection.candidate_urls.filter(url__regex=regex_search_string).update(
             generated_title=""
