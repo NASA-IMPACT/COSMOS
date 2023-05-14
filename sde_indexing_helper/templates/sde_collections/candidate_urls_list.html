@@ -21,7 +21,7 @@
 {% block content %}
     {% csrf_token %}
     <h3>
-        Showing {{ candidate_urls.count }} Candidate URLs for <strong>{{ collection.name }}</strong>
+        Candidate URLs for <strong>{{ collection.name }}</strong>
         <br>
         <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small>
     </h3>
