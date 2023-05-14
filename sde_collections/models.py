@@ -335,6 +335,10 @@ class ExcludePattern(models.Model):
 class TitlePattern(models.Model):
     """A title pattern to overwrite."""
 
+    class PatternTypeChoices(models.IntegerChoices):
+        INDIVIDUAL_URL = 1, "Individual URL"
+        REGEX_PATTERN = 2, "Regex Pattern"
+
     collection = models.ForeignKey(
         Collection, on_delete=models.CASCADE, related_name="title_patterns"
     )
@@ -351,6 +355,28 @@ class TitlePattern(models.Model):
         "add references to a specific xpath or the orignal title. For example 'James Webb {scraped_title}: {xpath}'",
     )
 
+    # keep track of which urls the pattern is applied to so it's easy to unapply
+    # candidate_urls = models.ManyToManyField(CandidateURL)
+    pattern_type = models.IntegerField(choices=PatternTypeChoices.choices, default=1)
+
+    def apply(self):
+        """Apply the title pattern to the collection."""
+        regex_search_string = f'{re.escape(self.match_pattern.strip("*"))}'
+        if self.pattern_type == ExcludePattern.PatternTypeChoices.INDIVIDUAL_URL:
+            regex_search_string += r"$"
+        self.collection.candidate_urls.filter(url__regex=regex_search_string).update(
+            generated_title=self.title_pattern
+        )
+
+    def unapply(self):
+        """Unapply the title pattern to the collection."""
+        regex_search_string = f'{re.escape(self.match_pattern.strip("*"))}'
+        if self.pattern_type == ExcludePattern.PatternTypeChoices.INDIVIDUAL_URL:
+            regex_search_string += r"$"
+        self.collection.candidate_urls.filter(url__regex=regex_search_string).update(
+            generated_title=""
+        )
+
     class Meta:
         """Meta definition for TitlePattern."""
 
@@ -359,3 +385,13 @@ class TitlePattern(models.Model):
 
     def __str__(self):
         return f"{self.match_pattern}: {self.title_pattern}"
+
+    def save(self, *args, **kwargs):
+        """Save the title pattern."""
+        super().save(*args, **kwargs)
+        self.apply()
+
+    def delete(self, *args, **kwargs):
+        """Delete the title pattern."""
+        self.unapply()
+        super().delete(*args, **kwargs)

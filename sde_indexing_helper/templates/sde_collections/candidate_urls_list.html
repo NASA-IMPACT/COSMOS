@@ -21,7 +21,7 @@
 {% block content %}
     {% csrf_token %}
     <h3>
-        Candidate URLs for <strong>{{ collection.name }}</strong>
+        Candidate URLs for <a href="{% url 'sde_collections:detail' collection.pk %}"><strong>{{ collection.name }}</strong></a>
         <br>
         <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small>
     </h3>
@@ -38,7 +38,7 @@
                     <strong>Scraped Title</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
-                    <strong>Generated Title</strong>
+                    <strong>New Title</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
                     <strong>Visited</strong>
@@ -105,6 +105,25 @@
                             <strong>Title Patterns</strong>
                             <button id="add_exclude_pattern" class="btn btn-sm btn-primary">+</button>
                         </h4>
+                        <form id="exclude_patterns">
+                            {% csrf_token %}
+                            {% for pattern in title_patterns %}
+                                <div class="row pattern_row">
+                                    <div class="col-8">
+                                        <input class="form-control"
+                                               value="{{ pattern }}"
+                                               title="{{ pattern }}"
+                                               disabled />
+                                    </div>
+                                    <div class="col">
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm delete_input"
+                                                hx-delete="/api/title-patterns/{{ pattern.id }}/"
+                                                hx-confirm="Are you sure you wish to delete this pattern?">x</button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </form>
                     </div>
                 {% else %}
                 {% endif %}

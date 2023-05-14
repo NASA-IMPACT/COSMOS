@@ -87,6 +87,7 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
         context["regex_exclude_patterns"] = self.collection.exclude_patterns.filter(
             pattern_type=2
         )  # 2=regex patterns
+        context["title_patterns"] = self.collection.title_patterns.all()
         return context
 
 

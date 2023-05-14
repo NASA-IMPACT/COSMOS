@@ -25,8 +25,8 @@ function initializeDataTable() {
         "columns": [
             getURLColumn(),
             getExcludedColumn(true_icon, false_icon),
-            { "data": "scraped_title" },
-            { "data": "generated_title" },
+            getScrapedTitleColumn(),
+            getGeneratedTitleColumn(),
             getVisitedColumn(true_icon, false_icon),
             { "data": "id", "visible": false, "searchable": false },
         ],
@@ -57,6 +57,21 @@ function getURLColumn() {
         }
     }
 }
+
+function getScrapedTitleColumn() {
+    return {
+        "data": "scraped_title"
+    }
+}
+
+function getGeneratedTitleColumn() {
+    return {
+        "data": "generated_title", "render": function (data, type, row) {
+            return `<input type="text" class="form-control individual_title_input" value="${data}" data-url=${row['url']} />`;
+        }
+    }
+}
+
 
 function getExcludedColumn(true_icon, false_icon) {
     return {
@@ -124,10 +139,10 @@ function handleAddNewPatternClick() {
 }
 
 function handleNewTitleChange() {
-    $(".new-title").on("change", function () {
-        var title = $(this).val();
-        var url = $(this).attr("data-url");
-        postNewTitle(url, title);
+    $("body").on("change", ".individual_title_input", function () {
+        var match_pattern = $(this).data('url');
+        var title_pattern = $(this).val();
+        postIndividualTitle(match_pattern, title_pattern);
     });
 }
 
@@ -151,21 +166,28 @@ function postExcludePatterns(match_pattern, pattern_type = 0) {
         pattern_type: pattern_type,
         csrfmiddlewaretoken: csrftoken
     }, function (response) {
-        console.log(response);
         window.location.reload();
     });
 }
 
-function postNewTitle(url, title) {
+function postIndividualTitle(match_pattern, title_pattern) {
+    if (!match_pattern) {
+        toastr.error('Please highlight a pattern to change the title.');
+        return;
+    }
+
     $.ajax({
-        url: url,
+        url: '/api/title-patterns/',
         type: "POST",
         data: {
-            title: title,
-            csrfmiddlewaretoken: csrftoken,
+            collection: collection_id,
+            match_pattern: match_pattern,
+            title_pattern: title_pattern,
+            pattern_type: 1, // individual
+            csrfmiddlewaretoken: csrftoken
         },
         success: function (data) {
-            console.log(data);
+            window.location.reload();
         },
     });
 }
