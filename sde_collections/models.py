@@ -314,8 +314,11 @@ class ExcludePattern(models.Model):
 
     def apply(self):
         """Apply the exclude pattern to the collection."""
+        regex_search_string = f'{re.escape(self.match_pattern.strip("*"))}'
+        if self.pattern_type == ExcludePattern.PatternTypeChoices.INDIVIDUAL_URL:
+            regex_search_string += r"$"
         for candidate_url in self.collection.candidate_urls.filter(
-            url__regex=f'{re.escape(self.match_pattern.lstrip("*"))}$'
+            url__regex=regex_search_string
         ):
             self.candidate_urls.add(candidate_url)
 

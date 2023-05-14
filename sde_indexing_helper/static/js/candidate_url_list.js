@@ -1,6 +1,7 @@
 // CSRF token and collection_id
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 var collection_id = getCollectionId();
+var selected_text = "";
 
 $(document).ready(function () {
     handleAjaxStartAndStop();
@@ -13,10 +14,10 @@ function handleAjaxStartAndStop() {
 }
 
 function initializeDataTable() {
-    let true_icon = '<i class="material-icons" style="color: green">check</i>';
-    let false_icon = '<i class="material-icons" style="color: red">close</i>';
+    var true_icon = '<i class="material-icons" style="color: green">check</i>';
+    var false_icon = '<i class="material-icons" style="color: red">close</i>';
 
-    let table = $('#candidate_urls_table').DataTable({
+    var table = $('#candidate_urls_table').DataTable({
         "scrollY": true,
         "serverSide": true,
         "stateSave": true,
@@ -52,7 +53,7 @@ function setupClickHandlers() {
 function getURLColumn() {
     return {
         "data": "url", "render": function (data, type, row) {
-            return `<a target="_blank" href="${data}" data-url="/api/candidate-urls/${row['id']}/" class="url_link"> <i class="material-icons">open_in_new</i></a> ${remove_protocol(data)}`;
+            return `<a target="_blank" href="${data}" data-url="/api/candidate-urls/${row['id']}/" class="url_link"> <i class="material-icons">open_in_new</i></a> <span class="candidate_url">${remove_protocol(data)}</span>`;
         }
     }
 }
@@ -117,28 +118,33 @@ function handleDeleteInputClick() {
 
 function handleAddNewPatternClick() {
     $("body").on("click", ".add_new_pattern", function () {
-        let pattern = $(this).parents(".pattern_row").find("input").val();
+        var pattern = $(this).parents(".pattern_row").find("input").val();
         postExcludePatterns(pattern);
     });
 }
 
 function handleNewTitleChange() {
     $(".new-title").on("change", function () {
-        let title = $(this).val();
-        let url = $(this).attr("data-url");
+        var title = $(this).val();
+        var url = $(this).attr("data-url");
         postNewTitle(url, title);
     });
 }
 
 function handleUrlLinkClick() {
     $("body").on("click", ".url_link", function (event) {
-        let url = $(this).attr("data-url");
+        var url = $(this).attr("data-url");
         postVisited(url);
         $(this).closest('tr').find('.visited_icon').css('color', 'green').text('done');
     });
 }
 
 function postExcludePatterns(match_pattern, pattern_type = 0) {
+    if (!match_pattern) {
+        toastr.error('Please highlight a pattern to exclude.');
+        return;
+    }
+
     $.post('/api/exclude-patterns/', {
         collection: collection_id,
         match_pattern: match_pattern,
@@ -199,7 +205,7 @@ function remove_protocol(url) {
 }
 
 function add_exclude_pattern(pattern) {
-    let input = $(
+    var input = $(
         `
             <div class="row pattern_row">
                 <div class="col-8">
@@ -215,3 +221,60 @@ function add_exclude_pattern(pattern) {
     );
     $('#exclude_patterns').append(input);
 }
+
+// Trigger action when the contexmenu is about to be shown
+$("body").on("contextmenu", ".candidate_url", function (event) {
+
+    // Avoid the real one
+    event.preventDefault();
+
+
+    // Show contextmenu
+    $(".custom-menu").finish().toggle(100).
+
+        // In the right position (the mouse)
+        css({
+            top: event.pageY + "px",
+            left: event.pageX - 250 + "px"
+        });
+});
+
+
+// If the document is clicked somewhere
+$(document).bind("mousedown", function (e) {
+    selected_text = get_selection();
+
+    // If the clicked element is not the menu
+    if (!$(e.target).parents(".custom-menu").length > 0) {
+
+        // Hide it
+        $(".custom-menu").hide(100);
+    }
+});
+
+
+function get_selection() {
+    var text = "hey";
+    if (window.getSelection) {
+        text = window.getSelection().toString();
+    } else if (document.selection && document.selection.type != "Control") {
+        text = document.selection.createRange().text;
+    }
+
+    return text;
+}
+
+// If the menu element is clicked
+$(".custom-menu li").click(function () {
+
+    // This is the triggered action name
+    switch ($(this).attr("data-action")) {
+
+        // A case for each action. Your actions here
+        case "exclude-pattern": postExcludePatterns(selected_text.trim(), pattern_type = 2); break;
+        case "title-pattern": alert("title"); break;
+    }
+
+    // Hide it AFTER the action was triggered
+    $(".custom-menu").hide(100);
+});
