@@ -14,7 +14,9 @@
 {% endblock javascripts %}
 {% block content %}
     <h3>
-        Showing {{ candidate_urls.count }} Candidate URLs for <strong>{{ collection.name }}</strong>
+        Showing {{ candidate_urls.count }} of {{ page_obj.paginator.count }} Candidate URLs for <strong>{{ collection.name }}</strong>
+        <br>
+        <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small>
     </h3>
     <table class="table">
         <thead>
@@ -61,6 +63,56 @@
             {% endfor %}
         </tbody>
     </table>
+    <nav>
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ page_obj.previous_page_number }}"
+                       aria-label="Previous">
+                        <span class="material-icons">keyboard_arrow_left</span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                </li>
+            {% endif %}
+            {% for page_number in page_obj.paginator.page_range %}
+                {% if page_obj.number == page_number %}
+                    <li class="page-item active">
+                        <a class="page-link" href="#">{{ page_number }}</a>
+                    </li>
+                {% elif page_number > page_obj.number|add:'-3' and page_number < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ page_obj.next_page_number }}"
+                       aria-label="Next">
+                        <span class="material-icons">keyboard_arrow_right</span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% comment %}
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.</span>
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    {% endcomment %}
 {% endblock content %}
 {% block sidebar %}
     <div class="sidebar"
