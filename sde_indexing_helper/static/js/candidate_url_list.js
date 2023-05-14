@@ -1,15 +1,49 @@
-$(document).ready(function () {
-    // Get the value of the "param" GET parameter from the URL
-    var paramValue = getParameterByName("is_excluded");
+var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 
-    // If the "param" GET parameter exists and its value is "true"
-    if (paramValue === "false") {
-        // Check the checkbox with ID "myCheckbox"
-        $("#excluded_bool").prop("checked", true);
-    }
+function remove_protocol(url) {
+    return url.replace(/(^\w+:|^)\/\//, '');
+}
+
+$(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
+
+$(document).ready(function () {
+    let true_icon = '<i class="material-icons" style="color: green">check</i>';
+    let false_icon = '<i class="material-icons" style="color: red">close</i>';
+    var table = $('#candidate_urls_table').DataTable({
+        "scrollY": true,
+        "serverSide": true,
+        "stateSave": true,
+        "ajax": `/api/candidate-urls/?format=datatables&collection_id=${collection_id}`,
+        "columns": [
+            {
+                "data": "url", "render": function (data, type, row) {
+                    return `<a target="_blank" href="${data}" data-url="/api/candidate-urls/${data['id']}/" class="url_link"> <i class="material-icons">open_in_new</i></a> ${data.replace(/(^\w+:|^)\/\//, '')}`;
+                }
+            },
+            {
+                "data": "excluded", "class": "col-1 text-center", "render": function (data, type, row) {
+                    return (data === true) ? true_icon : `<a href="#" class="exclude_individual_url" value=${remove_protocol(row['url'])}>${false_icon}</a>`;
+                }
+            },
+            { "data": "scraped_title" },
+            { "data": "generated_title" },
+            {
+                "data": "visited", "class": "col-1 text-center", "render": function (data, type, row) {
+                    return (data === true) ? true_icon : false_icon;
+                }
+            },
+        ],
+        "createdRow": function (row, data, dataIndex) {
+            if (data['excluded']) {
+                $(row).addClass('table-danger');
+            }
+        }
+    });
 });
 
-var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
+$('#test_url').text($('#test_url').text().replace(/(^\w+:|^)\/\//, ''));
+
+
 
 // Function to get the value of a GET parameter by its name
 function getParameterByName(name, url) {
@@ -28,19 +62,26 @@ $("#excluded_bool").on("click", function () {
         var url = window.location.href;
 
         // Add a GET parameter
-        var newUrl = url + "?is_excluded=false";
+        var is_excluded_parameter = { is_excluded: false }; // Object containing the parameter and its value
+        var serialized_param = $.param(is_excluded_parameter); // Serialize the object into a query string
+        var new_url = url + (url.indexOf('?') !== -1 ? '&' : '?') + serialized_param; // Append the query string to the URL
+
+        console.log(new_url);
 
         // Redirect to the new URL
-        window.location.href = newUrl;
+        window.location.href = new_url;
     } else {
         // Get the current URL
         var url = window.location.href;
 
-        // Remove all GET parameters
-        var newUrl = url.split("?")[0];
+        var search_params = new URLSearchParams(url.search); // Get the search parameters
+        var parameter_to_remove = 'is_excluded'; // Parameter to remove
+        search_params.delete(parameter_to_remove); // Remove the parameter
+        url.search = search_params.toString(); // Update the search part of the URL
+        var new_url = url.toString(); // Get the modified URL
 
         // Redirect to the new URL
-        window.location.href = newUrl;
+        window.location.href = new_url;
     };
 });
 
@@ -73,15 +114,20 @@ $(".url_part_button").on("click", function () {
     });
 });
 
-$('.exclude_individual_url').on("click", function () {
+function exclude_individual_url(url) {
     $.post('/api/exclude-patterns/', {
         collection: collection_id,
-        match_pattern: $(this).attr("value"),
+        match_pattern: url,
+        pattern_type: 1, // individual_url
         csrfmiddlewaretoken: csrftoken
     }, function (response) {
         console.log(response);
         window.location.reload();
     });
+}
+
+$("body").on("click", '.exclude_individual_url', function () {
+    exclude_individual_url($(this).attr("value"));
 });
 
 
@@ -161,7 +207,7 @@ $(".new-title").on("change", function () {
     });
 });
 
-$(".url_link").on("click", function (event) {
+$("body").on("click", ".url_link", function (event) {
     let url = $(this).attr("data-url");
     let $mylink = $(this);
     console.log(url);
