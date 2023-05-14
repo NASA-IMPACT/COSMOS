@@ -4,19 +4,17 @@ from .models import CandidateURL, ExcludePattern, TitlePattern
 
 
 class CandidateURLSerializer(serializers.ModelSerializer):
-    is_excluded = serializers.SerializerMethodField()
-
-    def get_is_excluded(self, obj):
-        return obj.excludepattern_set.exists()
+    excluded = serializers.BooleanField(required=False)
+    url = serializers.CharField(required=False)
 
     class Meta:
         model = CandidateURL
         fields = (
             "id",
+            "excluded",
+            "url",
             "scraped_title",
             "generated_title",
-            "level",
-            "is_excluded",
             "visited",
         )
 
@@ -24,7 +22,7 @@ class CandidateURLSerializer(serializers.ModelSerializer):
 class ExcludePatternSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExcludePattern
-        fields = ("id", "collection", "match_pattern", "reason")
+        fields = ("id", "collection", "match_pattern", "pattern_type", "reason")
 
 
 class TitlePatternSerializer(serializers.ModelSerializer):
