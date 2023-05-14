@@ -91,10 +91,7 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
         return context
 
 
-class CandidateURLViewSet(viewsets.ModelViewSet):
-    queryset = CandidateURL.objects.all()
-    serializer_class = CandidateURLSerializer
-
+class CollectionFilterMixin:
     def get_queryset(self):
         if not self.request.method == "GET":
             return super().get_queryset()
@@ -105,17 +102,31 @@ class CandidateURLViewSet(viewsets.ModelViewSet):
         except Collection.DoesNotExist:
             # just return an empty list
             return super().get_queryset().filter(collection__isnull=True)
-        return super().get_queryset().filter(collection=collection).order_by("url")
+        return super().get_queryset().filter(collection=collection)
 
 
-class ExcludePatternViewSet(viewsets.ModelViewSet):
+class CandidateURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
+    queryset = CandidateURL.objects.all()
+    serializer_class = CandidateURLSerializer
+
+    def get_queryset(self):
+        return super().get_queryset().order_by("url")
+
+
+class ExcludePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     queryset = ExcludePattern.objects.all()
     serializer_class = ExcludePatternSerializer
 
+    def get_queryset(self):
+        return super().get_queryset().order_by("match_pattern")
 
-class TitlePatternViewSet(viewsets.ModelViewSet):
+
+class TitlePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     queryset = TitlePattern.objects.all()
     serializer_class = TitlePatternSerializer
+
+    def get_queryset(self):
+        return super().get_queryset().order_by("match_pattern")
 
 
 class CollectionViewSet(viewsets.ModelViewSet):

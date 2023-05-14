@@ -49,85 +49,49 @@
             </tr>
         </thead>
     </table>
+    <h3>Exclude Patterns</h3>
+    <table class="table" id="exclude_patterns_table">
+        <thead>
+            <tr>
+                <th scope="col" class="text-center col-1">
+                    <strong>Exclude Pattern</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Pattern Type</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Actions</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>ID</strong>
+                </th>
+            </tr>
+        </thead>
+    </table>
+    <h3>Title Patterns</h3>
+    <table class="table" id="title_patterns_table">
+        <thead>
+            <tr>
+                <th scope="col" class="text-center col-1">
+                    <strong>Match Pattern</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Title Pattern</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Pattern Type</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Actions</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>ID</strong>
+                </th>
+            </tr>
+        </thead>
+    </table>
     <ul class="custom-menu list-group">
         <li data-action="exclude-pattern" class="list-group-item">Create Exclude Pattern</li>
         <li data-action="title-pattern" class="list-group-item">Create Title Pattern</li>
     </ul>
 {% endblock content %}
-{% block sidebar %}
-    <div class="sidebar"
-         data-color="purple"
-         data-background-color="white"
-         data-image="{% static 'images/sidebar-1.jpg' %}">
-        <div class="logo">
-            <a rel="noopener noreferrer"
-               href="{% url 'sde_collections:list' %}"
-               class="simple-text logo-normal">SDE Indexing Helper</a>
-        </div>
-        <div class="sidebar-wrapper">
-            <ul class="nav">
-                {% if request.user.is_authenticated %}
-                    <div class="col">
-                        <h4>
-                            <input type="checkbox" value="" id="excluded_bool">
-                            Hide Excluded
-                        </h4>
-                    </div>
-                    <hr>
-                    <div class="col">
-                        <h4>
-                            <strong>Exclude Patterns</strong>
-                            <button id="add_exclude_pattern" class="btn btn-primary btn-sm">+</button>
-                        </h4>
-                        <form id="exclude_patterns">
-                            {% csrf_token %}
-                            {% for pattern in regex_exclude_patterns %}
-                                <div class="row pattern_row">
-                                    <div class="col-8">
-                                        <input class="form-control"
-                                               value="{{ pattern }}"
-                                               title="{{ pattern }}"
-                                               disabled />
-                                    </div>
-                                    <div class="col">
-                                        <button type="button"
-                                                class="btn btn-danger btn-sm delete_input"
-                                                hx-delete="/api/exclude-patterns/{{ pattern.id }}/"
-                                                hx-confirm="Are you sure you wish to delete this pattern?">x</button>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </form>
-                    </div>
-                    <hr>
-                    <div class="col">
-                        <h4>
-                            <strong>Title Patterns</strong>
-                            <button id="add_exclude_pattern" class="btn btn-sm btn-primary">+</button>
-                        </h4>
-                        <form id="exclude_patterns">
-                            {% csrf_token %}
-                            {% for pattern in title_patterns %}
-                                <div class="row pattern_row">
-                                    <div class="col-8">
-                                        <input class="form-control"
-                                               value="{{ pattern }}"
-                                               title="{{ pattern }}"
-                                               disabled />
-                                    </div>
-                                    <div class="col">
-                                        <button type="button"
-                                                class="btn btn-danger btn-sm delete_input"
-                                                hx-delete="/api/title-patterns/{{ pattern.id }}/"
-                                                hx-confirm="Are you sure you wish to delete this pattern?">x</button>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </form>
-                    </div>
-                {% else %}
-                {% endif %}
-            </ul>
-        </div>
-    </div>
-{% endblock sidebar %}

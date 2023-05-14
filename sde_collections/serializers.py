@@ -20,12 +20,34 @@ class CandidateURLSerializer(serializers.ModelSerializer):
 
 
 class ExcludePatternSerializer(serializers.ModelSerializer):
+    pattern_type_display = serializers.CharField(
+        source="get_pattern_type_display", read_only=True
+    )
+
     class Meta:
         model = ExcludePattern
-        fields = ("id", "collection", "match_pattern", "pattern_type", "reason")
+        fields = (
+            "id",
+            "collection",
+            "match_pattern",
+            "pattern_type",
+            "reason",
+            "pattern_type_display",
+        )
 
 
 class TitlePatternSerializer(serializers.ModelSerializer):
+    pattern_type_display = serializers.CharField(
+        source="get_pattern_type_display", read_only=True
+    )
+
     class Meta:
         model = TitlePattern
-        fields = ("id", "collection", "match_pattern", "title_pattern")
+        fields = (
+            "id",
+            "collection",
+            "match_pattern",
+            "pattern_type",
+            "title_pattern",
+            "pattern_type_display",
+        )

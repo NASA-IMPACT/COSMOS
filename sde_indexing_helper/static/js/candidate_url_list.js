@@ -17,7 +17,7 @@ function initializeDataTable() {
     var true_icon = '<i class="material-icons" style="color: green">check</i>';
     var false_icon = '<i class="material-icons" style="color: red">close</i>';
 
-    var table = $('#candidate_urls_table').DataTable({
+    var candidate_urls_table = $('#candidate_urls_table').DataTable({
         "scrollY": true,
         "serverSide": true,
         "stateSave": true,
@@ -36,6 +36,45 @@ function initializeDataTable() {
             }
         }
     });
+
+    var exclude_patterns_table = $('#exclude_patterns_table').DataTable({
+        "scrollY": true,
+        "serverSide": true,
+        "stateSave": true,
+        "ajax": `/api/exclude-patterns/?format=datatables&collection_id=${collection_id}`,
+        "columns": [
+            { "data": "match_pattern" },
+            { "data": "pattern_type_display", "class": "text-center" },
+            {
+                "data": null,
+                "class": "text-center",
+                "render": function (data, type, row) {
+                    return `<button class="btn btn-danger btn-sm delete-exclude-pattern-button" data-row-id="${row['id']}"><i class="material-icons">delete</i></button >`;
+                }
+            },
+            { "data": "id", "visible": false, "searchable": false },
+        ]
+    });
+
+    var title_patterns_table = $('#title_patterns_table').DataTable({
+        "scrollY": true,
+        "serverSide": true,
+        "stateSave": true,
+        "ajax": `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
+        "columns": [
+            { "data": "match_pattern" },
+            { "data": "title_pattern" },
+            { "data": "pattern_type_display", "class": "text-center" },
+            {
+                "data": null,
+                "class": "text-center",
+                "render": function (data, type, row) {
+                    return `<button class="btn btn-danger btn-sm delete-title-pattern-button" data-row-id="${row['id']}"><i class="material-icons">delete</i></button >`;
+                }
+            },
+            { "data": "id", "visible": false, "searchable": false },
+        ]
+    });
 }
 
 function setupClickHandlers() {
@@ -45,6 +84,8 @@ function setupClickHandlers() {
     handleExcludeIndividualUrlClick();
     handleAddExcludePatternClick();
     handleDeleteInputClick();
+    handleDeleteExcludePatternButtonClick();
+    handleDeleteTitlePatternButtonClick();
     handleAddNewPatternClick();
     handleNewTitleChange();
     handleUrlLinkClick();
@@ -67,7 +108,7 @@ function getScrapedTitleColumn() {
 function getGeneratedTitleColumn() {
     return {
         "data": "generated_title", "render": function (data, type, row) {
-            return `<input type="text" class="form-control individual_title_input" value="${data}" data-url=${row['url']} />`;
+            return `<input type="text" class="form-control individual_title_input" value="${data}" data-url=${remove_protocol(row['url'])} />`;
         }
     }
 }
@@ -128,6 +169,20 @@ function handleDeleteInputClick() {
     $("body").on("click", ".delete_input", function () {
         $(this).parents(".pattern_row").remove();
         window.location.reload();
+    });
+}
+
+function handleDeleteExcludePatternButtonClick() {
+    $("body").on("click", ".delete-exclude-pattern-button", function () {
+        row_id = $(this).data('row-id');
+        deletePattern(`/api/exclude-patterns/${row_id}/`, data_type = 'Exclude Pattern');
+    });
+}
+
+function handleDeleteTitlePatternButtonClick() {
+    $("body").on("click", ".delete-title-pattern-button", function () {
+        row_id = $(this).data('row-id');
+        deletePattern(`/api/title-patterns/${row_id}/`, data_type = 'Title Pattern');
     });
 }
 
@@ -207,6 +262,27 @@ function postVisited(url) {
         },
     });
 }
+
+function deletePattern(url, data_type) {
+    var confirmDelete = confirm(`Are you sure you want to delete this ${data_type}?`);
+    if (!confirmDelete) {
+        return;
+    }
+    $.ajax({
+        url: url,
+        type: "DELETE",
+        data: {
+            csrfmiddlewaretoken: csrftoken
+        },
+        headers: {
+            'X-CSRFToken': csrftoken
+        },
+        success: function (data) {
+            window.location.reload();
+        }
+    });
+}
+
 
 function getCollectionId() {
     return collection_id;
