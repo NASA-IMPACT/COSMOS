@@ -1,37 +1,33 @@
+// CSRF token and collection_id
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
-
-function remove_protocol(url) {
-    return url.replace(/(^\w+:|^)\/\//, '');
-}
-
-$(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
+var collection_id = getCollectionId();
 
 $(document).ready(function () {
+    handleAjaxStartAndStop();
+    initializeDataTable();
+    setupClickHandlers();
+});
+
+function handleAjaxStartAndStop() {
+    $(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
+}
+
+function initializeDataTable() {
     let true_icon = '<i class="material-icons" style="color: green">check</i>';
     let false_icon = '<i class="material-icons" style="color: red">close</i>';
-    var table = $('#candidate_urls_table').DataTable({
+
+    let table = $('#candidate_urls_table').DataTable({
         "scrollY": true,
         "serverSide": true,
         "stateSave": true,
         "ajax": `/api/candidate-urls/?format=datatables&collection_id=${collection_id}`,
         "columns": [
-            {
-                "data": "url", "render": function (data, type, row) {
-                    return `<a target="_blank" href="${data}" data-url="/api/candidate-urls/${data['id']}/" class="url_link"> <i class="material-icons">open_in_new</i></a> ${data.replace(/(^\w+:|^)\/\//, '')}`;
-                }
-            },
-            {
-                "data": "excluded", "class": "col-1 text-center", "render": function (data, type, row) {
-                    return (data === true) ? true_icon : `<a href="#" class="exclude_individual_url" value=${remove_protocol(row['url'])}>${false_icon}</a>`;
-                }
-            },
+            getURLColumn(),
+            getExcludedColumn(true_icon, false_icon),
             { "data": "scraped_title" },
             { "data": "generated_title" },
-            {
-                "data": "visited", "class": "col-1 text-center", "render": function (data, type, row) {
-                    return (data === true) ? true_icon : false_icon;
-                }
-            },
+            getVisitedColumn(true_icon, false_icon),
+            { "data": "id", "visible": false, "searchable": false },
         ],
         "createdRow": function (row, data, dataIndex) {
             if (data['excluded']) {
@@ -39,178 +35,136 @@ $(document).ready(function () {
             }
         }
     });
-});
-
-$('#test_url').text($('#test_url').text().replace(/(^\w+:|^)\/\//, ''));
-
-
-
-// Function to get the value of a GET parameter by its name
-function getParameterByName(name, url) {
-    if (!url) url = window.location.href;
-    name = name.replace(/[\[\]]/g, "\\$&");
-    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-        results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return "";
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
-$("#excluded_bool").on("click", function () {
-    if ($(this).prop("checked")) {
-        // Get the current URL
-        var url = window.location.href;
+function setupClickHandlers() {
+    handleExcludedBool();
+    handleVisitedBool();
+    handleUrlPartButton();
+    handleExcludeIndividualUrlClick();
+    handleAddExcludePatternClick();
+    handleDeleteInputClick();
+    handleAddNewPatternClick();
+    handleNewTitleChange();
+    handleUrlLinkClick();
+}
 
-        // Add a GET parameter
-        var is_excluded_parameter = { is_excluded: false }; // Object containing the parameter and its value
-        var serialized_param = $.param(is_excluded_parameter); // Serialize the object into a query string
-        var new_url = url + (url.indexOf('?') !== -1 ? '&' : '?') + serialized_param; // Append the query string to the URL
+function getURLColumn() {
+    return {
+        "data": "url", "render": function (data, type, row) {
+            return `<a target="_blank" href="${data}" data-url="/api/candidate-urls/${row['id']}/" class="url_link"> <i class="material-icons">open_in_new</i></a> ${remove_protocol(data)}`;
+        }
+    }
+}
 
-        console.log(new_url);
+function getExcludedColumn(true_icon, false_icon) {
+    return {
+        "data": "excluded", "class": "col-1 text-center", "render": function (data, type, row) {
+            return (data === true) ? true_icon : `<a href="#" class="exclude_individual_url" value=${remove_protocol(row['url'])}>${false_icon}</a>`;
+        }
+    }
+}
 
-        // Redirect to the new URL
-        window.location.href = new_url;
-    } else {
-        // Get the current URL
-        var url = window.location.href;
+function getVisitedColumn(true_icon, false_icon) {
+    true_icon = '<i class="material-icons visited_icon" style="color: green">check</i>';
+    false_icon = '<i class="material-icons visited_icon" style="color: red">close</i>';
+    return {
+        "data": "visited", "class": "col-1 text-center", "render": function (data, type, row) {
+            return (data === true) ? true_icon : false_icon;
+        }
+    }
+}
 
-        var search_params = new URLSearchParams(url.search); // Get the search parameters
-        var parameter_to_remove = 'is_excluded'; // Parameter to remove
-        search_params.delete(parameter_to_remove); // Remove the parameter
-        url.search = search_params.toString(); // Update the search part of the URL
-        var new_url = url.toString(); // Get the modified URL
+function handleExcludedBool() {
+    $("#excluded_bool").on("click", function () {
+        var newValue = $(this).prop("checked") ? "True" : "False";
+        $("#excluded").val(newValue);
+        updateUrlWithExclusion(newValue);
+    });
+}
 
-        // Redirect to the new URL
-        window.location.href = new_url;
-    };
-});
+function handleVisitedBool() {
+    $("#visited_bool").on("click", function () {
+        var newValue = $(this).prop("checked") ? "True" : "False";
+        $("#visited").val(newValue);
+    });
+}
 
+function handleUrlPartButton() {
+    $(".url_part_button").on("click", function () {
+        postExcludePatterns($(this).attr("value"));
+    });
+}
 
+function handleExcludeIndividualUrlClick() {
+    $("body").on("click", '.exclude_individual_url', function () {
+        postExcludePatterns(match_pattern = $(this).attr("value"), pattern_type = 1);
+    });
+}
 
-$("#excluded_bool").on("click", function () {
-    if ($(this).prop("checked")) {
-        $("#excluded").val("True");
-    } else {
-        $("#excluded").val("False");
-    };
-});
+function handleAddExcludePatternClick() {
+    $('#add_exclude_pattern').on('click', function () {
+        add_exclude_pattern();
+    });
+}
 
-$("#visited_bool").on("click", function () {
-    if ($(this).prop("checked")) {
-        $("#visited").val("True");
-    } else {
-        $("#visited").val("False");
-    };
-});
+function handleDeleteInputClick() {
+    $("body").on("click", ".delete_input", function () {
+        $(this).parents(".pattern_row").remove();
+        window.location.reload();
+    });
+}
 
-$(".url_part_button").on("click", function () {
+function handleAddNewPatternClick() {
+    $("body").on("click", ".add_new_pattern", function () {
+        let pattern = $(this).parents(".pattern_row").find("input").val();
+        postExcludePatterns(pattern);
+    });
+}
+
+function handleNewTitleChange() {
+    $(".new-title").on("change", function () {
+        let title = $(this).val();
+        let url = $(this).attr("data-url");
+        postNewTitle(url, title);
+    });
+}
+
+function handleUrlLinkClick() {
+    $("body").on("click", ".url_link", function (event) {
+        let url = $(this).attr("data-url");
+        postVisited(url);
+        $(this).closest('tr').find('.visited_icon').css('color', 'green').text('done');
+    });
+}
+
+function postExcludePatterns(match_pattern, pattern_type = 0) {
     $.post('/api/exclude-patterns/', {
         collection: collection_id,
-        match_pattern: $(this).attr("value"),
+        match_pattern: match_pattern,
+        pattern_type: pattern_type,
         csrfmiddlewaretoken: csrftoken
     }, function (response) {
         console.log(response);
         window.location.reload();
     });
-});
-
-function exclude_individual_url(url) {
-    $.post('/api/exclude-patterns/', {
-        collection: collection_id,
-        match_pattern: url,
-        pattern_type: 1, // individual_url
-        csrfmiddlewaretoken: csrftoken
-    }, function (response) {
-        console.log(response);
-        window.location.reload();
-    });
 }
 
-$("body").on("click", '.exclude_individual_url', function () {
-    exclude_individual_url($(this).attr("value"));
-});
-
-
-
-function add_exclude_pattern(pattern) {
-    let input = $(
-        `
-            <div class="row pattern_row">
-                <div class="col-8">
-                    <input class="form-control" value="${pattern}*" />
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-danger btn-sm delete_input" hx-delete="/exclude-pattern" hx-confirm="Are you sure you wish to delete this pattern?">x</button>
-                </div>
-            </div>
-        `
-    );
-    $('#exclude_patterns').append(input);
-}
-
-$('#add_exclude_pattern').on('click', function () {
-    let input = $(
-        `
-            <div class="row pattern_row">
-                <div class="col-8">
-                    <input class="form-control" />
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-success btn-sm add_new_pattern">
-                        ✔
-                    </button>
-                </div>
-            </div>
-        `
-    );
-    $('#exclude_patterns').append(input);
-});
-
-$("body").on("click", ".delete_input", function () {
-    $(this).parents(".pattern_row").remove();
-    window.location.reload();
-    // $.delete('/api/exclude-patterns/', {
-    //     collection: '85',
-    //     match_pattern: $(this).attr("value"),
-    //     csrfmiddlewaretoken: csrftoken
-    // }, function (response) {
-    //     console.log(response);
-    //     window.location.reload();
-    // });
-});
-
-$("body").on("click", ".add_new_pattern", function () {
-    let pattern = $(this).parents(".pattern_row").find("input").val();
-    $.post('/api/exclude-patterns/', {
-        collection: collection_id,
-        match_pattern: pattern,
-        csrfmiddlewaretoken: csrftoken
-    }, function (response) {
-        console.log(response);
-        window.location.reload();
-    });
-});
-
-$(".new-title").on("change", function () {
-    let title = $(this).val();
-    let url = $(this).attr("data-url");
+function postNewTitle(url, title) {
     $.ajax({
         url: url,
         type: "POST",
         data: {
             title: title,
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            csrfmiddlewaretoken: csrftoken,
         },
         success: function (data) {
             console.log(data);
         },
     });
-});
+}
 
-$("body").on("click", ".url_link", function (event) {
-    let url = $(this).attr("data-url");
-    let $mylink = $(this);
-    console.log(url);
+function postVisited(url) {
     $.ajax({
         url: url,
         type: "PUT",
@@ -222,8 +176,42 @@ $("body").on("click", ".url_link", function (event) {
             'X-CSRFToken': csrftoken
         },
         success: function (data) {
-            $mylink.closest('tr').find('.text-center i').css('color', 'green').text('done');
         },
     });
-    return true;
-});
+}
+
+function getCollectionId() {
+    return collection_id;
+}
+
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return "";
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+function remove_protocol(url) {
+    return url.replace(/(^\w+:|^)\/\//, '');
+}
+
+function add_exclude_pattern(pattern) {
+    let input = $(
+        `
+            <div class="row pattern_row">
+                <div class="col-8">
+                    <input class="form-control" />
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-success btn-sm add_new_pattern">
+                            ✔
+                        </button>
+                    </div>
+                </div>
+            `
+    );
+    $('#exclude_patterns').append(input);
+}
