@@ -1,12 +1,18 @@
 import re
 from urllib.parse import urlparse
 
+import lxml.etree
+import requests
+from bs4 import BeautifulSoup
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 from slugify import slugify
 
 from .db_to_xml import XmlEditor
 from .sinequa_utils import Sinequa
+
+User = get_user_model()
 
 
 class Collection(models.Model):
@@ -46,6 +52,11 @@ class Collection(models.Model):
 
     class ConnectorChoices(models.IntegerChoices):
         crawler2 = 1, "Web crawler parallel"
+
+    class CurationStatusChoices(models.IntegerChoices):
+        BACKLOG = 1, "Backlog"
+        BEING_CURATED = 2, "Being Curated"
+        DONE = 3, "Done"
 
     name = models.CharField("Name", max_length=1024)
     config_folder = models.CharField("Config Folder", max_length=2048, unique=True)
@@ -94,6 +105,14 @@ class Collection(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     new_collection = models.BooleanField(default=False)
     cleaning_order = models.IntegerField(default=0, blank=True)
+
+    curation_status = models.IntegerField(
+        choices=CurationStatusChoices.choices, default=1
+    )
+    curated_by = models.ForeignKey(
+        User, on_delete=models.DO_NOTHING, null=True, blank=True
+    )
+    curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
 
     class Meta:
         """Meta definition for Collection."""
@@ -326,6 +345,32 @@ class ExcludePattern(models.Model):
         """Save the exclude pattern."""
         super().save(*args, **kwargs)
         self.apply()
+
+    def _identify_pattern_type(self):
+        """Identify the pattern type."""
+        if self.pattern_type == ExcludePattern.PatternTypeChoices.INDIVIDUAL_URL:
+            return TitlePattern.PatternTypeChoices.PLAIN_TEXT
+
+        try:
+            lxml.etree.XPath(self.generated_title)
+            return TitlePattern.PatternTypeChoices.XPATH
+        except lxml.etree.XPathSyntaxError:
+            return TitlePattern.PatternTypeChoices.MODIFIER
+
+    def generate_title(self):
+        pattern_type = self._identify_pattern_type()
+        if pattern_type == TitlePattern.PatternTypeChoices.PLAIN_TEXT:
+            return self.generated_title
+
+        response = requests.get(self.url)
+        if response.status_code == requests.status_codes.codes.OK:
+            soup = BeautifulSoup(response.content, "html.parser")
+            if pattern_type == TitlePattern.PatternTypeChoices.XPATH:
+                self.generated_title = soup.xpath(self.generated_title)
+            elif pattern_type == TitlePattern.PatternTypeChoices.MODIFIER:
+                self.generated_title = self.generated_title
+        self.save()
+        return self.generated_title
 
     @property
     def sinequa_pattern(self):
