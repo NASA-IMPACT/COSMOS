@@ -139,12 +139,11 @@ class CollectionAdmin(admin.ModelAdmin):
 
     list_display = (
         "name",
+        "candidate_urls_count",
         "config_folder",
         "url",
         "division",
         "new_collection",
-        "cleaning_order",
-        "candidate_urls_count",
     )
     list_filter = (
         "division",
