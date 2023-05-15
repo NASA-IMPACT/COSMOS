@@ -379,6 +379,9 @@ $('#title_pattern_form').on('submit', function (e) {
     });
 
     postTitlePatterns(match_pattern = inputs.match_pattern, title_pattern = inputs.title_pattern, match_pattern_type = 2, title_pattern_type = inputs.title_pattern_type);
+
+    // close the modal if it is open
+    $('#titlePatternModal').modal('hide');
 });
 
 $('#filter-checkbox').on('change', function () {
