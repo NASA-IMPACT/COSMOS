@@ -1,5 +1,6 @@
 {% extends "layouts/base.html" %}
 {% load static i18n %}
+{% load humanize %}
 {% block title %}
     {{ collection.name }} Candidate URLs
 {% endblock title %}
@@ -21,7 +22,7 @@
 {% block content %}
     {% csrf_token %}
     <h3>
-        Candidate URLs for <a href="{% url 'sde_collections:detail' collection.pk %}"><strong>{{ collection.name }}</strong></a>
+        Showing {{ candidate_urls.count|intcomma }} Candidate URLs for <a href="{% url 'sde_collections:detail' collection.pk %}"><strong>{{ collection.name }}</strong></a>
         <br>
         <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small>
     </h3>
@@ -143,7 +144,10 @@
                                    value="2"
                                    checked>
                             <label for="title_pattern_type_modifier">Modifier</label>
-                            <input type="radio" name="title_pattern_type" id="title_pattern_type_xpath" value="3">
+                            <input type="radio"
+                                   name="title_pattern_type"
+                                   id="title_pattern_type_xpath"
+                                   value="3">
                             <label for="title_pattern_type_xpath">Xpath</label>
                         </div>
                     </div>
