@@ -20,8 +20,12 @@ function initializeDataTable() {
     var candidate_urls_table = $('#candidate_urls_table').DataTable({
         "scrollY": true,
         "serverSide": true,
-        "stateSave": true,
-        "ajax": `/api/candidate-urls/?format=datatables&collection_id=${collection_id}`,
+        "ajax": {
+            "url": `/api/candidate-urls/?format=datatables&collection_id=${collection_id}`,
+            "data": function (d) {
+                d.is_excluded = $('#filter-checkbox').is(':checked') ? false : null;
+            }
+        },
         "columns": [
             getURLColumn(),
             getExcludedColumn(true_icon, false_icon),
@@ -134,21 +138,6 @@ function getVisitedColumn(true_icon, false_icon) {
     }
 }
 
-function handleExcludedBool() {
-    $("#excluded_bool").on("click", function () {
-        var newValue = $(this).prop("checked") ? "True" : "False";
-        $("#excluded").val(newValue);
-        updateUrlWithExclusion(newValue);
-    });
-}
-
-function handleVisitedBool() {
-    $("#visited_bool").on("click", function () {
-        var newValue = $(this).prop("checked") ? "True" : "False";
-        $("#visited").val(newValue);
-    });
-}
-
 function handleUrlPartButton() {
     $(".url_part_button").on("click", function () {
         postExcludePatterns($(this).attr("value"));
@@ -158,19 +147,6 @@ function handleUrlPartButton() {
 function handleExcludeIndividualUrlClick() {
     $("body").on("click", '.exclude_individual_url', function () {
         postExcludePatterns(match_pattern = $(this).attr("value"), pattern_type = 1);
-    });
-}
-
-function handleAddExcludePatternClick() {
-    $('#add_exclude_pattern').on('click', function () {
-        add_exclude_pattern();
-    });
-}
-
-function handleDeleteInputClick() {
-    $("body").on("click", ".delete_input", function () {
-        $(this).parents(".pattern_row").remove();
-        window.location.reload();
     });
 }
 
@@ -223,7 +199,8 @@ function postExcludePatterns(match_pattern, pattern_type = 0) {
         pattern_type: pattern_type,
         csrfmiddlewaretoken: csrftoken
     }, function (response) {
-        window.location.reload();
+        $('#candidate_urls_table').DataTable().ajax.reload();
+        $('#exclude_patterns_table').DataTable().ajax.reload();
     });
 }
 
@@ -250,7 +227,8 @@ function postTitlePatterns(match_pattern, title_pattern, match_pattern_type = 1,
             csrfmiddlewaretoken: csrftoken
         },
         success: function (data) {
-            window.location.reload();
+            $('#candidate_urls_table').DataTable().ajax.reload();
+            $('#title_patterns_table').DataTable().ajax.reload();
         },
         error: function (xhr, status, error) {
             var errorMessage = xhr.responseText;
@@ -290,7 +268,9 @@ function deletePattern(url, data_type) {
             'X-CSRFToken': csrftoken
         },
         success: function (data) {
-            window.location.reload();
+            $('#candidate_urls_table').DataTable().ajax.reload();
+            $('#exclude_patterns_table').DataTable().ajax.reload();
+            $('#title_patterns_table').DataTable().ajax.reload();
         }
     });
 }
@@ -403,4 +383,8 @@ $('#title_pattern_form').on('submit', function (e) {
     });
 
     postTitlePatterns(match_pattern = inputs.match_pattern, title_pattern = inputs.title_pattern, match_pattern_type = 2, title_pattern_type = inputs.title_pattern_type);
+});
+
+$('#filter-checkbox').on('change', function () {
+    $('#candidate_urls_table').DataTable().ajax.reload();
 });

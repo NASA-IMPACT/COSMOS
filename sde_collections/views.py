@@ -3,8 +3,6 @@ from django.db import models
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from rest_framework import viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
 
 from .models import CandidateURL, Collection, ExcludePattern, TitlePattern
 from .serializers import (
@@ -109,8 +107,21 @@ class CandidateURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     queryset = CandidateURL.objects.all()
     serializer_class = CandidateURLSerializer
 
+    def _filter_by_is_excluded(self, queryset, is_excluded):
+        if is_excluded == "false":
+            queryset = queryset.filter(excluded=False)
+        elif is_excluded == "true":
+            queryset = queryset.exclude(excluded=False)
+        return queryset
+
     def get_queryset(self):
-        return super().get_queryset().order_by("url")
+        queryset = super().get_queryset()
+        if self.request.method == "GET":
+            # Filter based on exclusion status
+            is_excluded = self.request.GET.get("is_excluded")
+            if is_excluded:
+                queryset = self._filter_by_is_excluded(queryset, is_excluded)
+        return queryset.order_by("url")
 
 
 class ExcludePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
@@ -132,18 +143,18 @@ class TitlePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
 
-    @action(detail=True)
-    def candidate_urls(self, request, pk=None):
-        collection = self.get_object()
-        queryset = collection.candidate_urls.all()
+    # @action(detail=True)
+    # def candidate_urls(self, request, pk=None):
+    #     collection = self.get_object()
+    #     queryset = collection.candidate_urls.all()
 
-        # Filter based on exclusion status
-        exclude = request.query_params.get("is_excluded", None)
-        if exclude:
-            if exclude.lower() == "true":
-                queryset = queryset.filter(appliedexclude__isnull=False)
-            elif exclude.lower() == "false":
-                queryset = queryset.exclude(appliedexclude__isnull=False)
+    #     # Filter based on exclusion status
+    #     exclude = request.query_params.get("is_excluded", None)
+    #     if exclude:
+    #         if exclude.lower() == "true":
+    #             queryset = queryset.filter(excluded=False)
+    #         elif exclude.lower() == "false":
+    #             queryset = queryset.exclude(excluded=False)
 
-        serializer = CandidateURLSerializer(queryset, many=True)
-        return Response(serializer.data)
+    #     serializer = CandidateURLSerializer(queryset, many=True)
+    #     return Response(serializer.data)

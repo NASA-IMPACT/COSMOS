@@ -22,10 +22,16 @@
 {% block content %}
     {% csrf_token %}
     <h3>
-        Showing {{ candidate_urls.count|intcomma }} Candidate URLs for <a href="{% url 'sde_collections:detail' collection.pk %}"><strong>{{ collection.name }}</strong></a>
+        {{ candidate_urls.count|intcomma }} Candidate URLs for <a href="{% url 'sde_collections:detail' collection.pk %}"><strong>{{ collection.name }}</strong></a>
         <br>
         <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small>
     </h3>
+    <div class="row pull-right">
+        <div class="form-group">
+            <input type="checkbox" id="filter-checkbox">
+            <label for="filter-checkbox">Hide Excluded</label>
+        </div>
+    </div>
     <table class="table" id="candidate_urls_table">
         <thead>
             <tr>
@@ -42,7 +48,7 @@
                     <strong>New Title</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
-                    <strong>Visited</strong>
+                    <strong>Curated?</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
                     <strong>ID</strong>
