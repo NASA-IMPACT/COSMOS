@@ -1,4 +1,10 @@
+import os
+import subprocess
+
+import boto3
+import botocore
 from django import forms
+from django.conf import settings
 from django.contrib import admin, messages
 from django.db import models
 
@@ -37,6 +43,48 @@ def generate_candidate_urls(modeladmin, request, queryset):
         request,
         messages.INFO,
         f"Started generating candidate URLs for: {collection.name}",
+    )
+
+
+@admin.action(description="Import candidate URLs")
+def import_candidate_urls(modeladmin, request, queryset):
+    s3 = boto3.client(
+        "s3",
+        region_name="us-east-1",
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    )
+    # collection.import_candidate_urls()
+    if queryset.count() > 1:
+        messages.add_message(
+            request, messages.ERROR, "Please select only one collection"
+        )
+        return
+
+    collection = queryset.first()
+
+    try:
+        s3.download_file(
+            settings.AWS_STORAGE_BUCKET_NAME,
+            f"static/scraped_urls/{collection.config_folder}/urls.json",
+            "urls.json",
+        )
+    except botocore.exceptions.ClientError:
+        messages.add_message(
+            request,
+            messages.ERROR,
+            f"Could not find candidate URLs on the S3 bucket for: {collection.name}",
+        )
+        return
+
+    subprocess.run("python manage.py loaddata urls.json", shell=True)
+
+    os.remove("urls.json")
+
+    messages.add_message(
+        request,
+        messages.INFO,
+        f"Started importing candidate URLs for: {collection.name}",
     )
 
 
@@ -89,7 +137,15 @@ class CollectionAdmin(admin.ModelAdmin):
         ),
     )
 
-    list_display = ("name", "config_folder", "url", "division", "turned_on")
+    list_display = (
+        "name",
+        "config_folder",
+        "url",
+        "division",
+        "new_collection",
+        "cleaning_order",
+        "num_candidate_urls",
+    )
     list_filter = (
         "division",
         "turned_on",
@@ -100,10 +156,12 @@ class CollectionAdmin(admin.ModelAdmin):
     search_fields = ("name", "url")
     # list_per_page = 300
     actions = [
-        import_sinequa_metadata,
-        export_sinequa_metadata,
-        generate_candidate_urls,
+        # import_sinequa_metadata,
+        # export_sinequa_metadata,
+        # generate_candidate_urls,
+        import_candidate_urls,
     ]
+    ordering = ("cleaning_order",)
     inlines = [ExcludePatternInline]
 
 

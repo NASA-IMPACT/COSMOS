@@ -223,6 +223,10 @@ class Collection(models.Model):
     def has_folder(self):
         return self.config_folder != ""
 
+    @property
+    def num_candidate_urls(self):
+        return self.candidate_urls.count()
+
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
         if not self.config_folder:
