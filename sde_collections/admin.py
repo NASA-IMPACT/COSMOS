@@ -1,14 +1,9 @@
-import os
-import subprocess
-
-import boto3
-import botocore
 from django import forms
-from django.conf import settings
 from django.contrib import admin, messages
 from django.db import models
 
 from .models import CandidateURL, Collection, ExcludePattern
+from .tasks import import_candidate_urls_task
 
 
 @admin.action(description="Import metadata from Sinequa configs")
@@ -48,43 +43,12 @@ def generate_candidate_urls(modeladmin, request, queryset):
 
 @admin.action(description="Import candidate URLs")
 def import_candidate_urls(modeladmin, request, queryset):
-    s3 = boto3.client(
-        "s3",
-        region_name="us-east-1",
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-    )
-    # collection.import_candidate_urls()
-    if queryset.count() > 1:
-        messages.add_message(
-            request, messages.ERROR, "Please select only one collection"
-        )
-        return
-
-    collection = queryset.first()
-
-    try:
-        s3.download_file(
-            settings.AWS_STORAGE_BUCKET_NAME,
-            f"static/scraped_urls/{collection.config_folder}/urls.json",
-            "urls.json",
-        )
-    except botocore.exceptions.ClientError:
-        messages.add_message(
-            request,
-            messages.ERROR,
-            f"Could not find candidate URLs on the S3 bucket for: {collection.name}",
-        )
-        return
-
-    subprocess.run("python manage.py loaddata urls.json", shell=True)
-
-    os.remove("urls.json")
-
+    import_candidate_urls_task.delay(list(queryset.values_list("id", flat=True)))
+    collection_names = ",".join(queryset.values_list("name", flat=True))
     messages.add_message(
         request,
         messages.INFO,
-        f"Started importing candidate URLs for: {collection.name}",
+        f"Started importing URLs from S3 for: {collection_names}",
     )
 
 
