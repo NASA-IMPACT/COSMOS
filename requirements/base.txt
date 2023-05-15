@@ -25,3 +25,4 @@ xmltodict==0.13.0
 djangorestframework==3.14.0
 python-slugify==8.0.1
 djangorestframework-datatables-0.7.0
+beautifulsoup4==4.12.2
