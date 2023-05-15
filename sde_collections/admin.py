@@ -144,7 +144,7 @@ class CollectionAdmin(admin.ModelAdmin):
         "division",
         "new_collection",
         "cleaning_order",
-        "num_candidate_urls",
+        "candidate_urls_count",
     )
     list_filter = (
         "division",

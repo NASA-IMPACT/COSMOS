@@ -224,7 +224,7 @@ class Collection(models.Model):
         return self.config_folder != ""
 
     @property
-    def num_candidate_urls(self):
+    def candidate_urls_count(self):
         return self.candidate_urls.count()
 
     def save(self, *args, **kwargs):
