@@ -1,5 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
+from django.shortcuts import redirect
+from django.utils import timezone
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from rest_framework import viewsets
@@ -43,6 +45,15 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
     model = Collection
     template_name = "sde_collections/collection_detail.html"
     context_object_name = "collection"
+
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+        collection = self.get_object()
+        collection.curation_status = Collection.CurationStatusChoices.BEING_CURATED
+        collection.curated_by = user
+        collection.curation_started = timezone.now()
+        collection.save()
+        return redirect("sde_collections:detail", pk=collection.pk)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

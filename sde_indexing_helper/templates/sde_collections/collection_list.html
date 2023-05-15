@@ -18,6 +18,8 @@
                 <th>Candidate URLs</th>
                 <th>New?</th>
                 <th>Cleaning Order</th>
+                <th>Status</th>
+                <th>Curator</th>
                 <th>Config Folder</th>
             </tr>
         </thead>
@@ -46,6 +48,8 @@
                         {% endif %}
                     </td>
                     <td>{{ collection.cleaning_order }}</td>
+                    <td>{{ collection.get_curation_status_display }}</td>
+                    <td>{{ collection.curated_by }}</td>
                     <td>{{ collection.config_folder }}</td>
                 </tr>
             {% endfor %}

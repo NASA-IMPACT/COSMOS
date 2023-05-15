@@ -84,12 +84,8 @@ function initializeDataTable() {
 }
 
 function setupClickHandlers() {
-    handleExcludedBool();
-    handleVisitedBool();
     handleUrlPartButton();
     handleExcludeIndividualUrlClick();
-    handleAddExcludePatternClick();
-    handleDeleteInputClick();
     handleDeleteExcludePatternButtonClick();
     handleDeleteTitlePatternButtonClick();
     handleAddNewPatternClick();
