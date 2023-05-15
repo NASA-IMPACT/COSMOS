@@ -44,7 +44,7 @@ def generate_candidate_urls(modeladmin, request, queryset):
 @admin.action(description="Import candidate URLs")
 def import_candidate_urls(modeladmin, request, queryset):
     import_candidate_urls_task.delay(list(queryset.values_list("id", flat=True)))
-    collection_names = ",".join(queryset.values_list("name", flat=True))
+    collection_names = ", ".join(queryset.values_list("name", flat=True))
     messages.add_message(
         request,
         messages.INFO,
