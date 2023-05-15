@@ -44,5 +44,5 @@ def import_candidate_urls_task(collection_ids):
         except botocore.exceptions.ClientError:
             return
 
-    subprocess.run(f"python manage.py loaddata {urls_file_name}", shell=True)
-    os.remove(f"{urls_file_name}")
+        subprocess.run(f"python manage.py loaddata {urls_file_name}", shell=True)
+        os.remove(f"{urls_file_name}")
