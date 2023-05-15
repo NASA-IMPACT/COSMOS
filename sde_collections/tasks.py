@@ -33,6 +33,7 @@ def import_candidate_urls_task(collection_ids):
     collections = Collection.objects.filter(id__in=collection_ids)
 
     for collection in collections:
+        collection.candidate_urls.all().delete()
         urls_file_name = f"{collection.config_folder}_urls.json"
 
         try:
