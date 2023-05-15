@@ -30,7 +30,7 @@ def import_candidate_urls_task(collection_id):
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
     )
 
-    collection = Collection.objects.filter(id=collection_id)
+    collection = Collection.objects.get(id=collection_id)
 
     collection.candidate_urls.all().delete()
     urls_file_name = f"{collection.config_folder}_urls.json"
