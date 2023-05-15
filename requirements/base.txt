@@ -19,10 +19,10 @@ crispy-bootstrap5==0.7  # https://github.com/django-crispy-forms/crispy-bootstra
 django-redis==5.2.0  # https://github.com/jazzband/django-redis
 
 # project-specific
+beautifulsoup4==4.12.2
 django-treebeard==4.7
-scrapy==2.9.0
-xmltodict==0.13.0
+djangorestframework-datatables-0.7.0
 djangorestframework==3.14.0
 python-slugify==8.0.1
-djangorestframework-datatables-0.7.0
-beautifulsoup4==4.12.2
+scrapy==2.9.0
+xmltodict==0.13.0
