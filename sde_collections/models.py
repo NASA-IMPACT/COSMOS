@@ -1,9 +1,5 @@
-import re
 from urllib.parse import urlparse
 
-import lxml.etree
-import requests
-from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -276,6 +272,9 @@ class CandidateURL(models.Model):
     )
     visited = models.BooleanField(default=False)
     objects = CandidateURLManager()
+    document_type = models.IntegerField(
+        choices=Collection.DocumentTypes.choices, null=True
+    )
 
     class Meta:
         """Meta definition for Candidate URL."""
@@ -306,24 +305,69 @@ class CandidateURL(models.Model):
         return self.url
 
 
-class ExcludePattern(models.Model):
-    """A pattern to exclude from Sinequa."""
-
-    class PatternTypeChoices(models.IntegerChoices):
+class BaseMatchPattern(models.Model):
+    class MatchPatternTypeChoices(models.IntegerChoices):
         INDIVIDUAL_URL = 1, "Individual URL"
         REGEX_PATTERN = 2, "Regex Pattern"
+        XPATH_PATTERN = 3, "Xpath Pattern"
 
     collection = models.ForeignKey(
-        Collection, on_delete=models.CASCADE, related_name="exclude_patterns"
+        Collection,
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s_pattern",
+        related_query_name="%(app_label)s_%(class)ss",
     )
     match_pattern = models.CharField(
         "Pattern",
         help_text="This pattern is compared against the URL of all the documents in the collection "
-        "and documents with a matching URL are excluded.",
+        "and matching documents will be returned",
     )
-    pattern_type = models.IntegerField(choices=PatternTypeChoices.choices, default=1)
-    candidate_urls = models.ManyToManyField(CandidateURL)
+    match_pattern_type = models.IntegerField(
+        choices=MatchPatternTypeChoices.choices, default=1
+    )
+    candidate_urls = models.ManyToManyField(
+        CandidateURL,
+        related_name="%(app_label)s_%(class)s_urls",
+        related_query_name="%(app_label)s_%(class)ss",
+    )
+
+    def matched_urls(self):
+        """Find all the urls matching the pattern."""
+        if self.match_pattern_type == self.MatchPatternTypeChoices.INDIVIDUAL_URL:
+            return self.collection.candidate_urls.filter(
+                url__regex=f"{self.match_pattern}$"
+            )
+        elif self.match_pattern_type == self.MatchPatternTypeChoices.REGEX_PATTERN:
+            return self.collection.candidate_urls.objects.filter(
+                url__regex=self.match_pattern
+            )
+        elif self.match_pattern_type == self.MatchPatternTypeChoices.XPATH_PATTERN:
+            raise NotImplementedError
+
+    def apply(self):
+        raise NotImplementedError
+
+    def save(self, *args, **kwargs):
+        """Save the pattern and apply it."""
+        super().save(*args, **kwargs)
+        self.apply()
+
+    class Meta:
+        abstract = True
+        ordering = ["match_pattern"]
+        unique_together = ("collection", "match_pattern")
+
+    def __str__(self):
+        return self.match_pattern
+
+
+class ExcludePattern(BaseMatchPattern):
     reason = models.TextField("Reason for excluding", default="", blank=True)
+
+    def apply(self):
+        matched_urls = self.matched_urls
+        for url in matched_urls:
+            self.candidate_urls.add(url)
 
     class Meta:
         """Meta definition for ExcludePattern."""
@@ -332,132 +376,40 @@ class ExcludePattern(models.Model):
         verbose_name_plural = "Exclude Patterns"
         unique_together = ("collection", "match_pattern")
 
-    def __str__(self):
-        return self.match_pattern
 
-    def apply(self):
-        """Apply the exclude pattern to the collection."""
-        regex_search_string = f'{re.escape(self.match_pattern.strip("*"))}'
-        if self.pattern_type == ExcludePattern.PatternTypeChoices.INDIVIDUAL_URL:
-            regex_search_string += r"$"
-        for candidate_url in self.collection.candidate_urls.filter(
-            url__regex=regex_search_string
-        ):
-            self.candidate_urls.add(candidate_url)
-
-    def save(self, *args, **kwargs):
-        """Save the exclude pattern."""
-        super().save(*args, **kwargs)
-        self.apply()
-
-    def _identify_pattern_type(self):
-        """Identify the pattern type."""
-        if self.pattern_type == ExcludePattern.PatternTypeChoices.INDIVIDUAL_URL:
-            return TitlePattern.PatternTypeChoices.PLAIN_TEXT
-
-        try:
-            lxml.etree.XPath(self.generated_title)
-            return TitlePattern.PatternTypeChoices.XPATH
-        except lxml.etree.XPathSyntaxError:
-            return TitlePattern.PatternTypeChoices.MODIFIER
-
-    def generate_title(self):
-        pattern_type = self._identify_pattern_type()
-        if pattern_type == TitlePattern.PatternTypeChoices.PLAIN_TEXT:
-            return self.generated_title
-
-        response = requests.get(self.url)
-        if response.status_code == requests.status_codes.codes.OK:
-            soup = BeautifulSoup(response.content, "html.parser")
-            if pattern_type == TitlePattern.PatternTypeChoices.XPATH:
-                self.generated_title = soup.xpath(self.generated_title)
-            elif pattern_type == TitlePattern.PatternTypeChoices.MODIFIER:
-                self.generated_title = self.generated_title
-        self.save()
-        return self.generated_title
-
-    @property
-    def sinequa_pattern(self):
-        return f"{self.collection.url}{self.match_pattern}"
-
-
-class TitlePattern(models.Model):
-    """A title pattern to overwrite."""
-
-    class MatchPatternTypeChoices(models.IntegerChoices):
-        INDIVIDUAL_URL = 1, "Individual URL"
-        REGEX_PATTERN = 2, "Regex Pattern"
-
-    class TitlePatternTypeChoices(models.IntegerChoices):
-        PLAIN_TEXT = 1, "Plain Text"
-        MODIFIER = 2, "Modifier"
-        XPATH = 3, "Xpath"
-
-    collection = models.ForeignKey(
-        Collection, on_delete=models.CASCADE, related_name="title_patterns"
-    )
-    match_pattern = models.CharField(
-        "Pattern",
-        max_length=2048,
-        help_text="This pattern is compared against the URL of all the documents in the collection "
-        "and matching documents will have their title overwritten with the title_pattern",
-    )
+class TitlePattern(BaseMatchPattern):
     title_pattern = models.CharField(
-        "New Title Pattern",
-        max_length=2048,
+        "Title Pattern",
         help_text="This is the pattern for the new title. You can write your own text, as well as "
         "add references to a specific xpath or the orignal title. For example 'James Webb {scraped_title}: {xpath}'",
     )
 
-    # keep track of which urls the pattern is applied to so it's easy to unapply
-    # candidate_urls = models.ManyToManyField(CandidateURL)
-    match_pattern_type = models.IntegerField(
-        choices=MatchPatternTypeChoices.choices, default=1
-    )
-
-    title_pattern_type = models.IntegerField(
-        choices=TitlePatternTypeChoices.choices, default=1
-    )
-
     def apply(self):
-        """Apply the title pattern to the collection."""
-        regex_search_string = f'{re.escape(self.match_pattern.strip("*"))}'
-        if (
-            self.match_pattern_type
-            == TitlePattern.MatchPatternTypeChoices.INDIVIDUAL_URL
-        ):
-            regex_search_string += r"$"
-        self.collection.candidate_urls.filter(url__regex=regex_search_string).update(
-            generated_title=self.title_pattern
-        )
-
-    def unapply(self):
-        """Unapply the title pattern to the collection."""
-        regex_search_string = f'{re.escape(self.match_pattern.strip("*"))}'
-        if (
-            self.match_pattern_type
-            == TitlePattern.MatchPatternTypeChoices.INDIVIDUAL_URL
-        ):
-            regex_search_string += r"$"
-        self.collection.candidate_urls.filter(url__regex=regex_search_string).update(
-            generated_title=""
-        )
+        matched_urls = self.matched_urls
+        for url in matched_urls:
+            url.generated_url = self.title_pattern
+            url.save()
 
     class Meta:
         """Meta definition for TitlePattern."""
 
-        verbose_name = "Title Re-Write Pattern"
-        verbose_name_plural = "Title Re-Write Patterns"
+        verbose_name = "Title Pattern"
+        verbose_name_plural = "Title Patterns"
+        unique_together = ("collection", "match_pattern")
 
-    def __str__(self):
-        return f"{self.match_pattern}: {self.title_pattern}"
 
-    def save(self, *args, **kwargs):
-        """Save the title pattern."""
-        super().save(*args, **kwargs)
-        self.apply()
+class DocumentTypePattern(BaseMatchPattern):
+    document_type = models.IntegerField(choices=Collection.DocumentTypes.choices)
 
-    def delete(self, *args, **kwargs):
-        """Delete the title pattern."""
-        self.unapply()
-        super().delete(*args, **kwargs)
+    def apply(self):
+        matched_urls = self.matched_urls
+        for url in matched_urls:
+            url.document_type = self.document_type
+            url.save()
+
+    class Meta:
+        """Meta definition for DocumentTypePattern."""
+
+        verbose_name = "Document Type Pattern"
+        verbose_name_plural = "Document Type Patterns"
+        unique_together = ("collection", "match_pattern")
