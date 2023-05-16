@@ -51,6 +51,9 @@
                     <strong>Curated?</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
+                    <strong>Document Type</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
                     <strong>ID</strong>
                 </th>
             </tr>
@@ -170,21 +173,24 @@
                                    required
                                    name="title_pattern">
                         </div>
+
+                        {% comment %}
                         <div class="pattern_type">
                             <label>Pattern Type*</label>
                             <br>
                             <input type="radio"
-                                   name="title_pattern_type"
-                                   id="title_pattern_type_modifier"
-                                   value="2"
-                                   checked>
+                            name="title_pattern_type"
+                            id="title_pattern_type_modifier"
+                            value="2"
+                            checked>
                             <label for="title_pattern_type_modifier">Modifier</label>
                             <input type="radio"
-                                   name="title_pattern_type"
-                                   id="title_pattern_type_xpath"
-                                   value="3">
+                            name="title_pattern_type"
+                            id="title_pattern_type_xpath"
+                            value="3">
                             <label for="title_pattern_type_xpath">Xpath</label>
                         </div>
+                        {% endcomment %}
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

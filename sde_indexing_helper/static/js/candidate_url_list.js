@@ -32,6 +32,7 @@ function initializeDataTable() {
             getScrapedTitleColumn(),
             getGeneratedTitleColumn(),
             getVisitedColumn(true_icon, false_icon),
+            { "data": "document_type", },
             { "data": "id", "visible": false, "searchable": false },
         ],
         "createdRow": function (row, data, dataIndex) {
@@ -222,7 +223,7 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0) {
     });
 }
 
-function postTitlePatterns(match_pattern, title_pattern, match_pattern_type = 1, title_pattern_type = 1) {
+function postTitlePatterns(match_pattern, title_pattern, match_pattern_type = 1) {
     if (!match_pattern) {
         toastr.error('Please highlight a pattern to change the title.');
         return;
@@ -241,7 +242,6 @@ function postTitlePatterns(match_pattern, title_pattern, match_pattern_type = 1,
             match_pattern: match_pattern,
             match_pattern_type: match_pattern_type,
             title_pattern: title_pattern,
-            title_pattern_type: title_pattern_type,
             csrfmiddlewaretoken: csrftoken
         },
         success: function (data) {
@@ -373,8 +373,8 @@ function get_selection() {
 }
 
 function title_pattern_form(selected_text) {
-    // postTitlePatterns(match_pattern = selected_text.trim(), title_pattern = "hey", match_pattern_type = 2, title_pattern_type = 2)
-    // postTitlePatterns(match_pattern = selected_text.trim(), title_pattern = "hey", match_pattern_type = 2, title_pattern_type = 3) // xpath
+    // postTitlePatterns(match_pattern = selected_text.trim(), title_pattern = "hey", match_pattern_type = 2)
+    // postTitlePatterns(match_pattern = selected_text.trim(), title_pattern = "hey", match_pattern_type = 2) // xpath
     $modal = $('#titlePatternModal').modal();
     $modal.find('#match_pattern_input').val(selected_text);
 }
@@ -400,7 +400,7 @@ $('#title_pattern_form').on('submit', function (e) {
         inputs[field.name] = field.value;
     });
 
-    postTitlePatterns(match_pattern = inputs.match_pattern, title_pattern = inputs.title_pattern, match_pattern_type = 2, title_pattern_type = inputs.title_pattern_type);
+    postTitlePatterns(match_pattern = inputs.match_pattern, title_pattern = inputs.title_pattern, match_pattern_type = 2);
 
     // close the modal if it is open
     $('#titlePatternModal').modal('hide');

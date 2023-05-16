@@ -388,6 +388,7 @@ class TitlePattern(BaseMatchPattern):
     def apply(self):
         matched_urls = self.matched_urls()
         for url in matched_urls.all():
+            self.candidate_urls.add(url)
             url.generated_url = self.title_pattern
             url.save()
 
@@ -405,6 +406,7 @@ class DocumentTypePattern(BaseMatchPattern):
     def apply(self):
         matched_urls = self.matched_urls()
         for url in matched_urls.all():
+            self.candidate_urls.add(url)
             url.document_type = self.document_type
             url.save()
 
