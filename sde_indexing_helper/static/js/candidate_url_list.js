@@ -483,7 +483,7 @@ $('#document_type_pattern_form').on('submit', function (e) {
         inputs[field.name] = field.value;
     });
 
-    postDocumentTypePatterns(match_pattern = inputs.match_pattern, document_type = inputs.document_type, match_pattern_type = 2);
+    postDocumentTypePatterns(inputs.match_pattern, 2, inputs.document_type_pattern);
 
     // close the modal if it is open
     $('#documentTypePatternModal').modal('hide');
