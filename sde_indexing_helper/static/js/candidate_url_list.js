@@ -32,25 +32,7 @@ function initializeDataTable() {
             getScrapedTitleColumn(),
             getGeneratedTitleColumn(),
             getVisitedColumn(true_icon, false_icon),
-            {
-                "data": "document_type", "render": function (data, type, row) {
-                    button_text = data ? data : 'Select';
-                    button_color = data ? 'btn-success' : 'btn-secondary';
-                    return `
-                    <div class="dropdown text-center">
-                      <button class="btn ${button_color} btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        ${button_text}
-                      </button>
-                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item" href="#" value="1">Images</a>
-                        <a class="dropdown-item" href="#" value="2">Data</a>
-                        <a class="dropdown-item" href="#" value="3">Documentation</a>
-                        <a class="dropdown-item" href="#" value="4">Software and Tools</a>
-                        <a class="dropdown-item" href="#" value="5">Missions and Instruments</a>
-                      </div>
-                    </div>`;
-                }
-            },
+            getDocumentTypeColumn(),
             { "data": "id", "visible": false, "searchable": false },
         ],
         "createdRow": function (row, data, dataIndex) {
@@ -109,7 +91,7 @@ function initializeDataTable() {
         "columns": [
             { "data": "match_pattern" },
             { "data": "match_pattern_type_display", "class": "text-center", "sortable": false },
-            { "data": "document_type" },
+            { "data": "document_type_display" },
             { "data": "candidate_urls_count", "class": "text-center", "sortable": false },
             {
                 "data": null,
@@ -125,13 +107,14 @@ function initializeDataTable() {
 }
 
 function setupClickHandlers() {
-    handleUrlPartButton();
-    handleExcludeIndividualUrlClick();
+    handleAddNewPatternClick();
     handleDeleteExcludePatternButtonClick();
     handleDeleteTitlePatternButtonClick();
-    handleAddNewPatternClick();
+    handleDocumentTypeSelect()
+    handleExcludeIndividualUrlClick();
     handleNewTitleChange();
     handleUrlLinkClick();
+    handleUrlPartButton();
 }
 
 function getURLColumn() {
@@ -173,6 +156,42 @@ function getVisitedColumn(true_icon, false_icon) {
             return (data === true) ? true_icon : false_icon;
         }
     }
+}
+
+function getDocumentTypeColumn() {
+    return {
+        "data": "document_type", "render": function (data, type, row) {
+            var dict = {
+                1: 'Images',
+                2: 'Data',
+                3: 'Documentation',
+                4: 'Software and Tools',
+                5: 'Missions and Instruments',
+            };
+            button_text = data ? dict[data] : 'Select';
+            button_color = data ? 'btn-success' : 'btn-secondary';
+            return `
+            <div class="dropdown text-center document_type_dropdown" data-match-pattern=${remove_protocol(row['url'])}>
+              <button class="btn ${button_color} btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                ${button_text}
+              </button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item document_type_select" href="#" value="1">Images</a>
+                <a class="dropdown-item document_type_select" href="#" value="2">Data</a>
+                <a class="dropdown-item document_type_select" href="#" value="3">Documentation</a>
+                <a class="dropdown-item document_type_select" href="#" value="4">Software and Tools</a>
+                <a class="dropdown-item document_type_select" href="#" value="5">Missions and Instruments</a>
+              </div>
+            </div>`;
+        }
+    }
+}
+
+function handleDocumentTypeSelect() {
+    $("body").on("click", ".document_type_select", function () {
+        $match_pattern = $(this).parents(".document_type_dropdown").data('match-pattern');
+        postDocumentType($match_pattern, match_pattern_type = 1, document_type = $(this).attr("value"));
+    });
 }
 
 function handleUrlPartButton() {
@@ -223,6 +242,25 @@ function handleUrlLinkClick() {
         $(this).closest('tr').find('.visited_icon').css('color', 'green').text('done');
     });
 }
+
+function postDocumentType(match_pattern, match_pattern_type, document_type) {
+    if (!match_pattern) {
+        toastr.error('Please highlight a pattern to add document type.');
+        return;
+    }
+
+    $.post('/api/document-type-patterns/', {
+        collection: collection_id,
+        match_pattern: match_pattern,
+        match_pattern_type: match_pattern_type,
+        document_type: document_type,
+        csrfmiddlewaretoken: csrftoken
+    }, function (response) {
+        $('#candidate_urls_table').DataTable().ajax.reload();
+        $('#document_type_patterns_table').DataTable().ajax.reload();
+    });
+}
+
 
 function postExcludePatterns(match_pattern, match_pattern_type = 0) {
     if (!match_pattern) {
