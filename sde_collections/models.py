@@ -70,7 +70,6 @@ class Collection(models.Model):
         choices=DocumentTypes.choices, null=True, blank=True
     )
     tree_root = models.CharField("Tree Root", max_length=1024, default="", blank=True)
-
     delete = models.BooleanField(default=False)
 
     # audit columns for production
@@ -231,6 +230,19 @@ class Collection(models.Model):
 
         # Call the parent class's save method
         super().save(*args, **kwargs)
+
+
+class RequiredUrls(models.Model):
+    """
+    Urls listed during the research and iteration phases by a curator for a collection,
+    which are expected to be indexed by that collection's scraper and indexer
+    """
+
+    url = models.URLField(
+        max_length=512,
+        help_text="Url which is expected to be brought in by the scraper and indexer",
+    )
+    collection = models.ForeignKey("Collection", on_delete=models.CASCADE)
 
 
 class CandidateURLQuerySet(models.QuerySet):
