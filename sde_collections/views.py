@@ -100,10 +100,10 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["segment"] = "candidate-url-list"
         context["collection"] = self.collection
-        context["regex_exclude_patterns"] = self.collection.exclude_patterns.filter(
-            pattern_type=2
+        context["regex_exclude_patterns"] = self.collection.excludepattern.filter(
+            match_pattern_type=2
         )  # 2=regex patterns
-        context["title_patterns"] = self.collection.title_patterns.all()
+        context["title_patterns"] = self.collection.titlepattern.all()
         return context
 
 

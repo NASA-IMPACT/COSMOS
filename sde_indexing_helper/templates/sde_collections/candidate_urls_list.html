@@ -61,10 +61,13 @@
         <thead>
             <tr>
                 <th scope="col" class="text-center col-1">
-                    <strong>Exclude Pattern</strong>
+                    <strong>Match Pattern</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
-                    <strong>Pattern Type</strong>
+                    <strong>Match Pattern Type</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Reason</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
                     <strong>Affected URLs</strong>
@@ -92,7 +95,32 @@
                     <strong>Title Pattern</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
-                    <strong>Title Pattern Type</strong>
+                    <strong>Affected URLs</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Actions</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>ID</strong>
+                </th>
+            </tr>
+        </thead>
+    </table>
+    <h3>Document Type Patterns</h3>
+    <table class="table" id="document_type_patterns_table">
+        <thead>
+            <tr>
+                <th scope="col" class="text-center col-1">
+                    <strong>Match Pattern</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Match Pattern Type</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Document Type</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Affected URLs</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
                     <strong>Actions</strong>
@@ -106,6 +134,7 @@
     <ul class="custom-menu list-group">
         <li data-action="exclude-pattern" class="list-group-item">Create Exclude Pattern</li>
         <li data-action="title-pattern" class="list-group-item">Create Title Pattern</li>
+        <li data-action="document-type-pattern" class="list-group-item">Create Document Type Pattern</li>
     </ul>
     <div class="modal fade"
          id="titlePatternModal"
