@@ -43,13 +43,13 @@ def generate_candidate_urls(modeladmin, request, queryset):
 
 @admin.action(description="Import candidate URLs")
 def import_candidate_urls(modeladmin, request, queryset):
-    for collection in queryset.all():
-        import_candidate_urls_task.delay(collection.id)
-        messages.add_message(
-            request,
-            messages.INFO,
-            f"Started importing URLs from S3 for: {collection.name}",
-        )
+    import_candidate_urls_task.delay(list(queryset.values_list("id", flat=True)))
+    collection_names = ", ".join(queryset.values_list("name", flat=True))
+    messages.add_message(
+        request,
+        messages.INFO,
+        f"Started importing URLs from S3 for: {collection_names}",
+    )
 
 
 class ExcludePatternInline(admin.TabularInline):
