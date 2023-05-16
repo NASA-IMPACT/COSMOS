@@ -32,7 +32,7 @@ function initializeDataTable() {
             getScrapedTitleColumn(),
             getGeneratedTitleColumn(),
             getVisitedColumn(true_icon, false_icon),
-            { "data": "document_type", },
+            getDocumentTypeColumn(),
             { "data": "id", "visible": false, "searchable": false },
         ],
         "createdRow": function (row, data, dataIndex) {
@@ -91,14 +91,14 @@ function initializeDataTable() {
         "columns": [
             { "data": "match_pattern" },
             { "data": "match_pattern_type_display", "class": "text-center", "sortable": false },
-            { "data": "document_type" },
+            { "data": "document_type_display" },
             { "data": "candidate_urls_count", "class": "text-center", "sortable": false },
             {
                 "data": null,
                 "sortable": false,
                 "class": "text-center",
                 "render": function (data, type, row) {
-                    return `<button class="btn btn-danger btn-sm delete-title-pattern-button" data-row-id="${row['id']}"><i class="material-icons">delete</i></button >`;
+                    return `<button class="btn btn-danger btn-sm delete-document-type-pattern-button" data-row-id="${row['id']}"><i class="material-icons">delete</i></button >`;
                 }
             },
             { "data": "id", "visible": false, "searchable": false },
@@ -107,13 +107,15 @@ function initializeDataTable() {
 }
 
 function setupClickHandlers() {
-    handleUrlPartButton();
-    handleExcludeIndividualUrlClick();
+    handleAddNewPatternClick();
     handleDeleteExcludePatternButtonClick();
     handleDeleteTitlePatternButtonClick();
-    handleAddNewPatternClick();
+    handleDeleteDocumentTypeButtonClick();
+    handleDocumentTypeSelect()
+    handleExcludeIndividualUrlClick();
     handleNewTitleChange();
     handleUrlLinkClick();
+    handleUrlPartButton();
 }
 
 function getURLColumn() {
@@ -157,6 +159,42 @@ function getVisitedColumn(true_icon, false_icon) {
     }
 }
 
+function getDocumentTypeColumn() {
+    return {
+        "data": "document_type", "render": function (data, type, row) {
+            var dict = {
+                1: 'Images',
+                2: 'Data',
+                3: 'Documentation',
+                4: 'Software and Tools',
+                5: 'Missions and Instruments',
+            };
+            button_text = data ? dict[data] : 'Select';
+            button_color = data ? 'btn-success' : 'btn-secondary';
+            return `
+            <div class="dropdown text-center document_type_dropdown" data-match-pattern=${remove_protocol(row['url'])}>
+              <button class="btn ${button_color} btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                ${button_text}
+              </button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item document_type_select" href="#" value="1">Images</a>
+                <a class="dropdown-item document_type_select" href="#" value="2">Data</a>
+                <a class="dropdown-item document_type_select" href="#" value="3">Documentation</a>
+                <a class="dropdown-item document_type_select" href="#" value="4">Software and Tools</a>
+                <a class="dropdown-item document_type_select" href="#" value="5">Missions and Instruments</a>
+              </div>
+            </div>`;
+        }
+    }
+}
+
+function handleDocumentTypeSelect() {
+    $("body").on("click", ".document_type_select", function () {
+        $match_pattern = $(this).parents(".document_type_dropdown").data('match-pattern');
+        postDocumentTypePatterns($match_pattern, match_pattern_type = 1, document_type = $(this).attr("value"));
+    });
+}
+
 function handleUrlPartButton() {
     $(".url_part_button").on("click", function () {
         postExcludePatterns($(this).attr("value"));
@@ -183,6 +221,13 @@ function handleDeleteTitlePatternButtonClick() {
     });
 }
 
+function handleDeleteDocumentTypeButtonClick() {
+    $("body").on("click", ".delete-document-type-pattern-button", function () {
+        row_id = $(this).data('row-id');
+        deletePattern(`/api/document-type-patterns/${row_id}/`, data_type = 'Document Type Pattern');
+    });
+}
+
 function handleAddNewPatternClick() {
     $("body").on("click", ".add_new_pattern", function () {
         var pattern = $(this).parents(".pattern_row").find("input").val();
@@ -205,6 +250,25 @@ function handleUrlLinkClick() {
         $(this).closest('tr').find('.visited_icon').css('color', 'green').text('done');
     });
 }
+
+function postDocumentTypePatterns(match_pattern, match_pattern_type, document_type) {
+    if (!match_pattern) {
+        toastr.error('Please highlight a pattern to add document type.');
+        return;
+    }
+
+    $.post('/api/document-type-patterns/', {
+        collection: collection_id,
+        match_pattern: match_pattern,
+        match_pattern_type: match_pattern_type,
+        document_type: document_type,
+        csrfmiddlewaretoken: csrftoken
+    }, function (response) {
+        $('#candidate_urls_table').DataTable().ajax.reload();
+        $('#document_type_patterns_table').DataTable().ajax.reload();
+    });
+}
+
 
 function postExcludePatterns(match_pattern, match_pattern_type = 0) {
     if (!match_pattern) {
@@ -289,6 +353,7 @@ function deletePattern(url, data_type) {
             $('#candidate_urls_table').DataTable().ajax.reload();
             $('#exclude_patterns_table').DataTable().ajax.reload();
             $('#title_patterns_table').DataTable().ajax.reload();
+            $('#document_type_patterns_table').DataTable().ajax.reload();
         }
     });
 }
@@ -373,9 +438,12 @@ function get_selection() {
 }
 
 function title_pattern_form(selected_text) {
-    // postTitlePatterns(match_pattern = selected_text.trim(), title_pattern = "hey", match_pattern_type = 2)
-    // postTitlePatterns(match_pattern = selected_text.trim(), title_pattern = "hey", match_pattern_type = 2) // xpath
     $modal = $('#titlePatternModal').modal();
+    $modal.find('#match_pattern_input').val(selected_text);
+}
+
+function document_type_pattern_form(selected_text) {
+    $modal = $('#documentTypePatternModal').modal();
     $modal.find('#match_pattern_input').val(selected_text);
 }
 
@@ -386,6 +454,7 @@ $(".custom-menu li").click(function () {
     switch ($(this).attr("data-action")) {
         case "exclude-pattern": postExcludePatterns(selected_text.trim(), match_pattern_type = 2); break;
         case "title-pattern": title_pattern_form(selected_text.trim()); break;
+        case "document-type-pattern": document_type_pattern_form(selected_text.trim()); break;
     }
 
     // Hide it AFTER the action was triggered
@@ -406,6 +475,24 @@ $('#title_pattern_form').on('submit', function (e) {
     $('#titlePatternModal').modal('hide');
 });
 
+$('#document_type_pattern_form').on('submit', function (e) {
+    e.preventDefault();
+    inputs = {};
+    input_serialized = $(this).serializeArray();
+    input_serialized.forEach(field => {
+        inputs[field.name] = field.value;
+    });
+
+    postDocumentTypePatterns(inputs.match_pattern, 2, inputs.document_type_pattern);
+
+    // close the modal if it is open
+    $('#documentTypePatternModal').modal('hide');
+});
+
 $('#filter-checkbox').on('change', function () {
     $('#candidate_urls_table').DataTable().ajax.reload();
+});
+
+$('body').on('click', '.document_type_form_select', function () {
+    $('input[name="document_type_pattern"]').val($(this).attr('value'));
 });
