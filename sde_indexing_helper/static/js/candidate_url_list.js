@@ -98,7 +98,7 @@ function initializeDataTable() {
                 "sortable": false,
                 "class": "text-center",
                 "render": function (data, type, row) {
-                    return `<button class="btn btn-danger btn-sm delete-title-pattern-button" data-row-id="${row['id']}"><i class="material-icons">delete</i></button >`;
+                    return `<button class="btn btn-danger btn-sm delete-document-type-pattern-button" data-row-id="${row['id']}"><i class="material-icons">delete</i></button >`;
                 }
             },
             { "data": "id", "visible": false, "searchable": false },
@@ -110,6 +110,7 @@ function setupClickHandlers() {
     handleAddNewPatternClick();
     handleDeleteExcludePatternButtonClick();
     handleDeleteTitlePatternButtonClick();
+    handleDeleteDocumentTypeButtonClick();
     handleDocumentTypeSelect()
     handleExcludeIndividualUrlClick();
     handleNewTitleChange();
@@ -217,6 +218,13 @@ function handleDeleteTitlePatternButtonClick() {
     $("body").on("click", ".delete-title-pattern-button", function () {
         row_id = $(this).data('row-id');
         deletePattern(`/api/title-patterns/${row_id}/`, data_type = 'Title Pattern');
+    });
+}
+
+function handleDeleteDocumentTypeButtonClick() {
+    $("body").on("click", ".delete-document-type-pattern-button", function () {
+        row_id = $(this).data('row-id');
+        deletePattern(`/api/document-type-patterns/${row_id}/`, data_type = 'Document Type Pattern');
     });
 }
 
@@ -345,6 +353,7 @@ function deletePattern(url, data_type) {
             $('#candidate_urls_table').DataTable().ajax.reload();
             $('#exclude_patterns_table').DataTable().ajax.reload();
             $('#title_patterns_table').DataTable().ajax.reload();
+            $('#document_type_patterns_table').DataTable().ajax.reload();
         }
     });
 }

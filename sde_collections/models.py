@@ -348,10 +348,18 @@ class BaseMatchPattern(models.Model):
     def apply(self):
         raise NotImplementedError
 
+    def unapply(self):
+        raise NotImplementedError
+
     def save(self, *args, **kwargs):
         """Save the pattern and apply it."""
         super().save(*args, **kwargs)
         self.apply()
+
+    def delete(self, *args, **kwargs):
+        """Delete the pattern and unapply it."""
+        self.unapply()
+        super().delete(*args, **kwargs)
 
     class Meta:
         abstract = True
@@ -369,6 +377,10 @@ class ExcludePattern(BaseMatchPattern):
         matched_urls = self.matched_urls()
         for url in matched_urls.all():
             self.candidate_urls.add(url)
+
+    def unapply(self):
+        "Unapplies automatically by deleting excludpattern through objects in a cascade"
+        return
 
     class Meta:
         """Meta definition for ExcludePattern."""
@@ -392,6 +404,11 @@ class TitlePattern(BaseMatchPattern):
             url.generated_url = self.title_pattern
             url.save()
 
+    def unapply(self):
+        for url in self.candidate_urls.all():
+            url.generated_url = ""
+            url.save()
+
     class Meta:
         """Meta definition for TitlePattern."""
 
@@ -408,6 +425,11 @@ class DocumentTypePattern(BaseMatchPattern):
         for url in matched_urls.all():
             self.candidate_urls.add(url)
             url.document_type = self.document_type
+            url.save()
+
+    def unapply(self):
+        for url in self.candidate_urls.all():
+            url.document_type = None
             url.save()
 
     class Meta:
