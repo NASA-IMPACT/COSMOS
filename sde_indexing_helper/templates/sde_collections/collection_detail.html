@@ -66,8 +66,13 @@
                 </td>
             </tr>
             <tr>
-                <th>Add Required URL</th>
+                <th>Required URLs</th>
                 <td>
+                    {% for required_url in required_urls %}
+                    <p><a href="{{ required_url.url }}">{{ required_url.url }}</a></p>
+                    {% empty %}
+                    <p>No required URLs yet</p>
+                    {% endfor %}
                     <form method="post" action="{% url 'sde_collections:detail' collection.pk %}">
                         {% csrf_token %}
                         {{ form.url }}
@@ -75,6 +80,7 @@
                     </form>
                 </td>
             </tr>
+
         </tbody>
     </table>
 </div>

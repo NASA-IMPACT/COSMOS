@@ -77,6 +77,9 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         if "form" not in context:
             context["form"] = RequiredUrlForm()
+        context["required_urls"] = RequiredUrls.objects.filter(
+            collection=self.get_object()
+        )
         context["segment"] = "collection-detail"
         return context
 
