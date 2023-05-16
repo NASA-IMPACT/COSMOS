@@ -315,8 +315,8 @@ class BaseMatchPattern(models.Model):
     collection = models.ForeignKey(
         Collection,
         on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)s_pattern",
-        related_query_name="%(app_label)s_%(class)ss",
+        related_name="%(class)s",
+        related_query_name="%(class)ss",
     )
     match_pattern = models.CharField(
         "Pattern",
@@ -328,8 +328,7 @@ class BaseMatchPattern(models.Model):
     )
     candidate_urls = models.ManyToManyField(
         CandidateURL,
-        related_name="%(app_label)s_%(class)s_urls",
-        related_query_name="%(app_label)s_%(class)ss",
+        related_name="%(class)s_urls",
     )
 
     def matched_urls(self):
