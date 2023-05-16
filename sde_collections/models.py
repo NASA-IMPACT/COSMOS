@@ -1,3 +1,4 @@
+import re
 from urllib.parse import urlparse
 
 from django.conf import settings
@@ -335,11 +336,11 @@ class BaseMatchPattern(models.Model):
         """Find all the urls matching the pattern."""
         if self.match_pattern_type == self.MatchPatternTypeChoices.INDIVIDUAL_URL:
             return self.collection.candidate_urls.filter(
-                url__regex=f"{self.match_pattern}$"
+                url__regex=re.escape(f"{self.match_pattern}$")
             )
         elif self.match_pattern_type == self.MatchPatternTypeChoices.REGEX_PATTERN:
             return self.collection.candidate_urls.objects.filter(
-                url__regex=self.match_pattern
+                url__regex=re.escape(self.match_pattern)
             )
         elif self.match_pattern_type == self.MatchPatternTypeChoices.XPATH_PATTERN:
             raise NotImplementedError
@@ -365,8 +366,8 @@ class ExcludePattern(BaseMatchPattern):
     reason = models.TextField("Reason for excluding", default="", blank=True)
 
     def apply(self):
-        matched_urls = self.matched_urls
-        for url in matched_urls:
+        matched_urls = self.matched_urls()
+        for url in matched_urls.all():
             self.candidate_urls.add(url)
 
     class Meta:
@@ -385,8 +386,8 @@ class TitlePattern(BaseMatchPattern):
     )
 
     def apply(self):
-        matched_urls = self.matched_urls
-        for url in matched_urls:
+        matched_urls = self.matched_urls()
+        for url in matched_urls.all():
             url.generated_url = self.title_pattern
             url.save()
 
@@ -402,8 +403,8 @@ class DocumentTypePattern(BaseMatchPattern):
     document_type = models.IntegerField(choices=Collection.DocumentTypes.choices)
 
     def apply(self):
-        matched_urls = self.matched_urls
-        for url in matched_urls:
+        matched_urls = self.matched_urls()
+        for url in matched_urls.all():
             url.document_type = self.document_type
             url.save()
 
