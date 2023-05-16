@@ -243,6 +243,9 @@ class RequiredUrls(models.Model):
     )
     collection = models.ForeignKey("Collection", on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.url
+
 
 class CandidateURLQuerySet(models.QuerySet):
     def with_exclusion_status(self):
