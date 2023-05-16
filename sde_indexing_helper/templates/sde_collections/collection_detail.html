@@ -3,85 +3,85 @@
 {{ collection.name }}
 {% endblock title %}
 {% block content %}
-<div class="container">
-    <h1>{{ collection.name }}</h1>
-    <table class="table table-striped">
-        <tbody>
-            <tr>
-                <th>URL</th>
-                <td>
-                    <a target="_blank" href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{ collection.url
-                        }}</a>
-                </td>
-            </tr>
-            <tr>
-                <th>Config Folder</th>
-                <td>{{ collection.config_folder }}</td>
-            </tr>
-            <tr>
-                <th>Division</th>
-                <td>{{ collection.get_division_display }}</td>
-            </tr>
-            <tr>
-                <th>Update Frequency</th>
-                <td>{{ collection.get_update_frequency_display }}</td>
-            </tr>
-            <tr>
-                <th>Document Type</th>
-                <td>{{ collection.get_document_type_display }}</td>
-            </tr>
-            <tr>
-                <th>Tree Root</th>
-                <td>{{ collection.tree_root }}</td>
-            </tr>
-            <tr>
-                <th>Notes</th>
-                <td>{{ collection.notes }}</td>
-            </tr>
-            <tr>
-                <th>Curation Status</th>
-                <td>{{ collection.get_curation_status_display }}</td>
-            </tr>
-            <tr>
-                <th>Curation Started</th>
-                <td>{{ collection.curation_started }}</td>
-            </tr>
-            <tr>
-                <th>Curator</th>
-                <td>
-                    {% if collection.curated_by %}
-                    {{ collection.curated_by.username }}
-                    {% else %}
-                    <form action="{% url 'sde_collections:detail' collection.pk %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-primary" id="claim_button">Claim</button>
-                    </form>
-                    {% endif %}
-                </td>
-            </tr>
-            <tr>
-                <th>Candidate URLs</th>
-                <td>
-                    <a href="{% url 'sde_collections:candidate_urls' collection.id %}">View</a>
-                </td>
-            </tr>
-            <tr>
-                <th>Required URLs</th>
-                <td>
-                    {% for required_url in required_urls %}
-                    <p><a href="{{ required_url.url }}">{{ required_url.url }}</a></p>
-                    {% empty %}
-                    <p>No required URLs yet</p>
-                    {% endfor %}
-                    <form method="post" action="{% url 'sde_collections:detail' collection.pk %}">
-                        {% csrf_token %}
-                        {{ form.url }}
-                        <button type="submit" class="btn btn-sm btn-primary">Add URL</button>
-                    </form>
-                </td>
-            </tr>
+    <div class="container">
+        <h1>{{ collection.name }}</h1>
+        <table class="table table-striped">
+            <tbody>
+                <tr>
+                    <th>URL</th>
+                    <td>
+                        <a target="_blank" href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{ collection.url
+                            }}</a>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Config Folder</th>
+                    <td>{{ collection.config_folder }}</td>
+                </tr>
+                <tr>
+                    <th>Division</th>
+                    <td>{{ collection.get_division_display }}</td>
+                </tr>
+                <tr>
+                    <th>Update Frequency</th>
+                    <td>{{ collection.get_update_frequency_display }}</td>
+                </tr>
+                <tr>
+                    <th>Document Type</th>
+                    <td>{{ collection.get_document_type_display }}</td>
+                </tr>
+                <tr>
+                    <th>Tree Root</th>
+                    <td>{{ collection.tree_root }}</td>
+                </tr>
+                <tr>
+                    <th>Notes</th>
+                    <td>{{ collection.notes }}</td>
+                </tr>
+                <tr>
+                    <th>Curation Status</th>
+                    <td>{{ collection.get_curation_status_display }}</td>
+                </tr>
+                <tr>
+                    <th>Curation Started</th>
+                    <td>{{ collection.curation_started }}</td>
+                </tr>
+                <tr>
+                    <th>Curator</th>
+                    <td>
+                        {% if collection.curated_by %}
+                        {{ collection.curated_by.username }}
+                        {% else %}
+                        <form action="{% url 'sde_collections:detail' collection.pk %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-primary" id="claim_button">Claim</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Candidate URLs</th>
+                    <td>
+                        <a href="{% url 'sde_collections:candidate_urls' collection.id %}">View</a>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Required URLs</th>
+                    <td>
+                        {% for required_url in required_urls %}
+                        <p><a href="{{ required_url.url }}">{{ required_url.url }}</a></p>
+                        {% empty %}
+                        <p>No required URLs yet</p>
+                        {% endfor %}
+                        <form method="post" action="{% url 'sde_collections:detail' collection.pk %}">
+                            {% csrf_token %}
+                            {{ form.url }}
+                            <button type="submit" class="btn btn-sm btn-primary">Add URL</button>
+                        </form>
+                    </td>
+                </tr>
 
-        </tbody>
-    </table>
-</div>
+            </tbody>
+        </table>
+    </div>
 {% endblock content %}
