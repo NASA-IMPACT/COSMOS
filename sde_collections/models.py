@@ -239,7 +239,6 @@ class RequiredUrls(models.Model):
     """
 
     url = models.URLField(
-        max_length=512,
         help_text="Url which is expected to be brought in by the scraper and indexer",
     )
     collection = models.ForeignKey("Collection", on_delete=models.CASCADE)
