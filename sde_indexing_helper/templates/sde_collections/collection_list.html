@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{% static 'css/collections_list.css' %}">
 {% endblock stylesheets %}
 {% block content %}
+    <h2>SDE Collections</h2>
     <table id="collection_table" class="table table-striped">
         <thead>
             <tr>
@@ -59,6 +60,8 @@
 {% block javascripts %}
     <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script>let table = $('#collection_table').DataTable({
+        paging: false,
+        dom: 'iftip',
         order: [[5, 'asc']],
         columnDefs: [
             {
@@ -72,6 +75,24 @@
         ],
         initComplete: function () {
             this.api().columns(2).every( function () {
+                var column = this;
+                var select = $('<select><option value=""></option></select>')
+                    .appendTo( $(column.header()) )
+                    .on( 'change', function () {
+                        var val = $.fn.dataTable.util.escapeRegex(
+                            $(this).val()
+                        );
+
+                        column
+                            .search( val ? '^'+val+'$' : '', true, false )
+                            .draw();
+                    } );
+
+                column.data().unique().sort().each( function ( d, j ) {
+                    select.append( '<option value="'+d+'">'+d+'</option>' )
+                } );
+            } );
+            this.api().columns(7).every( function () {
                 var column = this;
                 var select = $('<select><option value=""></option></select>')
                     .appendTo( $(column.header()) )
