@@ -191,7 +191,7 @@ function getDocumentTypeColumn() {
 function handleDocumentTypeSelect() {
     $("body").on("click", ".document_type_select", function () {
         $match_pattern = $(this).parents(".document_type_dropdown").data('match-pattern');
-        postDocumentType($match_pattern, match_pattern_type = 1, document_type = $(this).attr("value"));
+        postDocumentTypePatterns($match_pattern, match_pattern_type = 1, document_type = $(this).attr("value"));
     });
 }
 
@@ -251,7 +251,7 @@ function handleUrlLinkClick() {
     });
 }
 
-function postDocumentType(match_pattern, match_pattern_type, document_type) {
+function postDocumentTypePatterns(match_pattern, match_pattern_type, document_type) {
     if (!match_pattern) {
         toastr.error('Please highlight a pattern to add document type.');
         return;
@@ -438,9 +438,12 @@ function get_selection() {
 }
 
 function title_pattern_form(selected_text) {
-    // postTitlePatterns(match_pattern = selected_text.trim(), title_pattern = "hey", match_pattern_type = 2)
-    // postTitlePatterns(match_pattern = selected_text.trim(), title_pattern = "hey", match_pattern_type = 2) // xpath
     $modal = $('#titlePatternModal').modal();
+    $modal.find('#match_pattern_input').val(selected_text);
+}
+
+function document_type_pattern_form(selected_text) {
+    $modal = $('#documentTypePatternModal').modal();
     $modal.find('#match_pattern_input').val(selected_text);
 }
 
@@ -451,6 +454,7 @@ $(".custom-menu li").click(function () {
     switch ($(this).attr("data-action")) {
         case "exclude-pattern": postExcludePatterns(selected_text.trim(), match_pattern_type = 2); break;
         case "title-pattern": title_pattern_form(selected_text.trim()); break;
+        case "document-type-pattern": document_type_pattern_form(selected_text.trim()); break;
     }
 
     // Hide it AFTER the action was triggered
@@ -471,6 +475,24 @@ $('#title_pattern_form').on('submit', function (e) {
     $('#titlePatternModal').modal('hide');
 });
 
+$('#document_type_pattern_form').on('submit', function (e) {
+    e.preventDefault();
+    inputs = {};
+    input_serialized = $(this).serializeArray();
+    input_serialized.forEach(field => {
+        inputs[field.name] = field.value;
+    });
+
+    postDocumentTypePatterns(match_pattern = inputs.match_pattern, document_type = inputs.document_type, match_pattern_type = 2);
+
+    // close the modal if it is open
+    $('#documentTypePatternModal').modal('hide');
+});
+
 $('#filter-checkbox').on('change', function () {
     $('#candidate_urls_table').DataTable().ajax.reload();
+});
+
+$('body').on('click', '.document_type_form_select', function () {
+    $('input[name="document_type_pattern"]').val($(this).attr('value'));
 });
