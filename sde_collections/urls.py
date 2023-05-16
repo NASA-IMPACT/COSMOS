@@ -7,6 +7,7 @@ from .views import (
     CollectionDetailView,
     CollectionListView,
     CollectionViewSet,
+    DocumentTypePatternViewSet,
     ExcludePatternViewSet,
     TitlePatternViewSet,
 )
@@ -16,6 +17,7 @@ router.register(r"collections", CollectionViewSet)
 router.register(r"candidate-urls", CandidateURLViewSet)
 router.register(r"exclude-patterns", ExcludePatternViewSet)
 router.register(r"title-patterns", TitlePatternViewSet)
+router.register(r"document-type-patterns", DocumentTypePatternViewSet)
 
 app_name = "sde_collections"
 
