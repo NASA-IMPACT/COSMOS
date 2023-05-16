@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from rest_framework import viewsets
+from .forms import RequiredUrlForm
 
 from .models import (
     CandidateURL,
@@ -12,6 +13,7 @@ from .models import (
     DocumentTypePattern,
     ExcludePattern,
     TitlePattern,
+    RequiredUrls,
 )
 from .serializers import (
     CandidateURLSerializer,
@@ -54,16 +56,27 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "collection"
 
     def post(self, request, *args, **kwargs):
-        user = self.request.user
         collection = self.get_object()
-        collection.curation_status = Collection.CurationStatusChoices.BEING_CURATED
-        collection.curated_by = user
-        collection.curation_started = timezone.now()
-        collection.save()
+        form = RequiredUrlForm(request.POST)
+        if "claim_button" in request.POST:
+            user = self.request.user
+            collection.curation_status = Collection.CurationStatusChoices.BEING_CURATED
+            collection.curated_by = user
+            collection.curation_started = timezone.now()
+            collection.save()
+        elif form.is_valid():
+            required_url = form.save(commit=False)
+            required_url.collection = collection
+            required_url.save()
+        else:
+            # If the form is not valid, render the detail view with the form and errors.
+            return self.render_to_response(self.get_context_data(form=form))
         return redirect("sde_collections:detail", pk=collection.pk)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        if "form" not in context:
+            context["form"] = RequiredUrlForm()
         context["segment"] = "collection-detail"
         return context
 
