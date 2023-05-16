@@ -234,12 +234,12 @@ class Collection(models.Model):
 
 class RequiredUrls(models.Model):
     """
-    Urls listed during the research and iteration phases by a curator for a collection,
+    URLs listed during the research and iteration phases by a curator for a collection,
     which are expected to be indexed by that collection's scraper and indexer
     """
 
     url = models.URLField(
-        help_text="Url which is expected to be brought in by the scraper and indexer",
+        help_text="URL which is expected to be brought in by the scraper and indexer",
     )
     collection = models.ForeignKey("Collection", on_delete=models.CASCADE)
 
