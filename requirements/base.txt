@@ -20,7 +20,7 @@ django-redis==5.2.0  # https://github.com/jazzband/django-redis
 
 # project-specific
 beautifulsoup4==4.12.2
-boto3==1.26.133
+boto3==1.26.134
 django-treebeard==4.7
 djangorestframework-datatables==0.7.0
 djangorestframework==3.14.0
