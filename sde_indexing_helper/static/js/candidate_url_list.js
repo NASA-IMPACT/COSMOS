@@ -47,7 +47,8 @@ function initializeDataTable() {
         "ajax": `/api/exclude-patterns/?format=datatables&collection_id=${collection_id}`,
         "columns": [
             { "data": "match_pattern" },
-            { "data": "pattern_type_display", "class": "text-center", "sortable": false },
+            { "data": "match_pattern_type_display", "class": "text-center", "sortable": false },
+            { "data": "reason", "class": "text-center", "sortable": false },
             { "data": "candidate_urls_count", "class": "text-center", "sortable": false },
             {
                 "data": null,
@@ -69,7 +70,28 @@ function initializeDataTable() {
             { "data": "match_pattern" },
             { "data": "match_pattern_type_display", "class": "text-center", "sortable": false },
             { "data": "title_pattern" },
-            { "data": "title_pattern_type_display", "class": "text-center", "sortable": false },
+            { "data": "candidate_urls_count", "class": "text-center", "sortable": false },
+            {
+                "data": null,
+                "sortable": false,
+                "class": "text-center",
+                "render": function (data, type, row) {
+                    return `<button class="btn btn-danger btn-sm delete-title-pattern-button" data-row-id="${row['id']}"><i class="material-icons">delete</i></button >`;
+                }
+            },
+            { "data": "id", "visible": false, "searchable": false },
+        ]
+    });
+
+    var document_type_patterns_table = $('#document_type_patterns_table').DataTable({
+        "scrollY": true,
+        "serverSide": true,
+        "ajax": `/api/document-type-patterns/?format=datatables&collection_id=${collection_id}`,
+        "columns": [
+            { "data": "match_pattern" },
+            { "data": "match_pattern_type_display", "class": "text-center", "sortable": false },
+            { "data": "document_type" },
+            { "data": "candidate_urls_count", "class": "text-center", "sortable": false },
             {
                 "data": null,
                 "sortable": false,
