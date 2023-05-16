@@ -32,7 +32,25 @@ function initializeDataTable() {
             getScrapedTitleColumn(),
             getGeneratedTitleColumn(),
             getVisitedColumn(true_icon, false_icon),
-            { "data": "document_type", },
+            {
+                "data": "document_type", "render": function (data, type, row) {
+                    button_text = data ? data : 'Select';
+                    button_color = data ? 'btn-success' : 'btn-secondary';
+                    return `
+                    <div class="dropdown text-center">
+                      <button class="btn ${button_color} btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        ${button_text}
+                      </button>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="#" value="1">Images</a>
+                        <a class="dropdown-item" href="#" value="2">Data</a>
+                        <a class="dropdown-item" href="#" value="3">Documentation</a>
+                        <a class="dropdown-item" href="#" value="4">Software and Tools</a>
+                        <a class="dropdown-item" href="#" value="5">Missions and Instruments</a>
+                      </div>
+                    </div>`;
+                }
+            },
             { "data": "id", "visible": false, "searchable": false },
         ],
         "createdRow": function (row, data, dataIndex) {
