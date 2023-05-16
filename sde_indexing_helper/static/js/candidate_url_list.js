@@ -164,7 +164,7 @@ function handleUrlPartButton() {
 
 function handleExcludeIndividualUrlClick() {
     $("body").on("click", '.exclude_individual_url', function () {
-        postExcludePatterns(match_pattern = $(this).attr("value"), pattern_type = 1);
+        postExcludePatterns(match_pattern = $(this).attr("value"), match_pattern_type = 1);
     });
 }
 
@@ -205,7 +205,7 @@ function handleUrlLinkClick() {
     });
 }
 
-function postExcludePatterns(match_pattern, pattern_type = 0) {
+function postExcludePatterns(match_pattern, match_pattern_type = 0) {
     if (!match_pattern) {
         toastr.error('Please highlight a pattern to exclude.');
         return;
@@ -214,7 +214,7 @@ function postExcludePatterns(match_pattern, pattern_type = 0) {
     $.post('/api/exclude-patterns/', {
         collection: collection_id,
         match_pattern: match_pattern,
-        pattern_type: pattern_type,
+        match_pattern_type: match_pattern_type,
         csrfmiddlewaretoken: csrftoken
     }, function (response) {
         $('#candidate_urls_table').DataTable().ajax.reload();
@@ -384,7 +384,7 @@ $(".custom-menu li").click(function () {
 
     // This is the triggered action name
     switch ($(this).attr("data-action")) {
-        case "exclude-pattern": postExcludePatterns(selected_text.trim(), pattern_type = 2); break;
+        case "exclude-pattern": postExcludePatterns(selected_text.trim(), match_pattern_type = 2); break;
         case "title-pattern": title_pattern_form(selected_text.trim()); break;
     }
 

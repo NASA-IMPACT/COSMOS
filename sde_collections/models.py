@@ -333,13 +333,14 @@ class BaseMatchPattern(models.Model):
 
     def matched_urls(self):
         """Find all the urls matching the pattern."""
+        escaped_match_pattern = re.escape(self.match_pattern)
         if self.match_pattern_type == self.MatchPatternTypeChoices.INDIVIDUAL_URL:
             return self.collection.candidate_urls.filter(
-                url__regex=re.escape(f"{self.match_pattern}$")
+                url__regex=f"{escaped_match_pattern}$"
             )
         elif self.match_pattern_type == self.MatchPatternTypeChoices.REGEX_PATTERN:
-            return self.collection.candidate_urls.objects.filter(
-                url__regex=re.escape(self.match_pattern)
+            return self.collection.candidate_urls.filter(
+                url__regex=escaped_match_pattern
             )
         elif self.match_pattern_type == self.MatchPatternTypeChoices.XPATH_PATTERN:
             raise NotImplementedError
