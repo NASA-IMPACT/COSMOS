@@ -9,6 +9,7 @@ from .views import (
     CollectionViewSet,
     DocumentTypePatternViewSet,
     ExcludePatternViewSet,
+    RequiredUrlsDeleteView,
     TitlePatternViewSet,
 )
 
@@ -24,6 +25,11 @@ app_name = "sde_collections"
 urlpatterns = [
     path("", view=CollectionListView.as_view(), name="list"),
     path("<int:pk>/", view=CollectionDetailView.as_view(), name="detail"),
+    path(
+        "delete-required-url/<int:pk>",
+        view=RequiredUrlsDeleteView.as_view(),
+        name="delete_required_url",
+    ),
     path(
         "<int:pk>/candidate-urls",
         view=CandidateURLsListView.as_view(),

@@ -70,9 +70,13 @@
                     <th>Required URLs</th>
                     <td>
                         {% for required_url in required_urls %}
-                            <p>
-                                <a href="{{ required_url.url }}">{{ required_url.url }}</a>
-                            </p>
+                            <form action="{% url 'sde_collections:delete_required_url' required_url.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger delete_required_url pull-left" data-id={{ required_url.pk }}>
+                                    <i class="material-icons">delete</i>
+                                </button>
+                            </form>
+                            <a href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
                         {% empty %}
                             <p>No required URLs yet</p>
                         {% endfor %}

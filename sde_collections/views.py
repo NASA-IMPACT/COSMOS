@@ -1,19 +1,21 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils import timezone
 from django.views.generic.detail import DetailView
+from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
 from rest_framework import viewsets
-from .forms import RequiredUrlForm
 
+from .forms import RequiredUrlForm
 from .models import (
     CandidateURL,
     Collection,
     DocumentTypePattern,
     ExcludePattern,
-    TitlePattern,
     RequiredUrls,
+    TitlePattern,
 )
 from .serializers import (
     CandidateURLSerializer,
@@ -82,6 +84,15 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
         )
         context["segment"] = "collection-detail"
         return context
+
+
+class RequiredUrlsDeleteView(LoginRequiredMixin, DeleteView):
+    model = RequiredUrls
+
+    def get_success_url(self, *args, **kwargs):
+        return reverse(
+            "sde_collections:detail", kwargs={"pk": self.object.collection.pk}
+        )
 
 
 class CandidateURLsListView(LoginRequiredMixin, ListView):
