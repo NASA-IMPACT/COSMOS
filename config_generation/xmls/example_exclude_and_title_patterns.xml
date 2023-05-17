@@ -1,0 +1,40 @@
+<!-- exclude xpaths within a document -->
+<IndexingFilter>
+    <XPath>//*[@id=&quot;ssdBgWrapper&quot;]/header</XPath>
+    <IncludeMode>false</IncludeMode>
+    <Selection />
+</IndexingFilter>
+
+<IndexingFilter>
+    <XPath>//*[@id=&quot;jwstFooter&quot;]</XPath>
+    <IncludeMode>false</IncludeMode>
+    <Selection />
+</IndexingFilter>
+
+
+<!-- set an exact title for an exact url -->
+<Mapping>
+    <Name>title</Name>
+    <Value>&quot;Images of James Web for Press&quot;</Value>
+    <Description />
+    <Selection>url1 = 'https://webb.nasa.gov/content/forPress/index.html'</Selection>
+    <DefaultValue />
+</Mapping>
+
+<!-- set title based on if empty + xpath criteria -->
+<Mapping>
+    <Name>title</Name>
+    <Value>IfEmpty(Concat(xpath:/html/body/div/div/div/p[1]/font, ' ',
+        xpath:/html/body/div/div/div/p[1]/font[2]),xpath:/html/head/title)</Value>
+    <Description>Helio Events Title</Description>
+    <Selection></Selection>
+    <DefaultValue></DefaultValue>
+</Mapping>
+
+<!-- exclude an exact url -->
+<UrlIndexExcluded>https://webb.nasa.gov/content/news/webbBuildStatusArchive.html</UrlIndexExcluded>
+
+
+<!-- exclude a url based on a star pattern -->
+<UrlIndexExcluded>https://webb.nasa.gov/content/forEducators/realworld*</UrlIndexExcluded>
+<UrlIndexExcluded>*.rtf</UrlIndexExcluded>

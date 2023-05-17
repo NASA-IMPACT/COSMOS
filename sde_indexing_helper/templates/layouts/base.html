@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon"
+          type="image/png"
+          href="{% static 'images/favicons/favicon.ico' %}">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>
+      {% block title %}
+      {% endblock title %}
+      | SDE Indexing Helper
+    </title>
+    <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no'
+          name='viewport' />
+    <!--     Fonts and icons     -->
+    <link rel="stylesheet"
+          type="text/css"
+          href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons" />
+    <link rel="stylesheet"
+          href="//maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
+    <!-- CSS Files -->
+    <link href="{% static 'css/material-dashboard.css' %}"
+          rel="stylesheet"
+          type="text/css" />
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
+          integrity="sha512-vKMx8UnXk60zUwyUnUPM3HbQo8QfmNx7+ltw8Pm5zLusl1XIfwcxo8DbWCqMGKaWeNxWA8yrx5v3SaVpMvR3CA=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer" />
+    <!-- Specific Page CSS goes HERE  -->
+    {% block stylesheets %}
+    {% endblock stylesheets %}
+  </head>
+  <body class="" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <div class="wrapper ">
+      {% block sidebar %}
+        {% include 'includes/sidebar.html' %}
+      {% endblock sidebar %}
+      <div class="main-panel">
+        {% include 'includes/navigation.html' %}
+        <!-- End Navbar -->
+        <div class="content">
+          <div class="container-fluid">
+            {% block content %}
+            {% endblock content %}
+          </div>
+        </div>
+        {% include 'includes/footer.html' %}
+      </div>
+    </div>
+    {% include 'includes/scripts.html' %}
+    {% include 'includes/scripts-sidebar.html' %}
+    <!-- Specific Page JS goes HERE  -->
+    {% block javascripts %}
+    {% endblock javascripts %}
+  </body>
+</html>

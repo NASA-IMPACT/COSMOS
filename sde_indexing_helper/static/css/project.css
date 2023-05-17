@@ -11,3 +11,8 @@
   background-color: #f2dede;
   border-color: #eed3d7;
 }
+
+.container {
+  max-width: 90% !important;
+  /*Set your own width %; */
+}

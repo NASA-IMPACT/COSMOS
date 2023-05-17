@@ -1,73 +1,116 @@
-{% extends "base.html" %}
-
-
-{% block css %}
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+{% block title %}Collections{% endblock %}
+{% block stylesheets %}
     {{ block.super }}
-    <link rel="stylesheet" href="//cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-{% endblock css %}
-
-{% block javascript %}
-    {{ block.super }}
-    <script
-    src="https://code.jquery.com/jquery-3.6.4.min.js"
-    integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
-    crossorigin="anonymous"></script>
-    <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-{% endblock javascript %}
-
-
+    <link rel="stylesheet"
+          href="//cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="{% static 'css/collections_list.css' %}">
+{% endblock stylesheets %}
 {% block content %}
-    <h1>Collections</h1>
-
+    <h2>SDE Collections</h2>
     <table id="collection_table" class="table table-striped">
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Has Folder</th>
                 <th>URL</th>
                 <th>Division</th>
-                <th>Turned On</th>
-                <th>Source</th>
-                {% comment %} <th>Actions</th> {% endcomment %}
+                <th>Candidate URLs</th>
+                <th>New?</th>
+                <th>Cleaning Order</th>
+                <th>Status</th>
+                <th>Curator</th>
+                <th>Config Folder</th>
             </tr>
         </thead>
         <tbody>
             {% for collection in collections %}
                 <tr>
-                    <td><a target="_blank" href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }}</a></td>
-                    <td>{{ collection.indexed }}</td>
-                    <td><a target="_blank" href="
-                    {% if collection.url %}
-                        {{ collection.url }}
-                    {% endif %}
-                        ">{{ collection.url }}</a></td>
+                    <td>
+                        <a href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }} <i class="material-icons">chevron_right</i></a>
+                    </td>
+                    <td>
+                        {% if collection.url %}
+                            {{ collection.url }}<a target="_blank" href=" {{ collection.url }} "> <i class="material-icons">open_in_new</i></a>
+                        {% endif %}
+                    </td>
                     <td>{{ collection.get_division_display }}</td>
-                    <td>{{ collection.turned_on }}</td>
-                    <td>{{ collection.get_source_display }}</td>
-                    {% comment %} <td></td> {% endcomment %}
+                    <td>
+                        <a href=" {% if collection.num_candidate_urls > 0 %} {% url 'sde_collections:candidate_urls' collection.pk %} {% endif %} "
+                           class="btn btn-sm {% if collection.num_candidate_urls > 0 %}btn-primary {% else %}disabled{% endif %}"
+                           role="button">{{ collection.num_candidate_urls }}</a>
+                    </td>
+                    <td>
+                        {% if collection.new_collection %}
+                            <i class="material-icons" style="color:green;">check</i>
+                        {% else %}
+                            <i class="material-icons" style="color:red;">close</i>
+                        {% endif %}
+                    </td>
+                    <td>{{ collection.cleaning_order }}</td>
+                    <td>{{ collection.get_curation_status_display }}</td>
+                    <td>{{ collection.curated_by }}</td>
+                    <td>{{ collection.config_folder }}</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
-
 {% endblock content %}
+{% block javascripts %}
+    <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script>let table = $('#collection_table').DataTable({
+        paging: false,
+        dom: 'iftip',
+        order: [[5, 'asc']],
+        columnDefs: [
+            {
+                target: -1,
+                visible: false,
+            },
+            {
+                target: 2,
+                sortable: false,
+            },
+        ],
+        initComplete: function () {
+            this.api().columns(2).every( function () {
+                var column = this;
+                var select = $('<select><option value=""></option></select>')
+                    .appendTo( $(column.header()) )
+                    .on( 'change', function () {
+                        var val = $.fn.dataTable.util.escapeRegex(
+                            $(this).val()
+                        );
 
-{% block inline_javascript %}
-    <script>
-        let table = $('#collection_table').DataTable({
-            "bPaginate": false,
-            // "columnDefs": [
-            //     {
-            //         "targets": -1,
-            //         "data": null,
-            //         "defaultContent": "<button class='btn btn-xs btn-success'>Scrape</button>",
-            //     },
-            // ],
-        });
+                        column
+                            .search( val ? '^'+val+'$' : '', true, false )
+                            .draw();
+                    } );
 
-        $('#collection_table tbody').on('click', 'button', function () {
-            var data = table.row($(this).parents('tr')).data();
-            alert(data[0] + "'s salary is: " + data[5]);
-        });
+                column.data().unique().sort().each( function ( d, j ) {
+                    select.append( '<option value="'+d+'">'+d+'</option>' )
+                } );
+            } );
+            this.api().columns(7).every( function () {
+                var column = this;
+                var select = $('<select><option value=""></option></select>')
+                    .appendTo( $(column.header()) )
+                    .on( 'change', function () {
+                        var val = $.fn.dataTable.util.escapeRegex(
+                            $(this).val()
+                        );
+
+                        column
+                            .search( val ? '^'+val+'$' : '', true, false )
+                            .draw();
+                    } );
+
+                column.data().unique().sort().each( function ( d, j ) {
+                    select.append( '<option value="'+d+'">'+d+'</option>' )
+                } );
+            } );
+        }
+    });
     </script>
-{% endblock inline_javascript %}
+{% endblock javascripts %}

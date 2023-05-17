@@ -2,15 +2,15 @@ pytz==2023.3  # https://github.com/stub42/pytz
 python-slugify==8.0.1  # https://github.com/un33k/python-slugify
 Pillow==9.5.0  # https://github.com/python-pillow/Pillow
 argon2-cffi==21.3.0  # https://github.com/hynek/argon2_cffi
-redis==4.5.4  # https://github.com/redis/redis-py
-hiredis==2.2.2  # https://github.com/redis/hiredis-py
+redis==4.5.5  # https://github.com/redis/redis-py
+hiredis==2.2.3  # https://github.com/redis/hiredis-py
 celery==5.2.7  # pyup: < 6.0  # https://github.com/celery/celery
 django-celery-beat==2.5.0  # https://github.com/celery/django-celery-beat
 flower==1.2.0  # https://github.com/mher/flower
 
 # Django
 # ------------------------------------------------------------------------------
-django==4.2  # pyup: < 4.1  # https://www.djangoproject.com/
+django==4.2.1  # pyup: < 4.1  # https://www.djangoproject.com/
 django-environ==0.10.0  # https://github.com/joke2k/django-environ
 django-model-utils==4.3.1  # https://github.com/jazzband/django-model-utils
 django-allauth==0.54.0  # https://github.com/pennersr/django-allauth
@@ -19,6 +19,11 @@ crispy-bootstrap5==0.7  # https://github.com/django-crispy-forms/crispy-bootstra
 django-redis==5.2.0  # https://github.com/jazzband/django-redis
 
 # project-specific
+beautifulsoup4==4.12.2
+boto3==1.26.135
 django-treebeard==4.7
-scrapy==2.8.0
+djangorestframework-datatables==0.7.0
+djangorestframework==3.14.0
+python-slugify==8.0.1
+scrapy==2.9.0
 xmltodict==0.13.0

@@ -62,8 +62,8 @@ class Command(BaseCommand):
                     urls = f.readlines()
                     for url in urls:
                         candidate_url_dict = json.loads(url)
-                        full_url = candidate_url_dict["url"]
-                        parsed = urlparse(full_url)
+                        url = candidate_url_dict["url"]
+                        parsed = urlparse(url)
                         path = f"{parsed.path}"
                         if parsed.query:
                             path += f"?{parsed.query}"
@@ -77,9 +77,8 @@ class Command(BaseCommand):
 
                         CandidateURL.objects.get_or_create(
                             collection=collection,
-                            url=path,
-                            full_url=full_url,
-                            title=title,
+                            url=url,
+                            scraped_title=title.strip(),
                             level=level,
                         )
 

@@ -61,6 +61,18 @@ To run the tests, check your test coverage, and generate an HTML coverage report
 
 Moved to [Live reloading and SASS compilation](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally.html#sass-compilation-live-reloading).
 
+### Install  Celery
+Make sure Celery is installed  in your environment.
+To install,
+    pip install celery
+
+### Install all requirements
+Install all packages listed in a 'requirements' file
+
+    pip install -r requirements/*.txt
+
+
+
 ### Celery
 
 This app comes with Celery.

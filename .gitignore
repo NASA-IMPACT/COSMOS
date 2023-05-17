@@ -69,6 +69,7 @@ celerybeat-schedule
 .venv
 venv/
 ENV/
+sde_venv
 
 # Rope project settings
 .ropeproject
@@ -283,3 +284,7 @@ sde_indexing_helper/media/
 
 **/.ipynb_checkpoints/
 **/*.xlsx
+
+
+# config details for the api access
+config_generation/config.py
