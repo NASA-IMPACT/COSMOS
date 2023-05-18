@@ -51,9 +51,11 @@ class Collection(models.Model):
         crawler2 = 1, "Web crawler parallel"
 
     class CurationStatusChoices(models.IntegerChoices):
-        BACKLOG = 1, "Backlog"
-        BEING_CURATED = 2, "Being Curated"
-        DONE = 3, "Done"
+        NEEDS_SCRAPING = 1, "Needs Scraping"
+        READY_TO_CURATE = 2, "Ready to Curate"
+        BEING_CURATED = 3, "Being Curated"
+        CURATED = 4, "Curated"
+        IN_PROD = 5, "In Production"
 
     name = models.CharField("Name", max_length=1024)
     config_folder = models.CharField("Config Folder", max_length=2048, unique=True)
@@ -115,6 +117,17 @@ class Collection(models.Model):
 
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
+
+    @property
+    def curation_status_button_color(self):
+        color_choices = {
+            1: "btn-light",
+            2: "btn-danger",
+            3: "btn-warning",
+            4: "btn-info",
+            5: "btn-success",
+        }
+        return color_choices[self.curation_status]
 
     def _process_exclude_list(self):
         """Process the exclude list."""
