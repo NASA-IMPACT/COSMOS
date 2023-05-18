@@ -172,7 +172,7 @@ function getDocumentTypeColumn() {
             button_text = data ? dict[data] : 'Select';
             button_color = data ? 'btn-success' : 'btn-secondary';
             return `
-            <div class="dropdown text-center document_type_dropdown" data-match-pattern=${remove_protocol(row['url'])}>
+            <div class="dropdown document_type_dropdown" data-match-pattern=${remove_protocol(row['url'])}>
               <button class="btn ${button_color} btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 ${button_text}
               </button>
