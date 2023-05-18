@@ -9,24 +9,26 @@
     <link rel="stylesheet" href="{% static 'css/collections_list.css' %}">
 {% endblock stylesheets %}
 {% block content %}
+    {% csrf_token %}
     <h2>SDE Collections</h2>
     <table id="collection_table" class="table table-striped">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>URL</th>
-                <th>Division</th>
-                <th>Candidate URLs</th>
-                <th>New?</th>
-                <th>Cleaning Order</th>
-                <th>Status</th>
-                <th>Curator</th>
-                <th>Config Folder</th>
+                <th class="text-center">Priority</th>
+                <th class="text-center">Name</th>
+                <th class="text-center">URL</th>
+                <th class="text-center">Division</th>
+                <th class="text-center">Candidate URLs</th>
+                <th class="text-center">New?</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Curator</th>
+                <th class="text-center">Config Folder</th>
             </tr>
         </thead>
         <tbody>
             {% for collection in collections %}
                 <tr>
+                    <td>{{ collection.cleaning_order }}</td>
                     <td>
                         <a href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }} <i class="material-icons">chevron_right</i></a>
                     </td>
@@ -48,9 +50,44 @@
                             <i class="material-icons" style="color:red;">close</i>
                         {% endif %}
                     </td>
-                    <td>{{ collection.cleaning_order }}</td>
-                    <td>{{ collection.get_curation_status_display }}</td>
-                    <td>{{ collection.curated_by }}</td>
+                    <td>
+                        <div class="dropdown curation_status_dropdown"
+                             data-match-pattern
+                             remove_protocol
+                             row
+                             url>
+                            <button class="btn {{ collection.curation_status_button_color }} btn-sm dropdown-toggle"
+                                    type="button"
+                                    id="dropdownMenuButton"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">{{ collection.get_curation_status_display }}</button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                {% for choice in curation_status_choices %}
+                                    <a class="dropdown-item curation_status_select" href="#" value="{{ choice }}" data-collection-id={{ collection.id }}>{{ choice.label }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="dropdown curator_dropdown"
+                             data-match-pattern
+                             remove_protocol
+                             row
+                             url>
+                            <button class="btn {% if collection.curated_by %} btn-success {% else %} btn-dark {% endif %} btn-sm dropdown-toggle"
+                                    type="button"
+                                    id="dropdownMenuButton"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">{{ collection.curated_by }}</button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                {% for curator in curators %}
+                                    <a class="dropdown-item curator_select" href="#" value="{{ curator.pk }}" data-collection-id={{ collection.id }}>{{ curator.username }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </td>
                     <td>{{ collection.config_folder }}</td>
                 </tr>
             {% endfor %}
@@ -59,58 +96,5 @@
 {% endblock content %}
 {% block javascripts %}
     <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    <script>let table = $('#collection_table').DataTable({
-        paging: false,
-        dom: 'iftip',
-        order: [[5, 'asc']],
-        columnDefs: [
-            {
-                target: -1,
-                visible: false,
-            },
-            {
-                target: 2,
-                sortable: false,
-            },
-        ],
-        initComplete: function () {
-            this.api().columns(2).every( function () {
-                var column = this;
-                var select = $('<select><option value=""></option></select>')
-                    .appendTo( $(column.header()) )
-                    .on( 'change', function () {
-                        var val = $.fn.dataTable.util.escapeRegex(
-                            $(this).val()
-                        );
-
-                        column
-                            .search( val ? '^'+val+'$' : '', true, false )
-                            .draw();
-                    } );
-
-                column.data().unique().sort().each( function ( d, j ) {
-                    select.append( '<option value="'+d+'">'+d+'</option>' )
-                } );
-            } );
-            this.api().columns(7).every( function () {
-                var column = this;
-                var select = $('<select><option value=""></option></select>')
-                    .appendTo( $(column.header()) )
-                    .on( 'change', function () {
-                        var val = $.fn.dataTable.util.escapeRegex(
-                            $(this).val()
-                        );
-
-                        column
-                            .search( val ? '^'+val+'$' : '', true, false )
-                            .draw();
-                    } );
-
-                column.data().unique().sort().each( function ( d, j ) {
-                    select.append( '<option value="'+d+'">'+d+'</option>' )
-                } );
-            } );
-        }
-    });
-    </script>
+    <script src="{% static 'js/collection_list.js' %}"></script>
 {% endblock javascripts %}

@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.shortcuts import redirect
@@ -19,10 +20,13 @@ from .models import (
 )
 from .serializers import (
     CandidateURLSerializer,
+    CollectionSerializer,
     DocumentTypePatternSerializer,
     ExcludePatternSerializer,
     TitlePatternSerializer,
 )
+
+User = get_user_model()
 
 
 class CollectionListView(LoginRequiredMixin, ListView):
@@ -45,6 +49,9 @@ class CollectionListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["segment"] = "collections"
+        context["curators"] = User.objects.filter(groups__name="Curators")
+        context["curation_status_choices"] = Collection.CurationStatusChoices
+
         return context
 
 
@@ -195,3 +202,4 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
+    serializer_class = CollectionSerializer
