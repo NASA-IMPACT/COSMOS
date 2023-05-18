@@ -19,6 +19,7 @@ from .models import (
 )
 from .serializers import (
     CandidateURLSerializer,
+    CollectionSerializer,
     DocumentTypePatternSerializer,
     ExcludePatternSerializer,
     TitlePatternSerializer,
@@ -195,3 +196,4 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
+    serializer_class = CollectionSerializer

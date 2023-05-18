@@ -1,6 +1,48 @@
 from rest_framework import serializers
 
-from .models import CandidateURL, DocumentTypePattern, ExcludePattern, TitlePattern
+from .models import (
+    CandidateURL,
+    Collection,
+    DocumentTypePattern,
+    ExcludePattern,
+    TitlePattern,
+)
+
+
+class CollectionSerializer(serializers.ModelSerializer):
+    division_display = serializers.CharField(
+        source="get_division_display", read_only=True
+    )
+    document_type_display = serializers.CharField(
+        source="get_document_type_display", read_only=True
+    )
+    curation_status_display = serializers.CharField(
+        source="get_curation_status_display", read_only=True
+    )
+
+    class Meta:
+        model = Collection
+        fields = (
+            "id",
+            "name",
+            "config_folder",
+            "url",
+            "division",
+            "division_display",
+            "document_type",
+            "document_type_display",
+            "tree_root",
+            "new_collection",
+            "curation_status",
+            "curation_status_display",
+            "cleaning_order",
+            "curated_by",
+        )
+        extra_kwargs = {
+            "name": {"required": False},
+            "config_folder": {"required": False},
+            "division": {"required": False},
+        }
 
 
 class CandidateURLSerializer(serializers.ModelSerializer):
