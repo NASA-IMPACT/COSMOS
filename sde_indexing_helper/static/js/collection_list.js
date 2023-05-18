@@ -54,11 +54,19 @@ let table = $('#collection_table').DataTable({
 
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 
-function handleDocumentTypeSelect() {
+function handleCurationStatusSelect() {
     $("body").on("click", ".curation_status_select", function () {
         var collection_id = $(this).data('collection-id');
         var curation_status = $(this).attr('value');
         postCurationStatus(collection_id, curation_status);
+    });
+}
+
+function handleCuratorSelect() {
+    $("body").on("click", ".curator_select", function () {
+        var collection_id = $(this).data('collection-id');
+        var curator_id = $(this).attr('value');
+        postCurator(collection_id, curator_id);
     });
 }
 
@@ -80,10 +88,29 @@ function postCurationStatus(collection_id, curation_status) {
     });
 }
 
+function postCurator(collection_id, curator_id) {
+    var url = `/api/collections/${collection_id}/`;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        data: {
+            curated_by: curator_id,
+            csrfmiddlewaretoken: csrftoken
+        },
+        headers: {
+            'X-CSRFToken': csrftoken
+        },
+        success: function (data) {
+            location.reload();
+        },
+    });
+}
+
 $(document).ready(function () {
     setupClickHandlers();
 });
 
 function setupClickHandlers() {
-    handleDocumentTypeSelect();
+    handleCurationStatusSelect();
+    handleCuratorSelect();
 }
