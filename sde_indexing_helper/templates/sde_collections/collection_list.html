@@ -69,7 +69,25 @@
                             </div>
                         </div>
                     </td>
-                    <td>{{ collection.curated_by }}</td>
+                    <td>
+                        <div class="dropdown curator_dropdown"
+                             data-match-pattern
+                             remove_protocol
+                             row
+                             url>
+                            <button class="btn {% if collection.curator %} btn-success {% else %} btn-dark {% endif %} btn-sm dropdown-toggle"
+                                    type="button"
+                                    id="dropdownMenuButton"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">{{ collection.curated_by }}</button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                {% for curator in curators %}
+                                    <a class="dropdown-item curator_select" href="#" value="{{ curator.pk }}" data-collection-id={{ collection.id }}>{{ curator.username }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </td>
                     <td>{{ collection.config_folder }}</td>
                 </tr>
             {% endfor %}
