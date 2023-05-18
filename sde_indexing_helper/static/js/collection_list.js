@@ -63,10 +63,10 @@ function handleCurationStatusSelect() {
 }
 
 function handleCuratorSelect() {
-    $("body").on("click", ".curation_status_select", function () {
+    $("body").on("click", ".curator_select", function () {
         var collection_id = $(this).data('collection-id');
-        var curation_status = $(this).attr('value');
-        postCurationStatus(collection_id, curation_status);
+        var curator_id = $(this).attr('value');
+        postCurator(collection_id, curator_id);
     });
 }
 
@@ -94,7 +94,7 @@ function postCurator(collection_id, curator_id) {
         url: url,
         type: "PUT",
         data: {
-            curator: curator_id,
+            curated_by: curator_id,
             csrfmiddlewaretoken: csrftoken
         },
         headers: {
