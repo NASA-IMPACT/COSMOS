@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.shortcuts import redirect
@@ -24,6 +25,8 @@ from .serializers import (
     TitlePatternSerializer,
 )
 
+User = get_user_model()
+
 
 class CollectionListView(LoginRequiredMixin, ListView):
     """
@@ -45,6 +48,7 @@ class CollectionListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["segment"] = "collections"
+        context["users"] = User.objects.all()
         return context
 
 
