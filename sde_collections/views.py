@@ -20,6 +20,7 @@ from .models import (
 )
 from .serializers import (
     CandidateURLSerializer,
+    CollectionSerializer,
     DocumentTypePatternSerializer,
     ExcludePatternSerializer,
     TitlePatternSerializer,
@@ -49,6 +50,8 @@ class CollectionListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["segment"] = "collections"
         context["users"] = User.objects.all()
+        context["curation_status_choices"] = Collection.CurationStatusChoices
+
         return context
 
 
@@ -199,3 +202,4 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
+    serializer_class = CollectionSerializer
