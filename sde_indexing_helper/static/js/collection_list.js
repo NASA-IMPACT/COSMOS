@@ -1,19 +1,19 @@
 let table = $('#collection_table').DataTable({
     paging: false,
     dom: 'iftip',
-    order: [[5, 'asc']],
+    order: [[0, 'asc']],
     columnDefs: [
         {
             target: -1,
             visible: false,
         },
         {
-            target: 2,
+            target: 3,
             sortable: false,
         },
     ],
     initComplete: function () {
-        this.api().columns(2).every(function () {
+        this.api().columns(3).every(function () {
             var column = this;
             var select = $('<select><option value=""></option></select>')
                 .appendTo($(column.header()))
@@ -31,7 +31,7 @@ let table = $('#collection_table').DataTable({
                 select.append('<option value="' + d + '">' + d + '</option>')
             });
         });
-        this.api().columns(7).every(function () {
+        this.api().columns(8).every(function () {
             var column = this;
             var select = $('<select><option value=""></option></select>')
                 .appendTo($(column.header()))

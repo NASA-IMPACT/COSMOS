@@ -14,12 +14,12 @@
     <table id="collection_table" class="table table-striped">
         <thead>
             <tr>
+                <th class="text-center">Priority</th>
                 <th class="text-center">Name</th>
                 <th class="text-center">URL</th>
                 <th class="text-center">Division</th>
                 <th class="text-center">Candidate URLs</th>
                 <th class="text-center">New?</th>
-                <th class="text-center">Cleaning Order</th>
                 <th class="text-center">Status</th>
                 <th class="text-center">Curator</th>
                 <th class="text-center">Config Folder</th>
@@ -28,6 +28,7 @@
         <tbody>
             {% for collection in collections %}
                 <tr>
+                    <td>{{ collection.cleaning_order }}</td>
                     <td>
                         <a href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }} <i class="material-icons">chevron_right</i></a>
                     </td>
@@ -49,7 +50,6 @@
                             <i class="material-icons" style="color:red;">close</i>
                         {% endif %}
                     </td>
-                    <td>{{ collection.cleaning_order }}</td>
                     <td>
                         <div class="dropdown curation_status_dropdown"
                              data-match-pattern
