@@ -118,6 +118,17 @@ class Collection(models.Model):
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
 
+    @property
+    def curation_status_button_color(self):
+        color_choices = {
+            1: "btn-light",
+            2: "btn-danger",
+            3: "btn-warning",
+            4: "btn-info",
+            5: "btn-success",
+        }
+        return color_choices[self.curation_status]
+
     def _process_exclude_list(self):
         """Process the exclude list."""
         exclude_list = []
