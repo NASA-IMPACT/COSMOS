@@ -39,28 +39,6 @@
                     <td>{{ collection.notes }}</td>
                 </tr>
                 <tr>
-                    <th>Curation Status</th>
-                    <td>{{ collection.get_curation_status_display }}</td>
-                </tr>
-                <tr>
-                    <th>Curation Started</th>
-                    <td>{{ collection.curation_started }}</td>
-                </tr>
-                <tr>
-                    <th>Curator</th>
-                    <td>
-                        {% if collection.curated_by %}
-                            {{ collection.curated_by.username }}
-                        {% else %}
-                            <form action="{% url 'sde_collections:detail' collection.pk %}"
-                                  method="post">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-primary" id="claim_button">Claim</button>
-                            </form>
-                        {% endif %}
-                    </td>
-                </tr>
-                <tr>
                     <th>Candidate URLs</th>
                     <td>
                         <a href="{% url 'sde_collections:candidate_urls' collection.id %}">View</a>
