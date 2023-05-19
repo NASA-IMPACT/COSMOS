@@ -33,7 +33,7 @@ def import_candidate_urls_task(collection_ids=[], config_folder_names=[]):
     if collection_ids:
         collections = Collection.objects.filter(id__in=collection_ids)
     else:
-        collections = Collection.objects.filter(config_folder__in=collection_ids)
+        collections = Collection.objects.filter(config_folder__in=config_folder_names)
 
     for collection in collections:
         collection.candidate_urls.all().delete()

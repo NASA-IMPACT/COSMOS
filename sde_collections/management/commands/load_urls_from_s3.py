@@ -1,7 +1,7 @@
 import json
 from urllib.parse import urlparse
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
 from sde_collections.tasks import import_candidate_urls_task
 
@@ -17,12 +17,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         config_folders = options["config_folders"]
-        for config_folder in config_folders:
-            try:
-                import_candidate_urls_task(config_folder_names=[config_folder])
-            except FileNotFoundError:
-                raise CommandError('No scraped URLs found for "%s"' % config_folder)
+        import_candidate_urls_task(config_folder_names=config_folders)
 
-            self.stdout.write(
-                self.style.SUCCESS('Successfully loaded data from "%s"' % config_folder)
-            )
+        self.stdout.write(
+            self.style.SUCCESS('Successfully loaded data from "%s"' % config_folders)
+        )
