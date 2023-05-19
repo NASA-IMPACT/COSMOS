@@ -22,7 +22,7 @@ def generate_candidate_urls_async(config_folder):
 
 
 @celery_app.task()
-def import_candidate_urls_task(collection_ids):
+def import_candidate_urls_task(collection_ids=[], config_folder_names=[]):
     s3 = boto3.client(
         "s3",
         region_name="us-east-1",
@@ -30,7 +30,10 @@ def import_candidate_urls_task(collection_ids):
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
     )
 
-    collections = Collection.objects.filter(id__in=collection_ids)
+    if collection_ids:
+        collections = Collection.objects.filter(id__in=collection_ids)
+    else:
+        collections = Collection.objects.filter(config_folder__in=collection_ids)
 
     for collection in collections:
         collection.candidate_urls.all().delete()
