@@ -127,6 +127,7 @@ class Collection(models.Model):
             3: "btn-warning",
             4: "btn-info",
             5: "btn-success",
+            6: "btn-primary",
         }
         return color_choices[self.curation_status]
 
