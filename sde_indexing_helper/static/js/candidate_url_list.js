@@ -20,6 +20,7 @@ function initializeDataTable() {
     var candidate_urls_table = $('#candidate_urls_table').DataTable({
         "scrollY": true,
         "serverSide": true,
+        "stateSave": true,
         "ajax": {
             "url": `/api/candidate-urls/?format=datatables&collection_id=${collection_id}`,
             "data": function (d) {
