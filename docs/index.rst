@@ -8,16 +8,22 @@ Welcome to SDE Indexing Helper's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Working with Sinequa:
 
+   documentation/sinequa_api
+   documentation/example
    howto
-   users
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Using the Indexing Helper:
+   
+   documentation/indexing_guidelines
 
 
 
-Indices and tables
+Quick Links
 ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+* :ref:`sinequa_api`
+* :ref:`indexing_guidelines`
