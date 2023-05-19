@@ -11,7 +11,6 @@ Welcome to SDE Indexing Helper's documentation!
    :caption: Working with Sinequa:
 
    documentation/sinequa_api
-   documentation/example
    howto
 
 .. toctree::
