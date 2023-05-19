@@ -54,8 +54,9 @@ class Collection(models.Model):
         NEEDS_SCRAPING = 1, "Needs Scraping"
         READY_TO_CURATE = 2, "Ready to Curate"
         BEING_CURATED = 3, "Being Curated"
-        CURATED = 4, "Curated"
-        IN_PROD = 5, "In Production"
+        NEEDS_RESCRAPING = 4, "Needs Rescraping"
+        CURATED = 5, "Curated"
+        IN_PROD = 6, "In Production"
 
     name = models.CharField("Name", max_length=1024)
     config_folder = models.CharField("Config Folder", max_length=2048, unique=True)
