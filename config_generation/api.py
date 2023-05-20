@@ -58,6 +58,22 @@ class Api:
 
         return response
 
+    def sql(self, source: str, collection: str) -> None:
+        url = f"{self.base_url}/api/v1/engine.sql"
+
+        collection_name = f"/{source}/{collection}"
+        sql_command = f"select url1, title from * where collection='{collection_name}'"
+
+        payload = {
+            "sql": sql_command,
+            "maxRows": 1000,
+            "pretty": "true",
+        }
+        print(payload)
+        response = self.process_response(url, payload)
+
+        return response
+
     def run_indexer(self, source_name: str, collection_name: str) -> None:
         """Starts indexing on the given collection. Equivalent to pressing the play button in the
         interface. This function will return the response from the sinequa server and then the
