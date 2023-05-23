@@ -1,3 +1,10 @@
+"""
+indexes lots of stuff at once
+splits a big list of collections into n subgroups. each collection has a job created.
+each indexing job is added to one of the n subgroups. a master runner is made that executes the n 
+subgroups in parallel
+"""
+
 from db_to_xml import XmlEditor
 
 # fake list of collections
