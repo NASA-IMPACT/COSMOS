@@ -50,7 +50,7 @@ for index, sublist in enumerate(sublists):
         joblist.add_job_list_item(create_job_name(collection))
 
     joblist._write_xml(f"{job_path_root}{create_joblist_name(index)}")
-    job_names.append(create_joblist_name.replace(".xml", ""))
+    job_names.append(create_joblist_name(index).replace(".xml", ""))
 
 master = XmlEditor(joblist_template_path)
 master.update_or_add_element_value("RunJobsInParallel", "true")
