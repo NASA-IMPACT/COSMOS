@@ -202,7 +202,7 @@ class XmlEditor:
             selection=f'doc.url1 match "{title_criteria}"',
         )
 
-    def add_job_list_item(self, collection_name):
+    def add_job_list_item(self, job_name):
         """
         this is specifically for editing joblist templates by adding a new collection to a joblist
         config_generation/xmls/joblist_template.xml
@@ -210,7 +210,7 @@ class XmlEditor:
         xml_root = self.xml_tree.getroot()
 
         mapping = ET.Element("JobListItem")
-        ET.SubElement(mapping, "Name").text = f"collection.SMD.{collection_name}"
+        ET.SubElement(mapping, "Name").text = job_name
         ET.SubElement(mapping, "StopOnError").text = "false"
         xml_root.append(mapping)
 
