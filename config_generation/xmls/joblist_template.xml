@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Sinequa>
+    <Description></Description>
+    <JobType>joblist</JobType>
+    <IdentityOverride></IdentityOverride>
+    <Trigger>
+        <Enabled>false</Enabled>
+        <TriggerType></TriggerType>
+        <StartDate></StartDate>
+        <StartTime></StartTime>
+        <ExpireDate></ExpireDate>
+        <ExpireTime></ExpireTime>
+        <DailyRecurrence></DailyRecurrence>
+        <WeeklyRecurrence></WeeklyRecurrence>
+        <WeeklyDays></WeeklyDays>
+        <MonthlyMonths></MonthlyMonths>
+        <MonthlyDays></MonthlyDays>
+        <MonthlyOnOrder></MonthlyOnOrder>
+        <MonthlyOnDays></MonthlyOnDays>
+        <RepeatEvery>false</RepeatEvery>
+        <RepeatEveryInterval></RepeatEveryInterval>
+        <RepeatDuration></RepeatDuration>
+    </Trigger>
+    <System>
+        <LogLevel>20</LogLevel>
+    </System>
+    <StopIfRunLongerThan>false</StopIfRunLongerThan>
+    <StopIfRunLongerThanDelay></StopIfRunLongerThanDelay>
+    <StartIfAlreadyRunning>false</StartIfAlreadyRunning>
+    <IncludeInstanceText>false</IncludeInstanceText>
+    <InstanceText></InstanceText>
+    <PauseTimeBeforeStartup></PauseTimeBeforeStartup>
+    <StatusMaxOk></StatusMaxOk>
+    <StartIdentity></StartIdentity>
+    <UseAsDefaultIdentity>false</UseAsDefaultIdentity>
+    <RunJobsInParallel>false</RunJobsInParallel>
+    <!-- <JobListItem>
+        <Name>collection.SMD.ASTRO_James_Webb_Space_Telescope_Website</Name>
+        <StopOnError>false</StopOnError>
+    </JobListItem> -->
+</Sinequa>
