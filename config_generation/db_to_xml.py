@@ -11,22 +11,29 @@ class XmlEditor:
     An ouput path is given and the etree is saved to it.
     """
 
-    def __init__(self, xml_path):
+    def __init__(self, xml_path: str):
         self.input_path = xml_path
-        self.xml_tree = self.get_tree(self.input_path)
+        self.xml_tree = self._get_tree(self.input_path)
 
-    def get_tree(self, xml_path) -> ET.ElementTree:
+    def _get_tree(self, xml_path) -> ET.ElementTree:
         """takes the path of an xml file and opens it as an ElementTree object"""
         return ET.parse(xml_path)
 
-    def _add_declaration(self, output_path):
+    def get_tag_value(self, tag_name: str) -> list:
+        """
+        tag_name can be either the top level tag
+        or you can get a child by saying 'parent/child'
+        """
+        return [element.text for element in self.xml_tree.findall(tag_name)]
+
+    def _add_declaration(self, output_path: str):
         declaration = """<?xml version="1.0" encoding="utf-8"?>"""
         with open(output_path, "r+") as f:
             content = f.read()
             f.seek(0, 0)
             f.write(declaration.rstrip("\r\n") + "\n" + content)
 
-    def _update_config_xml(self, output_path):
+    def _update_config_xml(self, output_path: str):
         self.xml_tree.write(
             output_path,
             method="html",
