@@ -1,17 +1,21 @@
 from db_to_xml import XmlEditor
-from sources_to_scrape import turned_on_sources, already_scraped_sources
+from generate_collection_list import turned_on_remaining_webcrawlers, create_xml_path
+from sources_to_scrape import (
+    remove_top_limitation_sources,
+    turned_on_sources,
+)
 
-root_path = "/Users/cdavis/github/sde_ashish/sinequa_configs/sources/SMD/"
+ROOT_PATH = "../sinequa_configs/sources/SMD/"
 
 
 def remove_top_only_limitation(path):
-    # this is only run on the exact sources where we want disabled, so checking
+    # this is only run on the exact sources we want disabled, so checking
     # for and retaining previous values is not required
     indexer = XmlEditor(path)
     indexer.update_or_add_element_value("MaxToIndex", "")
     indexer.update_or_add_element_value("MaxLevel", "")
     indexer.update_or_add_element_value("MaxToCrawl", "")
-    indexer._write_xml(path)
+    indexer._update_config_xml(path)
 
 
 def ensure_index_of_root(path):
@@ -20,28 +24,32 @@ def ensure_index_of_root(path):
     indexer = XmlEditor(path)
     urls = indexer.get_tag_value("Url")
     for url in urls:
-        indexer.add_url_include(url)
-    indexer._write_xml(path)
+        # ensure we don't double add these
+        if url not in indexer.get_tag_value("UrlIndexIncluded"):
+            indexer.add_url_include(url)
+    indexer._update_config_xml(path)
 
 
-# remove sources that were just scraped
-remaining_sources = [
-    source for source in turned_on_sources if source not in already_scraped_sources
-]
+# undo top limitation
+for collection_name in remove_top_limitation_sources:
+    path = create_xml_path(collection_name)
+    remove_top_only_limitation(path)
 
-# filter all sources to only webcrawler sources
-webcrawlers = []
-for collection_name in remaining_sources:
-    path = f"{root_path}{collection_name}/default.xml"
-    indexer = XmlEditor(path)
-
-    if "crawler2" in indexer.get_tag_value("Connector"):
-        webcrawlers.append(collection_name)
-
-print(len(turned_on_sources))
-print(len(webcrawlers))
+# ensure root
+for collection_name in turned_on_remaining_webcrawlers:
+    path = create_xml_path(collection_name)
+    ensure_index_of_root(path)
 
 
-# notes
-# 139 total turned on sources
-# 116 of which are webcrawlers
+print(len(turned_on_sources))  # 139
+print(len(turned_on_remaining_webcrawlers))  # 114
+print(len(remove_top_limitation_sources))  # 5
+print(
+    len(
+        [
+            s
+            for s in remove_top_limitation_sources
+            if s in turned_on_remaining_webcrawlers
+        ]
+    )
+)  # 5
