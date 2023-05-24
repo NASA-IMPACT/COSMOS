@@ -257,3 +257,17 @@ class XmlEditor:
         ET.SubElement(
             xml_root, "UrlIndexExcluded"
         ).text = url_pattern  # this adds an indexing rule (doesn't overwrite)
+
+    def add_url_include(self, url_pattern: str) -> None:
+        """
+        includes a url or url pattern, such as
+        - https://webb.nasa.gov/content/forEducators/realworld*
+        - https://webb.nasa.gov/content/features/index.html
+        I'm not sure if exclusion rules override includes or if includes override
+        exclusion rules.
+        """
+
+        xml_root = self.xml_tree.getroot()
+        ET.SubElement(
+            xml_root, "UrlIndexIncluded"
+        ).text = url_pattern  # this adds an indexing rule (doesn't overwrite)
