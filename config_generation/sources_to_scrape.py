@@ -466,6 +466,17 @@ already_scraped_sources = [
     "GENELAB_Publications_Website",
 ]
 
+# emily put together a list of sources which were previously limited but we now
+# want more than the top page: https://docs.google.com/spreadsheets/d/1U95xEseibgoHmTSyT6akPxuMVRIUeEu2vOyu9i8teb4/edit#gid=0
+# however, many of these need special attention, so this list in this variable isn't complete
+remove_top_limitation_sources = [
+    "Autoplot_Website",
+    "PyHC_Website",
+    "SPEDAS_Website",
+    "ASTRO_Hubble_Source_Catalog_Search_API_Website",
+    "PDS_PDS_Tool_Registry_Website",
+]
+
 
 all_sources = kaylins_new_sources + sprint_2_sources + sprint_3_sources
 remaining_sources = [s for s in all_sources if s["source_name"] not in finished_sources]
