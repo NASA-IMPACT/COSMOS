@@ -27,6 +27,7 @@ class XmlEditor:
         return [element.text for element in self.xml_tree.findall(tag_name)]
 
     def _add_declaration(self, output_path: str):
+        """opens an existing file and adds a declaration"""
         declaration = """<?xml version="1.0" encoding="utf-8"?>"""
         with open(output_path, "r+") as f:
             content = f.read()
@@ -42,21 +43,32 @@ class XmlEditor:
         )
 
         self._add_declaration(output_path)
+        self._resave_pretty(output_path)
 
-    def _write_xml(self, output_path: str) -> None:
-        """
-        takes the self.xml_tree ElementTree object and writes it to an output path
+    def _resave_pretty(self, output_path):
+        """opens and resaves a file to reformat it"""
+        import xmltodict
 
-        although this function can be used on it's own to write a one-off file, most
-        config files are actually called default.xml and nested inside a folder,
-        therefore create_config_folder_and_default is the usual way to make files
-        """
+        with open(output_path) as f:
+            xml_data = f.read()
+        xml = xmltodict.parse(xml_data)
+        with open(output_path, "w") as f:
+            f.write(xmltodict.unparse(xml, pretty=True))
 
-        xml_root = self.xml_tree.getroot()
-        pretty_xml = self.prettify(xml_root)
+    # def _write_xml(self, output_path: str) -> None:
+    #     """
+    #     takes the self.xml_tree ElementTree object and writes it to an output path
 
-        with open(output_path, "w", encoding="utf-8") as output_file:
-            output_file.write(pretty_xml)
+    #     although this function can be used on it's own to write a one-off file, most
+    #     config files are actually called default.xml and nested inside a folder,
+    #     therefore create_config_folder_and_default is the usual way to make files
+    #     """
+
+    #     xml_root = self.xml_tree.getroot()
+    #     pretty_xml = self.prettify(xml_root)
+
+    #     with open(output_path, "w", encoding="utf-8") as output_file:
+    #         output_file.write(pretty_xml)
 
     def create_folder_if_needed(self, folder_path: str):
         """
@@ -87,25 +99,25 @@ class XmlEditor:
         # self._write_xml(xml_path)
         self._update_config_xml(xml_path)
 
-    def expand_empty_tags(self, xml_string: str) -> str:
-        """
-        etree replaces <></> tags with </> essentially converting empty tag pairs
-        to self closing tags. this is not sinequa standard. so this function undoes this behavior
-        """
-        return re.sub(r"<([^/][^<>]*[^/])/>", r"<\1></\1>", xml_string)
+    # def expand_empty_tags(self, xml_string: str) -> str:
+    #     """
+    #     etree replaces <></> tags with </> essentially converting empty tag pairs
+    #     to self closing tags. this is not sinequa standard. so this function undoes this behavior
+    #     """
+    #     return re.sub(r"<([^/][^<>]*[^/])/>", r"<\1></\1>", xml_string)
 
-    def prettify(self, element: ET.Element) -> str:
-        """
-        By default, the output xml will have extra new lines, self-closing tags
-        and weird indents. This function makes all that sinequa standard.
-        """
+    # def prettify(self, element: ET.Element) -> str:
+    #     """
+    #     By default, the output xml will have extra new lines, self-closing tags
+    #     and weird indents. This function makes all that sinequa standard.
+    #     """
 
-        rough_string = ET.tostring(element, "unicode")
-        reparsed = minidom.parseString(rough_string)
-        pretty_xml = reparsed.toprettyxml(indent="    ")
-        pretty_xml = self.expand_empty_tags(pretty_xml)
+    #     rough_string = ET.tostring(element, "unicode")
+    #     reparsed = minidom.parseString(rough_string)
+    #     pretty_xml = reparsed.toprettyxml(indent="    ")
+    #     pretty_xml = self.expand_empty_tags(pretty_xml)
 
-        return "\n".join([line for line in pretty_xml.split("\n") if line.strip()])
+    #     return "\n".join([line for line in pretty_xml.split("\n") if line.strip()])
 
     def update_or_add_element_value(
         self,
