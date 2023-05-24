@@ -7,15 +7,17 @@ subgroups in parallel
 
 from db_to_xml import XmlEditor
 
-# fake list of collections
-collection_list = [f"test_collection_{index}" for index in range(0, 12)]
+from generate_collection_list import turned_on_remaining_webcrawlers as collection_list
+
+# fake list of collections, you can use this to test
+# collection_list = [f"test_collection_{index}" for index in range(0, 12)]
 
 template_root_path = "xmls/"
 joblist_template_path = f"{template_root_path}joblist_template.xml"
 
-job_path_root = "..sinequa_configs/jobs/"
-job_path_root = "xmls/jobtesting/"
-n = 3  # number of collections to run in parellel (as well as number of joblists)
+# job_path_root = "..sinequa_configs/jobs/"
+job_path_root = "xmls/jobtesting/"  # fake test folder # TODO: putting the files directly in the jobs folder doesn't work for some reason
+n = 5  # number of collections to run in parellel (as well as number of joblists)
 
 
 def create_job_name(collection_name):
@@ -29,8 +31,8 @@ def create_joblist_name(index):
 # create single jobs to run each collection
 for collection in collection_list:
     job = XmlEditor(f"{template_root_path}job_template.xml")
-    job.update_or_add_element_value("Collection", collection)
-    job._write_xml(f"{job_path_root}{create_job_name(collection)}")
+    job.update_or_add_element_value("Collection", f"/SMD/{collection}/")
+    job._update_config_xml(f"{job_path_root}{create_job_name(collection)}")
 
 
 # Create an empty list of lists
@@ -49,10 +51,10 @@ for index, sublist in enumerate(sublists):
     for collection in sublist:
         joblist.add_job_list_item(create_job_name(collection))
 
-    joblist._write_xml(f"{job_path_root}{create_joblist_name(index)}")
+    joblist._update_config_xml(f"{job_path_root}{create_joblist_name(index)}")
     job_names.append(create_joblist_name(index).replace(".xml", ""))
 
 master = XmlEditor(joblist_template_path)
 master.update_or_add_element_value("RunJobsInParallel", "true")
 [master.add_job_list_item(job_name) for job_name in job_names]
-master._write_xml(f"{job_path_root}parallel_indexing_list-master.xml")
+master._update_config_xml(f"{job_path_root}parallel_indexing_list-master.xml")
