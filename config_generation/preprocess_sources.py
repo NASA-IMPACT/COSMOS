@@ -30,15 +30,21 @@ def ensure_index_of_root(path):
     indexer._update_config_xml(path)
 
 
-# undo top limitation
-for collection_name in remove_top_limitation_sources:
-    path = create_xml_path(collection_name)
-    remove_top_only_limitation(path)
+# # undo top limitation
+# for collection_name in remove_top_limitation_sources:
+#     path = create_xml_path(collection_name)
+#     remove_top_only_limitation(path)
 
-# ensure root
+# # ensure root
+# for collection_name in turned_on_remaining_webcrawlers:
+#     path = create_xml_path(collection_name)
+#     ensure_index_of_root(path)
+
+# format files...
 for collection_name in turned_on_remaining_webcrawlers:
     path = create_xml_path(collection_name)
-    ensure_index_of_root(path)
+    indexer = XmlEditor(path)
+    indexer._resave_pretty(path)
 
 
 print(len(turned_on_sources))  # 139
