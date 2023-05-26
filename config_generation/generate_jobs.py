@@ -49,7 +49,7 @@ job_names = []
 for index, sublist in enumerate(sublists):
     joblist = XmlEditor(joblist_template_path)
     for collection in sublist:
-        joblist.add_job_list_item(create_job_name(collection))
+        joblist.add_job_list_item(create_job_name(collection).replace(".xml", ""))
 
     joblist._update_config_xml(f"{job_path_root}{create_joblist_name(index)}")
     job_names.append(create_joblist_name(index).replace(".xml", ""))
