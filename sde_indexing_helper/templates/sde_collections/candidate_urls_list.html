@@ -1,119 +1,247 @@
 {% extends "layouts/base.html" %}
 {% load static i18n %}
+{% load humanize %}
 {% block title %}
     {{ collection.name }} Candidate URLs
 {% endblock title %}
 {% block stylesheets %}
     {{ block.super }}
+    <link rel="stylesheet"
+          href="//cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
+    <link href="//cdn.datatables.net/v/bs5/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/sb-1.4.2/sp-2.1.2/datatables.min.css"
+          rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'css/candidate_url_list.css' %}" />
 {% endblock stylesheets %}
 {% block javascripts %}
     {{ block.super }}
-    <script defer src="{% static 'js/candidate_url_list.js' %}"></script>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"
-            integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
-            crossorigin="anonymous"></script>
+    <script>var collection_id = "{{ collection.id }}";</script>
+    <script src="//cdn.datatables.net/v/bs5/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/sb-1.4.2/sp-2.1.2/datatables.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
+    <script src="{% static 'js/candidate_url_list.js' %}"></script>
 {% endblock javascripts %}
 {% block content %}
-    <div class="row" id="top_pattern_bar">
-        {% comment %} <div class="col">
-            <input class="form-check-input" type="checkbox" value="" id="visited_bool" checked>
-            Hide Visited
-            <br>
-            <input class="form-check-input" type="checkbox" value="" id="excluded_bool" checked>
-            Hide Excluded
-            <br>
-            <input class="form-check-input" type="checkbox" value="" id="excluded_bool">
-            Only empty titles
-            <br>
-            <input class="form-check-input" type="checkbox" value="" id="excluded_bool">
-            Only duplicate titles
-        </div> {% endcomment %}
-        <hr>
+    {% csrf_token %}
+    <h3>
+        {{ candidate_urls.count|intcomma }} Candidate URLs for <a href="{% url 'sde_collections:detail' collection.pk %}"><strong>{{ collection.name }}</strong></a>
+        <br>
+        <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small>
+    </h3>
+    <div class="row pull-right">
+        <div class="form-group">
+            <input type="checkbox" id="filter-checkbox">
+            <label for="filter-checkbox">Hide Excluded</label>
+        </div>
     </div>
-    <div class="row">
-        <div class="col">
-            {% for candidate_url in candidate_urls %}
-                <div class="row">
-                    <div class="col-8">
-                        <form>
-                            <p>
-                                {% for i in "x"|rjust:candidate_url.level %}
-                                    &nbsp;&nbsp;
-                                {% endfor %}
-                                <a href="{{ candidate_url.url }}" target="_blank">Visit</a>
-                                {% for part_string, part in candidate_url.splits %}
-                                    <button type="button"
-                                            class="btn btn-sm btn-{% if candidate_url.excluded %}danger disabled{% else %}success{% endif %} url_part_button"
-                                            value="{{ part_string }}">{{ part }}</button>
-                                    {% if not forloop.last %}>{% endif %}
-                                {% endfor %}
-                                | <span>{{ candidate_url.scraped_title }}</span>
-                            </p>
-                        </form>
-                    </div>
-                    <div class="col">
-                        <input class="form-control new-title"
-                               type="text"
-                               value="{{ candidate_url.scraped_title }}">
-                    </div>
+    <table class="table" id="candidate_urls_table">
+        <thead>
+            <tr>
+                <th scope="col" class="text-center col-1">
+                    <strong>URL</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Exclude</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Scraped Title</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>New Title</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Curated?</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Document Type</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>ID</strong>
+                </th>
+            </tr>
+        </thead>
+    </table>
+    <h3>Exclude Patterns</h3>
+    <table class="table" id="exclude_patterns_table">
+        <thead>
+            <tr>
+                <th scope="col" class="text-center col-1">
+                    <strong>Match Pattern</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Match Pattern Type</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Reason</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Affected URLs</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Actions</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>ID</strong>
+                </th>
+            </tr>
+        </thead>
+    </table>
+    <h3>Title Patterns</h3>
+    <table class="table" id="title_patterns_table">
+        <thead>
+            <tr>
+                <th scope="col" class="text-center col-1">
+                    <strong>Match Pattern</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Match Pattern Type</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Title Pattern</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Affected URLs</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Actions</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>ID</strong>
+                </th>
+            </tr>
+        </thead>
+    </table>
+    <h3>Document Type Patterns</h3>
+    <table class="table" id="document_type_patterns_table">
+        <thead>
+            <tr>
+                <th scope="col" class="text-center col-1">
+                    <strong>Match Pattern</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Match Pattern Type</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Document Type</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Affected URLs</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Actions</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>ID</strong>
+                </th>
+            </tr>
+        </thead>
+    </table>
+    <ul class="custom-menu list-group">
+        <li data-action="exclude-pattern" class="list-group-item">Create Exclude Pattern</li>
+        <li data-action="title-pattern" class="list-group-item">Create Title Pattern</li>
+        <li data-action="document-type-pattern" class="list-group-item">Create Document Type Pattern</li>
+    </ul>
+    <div class="modal fade"
+         id="titlePatternModal"
+         data-backdrop="static"
+         data-keyboard="false"
+         tabindex="-1"
+         aria-labelledby="titlePatternModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="titlePatternModalLabel">Title Pattern Form</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
-            {% empty %}
-                <p>No candidate urls found</p>
-            {% endfor %}
+                <form id="title_pattern_form">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="match_pattern_input">Match Pattern*</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="match_pattern_input"
+                                   required
+                                   name="match_pattern">
+                        </div>
+                        <div class="form-group">
+                            <label for="title_pattern_input">Title Pattern*</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="title_pattern_input"
+                                   required
+                                   name="title_pattern">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade"
+         id="documentTypePatternModal"
+         data-backdrop="static"
+         data-keyboard="false"
+         tabindex="-1"
+         aria-labelledby="documentTypePatternModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="documentTypePatternModalLabel">Document Type Pattern Form</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="document_type_pattern_form">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="match_pattern_input">Match Pattern*</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="match_pattern_input"
+                                   required
+                                   name="match_pattern">
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input type="text"
+                                       name="document_type_pattern"
+                                       class="form-control"
+                                       aria-label="Document Type"
+                                       id="doc_type_input_field">
+                                <div class="input-group-append">
+                                    <button class="btn btn-secondary btn-sm dropdown-toggle"
+                                            type="button"
+                                            data-toggle="dropdown"
+                                            aria-haspopup="true"
+                                            aria-expanded="false">Select</button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item document_type_form_select" href="#" value="1">Images</a>
+                                        <a class="dropdown-item document_type_form_select" href="#" value="2">Data</a>
+                                        <a class="dropdown-item document_type_form_select" href="#" value="3">Documentation</a>
+                                        <a class="dropdown-item document_type_form_select" href="#" value="4">Software and Tools</a>
+                                        <a class="dropdown-item document_type_form_select" href="#" value="5">Missions and Instruments</a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% comment %} <label for="document_type_pattern_input">Document Type*</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="document_type_pattern_input"
+                                   required
+                                   name="document_type_pattern"> {% endcomment %}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 {% endblock content %}
-{% block sidebar %}
-    <div class="sidebar"
-         data-color="purple"
-         data-background-color="white"
-         data-image="/static/images/sidebar-1.jpg">
-        <div class="logo">
-            <a rel="noopener noreferrer" href="#" class="simple-text logo-normal">SDE Indexing Helper</a>
-        </div>
-        <div class="sidebar-wrapper">
-            <ul class="nav">
-                {% if request.user.is_authenticated %}
-                    <div class="col">
-                        <h4>
-                            <input type="checkbox" value="" id="excluded_bool">
-                            Hide Excluded
-                        </h4>
-                    </div>
-                    <hr>
-                    <div class="col">
-                        <h4>
-                            <strong>Exclude Patterns</strong>
-                            <button id="add_exclude_pattern" class="btn btn-primary btn-sm">+</button>
-                        </h4>
-                        <form id="exclude_patterns">
-                            {% csrf_token %}
-                            {% for pattern in collection.exclude_patterns.all %}
-                                <div class="row pattern_row">
-                                    <div class="col-8">
-                                        <input class="form-control" value="{{ pattern }}" disabled />
-                                    </div>
-                                    <div class="col">
-                                        <button type="button"
-                                                class="btn btn-danger btn-sm delete_input"
-                                                hx-delete="/api/exclude-patterns/{{ pattern.id }}/"
-                                                hx-confirm="Are you sure you wish to delete this pattern?">x</button>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </form>
-                    </div>
-                    <hr>
-                    <div class="col">
-                        <h4>
-                            <strong>Title Patterns</strong>
-                            <button id="add_exclude_pattern" class="btn btn-sm btn-primary">+</button>
-                        </h4>
-                    </div>
-                {% else %}
-                {% endif %}
-            </ul>
-        </div>
-    </div>
-{% endblock sidebar %}

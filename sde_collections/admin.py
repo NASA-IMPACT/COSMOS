@@ -3,6 +3,7 @@ from django.contrib import admin, messages
 from django.db import models
 
 from .models import CandidateURL, Collection, ExcludePattern
+from .tasks import import_candidate_urls_task
 
 
 @admin.action(description="Import metadata from Sinequa configs")
@@ -37,6 +38,17 @@ def generate_candidate_urls(modeladmin, request, queryset):
         request,
         messages.INFO,
         f"Started generating candidate URLs for: {collection.name}",
+    )
+
+
+@admin.action(description="Import candidate URLs")
+def import_candidate_urls(modeladmin, request, queryset):
+    import_candidate_urls_task.delay(list(queryset.values_list("id", flat=True)))
+    collection_names = ", ".join(queryset.values_list("name", flat=True))
+    messages.add_message(
+        request,
+        messages.INFO,
+        f"Started importing URLs from S3 for: {collection_names}",
     )
 
 
@@ -89,7 +101,14 @@ class CollectionAdmin(admin.ModelAdmin):
         ),
     )
 
-    list_display = ("name", "config_folder", "url", "division", "turned_on")
+    list_display = (
+        "name",
+        "candidate_urls_count",
+        "config_folder",
+        "url",
+        "division",
+        "new_collection",
+    )
     list_filter = (
         "division",
         "turned_on",
@@ -100,10 +119,12 @@ class CollectionAdmin(admin.ModelAdmin):
     search_fields = ("name", "url")
     # list_per_page = 300
     actions = [
-        import_sinequa_metadata,
-        export_sinequa_metadata,
-        generate_candidate_urls,
+        # import_sinequa_metadata,
+        # export_sinequa_metadata,
+        # generate_candidate_urls,
+        import_candidate_urls,
     ]
+    ordering = ("cleaning_order",)
     inlines = [ExcludePatternInline]
 
 

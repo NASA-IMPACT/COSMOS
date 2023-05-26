@@ -7,7 +7,9 @@ from .views import (
     CollectionDetailView,
     CollectionListView,
     CollectionViewSet,
+    DocumentTypePatternViewSet,
     ExcludePatternViewSet,
+    RequiredUrlsDeleteView,
     TitlePatternViewSet,
 )
 
@@ -16,12 +18,18 @@ router.register(r"collections", CollectionViewSet)
 router.register(r"candidate-urls", CandidateURLViewSet)
 router.register(r"exclude-patterns", ExcludePatternViewSet)
 router.register(r"title-patterns", TitlePatternViewSet)
+router.register(r"document-type-patterns", DocumentTypePatternViewSet)
 
 app_name = "sde_collections"
 
 urlpatterns = [
     path("", view=CollectionListView.as_view(), name="list"),
     path("<int:pk>/", view=CollectionDetailView.as_view(), name="detail"),
+    path(
+        "delete-required-url/<int:pk>",
+        view=RequiredUrlsDeleteView.as_view(),
+        name="delete_required_url",
+    ),
     path(
         "<int:pk>/candidate-urls",
         view=CandidateURLsListView.as_view(),
