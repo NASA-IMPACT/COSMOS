@@ -477,6 +477,15 @@ remove_top_limitation_sources = [
     "PDS_PDS_Tool_Registry_Website",
 ]
 
+lis_new_sources = [
+    "algorithm_theoretical_basis_documents",
+    "eos_mission_page",
+    "gcn_circulars",
+    "gcn_missions_instruments_and_facilities",
+    "general_coordinates_network_gcn",
+    "giss_software_tools",
+    "our_changing_planet_the_view_from_space_images",
+]
 
 all_sources = kaylins_new_sources + sprint_2_sources + sprint_3_sources
 remaining_sources = [s for s in all_sources if s["source_name"] not in finished_sources]
