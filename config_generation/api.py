@@ -61,8 +61,8 @@ class Api:
     def sql(self, source: str, collection: str) -> None:
         url = f"{self.base_url}/api/v1/engine.sql"
 
-        collection_name = f"/{source}/{collection}"
-        sql_command = f"select url1, title from * where collection='{collection_name}'"
+        collection_name = f"/{source}/{collection}/"
+        sql_command = f"select url1, title from @@ScienceMissionDirectorate where collection='{collection_name}'"
 
         payload = {
             "sql": sql_command,
