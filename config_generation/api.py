@@ -66,7 +66,7 @@ class Api:
 
         payload = {
             "sql": sql_command,
-            "maxRows": 1000,
+            "maxRows": 1000000,
             "pretty": "true",
         }
         print(payload)
