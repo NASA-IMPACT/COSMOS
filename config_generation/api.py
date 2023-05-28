@@ -14,7 +14,7 @@ server_configs = {
     "test_server": {
         "app_name": "nasa-sba-smd",
         "query_name": "query-smd-primary",
-        "base_url": "https://sciencediscoveryengine.test.nasa.gov",
+        "base_url": "http://10.51.14.135",
     },
 }
 
