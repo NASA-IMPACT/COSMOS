@@ -312,6 +312,7 @@ class CandidateURL(models.Model):
         verbose_name = "Candidate URL"
         verbose_name_plural = "Candidate URLs"
         ordering = ["url"]
+        unique_together = ("collection", "url")
 
     def splits(self):
         """Split the path into multiple collections."""
