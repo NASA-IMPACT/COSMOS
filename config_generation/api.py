@@ -2,18 +2,34 @@ from typing import Any
 
 import requests
 
-from config import token
+# from config import token
+from config import tokens
+
+server_configs = {
+    "ren_server": {
+        "app_name": "nasa-sba-smd",
+        "query_name": "query-smd-primary",
+        "base_url": "http://sde-renaissance.nasa-impact.net",
+    },
+    "test_server": {
+        "app_name": "nasa-sba-smd",
+        "query_name": "query-smd-primary",
+        "base_url": "https://sciencediscoveryengine.test.nasa.gov",
+    },
+}
 
 
 class Api:
-    def __init__(self) -> None:
-        self.headers: dict[str, str] = {"Authorization": f"Bearer {token}"}
-        self.app_name: str = "nasa-sba-smd"
-        self.query_name: str = "query-smd-primary"
-        self.base_url: str = "http://sde-renaissance.nasa-impact.net"
+    def __init__(self, server_name) -> None:
+        self.headers: dict[str, str] = {
+            "Authorization": f"Bearer {tokens[server_name]}"
+        }
+        self.app_name: str = server_configs[server_name]["app_name"]
+        self.query_name: str = server_configs[server_name]["query_name"]
+        self.base_url: str = server_configs[server_name]["base_url"]
 
     def process_response(self, url: str, payload: dict[str, Any]) -> None:
-        response = requests.post(url, headers=self.headers, json=payload)
+        response = requests.post(url, headers=self.headers, json=payload, verify=False)
 
         if response.status_code == 200:
             print("Data retrieved successfully!")
@@ -38,6 +54,22 @@ class Api:
             "pretty": "true",
         }
 
+        response = self.process_response(url, payload)
+
+        return response
+
+    def sql(self, source: str, collection: str) -> None:
+        url = f"{self.base_url}/api/v1/engine.sql"
+
+        collection_name = f"/{source}/{collection}"
+        sql_command = f"select url1, title from * where collection='{collection_name}'"
+
+        payload = {
+            "sql": sql_command,
+            "maxRows": 1000000,
+            "pretty": "true",
+        }
+        print(payload)
         response = self.process_response(url, payload)
 
         return response

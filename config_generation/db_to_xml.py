@@ -11,22 +11,30 @@ class XmlEditor:
     An ouput path is given and the etree is saved to it.
     """
 
-    def __init__(self, xml_path):
+    def __init__(self, xml_path: str):
         self.input_path = xml_path
-        self.xml_tree = self.get_tree(self.input_path)
+        self.xml_tree = self._get_tree(self.input_path)
 
-    def get_tree(self, xml_path) -> ET.ElementTree:
+    def _get_tree(self, xml_path) -> ET.ElementTree:
         """takes the path of an xml file and opens it as an ElementTree object"""
         return ET.parse(xml_path)
 
-    def _add_declaration(self, output_path):
+    def get_tag_value(self, tag_name: str) -> list:
+        """
+        tag_name can be either the top level tag
+        or you can get a child by saying 'parent/child'
+        """
+        return [element.text for element in self.xml_tree.findall(tag_name)]
+
+    def _add_declaration(self, output_path: str):
+        """opens an existing file and adds a declaration"""
         declaration = """<?xml version="1.0" encoding="utf-8"?>"""
         with open(output_path, "r+") as f:
             content = f.read()
             f.seek(0, 0)
             f.write(declaration.rstrip("\r\n") + "\n" + content)
 
-    def _update_config_xml(self, output_path):
+    def _update_config_xml(self, output_path: str):
         self.xml_tree.write(
             output_path,
             method="html",
@@ -35,21 +43,32 @@ class XmlEditor:
         )
 
         self._add_declaration(output_path)
+        self._resave_pretty(output_path)
 
-    def _write_xml(self, output_path: str) -> None:
-        """
-        takes the self.xml_tree ElementTree object and writes it to an output path
+    def _resave_pretty(self, output_path):
+        """opens and resaves a file to reformat it"""
+        import xmltodict
 
-        although this function can be used on it's own to write a one-off file, most
-        config files are actually called default.xml and nested inside a folder,
-        therefore create_config_folder_and_default is the usual way to make files
-        """
+        with open(output_path) as f:
+            xml_data = f.read()
+        xml = xmltodict.parse(xml_data)
+        with open(output_path, "w") as f:
+            f.write(xmltodict.unparse(xml, pretty=True))
 
-        xml_root = self.xml_tree.getroot()
-        pretty_xml = self.prettify(xml_root)
+    # def _write_xml(self, output_path: str) -> None:
+    #     """
+    #     takes the self.xml_tree ElementTree object and writes it to an output path
 
-        with open(output_path, "w", encoding="utf-8") as output_file:
-            output_file.write(pretty_xml)
+    #     although this function can be used on it's own to write a one-off file, most
+    #     config files are actually called default.xml and nested inside a folder,
+    #     therefore create_config_folder_and_default is the usual way to make files
+    #     """
+
+    #     xml_root = self.xml_tree.getroot()
+    #     pretty_xml = self.prettify(xml_root)
+
+    #     with open(output_path, "w", encoding="utf-8") as output_file:
+    #         output_file.write(pretty_xml)
 
     def create_folder_if_needed(self, folder_path: str):
         """
@@ -80,25 +99,25 @@ class XmlEditor:
         # self._write_xml(xml_path)
         self._update_config_xml(xml_path)
 
-    def expand_empty_tags(self, xml_string: str) -> str:
-        """
-        etree replaces <></> tags with </> essentially converting empty tag pairs
-        to self closing tags. this is not sinequa standard. so this function undoes this behavior
-        """
-        return re.sub(r"<([^/][^<>]*[^/])/>", r"<\1></\1>", xml_string)
+    # def expand_empty_tags(self, xml_string: str) -> str:
+    #     """
+    #     etree replaces <></> tags with </> essentially converting empty tag pairs
+    #     to self closing tags. this is not sinequa standard. so this function undoes this behavior
+    #     """
+    #     return re.sub(r"<([^/][^<>]*[^/])/>", r"<\1></\1>", xml_string)
 
-    def prettify(self, element: ET.Element) -> str:
-        """
-        By default, the output xml will have extra new lines, self-closing tags
-        and weird indents. This function makes all that sinequa standard.
-        """
+    # def prettify(self, element: ET.Element) -> str:
+    #     """
+    #     By default, the output xml will have extra new lines, self-closing tags
+    #     and weird indents. This function makes all that sinequa standard.
+    #     """
 
-        rough_string = ET.tostring(element, "unicode")
-        reparsed = minidom.parseString(rough_string)
-        pretty_xml = reparsed.toprettyxml(indent="    ")
-        pretty_xml = self.expand_empty_tags(pretty_xml)
+    #     rough_string = ET.tostring(element, "unicode")
+    #     reparsed = minidom.parseString(rough_string)
+    #     pretty_xml = reparsed.toprettyxml(indent="    ")
+    #     pretty_xml = self.expand_empty_tags(pretty_xml)
 
-        return "\n".join([line for line in pretty_xml.split("\n") if line.strip()])
+    #     return "\n".join([line for line in pretty_xml.split("\n") if line.strip()])
 
     def update_or_add_element_value(
         self,
@@ -202,6 +221,18 @@ class XmlEditor:
             selection=f'doc.url1 match "{title_criteria}"',
         )
 
+    def add_job_list_item(self, job_name):
+        """
+        this is specifically for editing joblist templates by adding a new collection to a joblist
+        config_generation/xmls/joblist_template.xml
+        """
+        xml_root = self.xml_tree.getroot()
+
+        mapping = ET.Element("JobListItem")
+        ET.SubElement(mapping, "Name").text = job_name
+        ET.SubElement(mapping, "StopOnError").text = "false"
+        xml_root.append(mapping)
+
     def add_id(self) -> None:
         self._generic_mapping(
             name="id",
@@ -237,4 +268,18 @@ class XmlEditor:
         xml_root = self.xml_tree.getroot()
         ET.SubElement(
             xml_root, "UrlIndexExcluded"
+        ).text = url_pattern  # this adds an indexing rule (doesn't overwrite)
+
+    def add_url_include(self, url_pattern: str) -> None:
+        """
+        includes a url or url pattern, such as
+        - https://webb.nasa.gov/content/forEducators/realworld*
+        - https://webb.nasa.gov/content/features/index.html
+        I'm not sure if exclusion rules override includes or if includes override
+        exclusion rules.
+        """
+
+        xml_root = self.xml_tree.getroot()
+        ET.SubElement(
+            xml_root, "UrlIndexIncluded"
         ).text = url_pattern  # this adds an indexing rule (doesn't overwrite)
