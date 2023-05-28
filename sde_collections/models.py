@@ -238,6 +238,15 @@ class Collection(models.Model):
     def candidate_urls_count(self):
         return self.candidate_urls.count()
 
+    def apply_all_patterns(self):
+        """Apply all the patterns."""
+        for pattern in self.excludepattern.all():
+            pattern.apply()
+        for pattern in self.titlepattern.all():
+            pattern.apply()
+        for pattern in self.documenttypepattern.all():
+            pattern.apply()
+
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
         if not self.config_folder:
