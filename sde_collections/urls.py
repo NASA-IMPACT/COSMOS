@@ -27,7 +27,7 @@ urlpatterns = [
     path("", view=CollectionListView.as_view(), name="list"),
     path("<int:pk>/", view=CollectionDetailView.as_view(), name="detail"),
     path(
-        "api/candidate-urls/bulk-create/",
+        "api/candidate-urls/<str:config_folder>/bulk-create/",
         CandidateURLBulkCreateView.as_view(),
         name="candidate-urls-bulk-create",
     ),
