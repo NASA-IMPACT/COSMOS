@@ -8,7 +8,7 @@ api = Api("test_server")
 
 for collection in turned_on_remaining_webcrawlers:
     print(collection)
-    BASE_URL = "https://localhost:8000"
+    BASE_URL = "https://sde-indexing-helper.nasa-impact.net"
     POST_URL = f"{BASE_URL}/api/candidate-urls/{collection}/bulk-create/"
 
     response = api.sql("SMD", collection)

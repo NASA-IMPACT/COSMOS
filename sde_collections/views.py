@@ -183,11 +183,12 @@ class CandidateURLBulkCreateView(generics.ListCreateAPIView):
     serializer_class = CandidateURLBulkCreateSerializer
 
     def perform_create(self, serializer, collection_id=None):
-        serializer.validated_data[0]["collection_id"] = collection_id
+        for validated_data in serializer.validated_data:
+            validated_data["collection_id"] = collection_id
         super().perform_create(serializer)
 
     def create(self, request, *args, **kwargs):
-        config_folder = kwargs.pop("config_folder")
+        config_folder = kwargs.get("config_folder")
         collection = Collection.objects.get(config_folder=config_folder)
         collection.candidate_urls.all().delete()
 
