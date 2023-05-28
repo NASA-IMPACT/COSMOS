@@ -32,10 +32,8 @@ class Api:
         response = requests.post(url, headers=self.headers, json=payload, verify=False)
 
         if response.status_code == 200:
-            print("Data retrieved successfully!")
             meaningful_response = response.json()
         else:
-            print(f"Request failed with status code: {response.status_code}")
             meaningful_response = response.text
 
         return meaningful_response
@@ -61,15 +59,14 @@ class Api:
     def sql(self, source: str, collection: str) -> None:
         url = f"{self.base_url}/api/v1/engine.sql"
 
-        collection_name = f"/{source}/{collection}"
-        sql_command = f"select url1, title from * where collection='{collection_name}'"
+        collection_name = f"/{source}/{collection}/"
+        sql_command = f"select url1,title from @@ScienceMissionDirectorate where collection='{collection_name}'"
 
         payload = {
             "sql": sql_command,
             "maxRows": 1000000,
             "pretty": "true",
         }
-        print(payload)
         response = self.process_response(url, payload)
 
         return response
@@ -99,5 +96,4 @@ if __name__ == "__main__":
     from sources_to_scrape import remaining_sources
 
     for source in remaining_sources[5:10]:
-        print(source["source_name"])
         api.run_indexer(source["source_name"])
