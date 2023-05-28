@@ -54,7 +54,6 @@ class CandidateURLBulkCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CandidateURL
         fields = (
-            "collection",
             "url",
             "scraped_title",
         )
