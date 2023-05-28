@@ -53,7 +53,7 @@ for collection in turned_on_remaining_webcrawlers:
 
     # Zip the JSON file
     zip_file_path = (
-        "{TEMP_FOLDER_NAME}/{collection}.zip"  # Provide the desired zip file path
+        f"{TEMP_FOLDER_NAME}/{collection}.zip"  # Provide the desired zip file path
     )
     with zipfile.ZipFile(zip_file_path, "w") as zip_file:
         zip_file.write(file_path, os.path.basename(file_path))
