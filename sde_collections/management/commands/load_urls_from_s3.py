@@ -3,7 +3,10 @@ from urllib.parse import urlparse
 
 from django.core.management.base import BaseCommand
 
-from sde_collections.tasks import import_candidate_urls_task
+from sde_collections.tasks import (
+    import_all_candidate_urls_task,
+    import_candidate_urls_task,
+)
 
 
 class Command(BaseCommand):
@@ -17,7 +20,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         config_folders = options["config_folders"]
-        import_candidate_urls_task(config_folder_names=config_folders)
+        if config_folders:
+            import_candidate_urls_task(config_folder_names=config_folders)
+        else:
+            import_all_candidate_urls_task()
 
         self.stdout.write(
             self.style.SUCCESS('Successfully loaded data from "%s"' % config_folders)
