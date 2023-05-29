@@ -56,15 +56,19 @@ class Api:
 
         return response
 
-    def sql(self, source: str, collection: str) -> None:
+    def sql(self, source: str, collection: str = "", fetch_all: bool = False) -> None:
         url = f"{self.base_url}/api/v1/engine.sql"
 
         collection_name = f"/{source}/{collection}/"
-        sql_command = f"select url1,title from @@ScienceMissionDirectorate where collection='{collection_name}'"
+        sql_command_all = "select url1,title from @@ScienceMissionDirectorate"
+        if fetch_all:
+            sql_command = sql_command_all
+        else:
+            sql_command = f"{sql_command_all} where collection='{collection_name}'"
 
         payload = {
             "sql": sql_command,
-            "maxRows": 1000000,
+            "maxRows": 10000000,  # ten million
             "pretty": "true",
         }
         response = self.process_response(url, payload)
