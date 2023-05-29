@@ -10,7 +10,7 @@ class Command(BaseCommand):
     help = "Load scraped URLs into the database"
 
     def add_arguments(self, parser):
-        parser.add_argument("config_folders", nargs="+", type=str)
+        parser.add_argument("config_folders", nargs="*", type=str, default=[])
 
     def parse_jsonl(self, items):
         return [urlparse(json.loads(item)["url"]).path.split("/")[1:] for item in items]
