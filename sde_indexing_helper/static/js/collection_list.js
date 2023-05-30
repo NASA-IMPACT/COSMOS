@@ -1,8 +1,7 @@
 let table = $('#collection_table').DataTable({
-    paging: false,
-    dom: 'iftip',
-    order: [[0, 'asc']],
-    columnDefs: [
+    "order": [[0, 'asc']],
+    "stateSave": true,
+    "columnDefs": [
         {
             target: -1,
             visible: false,
