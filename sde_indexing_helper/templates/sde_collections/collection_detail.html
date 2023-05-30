@@ -39,6 +39,12 @@
                 <td>{{ collection.notes }}</td>
             </tr>
             <tr>
+                <th>Sinequa Configuration</th>
+                <td>
+                    <a href="{{ collection.sinequa_configuration }}" target="_blank">{{ collection.sinequa_configuration }}</a>
+                </td>
+            </tr>
+            <tr>
                 <th>Candidate URLs</th>
                 <td>
                     <a href="{% url 'sde_collections:candidate_urls' collection.id %}">View</a>
