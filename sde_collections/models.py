@@ -238,6 +238,10 @@ class Collection(models.Model):
     def candidate_urls_count(self):
         return self.candidate_urls.count()
 
+    @property
+    def sinequa_configuration(self):
+        return f"https://github.com/NASA-IMPACT/sde-backend/blob/master/sources/SMD/{self.config_folder}/default.xml"
+
     def apply_all_patterns(self):
         """Apply all the patterns."""
         for pattern in self.excludepattern.all():
