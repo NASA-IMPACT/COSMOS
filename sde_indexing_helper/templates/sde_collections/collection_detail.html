@@ -3,70 +3,69 @@
     {{ collection.name }}
 {% endblock title %}
 {% block content %}
-    <div class="container">
-        <h1>{{ collection.name }}</h1>
-        <table class="table table-striped">
-            <tbody>
-                <tr>
-                    <th>URL</th>
-                    <td>
-                        <a target="_blank"
-                           href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{ collection.url }}</a>
-                    </td>
-                </tr>
-                <tr>
-                    <th>Config Folder</th>
-                    <td>{{ collection.config_folder }}</td>
-                </tr>
-                <tr>
-                    <th>Division</th>
-                    <td>{{ collection.get_division_display }}</td>
-                </tr>
-                <tr>
-                    <th>Update Frequency</th>
-                    <td>{{ collection.get_update_frequency_display }}</td>
-                </tr>
-                <tr>
-                    <th>Document Type</th>
-                    <td>{{ collection.get_document_type_display }}</td>
-                </tr>
-                <tr>
-                    <th>Tree Root</th>
-                    <td>{{ collection.tree_root }}</td>
-                </tr>
-                <tr>
-                    <th>Notes</th>
-                    <td>{{ collection.notes }}</td>
-                </tr>
-                <tr>
-                    <th>Candidate URLs</th>
-                    <td>
-                        <a href="{% url 'sde_collections:candidate_urls' collection.id %}">View</a>
-                    </td>
-                </tr>
-                <tr>
-                    <th>Required URLs</th>
-                    <td>
-                        {% for required_url in required_urls %}
-                            <form action="{% url 'sde_collections:delete_required_url' required_url.pk %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-danger delete_required_url pull-left" data-id={{ required_url.pk }}>
-                                    <i class="material-icons">delete</i>
-                                </button>
-                            </form>
-                            <a href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
-                        {% empty %}
-                            <p>No required URLs yet</p>
-                        {% endfor %}
-                        <form method="post"
-                              action="{% url 'sde_collections:detail' collection.pk %}">
+    <br>
+    <h1>{{ collection.name }}</h1>
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <th>URL</th>
+                <td>
+                    <a target="_blank"
+                       href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{ collection.url }}</a>
+                </td>
+            </tr>
+            <tr>
+                <th>Config Folder</th>
+                <td>{{ collection.config_folder }}</td>
+            </tr>
+            <tr>
+                <th>Division</th>
+                <td>{{ collection.get_division_display }}</td>
+            </tr>
+            <tr>
+                <th>Update Frequency</th>
+                <td>{{ collection.get_update_frequency_display }}</td>
+            </tr>
+            <tr>
+                <th>Document Type</th>
+                <td>{{ collection.get_document_type_display }}</td>
+            </tr>
+            <tr>
+                <th>Tree Root</th>
+                <td>{{ collection.tree_root }}</td>
+            </tr>
+            <tr>
+                <th>Notes</th>
+                <td>{{ collection.notes }}</td>
+            </tr>
+            <tr>
+                <th>Candidate URLs</th>
+                <td>
+                    <a href="{% url 'sde_collections:candidate_urls' collection.id %}">View</a>
+                </td>
+            </tr>
+            <tr>
+                <th>Required URLs</th>
+                <td>
+                    {% for required_url in required_urls %}
+                        <form action="{% url 'sde_collections:delete_required_url' required_url.pk %}">
                             {% csrf_token %}
-                            {{ form.url }}
-                            <button type="submit" class="btn btn-sm btn-primary">Add URL</button>
+                            <button type="submit" class="btn btn-sm btn-danger delete_required_url pull-left" data-id={{ required_url.pk }}>
+                                <i class="material-icons">delete</i>
+                            </button>
                         </form>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+                        <a href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
+                    {% empty %}
+                        <p>No required URLs yet</p>
+                    {% endfor %}
+                    <form method="post"
+                          action="{% url 'sde_collections:detail' collection.pk %}">
+                        {% csrf_token %}
+                        {{ form.url }}
+                        <button type="submit" class="btn btn-sm btn-primary">Add URL</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 {% endblock content %}
