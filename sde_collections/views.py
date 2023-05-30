@@ -7,7 +7,8 @@ from django.utils import timezone
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
-from rest_framework import viewsets
+from rest_framework import generics, status, viewsets
+from rest_framework.response import Response
 
 from .forms import RequiredUrlForm
 from .models import (
@@ -19,6 +20,7 @@ from .models import (
     TitlePattern,
 )
 from .serializers import (
+    CandidateURLBulkCreateSerializer,
     CandidateURLSerializer,
     CollectionSerializer,
     DocumentTypePatternSerializer,
@@ -174,6 +176,29 @@ class CandidateURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             if is_excluded:
                 queryset = self._filter_by_is_excluded(queryset, is_excluded)
         return queryset.order_by("url")
+
+
+class CandidateURLBulkCreateView(generics.ListCreateAPIView):
+    queryset = CandidateURL.objects.all()
+    serializer_class = CandidateURLBulkCreateSerializer
+
+    def perform_create(self, serializer, collection_id=None):
+        for validated_data in serializer.validated_data:
+            validated_data["collection_id"] = collection_id
+        super().perform_create(serializer)
+
+    def create(self, request, *args, **kwargs):
+        config_folder = kwargs.get("config_folder")
+        collection = Collection.objects.get(config_folder=config_folder)
+        collection.candidate_urls.all().delete()
+
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer, collection_id=collection.pk)
+
+        collection.apply_all_patterns()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class ExcludePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):

@@ -14,7 +14,7 @@ server_configs = {
     "test_server": {
         "app_name": "nasa-sba-smd",
         "query_name": "query-smd-primary",
-        "base_url": "https://sciencediscoveryengine.test.nasa.gov",
+        "base_url": "http://10.51.14.135",
     },
 }
 
@@ -32,10 +32,8 @@ class Api:
         response = requests.post(url, headers=self.headers, json=payload, verify=False)
 
         if response.status_code == 200:
-            print("Data retrieved successfully!")
             meaningful_response = response.json()
         else:
-            print(f"Request failed with status code: {response.status_code}")
             meaningful_response = response.text
 
         return meaningful_response
@@ -58,18 +56,21 @@ class Api:
 
         return response
 
-    def sql(self, source: str, collection: str) -> None:
+    def sql(self, source: str, collection: str = "", fetch_all: bool = False) -> None:
         url = f"{self.base_url}/api/v1/engine.sql"
 
         collection_name = f"/{source}/{collection}/"
-        sql_command = f"select url1, title from @@ScienceMissionDirectorate where collection='{collection_name}'"
+        sql_command_all = "select url1,title from @@ScienceMissionDirectorate"
+        if fetch_all:
+            sql_command = sql_command_all
+        else:
+            sql_command = f"{sql_command_all} where collection='{collection_name}'"
 
         payload = {
             "sql": sql_command,
-            "maxRows": 1000000,
+            "maxRows": 10000000,  # ten million
             "pretty": "true",
         }
-        print(payload)
         response = self.process_response(url, payload)
 
         return response
@@ -99,5 +100,4 @@ if __name__ == "__main__":
     from sources_to_scrape import remaining_sources
 
     for source in remaining_sources[5:10]:
-        print(source["source_name"])
         api.run_indexer(source["source_name"])

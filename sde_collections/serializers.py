@@ -50,6 +50,15 @@ class CandidateURLSerializer(serializers.ModelSerializer):
         )
 
 
+class CandidateURLBulkCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CandidateURL
+        fields = (
+            "url",
+            "scraped_title",
+        )
+
+
 class BasePatternSerializer(serializers.ModelSerializer):
     match_pattern_type_display = serializers.CharField(
         source="get_match_pattern_type_display", read_only=True

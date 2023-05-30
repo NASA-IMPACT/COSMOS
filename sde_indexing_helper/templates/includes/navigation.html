@@ -12,6 +12,11 @@
       <span class="navbar-toggler-icon icon-bar"></span>
       <span class="navbar-toggler-icon icon-bar"></span>
     </button>
+    <div class="logo">
+      <a rel="noopener noreferrer"
+         href="{% url 'sde_collections:list' %}"
+         class="simple-text logo-normal">SDE Indexing Helper</a>
+    </div>
     <div class="collapse navbar-collapse justify-content-end">
       {% if request.user.is_authenticated %}
         <ul class="navbar-nav">
