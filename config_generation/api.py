@@ -60,7 +60,7 @@ class Api:
         url = f"{self.base_url}/api/v1/engine.sql"
 
         collection_name = f"/{source}/{collection}/"
-        sql_command_all = "select url1,title from @@ScienceMissionDirectorate"
+        sql_command_all = "select url1,title,collection from @@ScienceMissionDirectorate"
         if fetch_all:
             sql_command = sql_command_all
         else:
