@@ -5,10 +5,12 @@ import zipfile
 import boto3
 import environ
 from api import Api
-from generate_collection_list import turned_on_remaining_webcrawlers
 
 # Set the project base directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+COLLECTIONS_TO_UPLOAD = [
+    # list of collections to upload, eg: "DataPathFinder"
+]
 
 env = environ.Env(
     # set casting, default value
@@ -18,14 +20,10 @@ env = environ.Env(
 # Take environment variables from .env file
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
-
 api = Api("test_server")
 
-for collection in turned_on_remaining_webcrawlers:
-    print(collection)
-    BASE_URL = "https://sde-indexing-helper.nasa-impact.net"
-    POST_URL = f"{BASE_URL}/api/candidate-urls/{collection}/bulk-create/"
-
+for collection in COLLECTIONS_TO_UPLOAD:
+    print(f"Running SQL query for collection {collection}...")
     response = api.sql("SMD", collection)
 
     # TODO: save response to a csv with f'{collection}.xml' as the name
@@ -44,6 +42,7 @@ for collection in turned_on_remaining_webcrawlers:
     os.makedirs(f"{TEMP_FOLDER_NAME}/{collection}", exist_ok=True)
 
     # Create JSON file
+    print("Creating JSON dump...")
     json_data = json.dumps(bulk_data)
     file_path = (
         f"{TEMP_FOLDER_NAME}/{collection}/urls.json"  # Provide the desired file path
@@ -52,6 +51,7 @@ for collection in turned_on_remaining_webcrawlers:
         file.write(json_data)
 
     # Zip the JSON file
+    print("Creating zip file...")
     zip_file_path = (
         f"{TEMP_FOLDER_NAME}/{collection}.zip"  # Provide the desired zip file path
     )
@@ -67,8 +67,11 @@ for collection in turned_on_remaining_webcrawlers:
         aws_access_key_id=env("DJANGO_AWS_ACCESS_KEY_ID"),
         aws_secret_access_key=env("DJANGO_AWS_SECRET_ACCESS_KEY"),
     )
+    print(f"Uploading to S3 bucket at {s3_key}...")
     s3_client.upload_file(zip_file_path, s3_bucket_name, s3_key)
 
     # Delete the original JSON and zip file
+    print("Deleting json file and zip file...")
     os.remove(file_path)
     os.remove(zip_file_path)
+    print("Success!\n")
