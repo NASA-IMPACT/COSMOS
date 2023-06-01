@@ -45,6 +45,12 @@
                 </td>
             </tr>
             <tr>
+                <th>GitHub Issue Link</th>
+                <td>
+                    <a href="{{ collection.github_issue_link }}" target="_blank">{{ collection.github_issue_link }}</a>
+                </td>
+            </tr>
+            <tr>
                 <th>Candidate URLs</th>
                 <td>
                     <a href="{% url 'sde_collections:candidate_urls' collection.id %}">View</a>
