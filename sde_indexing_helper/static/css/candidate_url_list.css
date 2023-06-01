@@ -54,3 +54,11 @@
     /* padding-top: 10px;
     padding-bottom: 10px; */
 }
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: .5em;
+}
+
+.paginate_input {
+    width: 15%;
+}
