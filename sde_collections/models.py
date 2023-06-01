@@ -100,6 +100,7 @@ class Collection(models.Model):
         "Cleaning Assigned To", max_length=128, default="", blank=True
     )
 
+    github_issue_number = models.IntegerField("Issue Number in Github", default=0)
     notes = models.TextField("Notes", blank=True, default="")
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     new_collection = models.BooleanField(default=False)
@@ -241,6 +242,10 @@ class Collection(models.Model):
     @property
     def sinequa_configuration(self):
         return f"https://github.com/NASA-IMPACT/sde-backend/blob/master/sources/SMD/{self.config_folder}/default.xml"
+
+    @property
+    def github_issue_link(self):
+        return f"https://github.com/NASA-IMPACT/sde-project/issues/{self.github_issue_number}"
 
     def apply_all_patterns(self):
         """Apply all the patterns."""
