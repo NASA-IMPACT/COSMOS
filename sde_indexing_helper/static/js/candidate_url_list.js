@@ -21,6 +21,7 @@ function initializeDataTable() {
         "scrollY": true,
         "serverSide": true,
         "stateSave": true,
+        "pagingType": "input",
         "ajax": {
             "url": `/api/candidate-urls/?format=datatables&collection_id=${collection_id}`,
             "data": function (d) {
