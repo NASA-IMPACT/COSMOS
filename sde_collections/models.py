@@ -54,6 +54,7 @@ class Collection(models.Model):
         NEEDS_SCRAPING = 1, "Needs Scraping"
         READY_TO_CURATE = 2, "Ready to Curate"
         BEING_CURATED = 3, "Being Curated"
+        DELETE_COMBINE_COLLECTION = 7, "Delete/Combine Collection"
         NEEDS_RESCRAPING = 4, "Needs Rescraping"
         CURATED = 5, "Curated"
         IN_PROD = 6, "In Production"
@@ -129,6 +130,7 @@ class Collection(models.Model):
             4: "btn-info",
             5: "btn-success",
             6: "btn-primary",
+            7: "btn-info",
         }
         return color_choices[self.curation_status]
 
