@@ -59,13 +59,14 @@
                              url>
                             <button class="btn {{ collection.curation_status_button_color }} btn-sm dropdown-toggle"
                                     type="button"
-                                    id="dropdownMenuButton"
+                                    id="curation-status-button-{{ collection.id }}"
                                     data-toggle="dropdown"
                                     aria-haspopup="true"
                                     aria-expanded="false">{{ collection.get_curation_status_display }}</button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <div class="dropdown-menu"
+                                 aria-labelledby="curation-status-button-{{ collection.id }}">
                                 {% for choice in curation_status_choices %}
-                                    <a class="dropdown-item curation_status_select" href="#" value="{{ choice }}" data-collection-id={{ collection.id }}>{{ choice.label }}</a>
+                                    <a class="dropdown-item curation_status_select" value="{{ choice }}" data-collection-id={{ collection.id }}>{{ choice.label }}</a>
                                 {% endfor %}
                             </div>
                         </div>
@@ -78,13 +79,13 @@
                              url>
                             <button class="btn {% if collection.curated_by %} btn-success {% else %} btn-dark {% endif %} btn-sm dropdown-toggle"
                                     type="button"
-                                    id="dropdownMenuButton"
+                                    id="curator-button-{{ collection.id }}"
                                     data-toggle="dropdown"
                                     aria-haspopup="true"
                                     aria-expanded="false">{{ collection.curated_by }}</button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <div class="dropdown-menu" aria-labelledby="curator-button-{{ collection.id }}">
                                 {% for curator in curators %}
-                                    <a class="dropdown-item curator_select" href="#" value="{{ curator.pk }}" data-collection-id={{ collection.id }}>{{ curator.username }}</a>
+                                    <a class="dropdown-item curator_select" value="{{ curator.pk }}" data-collection-id={{ collection.id }}>{{ curator.username }}</a>
                                 {% endfor %}
                             </div>
                         </div>
