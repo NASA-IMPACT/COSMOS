@@ -54,9 +54,10 @@ class Collection(models.Model):
         NEEDS_SCRAPING = 1, "Needs Scraping"
         READY_TO_CURATE = 2, "Ready to Curate"
         BEING_CURATED = 3, "Being Curated"
-        NEEDS_RESCRAPING = 4, "Needs Rescraping"
-        CURATED = 5, "Curated"
-        IN_PROD = 6, "In Production"
+        DELETE_COMBINE_COLLECTION = 4, "Delete/Combine Collection"
+        NEEDS_RESCRAPING = 5, "Needs Rescraping"
+        CURATED = 6, "Curated"
+        IN_PROD = 7, "In Production"
 
     name = models.CharField("Name", max_length=1024)
     config_folder = models.CharField("Config Folder", max_length=2048, unique=True)
@@ -127,8 +128,9 @@ class Collection(models.Model):
             2: "btn-danger",
             3: "btn-warning",
             4: "btn-info",
-            5: "btn-success",
-            6: "btn-primary",
+            5: "btn-info",
+            6: "btn-success",
+            7: "btn-primary",
         }
         return color_choices[self.curation_status]
 
