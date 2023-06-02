@@ -1,5 +1,6 @@
 let table = $('#collection_table').DataTable({
     "order": [[0, 'asc']],
+    "paging": false,
     "stateSave": true,
     "columnDefs": [
         {
