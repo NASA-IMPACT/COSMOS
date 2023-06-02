@@ -144,6 +144,10 @@ class Collection(models.Model):
                 exclude_list.append(f"*{exclude_pattern.match_pattern}*")
         return exclude_list
 
+    def _process_title_list(self):
+        """Process the title list"""
+        return []
+
     def generate_new_config(self):
         """Generates a new config based on the new collection template."""
         config_folder = self.config_folder
@@ -194,6 +198,24 @@ class Collection(models.Model):
 
         editor.create_config_folder_and_default(SINEQUA_SOURCES_FOLDER, config_folder)
         editor.prettify_config(SINEQUA_SOURCES_FOLDER, config_folder)
+
+    def update_existing_config(self):
+        SINEQUA_SOURCES_FOLDER = (
+            settings.BASE_DIR / "sinequa_configs" / "sources" / "SMD"
+        )
+        path = f"{SINEQUA_SOURCES_FOLDER}/{self.config_folder}/default.xml"
+        config = XmlEditor(path)
+
+        # TODO: an argument could be made for re-writing all relevant sinequa config
+        # fields here, however, the complications are worth thinking about before blindly
+        # doing it, so in this v0.1 we will only do tree_root and rules
+
+        URL_EXCLUDES = self._process_exclude_list()
+        TITLE_RULES = self._process_title_list()
+        config.update_or_add_element_value("TreeRoot", self.tree_root)
+        [config.add_url_exclude(url) for url in URL_EXCLUDES]
+        [config.add_title_mapping(**title_rule) for title_rule in TITLE_RULES]
+        config._update_config_xml(path)
 
     def _compute_config_folder_name(self):
         """
