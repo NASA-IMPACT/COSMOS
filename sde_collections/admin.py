@@ -5,7 +5,7 @@ from django.contrib import admin, messages
 from django.db import models
 from django.http import HttpResponse
 
-from .models import CandidateURL, Collection, ExcludePattern
+from .models import CandidateURL, Collection, ExcludePattern, TitlePattern
 from .tasks import import_candidate_urls_task
 
 
@@ -166,4 +166,12 @@ class CandidateURLAdmin(admin.ModelAdmin):
     list_filter = ("collection",)
 
 
+class TitlePatternAdmin(admin.ModelAdmin):
+    """Admin View for TitlePattern"""
+
+    list_display = ("match_pattern", "title_pattern", "collection")
+    list_filter = ("collection",)
+
+
 admin.site.register(CandidateURL, CandidateURLAdmin)
+admin.site.register(TitlePattern, TitlePatternAdmin)
