@@ -410,7 +410,7 @@ $("body").on("contextmenu", ".candidate_url", function (event) {
         // In the right position (the mouse)
         css({
             top: event.pageY + "px",
-            left: event.pageX - 250 + "px"
+            left: event.pageX - 80 + "px"
         });
 });
 
