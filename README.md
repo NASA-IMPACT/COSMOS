@@ -118,6 +118,3 @@ See detailed [cookiecutter-django Docker documentation](http://cookiecutter-djan
 ### How to import candidate URLs from the test server
 
 Documented [here](https://github.com/NASA-IMPACT/sde-indexing-helper/wiki/How-to-bring-in-Candidate-URLs-from-the-test-server).
-
-### RAJ
-##
