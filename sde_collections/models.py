@@ -451,12 +451,12 @@ class TitlePattern(BaseMatchPattern):
         matched_urls = self.matched_urls()
         for url in matched_urls.all():
             self.candidate_urls.add(url)
-            url.generated_url = self.title_pattern
+            url.generated_title = self.title_pattern
             url.save()
 
     def unapply(self):
         for url in self.candidate_urls.all():
-            url.generated_url = ""
+            url.generated_title = ""
             url.save()
 
     class Meta:
