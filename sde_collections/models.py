@@ -204,7 +204,7 @@ class Collection(models.Model):
             settings.BASE_DIR / "sinequa_configs" / "sources" / "SMD"
         )
         path = f"{SINEQUA_SOURCES_FOLDER}/{self.config_folder}/default.xml"
-        config = XmlEditor(path)
+        editor = XmlEditor(path)
 
         # TODO: an argument could be made for re-writing all relevant sinequa config
         # fields here, however, the complications are worth thinking about before blindly
@@ -212,10 +212,10 @@ class Collection(models.Model):
 
         URL_EXCLUDES = self._process_exclude_list()
         TITLE_RULES = self._process_title_list()
-        config.update_or_add_element_value("TreeRoot", self.tree_root)
-        [config.add_url_exclude(url) for url in URL_EXCLUDES]
-        [config.add_title_mapping(**title_rule) for title_rule in TITLE_RULES]
-        config._update_config_xml(path)
+        editor.update_or_add_element_value("TreeRoot", self.tree_root)
+        [editor.add_url_exclude(url) for url in URL_EXCLUDES]
+        [editor.add_title_mapping(**title_rule) for title_rule in TITLE_RULES]
+        editor._update_config_xml(path)
 
     def _compute_config_folder_name(self):
         """
