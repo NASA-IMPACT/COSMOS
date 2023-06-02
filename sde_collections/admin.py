@@ -1,6 +1,9 @@
+import csv
+
 from django import forms
 from django.contrib import admin, messages
 from django.db import models
+from django.http import HttpResponse
 
 from .models import CandidateURL, Collection, ExcludePattern
 from .tasks import import_candidate_urls_task
@@ -60,8 +63,26 @@ class ExcludePatternInline(admin.TabularInline):
     }
 
 
+class ExportCsvMixin:
+    def export_as_csv(self, request, queryset):
+        meta = self.model._meta
+        field_names = [field.name for field in meta.fields]
+
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f"attachment; filename={meta}.csv"
+        writer = csv.writer(response)
+
+        writer.writerow(field_names)
+        for obj in queryset:
+            writer.writerow([getattr(obj, field) for field in field_names])
+
+        return response
+
+    export_as_csv.short_description = "Export selected as csv"
+
+
 @admin.register(Collection)
-class CollectionAdmin(admin.ModelAdmin):
+class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin):
     """Admin View for Collection"""
 
     fieldsets = (
@@ -109,19 +130,10 @@ class CollectionAdmin(admin.ModelAdmin):
         "division",
         "new_collection",
     )
-    list_filter = (
-        "division",
-        "turned_on",
-        "source",
-        "document_type",
-        "delete",
-    )
+    list_filter = ("division", "curation_status")
     search_fields = ("name", "url")
-    # list_per_page = 300
     actions = [
-        # import_sinequa_metadata,
-        # export_sinequa_metadata,
-        # generate_candidate_urls,
+        "export_as_csv",
         import_candidate_urls,
     ]
     ordering = ("cleaning_order",)
