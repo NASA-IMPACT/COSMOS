@@ -169,8 +169,16 @@ class CandidateURLAdmin(admin.ModelAdmin):
 class TitlePatternAdmin(admin.ModelAdmin):
     """Admin View for TitlePattern"""
 
-    list_display = ("match_pattern", "title_pattern", "collection")
-    list_filter = ("collection",)
+    list_display = (
+        "match_pattern",
+        "title_pattern",
+        "collection",
+        "match_pattern_type",
+    )
+    list_filter = (
+        "match_pattern_type",
+        "collection",
+    )
 
 
 admin.site.register(CandidateURL, CandidateURLAdmin)
