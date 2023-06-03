@@ -1,11 +1,9 @@
 import csv
 
-from django import forms
 from django.contrib import admin, messages
-from django.db import models
 from django.http import HttpResponse
 
-from .models import CandidateURL, Collection, ExcludePattern, TitlePattern
+from .models import CandidateURL, Collection, TitlePattern
 from .tasks import import_candidate_urls_task
 
 
@@ -53,14 +51,6 @@ def import_candidate_urls(modeladmin, request, queryset):
         messages.INFO,
         f"Started importing URLs from S3 for: {collection_names}",
     )
-
-
-class ExcludePatternInline(admin.TabularInline):
-    model = ExcludePattern
-    extra = 1
-    formfield_overrides = {
-        models.TextField: {"widget": forms.Textarea(attrs={"rows": 2, "cols": 40})},
-    }
 
 
 class ExportCsvMixin:
@@ -137,7 +127,6 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin):
         import_candidate_urls,
     ]
     ordering = ("cleaning_order",)
-    inlines = [ExcludePatternInline]
 
 
 @admin.action(description="Exclude URL and all children")
