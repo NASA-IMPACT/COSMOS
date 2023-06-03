@@ -137,7 +137,7 @@ function getScrapedTitleColumn() {
 function getGeneratedTitleColumn() {
     return {
         "data": "generated_title", "render": function (data, type, row) {
-            return `<input type="text" class="form-control individual_title_input" value="${data}" data-url=${remove_protocol(row['url'])} />`;
+            return `<input type="text" class="form-control individual_title_input" value='${data}' data-url=${remove_protocol(row['url'])} />`;
         }
     }
 }
