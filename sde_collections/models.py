@@ -358,9 +358,8 @@ class CandidateURL(models.Model):
 
 class BaseMatchPattern(models.Model):
     class MatchPatternTypeChoices(models.IntegerChoices):
-        INDIVIDUAL_URL = 1, "Individual URL"
-        REGEX_PATTERN = 2, "Regex Pattern"
-        XPATH_PATTERN = 3, "Xpath Pattern"
+        INDIVIDUAL_URL = 1, "Individual URL Pattern"
+        MULTI_URL_PATTERN = 2, "Multi-URL Pattern"
 
     collection = models.ForeignKey(
         Collection,
@@ -388,9 +387,11 @@ class BaseMatchPattern(models.Model):
             return self.collection.candidate_urls.filter(
                 url__regex=f"{escaped_match_pattern}$"
             )
-        elif self.match_pattern_type == self.MatchPatternTypeChoices.REGEX_PATTERN:
+        elif self.match_pattern_type == self.MatchPatternTypeChoices.MULTI_URL_PATTERN:
             return self.collection.candidate_urls.filter(
-                url__regex=escaped_match_pattern
+                url__regex=escaped_match_pattern.replace(
+                    r"\*", ".*"
+                )  # allow * wildcards
             )
         elif self.match_pattern_type == self.MatchPatternTypeChoices.XPATH_PATTERN:
             raise NotImplementedError

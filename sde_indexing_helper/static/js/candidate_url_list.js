@@ -110,14 +110,20 @@ function initializeDataTable() {
 
 function setupClickHandlers() {
     handleAddNewPatternClick();
+
+    handleCreateDocumentTypePatternButton();
+    handleCreateExcludePatternButton();
+    handleCreateTitlePatternButton();
+
+    handleDeleteDocumentTypeButtonClick();
     handleDeleteExcludePatternButtonClick();
     handleDeleteTitlePatternButtonClick();
-    handleDeleteDocumentTypeButtonClick();
+
     handleDocumentTypeSelect()
     handleExcludeIndividualUrlClick();
     handleNewTitleChange();
+
     handleUrlLinkClick();
-    handleUrlPartButton();
 }
 
 function getURLColumn() {
@@ -188,6 +194,23 @@ function getDocumentTypeColumn() {
             </div>`;
         }
     }
+}
+function handleCreateDocumentTypePatternButton() {
+    $("body").on("click", ".create_document_type_pattern_button", function () {
+        $modal = $('#documentTypePatternModal').modal();
+    });
+}
+
+function handleCreateExcludePatternButton() {
+    $("body").on("click", ".create_exclude_pattern_button", function () {
+        $modal = $('#excludePatternModal').modal();
+    });
+}
+
+function handleCreateTitlePatternButton() {
+    $("body").on("click", ".create_title_pattern_button", function () {
+        $modal = $('#titlePatternModal').modal();
+    });
 }
 
 function handleDocumentTypeSelect() {
@@ -479,6 +502,20 @@ $(".custom-menu li").click(function () {
 
     // Hide it AFTER the action was triggered
     $(".custom-menu").hide(100);
+});
+
+$('#exclude_pattern_form').on('submit', function (e) {
+    e.preventDefault();
+    inputs = {};
+    input_serialized = $(this).serializeArray();
+    input_serialized.forEach(field => {
+        inputs[field.name] = field.value;
+    });
+
+    postExcludePatterns(match_pattern = inputs.match_pattern, match_pattern_type = 2);
+
+    // close the modal if it is open
+    $('#excludePatternModal').modal('hide');
 });
 
 $('#title_pattern_form').on('submit', function (e) {
