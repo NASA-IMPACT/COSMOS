@@ -54,8 +54,10 @@ class Collection(models.Model):
         NEEDS_SCRAPING = 1, "Needs Scraping"
         READY_TO_CURATE = 2, "Ready to Curate"
         BEING_CURATED = 3, "Being Curated"
-        CURATED = 4, "Curated"
-        IN_PROD = 5, "In Production"
+        DELETE_COMBINE_COLLECTION = 7, "Delete/Combine Collection"
+        NEEDS_RESCRAPING = 4, "Needs Rescraping"
+        CURATED = 5, "Curated"
+        IN_PROD = 6, "In Production"
 
     name = models.CharField("Name", max_length=1024)
     config_folder = models.CharField("Config Folder", max_length=2048, unique=True)
@@ -99,6 +101,7 @@ class Collection(models.Model):
         "Cleaning Assigned To", max_length=128, default="", blank=True
     )
 
+    github_issue_number = models.IntegerField("Issue Number in Github", default=0)
     notes = models.TextField("Notes", blank=True, default="")
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     new_collection = models.BooleanField(default=False)
@@ -126,6 +129,8 @@ class Collection(models.Model):
             3: "btn-warning",
             4: "btn-info",
             5: "btn-success",
+            6: "btn-primary",
+            7: "btn-info",
         }
         return color_choices[self.curation_status]
 
@@ -236,6 +241,23 @@ class Collection(models.Model):
     def candidate_urls_count(self):
         return self.candidate_urls.count()
 
+    @property
+    def sinequa_configuration(self):
+        return f"https://github.com/NASA-IMPACT/sde-backend/blob/master/sources/SMD/{self.config_folder}/default.xml"
+
+    @property
+    def github_issue_link(self):
+        return f"https://github.com/NASA-IMPACT/sde-project/issues/{self.github_issue_number}"
+
+    def apply_all_patterns(self):
+        """Apply all the patterns."""
+        for pattern in self.excludepattern.all():
+            pattern.apply()
+        for pattern in self.titlepattern.all():
+            pattern.apply()
+        for pattern in self.documenttypepattern.all():
+            pattern.apply()
+
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
         if not self.config_folder:
@@ -310,6 +332,7 @@ class CandidateURL(models.Model):
         verbose_name = "Candidate URL"
         verbose_name_plural = "Candidate URLs"
         ordering = ["url"]
+        unique_together = ("collection", "url")
 
     def splits(self):
         """Split the path into multiple collections."""
@@ -428,12 +451,12 @@ class TitlePattern(BaseMatchPattern):
         matched_urls = self.matched_urls()
         for url in matched_urls.all():
             self.candidate_urls.add(url)
-            url.generated_url = self.title_pattern
+            url.generated_title = self.title_pattern
             url.save()
 
     def unapply(self):
         for url in self.candidate_urls.all():
-            url.generated_url = ""
+            url.generated_title = ""
             url.save()
 
     class Meta:

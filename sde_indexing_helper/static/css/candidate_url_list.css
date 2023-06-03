@@ -54,3 +54,19 @@
     /* padding-top: 10px;
     padding-bottom: 10px; */
 }
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: .5em;
+}
+
+.paginate_input {
+    width: 15%;
+}
+
+.exclude_individual_url {
+    cursor: pointer
+}
+
+.document_type_form_select {
+    cursor: pointer
+}

@@ -17,6 +17,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="//cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/b-html5-2.3.6/b-print-2.3.6/cr-1.6.2/date-1.4.1/fc-4.2.2/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/rr-1.3.3/sc-2.1.1/sb-1.4.2/sp-2.1.2/sl-1.6.2/sr-1.2.2/datatables.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
+    <script src="//cdn.datatables.net/plug-ins/1.13.4/pagination/input.js"></script>
     <script src="{% static 'js/candidate_url_list.js' %}"></script>
 {% endblock javascripts %}
 {% block content %}
@@ -49,7 +50,7 @@
                     <strong>New Title</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
-                    <strong>Curated?</strong>
+                    <strong>Visited?</strong>
                 </th>
                 <th scope="col" class="text-center col-1">
                     <strong>Document Type</strong>
@@ -212,37 +213,27 @@
                         </div>
                         <div class="form-group">
                             <div class="input-group">
-                                <input type="text"
+                                <input type="hidden"
                                        name="document_type_pattern"
                                        class="form-control"
                                        aria-label="Document Type"
                                        id="doc_type_input_field">
                                 <div class="input-group-append">
-                                    <button class="btn btn-secondary btn-sm dropdown-toggle"
+                                    <button class="btn btn-secondary btn-block dropdown-toggle"
                                             type="button"
                                             data-toggle="dropdown"
                                             aria-haspopup="true"
-                                            aria-expanded="false">Select</button>
+                                            aria-expanded="false">Select Document Type</button>
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item document_type_form_select" href="#" value="1">Images</a>
-                                        <a class="dropdown-item document_type_form_select" href="#" value="2">Data</a>
-                                        <a class="dropdown-item document_type_form_select" href="#" value="3">Documentation</a>
-                                        <a class="dropdown-item document_type_form_select" href="#" value="4">Software and Tools</a>
-                                        <a class="dropdown-item document_type_form_select" href="#" value="5">Missions and Instruments</a>
+                                        <a class="dropdown-item document_type_form_select" value="1">Images</a>
+                                        <a class="dropdown-item document_type_form_select" value="2">Data</a>
+                                        <a class="dropdown-item document_type_form_select" value="3">Documentation</a>
+                                        <a class="dropdown-item document_type_form_select" value="4">Software and Tools</a>
+                                        <a class="dropdown-item document_type_form_select" value="5">Missions and Instruments</a>
                                     </div>
                                 </div>
                             </div>
-                            {% comment %} <label for="document_type_pattern_input">Document Type*</label>
-                            <input type="text"
-                                   class="form-control"
-                                   id="document_type_pattern_input"
-                                   required
-                                   name="document_type_pattern"> {% endcomment %}
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
                 </form>
             </div>

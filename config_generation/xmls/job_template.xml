@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Sinequa>
+    <JobType>collection</JobType>
+    <Collection>/SMD/ASTRO_High-Energy_Missions_Website/</Collection>
+    <Description></Description>
+    <IdentityOverride></IdentityOverride>
+    <CollectionOverride>_ForceReindexation</CollectionOverride>
+    <Trigger>
+        <Enabled>false</Enabled>
+        <TriggerType></TriggerType>
+        <StartDate></StartDate>
+        <StartTime></StartTime>
+        <ExpireDate></ExpireDate>
+        <ExpireTime></ExpireTime>
+        <DailyRecurrence></DailyRecurrence>
+        <WeeklyRecurrence></WeeklyRecurrence>
+        <WeeklyDays></WeeklyDays>
+        <MonthlyMonths></MonthlyMonths>
+        <MonthlyDays></MonthlyDays>
+        <MonthlyOnOrder></MonthlyOnOrder>
+        <MonthlyOnDays></MonthlyOnDays>
+        <RepeatEvery>false</RepeatEvery>
+        <RepeatEveryInterval></RepeatEveryInterval>
+        <RepeatDuration></RepeatDuration>
+    </Trigger>
+    <System>
+        <LogLevel></LogLevel>
+    </System>
+    <StopIfRunLongerThan>false</StopIfRunLongerThan>
+    <StopIfRunLongerThanDelay></StopIfRunLongerThanDelay>
+    <StartIfAlreadyRunning>false</StartIfAlreadyRunning>
+    <IncludeInstanceText>false</IncludeInstanceText>
+    <InstanceText></InstanceText>
+    <PauseTimeBeforeStartup></PauseTimeBeforeStartup>
+    <StatusMaxOk></StatusMaxOk>
+</Sinequa>
