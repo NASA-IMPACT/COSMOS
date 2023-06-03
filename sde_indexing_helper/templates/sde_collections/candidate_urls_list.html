@@ -209,37 +209,27 @@
                         </div>
                         <div class="form-group">
                             <div class="input-group">
-                                <input type="text"
+                                <input type="hidden"
                                        name="document_type_pattern"
                                        class="form-control"
                                        aria-label="Document Type"
                                        id="doc_type_input_field">
                                 <div class="input-group-append">
-                                    <button class="btn btn-secondary btn-sm dropdown-toggle"
+                                    <button class="btn btn-secondary btn-block dropdown-toggle"
                                             type="button"
                                             data-toggle="dropdown"
                                             aria-haspopup="true"
-                                            aria-expanded="false">Select</button>
+                                            aria-expanded="false">Select Document Type</button>
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item document_type_form_select" href="#" value="1">Images</a>
-                                        <a class="dropdown-item document_type_form_select" href="#" value="2">Data</a>
-                                        <a class="dropdown-item document_type_form_select" href="#" value="3">Documentation</a>
-                                        <a class="dropdown-item document_type_form_select" href="#" value="4">Software and Tools</a>
-                                        <a class="dropdown-item document_type_form_select" href="#" value="5">Missions and Instruments</a>
+                                        <a class="dropdown-item document_type_form_select" value="1">Images</a>
+                                        <a class="dropdown-item document_type_form_select" value="2">Data</a>
+                                        <a class="dropdown-item document_type_form_select" value="3">Documentation</a>
+                                        <a class="dropdown-item document_type_form_select" value="4">Software and Tools</a>
+                                        <a class="dropdown-item document_type_form_select" value="5">Missions and Instruments</a>
                                     </div>
                                 </div>
                             </div>
-                            {% comment %} <label for="document_type_pattern_input">Document Type*</label>
-                            <input type="text"
-                                   class="form-control"
-                                   id="document_type_pattern_input"
-                                   required
-                                   name="document_type_pattern"> {% endcomment %}
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
                 </form>
             </div>

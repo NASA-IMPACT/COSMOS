@@ -66,3 +66,7 @@
 .exclude_individual_url {
     cursor: pointer
 }
+
+.document_type_form_select {
+    cursor: pointer
+}
