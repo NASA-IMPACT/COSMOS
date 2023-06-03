@@ -62,3 +62,7 @@
 .paginate_input {
     width: 15%;
 }
+
+.exclude_individual_url {
+    cursor: pointer
+}

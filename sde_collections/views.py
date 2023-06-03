@@ -208,6 +208,18 @@ class ExcludePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         return super().get_queryset().order_by("match_pattern")
 
+    def create(self, request, *args, **kwargs):
+        match_pattern = request.POST.get("match_pattern")
+        collection_id = request.POST.get("collection")
+        try:
+            ExcludePattern.objects.get(
+                collection_id=Collection.objects.get(id=collection_id),
+                match_pattern=match_pattern,
+            ).delete()
+            return Response(status=status.HTTP_200_OK)
+        except ExcludePattern.DoesNotExist:
+            return super().create(request, *args, **kwargs)
+
 
 class TitlePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     queryset = TitlePattern.objects.all()

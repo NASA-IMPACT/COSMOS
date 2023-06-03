@@ -146,7 +146,7 @@ function getGeneratedTitleColumn() {
 function getExcludedColumn(true_icon, false_icon) {
     return {
         "data": "excluded", "class": "col-1 text-center", "render": function (data, type, row) {
-            return (data === true) ? true_icon : `<a href="#" class="exclude_individual_url" value=${remove_protocol(row['url'])}>${false_icon}</a>`;
+            return (data === true) ? `<a class="exclude_individual_url" value=${remove_protocol(row['url'])}>${true_icon}</a>` : `<a class="exclude_individual_url" value=${remove_protocol(row['url'])}>${false_icon}</a>`;
         }
     }
 }
