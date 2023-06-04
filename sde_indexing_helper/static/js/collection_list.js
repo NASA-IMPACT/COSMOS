@@ -1,7 +1,21 @@
 let table = $('#collection_table').DataTable({
     "order": [[0, 'asc']],
     "paging": false,
-    "stateSave": true,
+    "dom": 'BPfritip',
+    "buttons": [
+        'csv',
+        {
+            text: 'JSON',
+            action: function (e, dt, button, config) {
+                var data = dt.buttons.exportData();
+
+                $.fn.dataTable.fileSave(
+                    new Blob([JSON.stringify(data)]),
+                    'collections.json'
+                );
+            }
+        },
+    ],
     "columnDefs": [
         {
             target: -1,
@@ -11,45 +25,7 @@ let table = $('#collection_table').DataTable({
             target: 3,
             sortable: false,
         },
-    ],
-    initComplete: function () {
-        this.api().columns(3).every(function () {
-            var column = this;
-            var select = $('<select><option value=""></option></select>')
-                .appendTo($(column.header()))
-                .on('change', function () {
-                    var val = $.fn.dataTable.util.escapeRegex(
-                        $(this).val()
-                    );
-
-                    column
-                        .search(val ? '^' + val + '$' : '', true, false)
-                        .draw();
-                });
-
-            column.data().unique().sort().each(function (d, j) {
-                select.append('<option value="' + d + '">' + d + '</option>')
-            });
-        });
-        this.api().columns(8).every(function () {
-            var column = this;
-            var select = $('<select><option value=""></option></select>')
-                .appendTo($(column.header()))
-                .on('change', function () {
-                    var val = $.fn.dataTable.util.escapeRegex(
-                        $(this).val()
-                    );
-
-                    column
-                        .search(val ? '^' + val + '$' : '', true, false)
-                        .draw();
-                });
-
-            column.data().unique().sort().each(function (d, j) {
-                select.append('<option value="' + d + '">' + d + '</option>')
-            });
-        });
-    }
+    ]
 });
 
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();

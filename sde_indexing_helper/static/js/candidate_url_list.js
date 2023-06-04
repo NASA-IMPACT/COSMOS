@@ -23,6 +23,13 @@ function initializeDataTable() {
         "stateSave": true,
         "searchDelay": 1000,
         "pagingType": "input",
+        "dom": 'lBfritip',
+        "buttons": ['spacer', 'csv', 'spacer', 'createState', 'savedStates', 'spacer', 'selectAll', 'selectNone'],
+        "select": {
+            "style": 'os',
+            "selector": 'td:nth-child(5)'
+        },
+        'rowId': 'url',
         "ajax": {
             "url": `/api/candidate-urls/?format=datatables&collection_id=${collection_id}`,
             "data": function (d) {
