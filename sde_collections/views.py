@@ -239,7 +239,6 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         document_type = request.POST.get("document_type")
         if not int(document_type) == 0:  # 0=none
-            print(f"Your document type is not 0. It is {document_type}")
             return super().create(request, *args, **kwargs)
         else:
             collection_id = request.POST.get("collection")
