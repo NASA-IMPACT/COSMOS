@@ -29,6 +29,10 @@ certificatesResolvers:
         entryPoint: web
 
 http:
+  serversTransport:
+    respondingTimeouts:
+      idleTimeout: "5m0s"
+
   routers:
     web-secure-router:
       rule: "Host(`sde-indexing-helper.nasa-impact.net`)"
