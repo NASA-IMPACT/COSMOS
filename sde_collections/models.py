@@ -137,7 +137,7 @@ class Collection(models.Model):
     def _process_exclude_list(self):
         """Process the exclude list."""
         exclude_list = []
-        for exclude_pattern in self.exclude_patterns.all():
+        for exclude_pattern in self.excludepattern.all():
             if exclude_pattern.match_pattern.strip("*").strip().startswith("http"):
                 exclude_list.append(f"{exclude_pattern.match_pattern}*")
             else:
