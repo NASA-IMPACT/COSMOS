@@ -2,6 +2,7 @@ let table = $('#collection_table').DataTable({
     "order": [[0, 'asc']],
     "paging": false,
     "dom": 'BPfritip',
+    "select": true,
     "buttons": [
         'csv',
         {
@@ -15,6 +16,23 @@ let table = $('#collection_table').DataTable({
                 );
             }
         },
+        {
+            text: 'Push selected collections to GitHub',
+            action: function (e, dt, node, config) {
+                $('#collection_table').DataTable().rows({ selected: true }).every(function (rowIdx, tableLoop, rowLoop) {
+                    var data = this.data();
+                    var collection_name = $(data[1]).text().slice(0, -14); // remove " chevron_right" from end of string
+                    var collection_id = $(data[1]).attr('href').slice(1, -1); // we get /932/ from href="/932/"
+                    var curation_status = $(data[6]).find('button').text(); // we get /932/ from href="/932/"
+
+                    if (curation_status != "Curated") {
+                        toastr.error(`Can't push <strong>${collection_name}</strong> because its status is not "Curated".`);
+                        return;
+                    }
+                    toastr.success(`Started pushing <strong>${collection_name}</strong> to GitHub...`);
+                });
+            }
+        }
     ],
     "columnDefs": [
         {
