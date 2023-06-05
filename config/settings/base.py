@@ -322,3 +322,5 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 50,
     "EXCEPTION_HANDLER": "sde_indexing_helper.utils.exceptions.custom_exception_handler",
 }
+
+GITHUB_ACCESS_TOKEN = env("GITHUB_ACCESS_TOKEN")
