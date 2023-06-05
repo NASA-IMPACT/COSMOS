@@ -21,7 +21,15 @@ function initializeDataTable() {
         "scrollY": true,
         "serverSide": true,
         "stateSave": true,
+        "searchDelay": 1000,
         "pagingType": "input",
+        "dom": 'lBfritip',
+        "buttons": ['spacer', 'csv', 'spacer', 'createState', 'savedStates', 'spacer', 'selectAll', 'selectNone'],
+        "select": {
+            "style": 'os',
+            "selector": 'td:nth-child(5)'
+        },
+        'rowId': 'url',
         "ajax": {
             "url": `/api/candidate-urls/?format=datatables&collection_id=${collection_id}`,
             "data": function (d) {
@@ -110,14 +118,20 @@ function initializeDataTable() {
 
 function setupClickHandlers() {
     handleAddNewPatternClick();
+
+    handleCreateDocumentTypePatternButton();
+    handleCreateExcludePatternButton();
+    handleCreateTitlePatternButton();
+
+    handleDeleteDocumentTypeButtonClick();
     handleDeleteExcludePatternButtonClick();
     handleDeleteTitlePatternButtonClick();
-    handleDeleteDocumentTypeButtonClick();
+
     handleDocumentTypeSelect()
     handleExcludeIndividualUrlClick();
     handleNewTitleChange();
+
     handleUrlLinkClick();
-    handleUrlPartButton();
 }
 
 function getURLColumn() {
@@ -137,7 +151,7 @@ function getScrapedTitleColumn() {
 function getGeneratedTitleColumn() {
     return {
         "data": "generated_title", "render": function (data, type, row) {
-            return `<input type="text" class="form-control individual_title_input" value="${data}" data-url=${remove_protocol(row['url'])} />`;
+            return `<input type="text" class="form-control individual_title_input" value='${data}' data-url=${remove_protocol(row['url'])} />`;
         }
     }
 }
@@ -146,7 +160,7 @@ function getGeneratedTitleColumn() {
 function getExcludedColumn(true_icon, false_icon) {
     return {
         "data": "excluded", "class": "col-1 text-center", "render": function (data, type, row) {
-            return (data === true) ? true_icon : `<a href="#" class="exclude_individual_url" value=${remove_protocol(row['url'])}>${false_icon}</a>`;
+            return (data === true) ? `<a class="exclude_individual_url" value=${remove_protocol(row['url'])}>${true_icon}</a>` : `<a class="exclude_individual_url" value=${remove_protocol(row['url'])}>${false_icon}</a>`;
         }
     }
 }
@@ -174,11 +188,12 @@ function getDocumentTypeColumn() {
             button_text = data ? dict[data] : 'Select';
             button_color = data ? 'btn-success' : 'btn-secondary';
             return `
-            <div class="dropdown text-center document_type_dropdown" data-match-pattern=${remove_protocol(row['url'])}>
+            <div class="dropdown document_type_dropdown" data-match-pattern=${remove_protocol(row['url'])}>
               <button class="btn ${button_color} btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 ${button_text}
               </button>
               <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item document_type_select" href="#" value="0">None</a>
                 <a class="dropdown-item document_type_select" href="#" value="1">Images</a>
                 <a class="dropdown-item document_type_select" href="#" value="2">Data</a>
                 <a class="dropdown-item document_type_select" href="#" value="3">Documentation</a>
@@ -188,6 +203,23 @@ function getDocumentTypeColumn() {
             </div>`;
         }
     }
+}
+function handleCreateDocumentTypePatternButton() {
+    $("body").on("click", ".create_document_type_pattern_button", function () {
+        $modal = $('#documentTypePatternModal').modal();
+    });
+}
+
+function handleCreateExcludePatternButton() {
+    $("body").on("click", ".create_exclude_pattern_button", function () {
+        $modal = $('#excludePatternModal').modal();
+    });
+}
+
+function handleCreateTitlePatternButton() {
+    $("body").on("click", ".create_title_pattern_button", function () {
+        $modal = $('#titlePatternModal').modal();
+    });
 }
 
 function handleDocumentTypeSelect() {
@@ -259,15 +291,24 @@ function postDocumentTypePatterns(match_pattern, match_pattern_type, document_ty
         return;
     }
 
-    $.post('/api/document-type-patterns/', {
-        collection: collection_id,
-        match_pattern: match_pattern,
-        match_pattern_type: match_pattern_type,
-        document_type: document_type,
-        csrfmiddlewaretoken: csrftoken
-    }, function (response) {
-        $('#candidate_urls_table').DataTable().ajax.reload();
-        $('#document_type_patterns_table').DataTable().ajax.reload();
+    $.ajax({
+        url: '/api/document-type-patterns/',
+        type: "POST",
+        data: {
+            collection: collection_id,
+            match_pattern: match_pattern,
+            match_pattern_type: match_pattern_type,
+            document_type: document_type,
+            csrfmiddlewaretoken: csrftoken
+        },
+        success: function (data) {
+            $('#candidate_urls_table').DataTable().ajax.reload();
+            $('#document_type_patterns_table').DataTable().ajax.reload();
+        },
+        error: function (xhr, status, error) {
+            var errorMessage = xhr.responseText;
+            toastr.error(errorMessage);
+        }
     });
 }
 
@@ -278,14 +319,23 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0) {
         return;
     }
 
-    $.post('/api/exclude-patterns/', {
-        collection: collection_id,
-        match_pattern: match_pattern,
-        match_pattern_type: match_pattern_type,
-        csrfmiddlewaretoken: csrftoken
-    }, function (response) {
-        $('#candidate_urls_table').DataTable().ajax.reload();
-        $('#exclude_patterns_table').DataTable().ajax.reload();
+    $.ajax({
+        url: '/api/exclude-patterns/',
+        type: "POST",
+        data: {
+            collection: collection_id,
+            match_pattern: match_pattern,
+            match_pattern_type: match_pattern_type,
+            csrfmiddlewaretoken: csrftoken
+        },
+        success: function (data) {
+            $('#candidate_urls_table').DataTable().ajax.reload();
+            $('#exclude_patterns_table').DataTable().ajax.reload();
+        },
+        error: function (xhr, status, error) {
+            var errorMessage = xhr.responseText;
+            toastr.error(errorMessage);
+        }
     });
 }
 
@@ -410,7 +460,7 @@ $("body").on("contextmenu", ".candidate_url", function (event) {
         // In the right position (the mouse)
         css({
             top: event.pageY + "px",
-            left: event.pageX - 250 + "px"
+            left: event.pageX - 80 + "px"
         });
 });
 
@@ -463,6 +513,20 @@ $(".custom-menu li").click(function () {
     $(".custom-menu").hide(100);
 });
 
+$('#exclude_pattern_form').on('submit', function (e) {
+    e.preventDefault();
+    inputs = {};
+    input_serialized = $(this).serializeArray();
+    input_serialized.forEach(field => {
+        inputs[field.name] = field.value;
+    });
+
+    postExcludePatterns(match_pattern = inputs.match_pattern, match_pattern_type = 2);
+
+    // close the modal if it is open
+    $('#excludePatternModal').modal('hide');
+});
+
 $('#title_pattern_form').on('submit', function (e) {
     e.preventDefault();
     inputs = {};
@@ -477,10 +541,11 @@ $('#title_pattern_form').on('submit', function (e) {
     $('#titlePatternModal').modal('hide');
 });
 
-$('#document_type_pattern_form').on('submit', function (e) {
+$('.document_type_form_select').on('click', function (e) {
     e.preventDefault();
+    $('input[name="document_type_pattern"]').val($(this).attr('value'));
     inputs = {};
-    input_serialized = $(this).serializeArray();
+    input_serialized = $(this).parents('#document_type_pattern_form').serializeArray();
     input_serialized.forEach(field => {
         inputs[field.name] = field.value;
     });
@@ -493,8 +558,4 @@ $('#document_type_pattern_form').on('submit', function (e) {
 
 $('#filter-checkbox').on('change', function () {
     $('#candidate_urls_table').DataTable().ajax.reload();
-});
-
-$('body').on('click', '.document_type_form_select', function () {
-    $('input[name="document_type_pattern"]').val($(this).attr('value'));
 });

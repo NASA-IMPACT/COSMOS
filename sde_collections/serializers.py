@@ -91,10 +91,27 @@ class TitlePatternSerializer(BasePatternSerializer, serializers.ModelSerializer)
         model = TitlePattern
         fields = BasePatternSerializer.Meta.fields + ("title_pattern",)
 
+    def validate_match_pattern(self, value):
+        try:
+            title_pattern = TitlePattern.objects.get(
+                match_pattern=value,
+                match_pattern_type=TitlePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
+            )
+            title_pattern.delete()
+        except TitlePattern.DoesNotExist:
+            pass
+        return value
+
 
 class DocumentTypePatternSerializer(BasePatternSerializer, serializers.ModelSerializer):
     document_type_display = serializers.CharField(
         source="get_document_type_display", read_only=True
+    )
+    document_type = serializers.ChoiceField(
+        choices=Collection.DocumentTypes.choices
+        + [
+            (0, "None"),
+        ]
     )
 
     class Meta:
@@ -103,3 +120,14 @@ class DocumentTypePatternSerializer(BasePatternSerializer, serializers.ModelSeri
             "document_type",
             "document_type_display",
         )
+
+    def validate_match_pattern(self, value):
+        try:
+            title_pattern = DocumentTypePattern.objects.get(
+                match_pattern=value,
+                match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
+            )
+            title_pattern.delete()
+        except DocumentTypePattern.DoesNotExist:
+            pass
+        return value

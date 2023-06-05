@@ -208,6 +208,18 @@ class ExcludePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         return super().get_queryset().order_by("match_pattern")
 
+    def create(self, request, *args, **kwargs):
+        match_pattern = request.POST.get("match_pattern")
+        collection_id = request.POST.get("collection")
+        try:
+            ExcludePattern.objects.get(
+                collection_id=Collection.objects.get(id=collection_id),
+                match_pattern=match_pattern,
+            ).delete()
+            return Response(status=status.HTTP_200_OK)
+        except ExcludePattern.DoesNotExist:
+            return super().create(request, *args, **kwargs)
+
 
 class TitlePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     queryset = TitlePattern.objects.all()
@@ -223,6 +235,23 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         return super().get_queryset().order_by("match_pattern")
+
+    def create(self, request, *args, **kwargs):
+        document_type = request.POST.get("document_type")
+        if not int(document_type) == 0:  # 0=none
+            return super().create(request, *args, **kwargs)
+        else:
+            collection_id = request.POST.get("collection")
+            match_pattern = request.POST.get("match_pattern")
+            try:
+                DocumentTypePattern.objects.get(
+                    collection_id=Collection.objects.get(id=collection_id),
+                    match_pattern=match_pattern,
+                    match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
+                ).delete()
+                return Response(status=status.HTTP_200_OK)
+            except DocumentTypePattern.DoesNotExist:
+                return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CollectionViewSet(viewsets.ModelViewSet):

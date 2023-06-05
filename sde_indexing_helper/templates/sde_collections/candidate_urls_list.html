@@ -6,16 +6,16 @@
 {% endblock title %}
 {% block stylesheets %}
     {{ block.super }}
-    <link rel="stylesheet"
-          href="//cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
-    <link href="//cdn.datatables.net/v/bs5/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/sb-1.4.2/sp-2.1.2/datatables.min.css"
+    <link href="//cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/b-html5-2.3.6/b-print-2.3.6/cr-1.6.2/date-1.4.1/fc-4.2.2/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/rr-1.3.3/sc-2.1.1/sb-1.4.2/sp-2.1.2/sl-1.6.2/sr-1.2.2/datatables.min.css"
           rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'css/candidate_url_list.css' %}" />
 {% endblock stylesheets %}
 {% block javascripts %}
     {{ block.super }}
     <script>var collection_id = "{{ collection.id }}";</script>
-    <script src="//cdn.datatables.net/v/bs5/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/sb-1.4.2/sp-2.1.2/datatables.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="//cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/b-html5-2.3.6/b-print-2.3.6/cr-1.6.2/date-1.4.1/fc-4.2.2/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/rr-1.3.3/sc-2.1.1/sb-1.4.2/sp-2.1.2/sl-1.6.2/sr-1.2.2/datatables.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
     <script src="//cdn.datatables.net/plug-ins/1.13.4/pagination/input.js"></script>
     <script src="{% static 'js/candidate_url_list.js' %}"></script>
@@ -33,34 +33,27 @@
             <label for="filter-checkbox">Hide Excluded</label>
         </div>
     </div>
+    <br>
     <table class="table" id="candidate_urls_table">
         <thead>
             <tr>
-                <th scope="col" class="text-center col-1">
-                    <strong>URL</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Exclude</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Scraped Title</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>New Title</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Visited?</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Document Type</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>ID</strong>
-                </th>
+                <th scope="col" class="text-center col-1">URL</th>
+                <th scope="col" class="text-center col-1">Exclude</th>
+                <th scope="col" class="text-center col-1">Scraped Title</th>
+                <th scope="col" class="text-center col-1">New Title</th>
+                <th scope="col" class="text-center col-1">Visited?</th>
+                <th scope="col" class="text-center col-1">Document Type</th>
+                <th scope="col" class="text-center col-1">ID</th>
             </tr>
         </thead>
     </table>
-    <h3>Exclude Patterns</h3>
+    <hr>
+    <h3>
+        Exclude Patterns
+        <button class="btn btn-primary btn-sm create_exclude_pattern_button">
+            <i class="material-icons">add</i>
+        </button>
+    </h3>
     <table class="table" id="exclude_patterns_table">
         <thead>
             <tr>
@@ -85,7 +78,13 @@
             </tr>
         </thead>
     </table>
-    <h3>Title Patterns</h3>
+    <hr>
+    <h3>
+        Title Patterns
+        <button class="btn btn-primary btn-sm create_title_pattern_button">
+            <i class="material-icons">add</i>
+        </button>
+    </h3>
     <table class="table" id="title_patterns_table">
         <thead>
             <tr>
@@ -110,7 +109,13 @@
             </tr>
         </thead>
     </table>
-    <h3>Document Type Patterns</h3>
+    <hr>
+    <h3>
+        Document Type Patterns
+        <button class="btn btn-primary btn-sm create_document_type_pattern_button">
+            <i class="material-icons">add</i>
+        </button>
+    </h3>
     <table class="table" id="document_type_patterns_table">
         <thead>
             <tr>
@@ -140,6 +145,40 @@
         <li data-action="title-pattern" class="list-group-item">Create Title Pattern</li>
         <li data-action="document-type-pattern" class="list-group-item">Create Document Type Pattern</li>
     </ul>
+    <div class="modal fade"
+         id="excludePatternModal"
+         data-backdrop="static"
+         data-keyboard="false"
+         tabindex="-1"
+         aria-labelledby="excludePatternModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="excludePatternModalLabel">Exclude Pattern Form</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="exclude_pattern_form">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="match_pattern_input">Match Pattern*</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="match_pattern_input"
+                                   required
+                                   name="match_pattern">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <div class="modal fade"
          id="titlePatternModal"
          data-backdrop="static"
@@ -209,37 +248,27 @@
                         </div>
                         <div class="form-group">
                             <div class="input-group">
-                                <input type="text"
+                                <input type="hidden"
                                        name="document_type_pattern"
                                        class="form-control"
                                        aria-label="Document Type"
                                        id="doc_type_input_field">
                                 <div class="input-group-append">
-                                    <button class="btn btn-secondary btn-sm dropdown-toggle"
+                                    <button class="btn btn-secondary btn-block dropdown-toggle"
                                             type="button"
                                             data-toggle="dropdown"
                                             aria-haspopup="true"
-                                            aria-expanded="false">Select</button>
+                                            aria-expanded="false">Select Document Type</button>
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item document_type_form_select" href="#" value="1">Images</a>
-                                        <a class="dropdown-item document_type_form_select" href="#" value="2">Data</a>
-                                        <a class="dropdown-item document_type_form_select" href="#" value="3">Documentation</a>
-                                        <a class="dropdown-item document_type_form_select" href="#" value="4">Software and Tools</a>
-                                        <a class="dropdown-item document_type_form_select" href="#" value="5">Missions and Instruments</a>
+                                        <a class="dropdown-item document_type_form_select" value="1">Images</a>
+                                        <a class="dropdown-item document_type_form_select" value="2">Data</a>
+                                        <a class="dropdown-item document_type_form_select" value="3">Documentation</a>
+                                        <a class="dropdown-item document_type_form_select" value="4">Software and Tools</a>
+                                        <a class="dropdown-item document_type_form_select" value="5">Missions and Instruments</a>
                                     </div>
                                 </div>
                             </div>
-                            {% comment %} <label for="document_type_pattern_input">Document Type*</label>
-                            <input type="text"
-                                   class="form-control"
-                                   id="document_type_pattern_input"
-                                   required
-                                   name="document_type_pattern"> {% endcomment %}
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
                 </form>
             </div>

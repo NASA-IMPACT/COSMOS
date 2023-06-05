@@ -380,9 +380,8 @@ class CandidateURL(models.Model):
 
 class BaseMatchPattern(models.Model):
     class MatchPatternTypeChoices(models.IntegerChoices):
-        INDIVIDUAL_URL = 1, "Individual URL"
-        REGEX_PATTERN = 2, "Regex Pattern"
-        XPATH_PATTERN = 3, "Xpath Pattern"
+        INDIVIDUAL_URL = 1, "Individual URL Pattern"
+        MULTI_URL_PATTERN = 2, "Multi-URL Pattern"
 
     collection = models.ForeignKey(
         Collection,
@@ -410,9 +409,11 @@ class BaseMatchPattern(models.Model):
             return self.collection.candidate_urls.filter(
                 url__regex=f"{escaped_match_pattern}$"
             )
-        elif self.match_pattern_type == self.MatchPatternTypeChoices.REGEX_PATTERN:
+        elif self.match_pattern_type == self.MatchPatternTypeChoices.MULTI_URL_PATTERN:
             return self.collection.candidate_urls.filter(
-                url__regex=escaped_match_pattern
+                url__regex=escaped_match_pattern.replace(
+                    r"\*", ".*"
+                )  # allow * wildcards
             )
         elif self.match_pattern_type == self.MatchPatternTypeChoices.XPATH_PATTERN:
             raise NotImplementedError
@@ -447,8 +448,15 @@ class ExcludePattern(BaseMatchPattern):
 
     def apply(self):
         matched_urls = self.matched_urls()
-        for url in matched_urls.all():
-            self.candidate_urls.add(url)
+        candidate_url_ids = list(matched_urls.values_list("id", flat=True))
+        self.candidate_urls.through.objects.bulk_create(
+            objs=[
+                ExcludePattern.candidate_urls.through(
+                    candidateurl_id=candidate_url_id, excludepattern_id=self.id
+                )
+                for candidate_url_id in candidate_url_ids
+            ]
+        )
 
     def unapply(self):
         "Unapplies automatically by deleting excludpattern through objects in a cascade"
@@ -471,15 +479,19 @@ class TitlePattern(BaseMatchPattern):
 
     def apply(self):
         matched_urls = self.matched_urls()
-        for url in matched_urls.all():
-            self.candidate_urls.add(url)
-            url.generated_url = self.title_pattern
-            url.save()
+        matched_urls.update(generated_title=self.title_pattern)
+        candidate_url_ids = list(matched_urls.values_list("id", flat=True))
+        self.candidate_urls.through.objects.bulk_create(
+            objs=[
+                TitlePattern.candidate_urls.through(
+                    candidateurl_id=candidate_url_id, titlepattern_id=self.id
+                )
+                for candidate_url_id in candidate_url_ids
+            ]
+        )
 
     def unapply(self):
-        for url in self.candidate_urls.all():
-            url.generated_url = ""
-            url.save()
+        self.candidate_urls.update(generated_title="")
 
     class Meta:
         """Meta definition for TitlePattern."""
@@ -494,15 +506,19 @@ class DocumentTypePattern(BaseMatchPattern):
 
     def apply(self):
         matched_urls = self.matched_urls()
-        for url in matched_urls.all():
-            self.candidate_urls.add(url)
-            url.document_type = self.document_type
-            url.save()
+        matched_urls.update(document_type=self.document_type)
+        candidate_url_ids = list(matched_urls.values_list("id", flat=True))
+        self.candidate_urls.through.objects.bulk_create(
+            objs=[
+                DocumentTypePattern.candidate_urls.through(
+                    candidateurl_id=candidate_url_id, documenttypepattern_id=self.id
+                )
+                for candidate_url_id in candidate_url_ids
+            ]
+        )
 
     def unapply(self):
-        for url in self.candidate_urls.all():
-            url.document_type = None
-            url.save()
+        self.candidate_urls.update(document_type=None)
 
     class Meta:
         """Meta definition for DocumentTypePattern."""
