@@ -426,8 +426,15 @@ class ExcludePattern(BaseMatchPattern):
 
     def apply(self):
         matched_urls = self.matched_urls()
-        for url in matched_urls.all():
-            self.candidate_urls.add(url)
+        candidate_url_ids = list(matched_urls.values_list("id", flat=True))
+        self.candidate_urls.through.objects.bulk_create(
+            objs=[
+                ExcludePattern.candidate_urls.through(
+                    candidateurl_id=candidate_url_id, excludepattern_id=self.id
+                )
+                for candidate_url_id in candidate_url_ids
+            ]
+        )
 
     def unapply(self):
         "Unapplies automatically by deleting excludpattern through objects in a cascade"
@@ -450,15 +457,19 @@ class TitlePattern(BaseMatchPattern):
 
     def apply(self):
         matched_urls = self.matched_urls()
-        for url in matched_urls.all():
-            self.candidate_urls.add(url)
-            url.generated_title = self.title_pattern
-            url.save()
+        matched_urls.update(generated_title=self.title_pattern)
+        candidate_url_ids = list(matched_urls.values_list("id", flat=True))
+        self.candidate_urls.through.objects.bulk_create(
+            objs=[
+                TitlePattern.candidate_urls.through(
+                    candidateurl_id=candidate_url_id, titlepattern_id=self.id
+                )
+                for candidate_url_id in candidate_url_ids
+            ]
+        )
 
     def unapply(self):
-        for url in self.candidate_urls.all():
-            url.generated_title = ""
-            url.save()
+        self.candidate_urls.update(generated_title="")
 
     class Meta:
         """Meta definition for TitlePattern."""
@@ -473,15 +484,19 @@ class DocumentTypePattern(BaseMatchPattern):
 
     def apply(self):
         matched_urls = self.matched_urls()
-        for url in matched_urls.all():
-            self.candidate_urls.add(url)
-            url.document_type = self.document_type
-            url.save()
+        matched_urls.update(document_type=self.document_type)
+        candidate_url_ids = list(matched_urls.values_list("id", flat=True))
+        self.candidate_urls.through.objects.bulk_create(
+            objs=[
+                DocumentTypePattern.candidate_urls.through(
+                    candidateurl_id=candidate_url_id, documenttypepattern_id=self.id
+                )
+                for candidate_url_id in candidate_url_ids
+            ]
+        )
 
     def unapply(self):
-        for url in self.candidate_urls.all():
-            url.document_type = None
-            url.save()
+        self.candidate_urls.update(document_type=None)
 
     class Meta:
         """Meta definition for DocumentTypePattern."""

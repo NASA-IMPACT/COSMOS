@@ -193,6 +193,7 @@ function getDocumentTypeColumn() {
                 ${button_text}
               </button>
               <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item document_type_select" href="#" value="0">None</a>
                 <a class="dropdown-item document_type_select" href="#" value="1">Images</a>
                 <a class="dropdown-item document_type_select" href="#" value="2">Data</a>
                 <a class="dropdown-item document_type_select" href="#" value="3">Documentation</a>

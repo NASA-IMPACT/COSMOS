@@ -107,6 +107,12 @@ class DocumentTypePatternSerializer(BasePatternSerializer, serializers.ModelSeri
     document_type_display = serializers.CharField(
         source="get_document_type_display", read_only=True
     )
+    document_type = serializers.ChoiceField(
+        choices=Collection.DocumentTypes.choices
+        + [
+            (0, "None"),
+        ]
+    )
 
     class Meta:
         model = DocumentTypePattern
