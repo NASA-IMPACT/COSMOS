@@ -6,7 +6,7 @@ from rest_framework.test import APIRequestFactory
 
 from .models import Collection
 from .sinequa_utils import Sinequa
-from .tasks import generate_candidate_urls_async
+from .tasks import generate_candidate_urls_async, import_all_candidate_urls_from_api
 
 
 class CollectionTestCase(TestCase):
@@ -53,3 +53,9 @@ class CreateExcludePatternTestCase(TestCase):
             "/api/create-exclude-pattern", {"title": "new idea"}, format="json"
         )
         self.assertCountEqual(response, "hey")
+
+
+class ImportCandidateURLsTestCase(TestCase):
+    def test_import_all_candidate_urls_from_api(self):
+        import_all_candidate_urls_from_api()
+        self.assertEqual(1, 1)

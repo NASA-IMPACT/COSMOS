@@ -4,7 +4,7 @@ from django.contrib import admin, messages
 from django.http import HttpResponse
 
 from .models import CandidateURL, Collection, TitlePattern
-from .tasks import import_candidate_urls_task
+from .tasks import import_candidate_urls_from_api
 
 
 @admin.action(description="Import metadata from Sinequa configs")
@@ -42,15 +42,36 @@ def generate_candidate_urls(modeladmin, request, queryset):
     )
 
 
-@admin.action(description="Import candidate URLs")
-def import_candidate_urls(modeladmin, request, queryset):
-    import_candidate_urls_task.delay(list(queryset.values_list("id", flat=True)))
+def import_candidate_urls_from_api_caller(modeladmin, request, queryset, server_name):
+    id_list = queryset.values_list("id", flat=True)
+    if len(id_list) > 1:
+        messages.add_message(
+            request,
+            messages.ERROR,
+            "We can only import one collection at a time using the admin action."
+            " Consider using the django shell for bulk imports.",
+        )
+        return
+    import_candidate_urls_from_api(
+        collection_ids=list(queryset.values_list("id", flat=True)),
+        server_name=server_name,
+    )
     collection_names = ", ".join(queryset.values_list("name", flat=True))
     messages.add_message(
         request,
         messages.INFO,
-        f"Started importing URLs from S3 for: {collection_names}",
+        f"Started importing URLs from the API for: {collection_names} from {server_name.title()}",
     )
+
+
+@admin.action(description="Import candidate URLs from Test")
+def import_candidate_urls_test(modeladmin, request, queryset):
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "test")
+
+
+@admin.action(description="Import candidate URLs from Production")
+def import_candidate_urls_production(modeladmin, request, queryset):
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "production")
 
 
 class ExportCsvMixin:
@@ -128,12 +149,13 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         "division",
         "new_collection",
     )
-    list_filter = ("division", "curation_status")
+    list_filter = ("division", "curation_status", "turned_on")
     search_fields = ("name", "url")
     actions = [
         "export_as_csv",
         "update_config",
-        import_candidate_urls,
+        import_candidate_urls_test,
+        import_candidate_urls_production,
     ]
     ordering = ("cleaning_order",)
 
