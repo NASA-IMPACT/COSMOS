@@ -171,7 +171,7 @@ def import_all_candidate_urls_task():
     shutil.rmtree(TEMP_FOLDER_NAME)
 
 
-def _get_data_to_import(collection, server_name="test"):
+def _get_data_to_import(collection, server_name):
     # ignore these because they are API collections and don't have URLs
     ignore_collections = [
         "/SMD/ASTRO_NAVO_HEASARC/",
@@ -234,7 +234,9 @@ def import_candidate_urls_from_api(server_name="test", collection_ids=[]):
         urls_file = f"{TEMP_FOLDER_NAME}/urls.json"
 
         print("Getting responses from API")
-        data_to_import = _get_data_to_import(collection)
+        data_to_import = _get_data_to_import(
+            server_name=server_name, collection=collection
+        )
         print(f"Got {len(data_to_import)} records for {collection.config_folder}")
 
         print("Dumping django fixture to file")
