@@ -210,9 +210,10 @@ class XmlEditor:
         self, title_value: str, title_criteria: str
     ) -> ET.ElementTree:
         title_criteria = title_criteria.rstrip("/")
-        if "xpath" not in title_value:
+        sinequa_code_markers = ["xpath", "Concat", "IfEmpty", "doc.title", "doc.url1"]
+        if not any(marker in title_value for marker in sinequa_code_markers):
             # exact title replacements need quotes
-            # xpath title rules need to NOT have quotes
+            # sinequa code needs to NOT have quotes
             title_value = f'"{title_value}"'
 
         self._generic_mapping(
