@@ -247,7 +247,11 @@ class Collection(models.Model):
 
     @property
     def github_issue_link(self):
-        return f"https://github.com/NASA-IMPACT/sde-project/issues/{self.github_issue_number}"
+        return (
+            f"https://github.com/NASA-IMPACT/sde-project/issues/{self.github_issue_number}"
+            if self.github_issue_number != 0
+            else ""
+        )
 
     def apply_all_patterns(self):
         """Apply all the patterns."""
