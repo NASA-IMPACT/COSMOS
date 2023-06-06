@@ -43,7 +43,16 @@ def generate_candidate_urls(modeladmin, request, queryset):
 
 
 def import_candidate_urls_from_api_caller(modeladmin, request, queryset, server_name):
-    import_candidate_urls_from_api.delay(
+    id_list = queryset.values_list("id", flat=True)
+    if len(id_list) > 1:
+        messages.add_message(
+            request,
+            messages.ERROR,
+            "We can only import one collection at a time using the admin action."
+            " Consider using the django shell for bulk imports.",
+        )
+        return
+    import_candidate_urls_from_api(
         collection_ids=list(queryset.values_list("id", flat=True)),
         server_name=server_name,
     )
@@ -132,7 +141,7 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin):
         "division",
         "new_collection",
     )
-    list_filter = ("division", "curation_status")
+    list_filter = ("division", "curation_status", "turned_on")
     search_fields = ("name", "url")
     actions = [
         "export_as_csv",
