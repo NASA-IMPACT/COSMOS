@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
@@ -10,7 +12,7 @@ from django.views.generic.list import ListView
 from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 
-from .forms import RequiredUrlForm
+from .forms import CollectionGithubIssueForm, RequiredUrlForm
 from .models import (
     CandidateURL,
     Collection,
@@ -67,27 +69,53 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "collection"
 
     def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
         collection = self.get_object()
+
         form = RequiredUrlForm(request.POST)
-        if "claim_button" in request.POST:
-            user = self.request.user
-            collection.curation_status = Collection.CurationStatusChoices.BEING_CURATED
-            collection.curated_by = user
-            collection.curation_started = timezone.now()
-            collection.save()
-        elif form.is_valid():
-            required_url = form.save(commit=False)
-            required_url.collection = collection
-            required_url.save()
+        github_form = CollectionGithubIssueForm(request.POST)
+
+        if "github_issue_link" in request.POST and github_form.is_valid():
+            github_issue_link = github_form.cleaned_data["github_issue_link"]
+            issue_number = re.search(r"/issues/(\d+)/?$", github_issue_link)
+            if issue_number:
+                github_issue_number = int(issue_number.group(1))
+                collection.github_issue_number = github_issue_number
+                collection.save()
+            else:
+                github_form.add_error(
+                    "github_issue_link", "Invalid GitHub issue link format"
+                )
+                return self.render_to_response(
+                    self.get_context_data(form=form, github_form=github_form)
+                )
+            return redirect("sde_collections:detail", pk=collection.pk)
+
         else:
-            # If the form is not valid, render the detail view with the form and errors.
-            return self.render_to_response(self.get_context_data(form=form))
-        return redirect("sde_collections:detail", pk=collection.pk)
+            if "claim_button" in request.POST:
+                user = self.request.user
+                collection.curation_status = (
+                    Collection.CurationStatusChoices.BEING_CURATED
+                )
+                collection.curated_by = user
+                collection.curation_started = timezone.now()
+                collection.save()
+            elif form.is_valid():
+                required_url = form.save(commit=False)
+                required_url.collection = collection
+                required_url.save()
+            else:
+                # If the form is not valid, render the detail view with the form and errors.
+                return self.render_to_response(self.get_context_data(form=form))
+            return redirect("sde_collections:detail", pk=collection.pk)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if "form" not in context:
             context["form"] = RequiredUrlForm()
+            context["github_form"] = CollectionGithubIssueForm(
+                initial={"github_issue_link": self.get_object().github_issue_link}
+            )
         context["required_urls"] = RequiredUrls.objects.filter(
             collection=self.get_object()
         )
