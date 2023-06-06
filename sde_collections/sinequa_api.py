@@ -40,19 +40,23 @@ class Api:
 
         return meaningful_response
 
-    def query(self, page: int) -> None:
+    def query(self, page: int, collection_config_folder: str = "") -> None:
         url = f"{self.base_url}/api/v1/search.query"
         payload = {
             "app": self.app_name,
             "query": {
                 "name": self.query_name,
-                "action": "search",
                 "text": "",
                 "page": page,
                 "pageSize": 1000,
-                "tab": "all",
+                "advanced": {},
             },
         }
+
+        if collection_config_folder:
+            payload["query"]["advanced"][
+                "collection"
+            ] = f"/SMD/{collection_config_folder}/"
 
         response = self.process_response(url, payload)
 

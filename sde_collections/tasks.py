@@ -171,13 +171,7 @@ def import_all_candidate_urls_task():
     shutil.rmtree(TEMP_FOLDER_NAME)
 
 
-def _get_data_to_import(server_name):
-    config_folder_to_pk_dict = dict(
-        Collection.objects.all().values_list(
-            "config_folder", "pk", flat=False, named=True
-        )
-    )
-
+def _get_data_to_import(collection, server_name="test"):
     # ignore these because they are API collections and don't have URLs
     ignore_collections = [
         "/SMD/ASTRO_NAVO_HEASARC/",
@@ -194,7 +188,9 @@ def _get_data_to_import(server_name):
     page = 1
     while True:
         print(f"Getting page: {page}")
-        response = api.query(page=page)
+        response = api.query(
+            page=page, collection_config_folder=collection.config_folder
+        )
         if response["cursorRowCount"] == 0:
             break
 
@@ -205,10 +201,9 @@ def _get_data_to_import(server_name):
 
             url = record.get("url1")
             title = record.get("title", "")
-            config_folder = full_collection_name.split("/")[-2]
-            collection_pk = config_folder_to_pk_dict.get(config_folder)
+            collection_pk = collection.pk
 
-            if (not url) or (not collection_pk):
+            if not url:
                 continue
 
             augmented_data = {
@@ -226,27 +221,34 @@ def _get_data_to_import(server_name):
 
 
 @celery_app.task()
-def import_all_candidate_urls_from_api(server_name="test"):
+def import_candidate_urls_from_api(server_name="test", collection_ids=[]):
     TEMP_FOLDER_NAME = "temp"
     os.makedirs(TEMP_FOLDER_NAME, exist_ok=True)
 
-    urls_file = f"{TEMP_FOLDER_NAME}/urls.json"
+    if collection_ids:
+        collections = Collection.objects.filter(id__in=collection_ids)
+    else:
+        collections = Collection.objects.all()
 
-    print("Getting responses from API")
-    data_to_import = _get_data_to_import(server_name)
+    for collection in collections:
+        urls_file = f"{TEMP_FOLDER_NAME}/urls.json"
 
-    print("Dumping django fixture to file")
-    json.dump(data_to_import, open(urls_file, "w"))
+        print("Getting responses from API")
+        data_to_import = _get_data_to_import(collection)
+        print(f"Got {len(data_to_import)} records for {collection.config_folder}")
 
-    print("Deleting existing candidate URLs")
-    CandidateURL.objects.all().delete()
+        print("Dumping django fixture to file")
+        json.dump(data_to_import, open(urls_file, "w"))
 
-    print("Loading fixture; this may take a while")
-    subprocess.run(f'python manage.py loaddata "{urls_file}"', shell=True)
+        print("Deleting existing candidate URLs")
+        collection.candidate_urls.all().delete()
 
-    print("Applying existing patterns; this may take a while")
-    for collection in Collection.objects.all():
-        collection.apply_all_patterns()
+        print("Loading fixture; this may take a while")
+        subprocess.run(f'python manage.py loaddata "{urls_file}"', shell=True)
+
+        print("Applying existing patterns; this may take a while")
+        for collection in Collection.objects.all():
+            collection.apply_all_patterns()
 
     print("Deleting temp files")
     shutil.rmtree(TEMP_FOLDER_NAME)
