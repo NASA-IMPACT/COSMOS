@@ -135,13 +135,24 @@ class Collection(models.Model):
         return color_choices[self.curation_status]
 
     def _process_exclude_list(self):
-        """Process the exclude list."""
+        """Process the exclude list.
+        Multi-Url patterns need a star at the beginning and at the end
+        Individual Url Patterns need a star at the beginning
+        """
         exclude_list = []
         for exclude_pattern in self.excludepattern.all():
-            if exclude_pattern.match_pattern.strip("*").strip().startswith("http"):
-                exclude_list.append(f"{exclude_pattern.match_pattern}*")
-            else:
-                exclude_list.append(f"*{exclude_pattern.match_pattern}*")
+            # we don't trust the bracketing stars from the system, so we remove any
+            processed_pattern = exclude_pattern.match_pattern.strip().strip("*").strip()
+            if not processed_pattern.startswith("http"):
+                # if it doesn't begin with http, it must need a star at the beginning
+                processed_pattern = f"*{processed_pattern}"
+            if (
+                exclude_pattern.match_pattern_type
+                == BaseMatchPattern.MatchPatternTypeChoices.MULTI_URL_PATTERN
+            ):
+                # all multi urls should have a star at the end, but individuals should not
+                processed_pattern = f"{processed_pattern}*"
+            exclude_list.append(processed_pattern)
         return exclude_list
 
     def _process_title_list(self):
