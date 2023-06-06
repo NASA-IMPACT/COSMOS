@@ -4,7 +4,7 @@ from django.contrib import admin, messages
 from django.http import HttpResponse
 
 from .models import CandidateURL, Collection, TitlePattern
-from .tasks import import_candidate_urls_task
+from .tasks import import_candidate_urls_from_api
 
 
 @admin.action(description="Import metadata from Sinequa configs")
@@ -44,12 +44,14 @@ def generate_candidate_urls(modeladmin, request, queryset):
 
 @admin.action(description="Import candidate URLs")
 def import_candidate_urls(modeladmin, request, queryset):
-    import_candidate_urls_task.delay(list(queryset.values_list("id", flat=True)))
+    import_candidate_urls_from_api.delay(
+        collection_ids=list(queryset.values_list("id", flat=True))
+    )
     collection_names = ", ".join(queryset.values_list("name", flat=True))
     messages.add_message(
         request,
         messages.INFO,
-        f"Started importing URLs from S3 for: {collection_names}",
+        f"Started importing URLs from the API for: {collection_names}",
     )
 
 
