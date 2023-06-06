@@ -135,25 +135,10 @@ class Collection(models.Model):
         return color_choices[self.curation_status]
 
     def _process_exclude_list(self):
-        """Process the exclude list.
-        Multi-Url patterns need a star at the beginning and at the end
-        Individual Url Patterns need a star at the beginning
-        """
-        exclude_list = []
-        for exclude_pattern in self.excludepattern.all():
-            # we don't trust the bracketing stars from the system, so we remove any
-            processed_pattern = exclude_pattern.match_pattern.strip().strip("*").strip()
-            if not processed_pattern.startswith("http"):
-                # if it doesn't begin with http, it must need a star at the beginning
-                processed_pattern = f"*{processed_pattern}"
-            if (
-                exclude_pattern.match_pattern_type
-                == BaseMatchPattern.MatchPatternTypeChoices.MULTI_URL_PATTERN
-            ):
-                # all multi urls should have a star at the end, but individuals should not
-                processed_pattern = f"{processed_pattern}*"
-            exclude_list.append(processed_pattern)
-        return exclude_list
+        """Process the exclude list."""
+        return [
+            pattern._process_match_pattern() for pattern in self.excludepattern.all()
+        ]
 
     def _process_title_list(self):
         """Process the title list"""
@@ -428,6 +413,24 @@ class BaseMatchPattern(models.Model):
             )
         elif self.match_pattern_type == self.MatchPatternTypeChoices.XPATH_PATTERN:
             raise NotImplementedError
+
+    def _process_match_pattern(self):
+        """
+        Multi-Url patterns need a star at the beginning and at the end
+        Individual Url Patterns need a star at the beginning
+        """
+        # we don't trust the bracketing stars from the system, so we remove any
+        processed_pattern = self.match_pattern.strip().strip("*").strip()
+        if not processed_pattern.startswith("http"):
+            # if it doesn't begin with http, it must need a star at the beginning
+            processed_pattern = f"*{processed_pattern}"
+        if (
+            self.match_pattern_type
+            == BaseMatchPattern.MatchPatternTypeChoices.MULTI_URL_PATTERN
+        ):
+            # all multi urls should have a star at the end, but individuals should not
+            processed_pattern = f"{processed_pattern}*"
+        return processed_pattern
 
     def apply(self):
         raise NotImplementedError
