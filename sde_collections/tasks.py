@@ -7,6 +7,8 @@ import zipfile
 import boto3
 import botocore
 from django.conf import settings
+from django.core import management
+from django.core.management.commands import loaddata
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
@@ -225,13 +227,10 @@ def import_candidate_urls_from_api(server_name="test", collection_ids=[]):
     TEMP_FOLDER_NAME = "temp"
     os.makedirs(TEMP_FOLDER_NAME, exist_ok=True)
 
-    if collection_ids:
-        collections = Collection.objects.filter(id__in=collection_ids)
-    else:
-        collections = Collection.objects.all()
+    collections = Collection.objects.filter(id__in=collection_ids)
 
     for collection in collections:
-        urls_file = f"{TEMP_FOLDER_NAME}/urls.json"
+        urls_file = f"{TEMP_FOLDER_NAME}/{collection.config_folder}.json"
 
         print("Getting responses from API")
         data_to_import = _get_data_to_import(
@@ -243,14 +242,15 @@ def import_candidate_urls_from_api(server_name="test", collection_ids=[]):
         json.dump(data_to_import, open(urls_file, "w"))
 
         print("Deleting existing candidate URLs")
+        # this sometimes takes a while
         collection.candidate_urls.all().delete()
 
         print("Loading fixture; this may take a while")
-        subprocess.run(f'python manage.py loaddata "{urls_file}"', shell=True)
+        # subprocess.call(f'python manage.py loaddata "{urls_file}"', shell=True)
+        management.call_command(loaddata.Command(), urls_file)
 
         print("Applying existing patterns; this may take a while")
-        for collection in Collection.objects.all():
-            collection.apply_all_patterns()
+        collection.apply_all_patterns()
 
     print("Deleting temp files")
     shutil.rmtree(TEMP_FOLDER_NAME)
