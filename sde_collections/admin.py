@@ -43,7 +43,7 @@ def generate_candidate_urls(modeladmin, request, queryset):
 
 
 def import_candidate_urls_from_api_caller(modeladmin, request, queryset, server_name):
-    import_candidate_urls_from_api(
+    import_candidate_urls_from_api.delay(
         collection_ids=list(queryset.values_list("id", flat=True)),
         server_name=server_name,
     )
