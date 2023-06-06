@@ -142,6 +142,13 @@ class Collection(models.Model):
 
     def _process_title_list(self):
         """Process the title list"""
+        title_rules = []
+        for title_pattern in self.titlepattern.all():
+            processed_pattern = {
+                "title_criteria": title_pattern._process_match_pattern,
+                "title_value": title_pattern.title_pattern,
+            }
+            title_rules.append(processed_pattern)
         return []
 
     def generate_new_config(self):
@@ -487,8 +494,8 @@ class ExcludePattern(BaseMatchPattern):
 class TitlePattern(BaseMatchPattern):
     title_pattern = models.CharField(
         "Title Pattern",
-        help_text="This is the pattern for the new title. You can write your own text, as well as "
-        "add references to a specific xpath or the orignal title. For example 'James Webb {scraped_title}: {xpath}'",
+        help_text="This is the pattern for the new title. You can either write an exact replacement string"
+        "(no quotes required) or you can write sinequa-valid code",
     )
 
     def apply(self):
