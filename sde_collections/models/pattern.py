@@ -119,7 +119,7 @@ class TitlePattern(BaseMatchPattern):
     title_pattern = models.CharField(
         "Title Pattern",
         help_text="This is the pattern for the new title. You can either write an exact replacement string"
-        "(no quotes required) or you can write sinequa-valid code",
+        " (no quotes required) or you can write sinequa-valid code",
     )
 
     def apply(self):
