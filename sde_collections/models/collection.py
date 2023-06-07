@@ -3,7 +3,8 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from slugify import slugify
 
-from ..db_to_xml import XmlEditor
+from config_generation.db_to_xml import XmlEditor
+
 from ..sinequa_utils import Sinequa
 from ..utils.github_helper import GitHubHandler
 from .collection_choice_fields import (
