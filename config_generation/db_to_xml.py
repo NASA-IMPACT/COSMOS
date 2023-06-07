@@ -186,6 +186,26 @@ class XmlEditor:
         """
         self.update_or_add_element_value("Url", url)
 
+    def _mapping_exists(self, new_mapping: ET.Element):
+        """
+        Check if the mapping with given parameters already exists in the XML tree
+        """
+        xml_root = self.xml_tree.getroot()
+
+        for mapping in xml_root.findall("Mapping"):
+            existing_mapping = {
+                child.tag: (child.text if child.text is not None else "")
+                for child in mapping
+            }
+            new_mapping_dict = {
+                child.tag: (child.text if child.text is not None else "")
+                for child in new_mapping
+            }
+            if existing_mapping == new_mapping_dict:
+                return True
+
+        return False
+
     def _generic_mapping(
         self,
         name: str = "",
@@ -204,7 +224,9 @@ class XmlEditor:
         ET.SubElement(mapping, "Value").text = value
         ET.SubElement(mapping, "Selection").text = selection
         ET.SubElement(mapping, "DefaultValue").text = ""
-        xml_root.append(mapping)
+
+        if not self._mapping_exists(mapping):
+            xml_root.append(mapping)
 
     def add_title_mapping(
         self, title_value: str, title_criteria: str
@@ -267,9 +289,13 @@ class XmlEditor:
         """
 
         xml_root = self.xml_tree.getroot()
-        ET.SubElement(
-            xml_root, "UrlIndexExcluded"
-        ).text = url_pattern  # this adds an indexing rule (doesn't overwrite)
+
+        for url_index_excluded in xml_root.findall("UrlIndexExcluded"):
+            if url_index_excluded.text == url_pattern:
+                return  # stop the function if the url pattern already exists
+
+        # add the url pattern if it doesn't already exist
+        ET.SubElement(xml_root, "UrlIndexExcluded").text = url_pattern
 
     def add_url_include(self, url_pattern: str) -> None:
         """
