@@ -48,4 +48,5 @@ class CurationStatusChoices(models.IntegerChoices):
     DELETE_COMBINE_COLLECTION = 7, "Delete/Combine Collection"
     NEEDS_RESCRAPING = 4, "Needs Rescraping"
     CURATED = 5, "Curated"
+    GITHUB_PR_CREATED = 8, "GitHub PR Created"
     IN_PROD = 6, "In Production"
