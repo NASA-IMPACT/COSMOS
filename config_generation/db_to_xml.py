@@ -1,7 +1,6 @@
-import os
-import re
 import xml.etree.ElementTree as ET
-from xml.dom import minidom
+
+import xmltodict
 
 
 class XmlEditor:
@@ -11,13 +10,13 @@ class XmlEditor:
     An ouput path is given and the etree is saved to it.
     """
 
-    def __init__(self, xml_path: str):
-        self.input_path = xml_path
+    def __init__(self, xml_string: str):
+        self.input_path = xml_string
         self.xml_tree = self._get_tree(self.input_path)
 
-    def _get_tree(self, xml_path) -> ET.ElementTree:
+    def _get_tree(self, xml_string) -> ET.ElementTree:
         """takes the path of an xml file and opens it as an ElementTree object"""
-        return ET.parse(xml_path)
+        return ET.ElementTree(ET.fromstring(xml_string))
 
     def get_tag_value(self, tag_name: str) -> list:
         """
@@ -26,98 +25,31 @@ class XmlEditor:
         """
         return [element.text for element in self.xml_tree.findall(tag_name)]
 
-    def _add_declaration(self, output_path: str):
-        """opens an existing file and adds a declaration"""
-        declaration = """<?xml version="1.0" encoding="utf-8"?>"""
-        with open(output_path, "r+") as f:
-            content = f.read()
-            f.seek(0, 0)
-            f.write(declaration.rstrip("\r\n") + "\n" + content)
+    def _add_declaration(self, xml_string: str):
+        """adds xml declaration to xml string"""
+        declaration = """<?xml version="1.0" encoding="utf-8"?>\n"""
 
-    def _update_config_xml(self, output_path: str):
-        self.xml_tree.write(
-            output_path,
+        return declaration + xml_string
+
+    def update_config_xml(self):
+        xml_string = ET.tostring(
+            self.xml_tree.getroot(),
+            encoding="utf8",
             method="html",
-            encoding="utf-8",
             xml_declaration=True,
         )
+        xml_string = xml_string.decode("utf-8")
 
-        self._add_declaration(output_path)
-        self._resave_pretty(output_path)
+        xml_string = self._add_declaration(xml_string)
+        xml_string = self._resave_pretty(xml_string)
 
-    def _resave_pretty(self, output_path):
+        return xml_string
+
+    def _resave_pretty(self, xml_string):
         """opens and resaves a file to reformat it"""
-        import xmltodict
 
-        with open(output_path) as f:
-            xml_data = f.read()
-        xml = xmltodict.parse(xml_data)
-        with open(output_path, "w") as f:
-            f.write(xmltodict.unparse(xml, pretty=True))
-
-    # def _write_xml(self, output_path: str) -> None:
-    #     """
-    #     takes the self.xml_tree ElementTree object and writes it to an output path
-
-    #     although this function can be used on it's own to write a one-off file, most
-    #     config files are actually called default.xml and nested inside a folder,
-    #     therefore create_config_folder_and_default is the usual way to make files
-    #     """
-
-    #     xml_root = self.xml_tree.getroot()
-    #     pretty_xml = self.prettify(xml_root)
-
-    #     with open(output_path, "w", encoding="utf-8") as output_file:
-    #         output_file.write(pretty_xml)
-
-    def create_folder_if_needed(self, folder_path: str):
-        """
-        sinequa configs are source_name/collection_name/default.xml
-        this function helps make the collection_name folder
-        folder path is a full exact path ending in a potential collection_name folder
-        """
-
-        try:
-            os.makedirs(folder_path)
-        except FileExistsError:
-            pass
-        except OSError as error:
-            print(f"Error creating folder '{folder_path}': {error}")
-
-    def create_config_folder_and_default(self, source_name, collection_name):
-        """
-        sinequa configs are source_name/collection_name/default.xml
-        makes a folder named after the collection with a default.xml inside of it
-        does this inside of the the specified source folder
-        """
-
-        # Create a folder named after source inside the desired directory
-        config_folder_path = os.path.join(source_name, collection_name)
-        self.create_folder_if_needed(config_folder_path)
-        xml_path = os.path.join(config_folder_path, "default.xml")
-
-        # self._write_xml(xml_path)
-        self._update_config_xml(xml_path)
-
-    # def expand_empty_tags(self, xml_string: str) -> str:
-    #     """
-    #     etree replaces <></> tags with </> essentially converting empty tag pairs
-    #     to self closing tags. this is not sinequa standard. so this function undoes this behavior
-    #     """
-    #     return re.sub(r"<([^/][^<>]*[^/])/>", r"<\1></\1>", xml_string)
-
-    # def prettify(self, element: ET.Element) -> str:
-    #     """
-    #     By default, the output xml will have extra new lines, self-closing tags
-    #     and weird indents. This function makes all that sinequa standard.
-    #     """
-
-    #     rough_string = ET.tostring(element, "unicode")
-    #     reparsed = minidom.parseString(rough_string)
-    #     pretty_xml = reparsed.toprettyxml(indent="    ")
-    #     pretty_xml = self.expand_empty_tags(pretty_xml)
-
-    #     return "\n".join([line for line in pretty_xml.split("\n") if line.strip()])
+        xml = xmltodict.parse(xml_string)
+        return xmltodict.unparse(xml, pretty=True)
 
     def update_or_add_element_value(
         self,
@@ -186,6 +118,26 @@ class XmlEditor:
         """
         self.update_or_add_element_value("Url", url)
 
+    def _mapping_exists(self, new_mapping: ET.Element):
+        """
+        Check if the mapping with given parameters already exists in the XML tree
+        """
+        xml_root = self.xml_tree.getroot()
+
+        for mapping in xml_root.findall("Mapping"):
+            existing_mapping = {
+                child.tag: (child.text if child.text is not None else "")
+                for child in mapping
+            }
+            new_mapping_dict = {
+                child.tag: (child.text if child.text is not None else "")
+                for child in new_mapping
+            }
+            if existing_mapping == new_mapping_dict:
+                return True
+
+        return False
+
     def _generic_mapping(
         self,
         name: str = "",
@@ -198,21 +150,45 @@ class XmlEditor:
         """
         xml_root = self.xml_tree.getroot()
 
-        mapping = ET.Element("Mapping")
-        ET.SubElement(mapping, "Name").text = name
-        ET.SubElement(mapping, "Description").text = description
-        ET.SubElement(mapping, "Value").text = value
-        ET.SubElement(mapping, "Selection").text = selection
-        ET.SubElement(mapping, "DefaultValue").text = ""
-        xml_root.append(mapping)
+        existing_mapping = None
+        for mapping in xml_root.findall("Mapping"):
+            if (
+                mapping.find("Name").text == name
+                and mapping.find("Selection").text == selection
+            ):
+                existing_mapping = mapping
+                break
+
+        if existing_mapping is not None:
+            # If an existing mapping is found, overwrite its values
+            existing_mapping.find("Value").text = value
+        else:
+            # If no existing mapping is found, create a new one
+            mapping = ET.Element("Mapping")
+            ET.SubElement(mapping, "Name").text = name
+            ET.SubElement(mapping, "Description").text = description
+            ET.SubElement(mapping, "Value").text = value
+            ET.SubElement(mapping, "Selection").text = selection
+            ET.SubElement(mapping, "DefaultValue").text = ""
+            xml_root.append(mapping)
+
+    def add_document_type_mapping(
+        self, document_type: str, criteria: str
+    ) -> ET.ElementTree:
+        self._generic_mapping(
+            name="sourcestr56",
+            value=f'"{document_type}"',
+            selection=f'doc.url1 match "{criteria}"',
+        )
 
     def add_title_mapping(
         self, title_value: str, title_criteria: str
     ) -> ET.ElementTree:
         title_criteria = title_criteria.rstrip("/")
-        if "xpath" not in title_value:
+        sinequa_code_markers = ["xpath", "Concat", "IfEmpty", "doc.title", "doc.url1"]
+        if not any(marker in title_value for marker in sinequa_code_markers):
             # exact title replacements need quotes
-            # xpath title rules need to NOT have quotes
+            # sinequa code needs to NOT have quotes
             title_value = f'"{title_value}"'
 
         self._generic_mapping(
@@ -266,9 +242,13 @@ class XmlEditor:
         """
 
         xml_root = self.xml_tree.getroot()
-        ET.SubElement(
-            xml_root, "UrlIndexExcluded"
-        ).text = url_pattern  # this adds an indexing rule (doesn't overwrite)
+
+        for url_index_excluded in xml_root.findall("UrlIndexExcluded"):
+            if url_index_excluded.text == url_pattern:
+                return  # stop the function if the url pattern already exists
+
+        # add the url pattern if it doesn't already exist
+        ET.SubElement(xml_root, "UrlIndexExcluded").text = url_pattern
 
     def add_url_include(self, url_pattern: str) -> None:
         """

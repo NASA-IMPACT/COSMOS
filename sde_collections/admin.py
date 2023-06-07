@@ -94,8 +94,16 @@ class ExportCsvMixin:
     export_as_csv.short_description = "Export selected as csv"
 
 
+class UpdateConfigMixin:
+    def update_config(self, request, queryset):
+        for collection in queryset:
+            collection.update_existing_config()
+
+    update_config.short_description = "Update configs of selected"
+
+
 @admin.register(Collection)
-class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin):
+class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
     """Admin View for Collection"""
 
     fieldsets = (
@@ -147,6 +155,7 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin):
     search_fields = ("name", "url")
     actions = [
         "export_as_csv",
+        "update_config",
         import_candidate_urls_test,
         import_candidate_urls_production,
     ]
