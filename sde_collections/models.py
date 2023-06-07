@@ -149,7 +149,7 @@ class Collection(models.Model):
                 "title_value": title_pattern.title_pattern,
             }
             title_rules.append(processed_pattern)
-        return []
+        return title_rules
 
     def generate_new_config(self):
         """Generates a new config based on the new collection template."""
