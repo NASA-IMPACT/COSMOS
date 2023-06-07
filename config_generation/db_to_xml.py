@@ -228,6 +228,15 @@ class XmlEditor:
         if not self._mapping_exists(mapping):
             xml_root.append(mapping)
 
+    def add_document_type_mapping(
+        self, document_type: str, criteria: str
+    ) -> ET.ElementTree:
+        self._generic_mapping(
+            name="sourcestr56",
+            value=f'"{document_type}"',
+            selection=f'doc.url1 match "{criteria}"',
+        )
+
     def add_title_mapping(
         self, title_value: str, title_criteria: str
     ) -> ET.ElementTree:

@@ -113,6 +113,17 @@ class Collection(models.Model):
             title_rules.append(processed_pattern)
         return title_rules
 
+    def _process_document_type_list(self):
+        """Process the document type list"""
+        document_type_rules = []
+        for document_type_pattern in self.documenttypepattern.all():
+            processed_pattern = {
+                "criteria": document_type_pattern._process_match_pattern(),
+                "document_type": document_type_pattern.get_document_type_display(),
+            }
+            document_type_rules.append(processed_pattern)
+        return document_type_rules
+
     def generate_new_config(self):
         """Generates a new config based on the new collection template."""
         config_folder = self.config_folder
@@ -177,9 +188,11 @@ class Collection(models.Model):
 
         URL_EXCLUDES = self._process_exclude_list()
         TITLE_RULES = self._process_title_list()
+        DOCUMENT_TYPE_RULES = self._process_document_type_list()
         editor.update_or_add_element_value("TreeRoot", self.tree_root)
         [editor.add_url_exclude(url) for url in URL_EXCLUDES]
-        [editor.add_title_mapping(**title_rule) for title_rule in TITLE_RULES]
+        [editor.add_title_mapping(**rule) for rule in TITLE_RULES]
+        [editor.add_document_type_mapping(**rule) for rule in DOCUMENT_TYPE_RULES]
         editor._update_config_xml(path)
 
     def _compute_config_folder_name(self):
