@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from slugify import slugify
@@ -125,76 +124,25 @@ class Collection(models.Model):
             document_type_rules.append(processed_pattern)
         return document_type_rules
 
-    def generate_new_config(self):
-        """Generates a new config based on the new collection template."""
-        config_folder = self.config_folder
-        document_type = self.document_type
-        division = self.get_division_display()
-        name = self.name
-        tree_root = self.tree_root
-        url = self.url
-
-        URL_EXCLUDES = self._process_exclude_list()
-
-        TITLE_RULES = []
-
-        ORIGINAL_CONFIG_PATH = (
-            settings.BASE_DIR
-            / "sde_collections/xml_templates/new_collection_template.xml"
-        )
-
-        DIVISION_INDEX_MAPPING = {
-            "Astrophysics": "@@Astrophysics",
-            "Planetary Science": "@@Planetary",
-            "Earth Science": "@@EarthScience",
-            "Heliophysics": "@@Heliophysics",
-            "Biological and Physical Sciences": "@@BiologicalAndPhysicalSciences",
-        }
-
-        SINEQUA_SOURCES_FOLDER = (
-            settings.BASE_DIR / "sinequa_configs" / "sources" / "SMD"
-        )
-
-        # collection metadata adding
-        editor = XmlEditor(ORIGINAL_CONFIG_PATH)
-        editor.convert_scraper_to_indexer()
-        # editor.add_id()
-        editor.add_document_type(document_type)
-        editor.update_or_add_element_value("visibility", "publicCollection")
-        editor.update_or_add_element_value("Description", f"Webcrawler for the {name}")
-        editor.update_or_add_element_value("Url", url)
-        editor.update_or_add_element_value("TreeRoot", tree_root)
-        editor.update_or_add_element_value(
-            "ShardIndexes", DIVISION_INDEX_MAPPING[division]
-        )
-        editor.update_or_add_element_value("ShardingStrategy", "Balanced")
-
-        # rule adding
-        [editor.add_url_exclude(url) for url in URL_EXCLUDES]
-        [editor.add_title_mapping(**title_rule) for title_rule in TITLE_RULES]
-
-        editor.create_config_folder_and_default(SINEQUA_SOURCES_FOLDER, config_folder)
-        editor.prettify_config(SINEQUA_SOURCES_FOLDER, config_folder)
-
-    def update_existing_config(self):
-        SINEQUA_SOURCES_FOLDER = (
-            settings.BASE_DIR / "sinequa_configs" / "sources" / "SMD"
-        )
-        path = f"{SINEQUA_SOURCES_FOLDER}/{self.config_folder}/default.xml"
-        editor = XmlEditor(path)
-
-        # TODO: an argument could be made for re-writing all relevant sinequa config
-        # fields here, however, the complications are worth thinking about before blindly
-        # doing it, so in this v0.1 we will only do tree_root and rules
+    def update_config_xml(self, original_config_string):
+        editor = XmlEditor(original_config_string)
 
         URL_EXCLUDES = self._process_exclude_list()
         TITLE_RULES = self._process_title_list()
         DOCUMENT_TYPE_RULES = self._process_document_type_list()
-        editor.update_or_add_element_value("TreeRoot", self.tree_root)
-        [editor.add_url_exclude(url) for url in URL_EXCLUDES]
-        [editor.add_title_mapping(**rule) for rule in TITLE_RULES]
-        [editor.add_document_type_mapping(**rule) for rule in DOCUMENT_TYPE_RULES]
-        editor._update_config_xml(path)
+
+        if self.tree_root:
+            editor.update_or_add_element_value("TreeRoot", self.tree_root)
+
+        for url in URL_EXCLUDES:
+            editor.add_url_exclude(url)
+        for title_rule in TITLE_RULES:
+            editor.add_title_mapping(**title_rule)
+        for rule in DOCUMENT_TYPE_RULES:
+            editor.add_document_type_mapping(**rule)
+
+        updated_config_xml_string = editor.update_config_xml()
+        return updated_config_xml_string
 
     def _compute_config_folder_name(self):
         """
@@ -221,14 +169,6 @@ class Collection(models.Model):
         self.save()
 
         return True
-
-    def export_metadata_to_sinequa_config(self):
-        """Export metadata to Sinequa."""
-        if not self.config_folder:
-            return
-        sinequa = Sinequa(config_folder=self.config_folder)
-        sinequa.update_treeroot(self.tree_root)
-        sinequa.update_document_type(Collection.DocumentTypes(self.document_type).label)
 
     def __str__(self):
         """Unicode representation of Collection."""

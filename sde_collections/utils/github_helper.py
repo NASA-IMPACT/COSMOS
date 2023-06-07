@@ -24,8 +24,7 @@ class GitHubHandler:
         contents = self.repo.get_contents(FILE_PATH, ref=self.github_branch)
 
         FILE_CONTENTS = contents.decoded_content.decode("utf-8")
-        # add two lines to the end of the file. this is just to test the pipeline
-        FILE_CONTENTS = FILE_CONTENTS + "\n\n"
+        FILE_CONTENTS = collection.update_config_xml(FILE_CONTENTS)
 
         COMMIT_MESSAGE = f"Webapp: Update {collection.name}"
 
@@ -50,4 +49,4 @@ class GitHubHandler:
     def push_to_github(self):
         for collection in self.collections:
             self._update_file_contents(collection)
-        self.create_pull_request()
+        # self.create_pull_request()
