@@ -98,13 +98,20 @@ class Collection(models.Model):
 
     def _process_exclude_list(self):
         """Process the exclude list."""
-        exclude_list = []
-        for exclude_pattern in self.exclude_patterns.all():
-            if exclude_pattern.match_pattern.strip("*").strip().startswith("http"):
-                exclude_list.append(f"{exclude_pattern.match_pattern}*")
-            else:
-                exclude_list.append(f"*{exclude_pattern.match_pattern}*")
-        return exclude_list
+        return [
+            pattern._process_match_pattern() for pattern in self.excludepattern.all()
+        ]
+
+    def _process_title_list(self):
+        """Process the title list"""
+        title_rules = []
+        for title_pattern in self.titlepattern.all():
+            processed_pattern = {
+                "title_criteria": title_pattern._process_match_pattern(),
+                "title_value": title_pattern.title_pattern,
+            }
+            title_rules.append(processed_pattern)
+        return title_rules
 
     def generate_new_config(self):
         """Generates a new config based on the new collection template."""
@@ -156,6 +163,24 @@ class Collection(models.Model):
 
         editor.create_config_folder_and_default(SINEQUA_SOURCES_FOLDER, config_folder)
         editor.prettify_config(SINEQUA_SOURCES_FOLDER, config_folder)
+
+    def update_existing_config(self):
+        SINEQUA_SOURCES_FOLDER = (
+            settings.BASE_DIR / "sinequa_configs" / "sources" / "SMD"
+        )
+        path = f"{SINEQUA_SOURCES_FOLDER}/{self.config_folder}/default.xml"
+        editor = XmlEditor(path)
+
+        # TODO: an argument could be made for re-writing all relevant sinequa config
+        # fields here, however, the complications are worth thinking about before blindly
+        # doing it, so in this v0.1 we will only do tree_root and rules
+
+        URL_EXCLUDES = self._process_exclude_list()
+        TITLE_RULES = self._process_title_list()
+        editor.update_or_add_element_value("TreeRoot", self.tree_root)
+        [editor.add_url_exclude(url) for url in URL_EXCLUDES]
+        [editor.add_title_mapping(**title_rule) for title_rule in TITLE_RULES]
+        editor._update_config_xml(path)
 
     def _compute_config_folder_name(self):
         """
