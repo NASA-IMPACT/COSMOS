@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 
-from sde_collections.models import Collection
+from sde_collections.models.collection import Collection
 
 
 def process_possible_list(possible_list):
