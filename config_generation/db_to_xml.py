@@ -216,14 +216,26 @@ class XmlEditor:
         """
         xml_root = self.xml_tree.getroot()
 
-        mapping = ET.Element("Mapping")
-        ET.SubElement(mapping, "Name").text = name
-        ET.SubElement(mapping, "Description").text = description
-        ET.SubElement(mapping, "Value").text = value
-        ET.SubElement(mapping, "Selection").text = selection
-        ET.SubElement(mapping, "DefaultValue").text = ""
+        existing_mapping = None
+        for mapping in xml_root.findall("Mapping"):
+            if (
+                mapping.find("Name").text == name
+                and mapping.find("Selection").text == selection
+            ):
+                existing_mapping = mapping
+                break
 
-        if not self._mapping_exists(mapping):
+        if existing_mapping is not None:
+            # If an existing mapping is found, overwrite its values
+            existing_mapping.find("Value").text = value
+        else:
+            # If no existing mapping is found, create a new one
+            mapping = ET.Element("Mapping")
+            ET.SubElement(mapping, "Name").text = name
+            ET.SubElement(mapping, "Description").text = description
+            ET.SubElement(mapping, "Value").text = value
+            ET.SubElement(mapping, "Selection").text = selection
+            ET.SubElement(mapping, "DefaultValue").text = ""
             xml_root.append(mapping)
 
     def add_document_type_mapping(
