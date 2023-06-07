@@ -11,6 +11,7 @@ from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
 from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .forms import CollectionGithubIssueForm, RequiredUrlForm
 from .models.candidate_url import CandidateURL
@@ -25,6 +26,7 @@ from .serializers import (
     ExcludePatternSerializer,
     TitlePatternSerializer,
 )
+from .tasks import push_to_github_task
 
 User = get_user_model()
 
@@ -279,3 +281,19 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
+
+
+class PushToGithubView(APIView):
+    def post(self, request):
+        collection_ids = request.POST.getlist("collection_ids[]", [])
+        if len(collection_ids) == 0:
+            return Response(
+                "collection_ids can't be empty.", status=status.HTTP_400_BAD_REQUEST
+            )
+
+        push_to_github_task(collection_ids)
+
+        return Response(
+            {"Success": "Started pushing collections to github"},
+            status=status.HTTP_200_OK,
+        )

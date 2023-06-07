@@ -18,6 +18,7 @@ from scraper.scraper.spiders.base_spider import spider_factory
 from .models.candidate_url import CandidateURL
 from .models.collection import Collection
 from .sinequa_api import Api
+from .utils.github_helper import GitHubHandler
 
 
 @celery_app.task()
@@ -255,3 +256,10 @@ def import_candidate_urls_from_api(server_name="test", collection_ids=[]):
 
     print("Deleting temp files")
     shutil.rmtree(TEMP_FOLDER_NAME)
+
+
+@celery_app.task()
+def push_to_github_task(collection_ids):
+    collections = Collection.objects.filter(id__in=collection_ids)
+    github_handler = GitHubHandler(collections)
+    github_handler.push_to_github()

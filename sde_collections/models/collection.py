@@ -6,6 +6,7 @@ from slugify import slugify
 from config_generation.db_to_xml import XmlEditor
 
 from ..sinequa_utils import Sinequa
+from ..utils.github_helper import GitHubHandler
 from .collection_choice_fields import (
     ConnectorChoices,
     CurationStatusChoices,
@@ -257,6 +258,11 @@ class Collection(models.Model):
             pattern.apply()
         for pattern in self.documenttypepattern.all():
             pattern.apply()
+
+    def push_config_to_github(self):
+        """Push configs with rules to github."""
+        github = GitHubHandler(collection=self)
+        github.push_config_to_github()
 
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
