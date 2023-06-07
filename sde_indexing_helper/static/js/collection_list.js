@@ -19,6 +19,7 @@ let table = $('#collection_table').DataTable({
         {
             text: 'Push selected collections to GitHub',
             action: function (e, dt, node, config) {
+                var collection_ids = [];
                 $('#collection_table').DataTable().rows({ selected: true }).every(function (rowIdx, tableLoop, rowLoop) {
                     var data = this.data();
                     var collection_name = $(data[1]).text().slice(0, -14); // remove " chevron_right" from end of string
@@ -27,9 +28,18 @@ let table = $('#collection_table').DataTable({
 
                     if (curation_status != "Curated") {
                         toastr.error(`Can't push <strong>${collection_name}</strong> because its status is not "Curated".`);
-                        return;
+                    } else {
+                        collection_ids.push(collection_id);
+                        toastr.success(`Started pushing <strong>${collection_name}</strong> to GitHub...`);
                     }
-                    toastr.success(`Started pushing <strong>${collection_name}</strong> to GitHub...`);
+                });
+                $.ajax({
+                    url: '/api/collections/push_to_github/',
+                    type: "POST",
+                    data: {
+                        collection_ids: collection_ids,
+                        csrfmiddlewaretoken: csrftoken
+                    },
                 });
             }
         }
