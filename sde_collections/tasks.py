@@ -15,7 +15,8 @@ from scrapy.utils.project import get_project_settings
 from config import celery_app
 from scraper.scraper.spiders.base_spider import spider_factory
 
-from .models import CandidateURL, Collection
+from .models.candidate_url import CandidateURL
+from .models.collection import Collection
 from .sinequa_api import Api
 
 

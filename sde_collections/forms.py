@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Collection, RequiredUrls
+from .models.collection import Collection, RequiredUrls
 
 
 class RequiredUrlForm(forms.ModelForm):
