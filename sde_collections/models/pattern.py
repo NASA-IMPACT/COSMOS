@@ -45,6 +45,24 @@ class BaseMatchPattern(models.Model):
         elif self.match_pattern_type == self.MatchPatternTypeChoices.XPATH_PATTERN:
             raise NotImplementedError
 
+    def _process_match_pattern(self):
+        """
+        Multi-Url patterns need a star at the beginning and at the end
+        Individual Url Patterns need a star at the beginning
+        """
+        # we don't trust the bracketing stars from the system, so we remove any
+        processed_pattern = self.match_pattern.strip().strip("*").strip()
+        if not processed_pattern.startswith("http"):
+            # if it doesn't begin with http, it must need a star at the beginning
+            processed_pattern = f"*{processed_pattern}"
+        if (
+            self.match_pattern_type
+            == BaseMatchPattern.MatchPatternTypeChoices.MULTI_URL_PATTERN
+        ):
+            # all multi urls should have a star at the end, but individuals should not
+            processed_pattern = f"{processed_pattern}*"
+        return processed_pattern
+
     def apply(self):
         raise NotImplementedError
 
@@ -100,8 +118,8 @@ class ExcludePattern(BaseMatchPattern):
 class TitlePattern(BaseMatchPattern):
     title_pattern = models.CharField(
         "Title Pattern",
-        help_text="This is the pattern for the new title. You can write your own text, as well as "
-        "add references to a specific xpath or the orignal title. For example 'James Webb {scraped_title}: {xpath}'",
+        help_text="This is the pattern for the new title. You can either write an exact replacement string"
+        "(no quotes required) or you can write sinequa-valid code",
     )
 
     def apply(self):
