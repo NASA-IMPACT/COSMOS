@@ -1,12 +1,9 @@
-import json
-import os
-
 from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
-from .models import Collection
+from .models.collection import Collection
 from .sinequa_utils import Sinequa
-from .tasks import generate_candidate_urls_async, import_all_candidate_urls_from_api
+from .tasks import import_candidate_urls_from_api
 
 
 class CollectionTestCase(TestCase):
@@ -22,30 +19,6 @@ class CollectionTestCase(TestCase):
         )
 
 
-class GenerateURLsTestCase(TestCase):
-    fixtures = [
-        "sde_collections/fixtures/collections.json",
-    ]
-
-    def test_generate_urls(self):
-        config_folder = "ASTRO_exoMAST_API_Website"
-        generate_candidate_urls_async(config_folder)
-
-        # test whether folder got created
-        self.assertTrue(os.path.exists(f"scraper/scraped_urls/{config_folder}"))
-
-        # test whether urls got created
-        self.assertTrue(
-            os.path.exists(f"scraper/scraped_urls/{config_folder}/urls.jsonl")
-        )
-
-        # test whether url can be read with json
-        with open(f"scraper/scraped_urls/{config_folder}/urls.jsonl") as f:
-            line = json.loads(f.readlines()[0])
-
-        self.assertEqual(line["url"], "https://exo.mast.stsci.edu/docs/")
-
-
 class CreateExcludePatternTestCase(TestCase):
     def test_create_exclude_pattern(self):
         factory = APIRequestFactory()
@@ -57,5 +30,16 @@ class CreateExcludePatternTestCase(TestCase):
 
 class ImportCandidateURLsTestCase(TestCase):
     def test_import_all_candidate_urls_from_api(self):
-        import_all_candidate_urls_from_api()
+        import_candidate_urls_from_api()
         self.assertEqual(1, 1)
+
+
+class GitHubTestCase(TestCase):
+    fixtures = [
+        "sde_collections/fixtures/collections.json",
+    ]
+
+    def test_push_config_to_github(self):
+        collection = Collection.objects.first()
+        collection.push_config_to_github()
+        self.assertEqual(collection.name, "NASA POWER")
