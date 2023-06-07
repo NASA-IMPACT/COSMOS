@@ -12,20 +12,30 @@ class GitHubHandler:
         self.dev_branch = self.repo.default_branch
         self.collection = collection
 
-    def update_file_contents(self, file_path, file_contents, commit_message):
+    def _get_config_file_path(self):
+        file_path = f"sources/SMD/{self.collection.config_folder}/default.xml"
+        return file_path
+
+    def _update_file_contents(self):
         """
         Update file contents on GitHub
         """
-        g = self.github_handler
-        repo = g.get_repo(f"{self.github_username}/{self.github_repo}")
-        contents = repo.get_contents(file_path, ref=self.github_branch)
-        repo.update_file(
+        FILE_PATH = self._get_config_file_path()
+        contents = self.repo.get_contents(FILE_PATH, ref=self.github_branch)
+
+        FILE_CONTENTS = contents.decoded_content.decode("utf-8")
+        # add two lines to the end of the file. this is just to test the pipeline
+        FILE_CONTENTS = FILE_CONTENTS + "\n\n"
+
+        COMMIT_MESSAGE = f"Webapp: Update {self.collection.name}"
+
+        self.repo.update_file(
             contents.path,
-            commit_message,
-            file_contents,
+            COMMIT_MESSAGE,
+            FILE_CONTENTS,
             contents.sha,
             branch=self.github_branch,
         )
 
     def push_config_to_github(self):
-        print(f"pushing config to github for collection {self.collection.name}")
+        self._update_file_contents()
