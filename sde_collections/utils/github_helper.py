@@ -49,4 +49,4 @@ class GitHubHandler:
     def push_to_github(self):
         for collection in self.collections:
             self._update_file_contents(collection)
-        # self.create_pull_request()
+        self.create_pull_request()
