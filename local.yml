@@ -13,12 +13,13 @@ services:
     container_name: sde_indexing_helper_local_django
     depends_on:
       - postgres
-      # - redis
+      - redis
     volumes:
       - .:/app:z
     env_file:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
+      - ./.env
     ports:
       - "8000:8000"
     command: /start
@@ -51,19 +52,19 @@ services:
   #     - "9000:9000"
   #   command: /start-docs
 
-  # redis:
-  #   image: redis:6
-  #   container_name: sde_indexing_helper_local_redis
+  redis:
+    image: redis:6
+    container_name: sde_indexing_helper_local_redis
 
-  # celeryworker:
-  #   <<: *django
-  #   image: sde_indexing_helper_local_celeryworker
-  #   container_name: sde_indexing_helper_local_celeryworker
-  #   depends_on:
-  #     - redis
-  #     - postgres
-  #   ports: []
-  #   command: /start-celeryworker
+  celeryworker:
+    <<: *django
+    image: sde_indexing_helper_local_celeryworker
+    container_name: sde_indexing_helper_local_celeryworker
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-celeryworker
 
   # celerybeat:
   #   <<: *django
@@ -75,10 +76,10 @@ services:
   #   ports: []
   #   command: /start-celerybeat
 
-  # flower:
-  #   <<: *django
-  #   image: sde_indexing_helper_local_flower
-  #   container_name: sde_indexing_helper_local_flower
-  #   ports:
-  #     - "5555:5555"
-  #   command: /start-flower
+  flower:
+    <<: *django
+    image: sde_indexing_helper_local_flower
+    container_name: sde_indexing_helper_local_flower
+    ports:
+      - "5555:5555"
+    command: /start-flower
