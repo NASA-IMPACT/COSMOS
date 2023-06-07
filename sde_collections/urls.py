@@ -2,7 +2,6 @@ from django.urls import include, path
 from rest_framework import routers
 
 from .views import (
-    CandidateURLBulkCreateView,
     CandidateURLsListView,
     CandidateURLViewSet,
     CollectionDetailView,
@@ -10,6 +9,7 @@ from .views import (
     CollectionViewSet,
     DocumentTypePatternViewSet,
     ExcludePatternViewSet,
+    PushToGithubView,
     RequiredUrlsDeleteView,
     TitlePatternViewSet,
 )
@@ -27,9 +27,9 @@ urlpatterns = [
     path("", view=CollectionListView.as_view(), name="list"),
     path("<int:pk>/", view=CollectionDetailView.as_view(), name="detail"),
     path(
-        "api/candidate-urls/<str:config_folder>/bulk-create/",
-        CandidateURLBulkCreateView.as_view(),
-        name="candidate-urls-bulk-create",
+        "api/collections/push_to_github/",
+        PushToGithubView.as_view(),
+        name="push-to-github",
     ),
     path(
         "delete-required-url/<int:pk>",
