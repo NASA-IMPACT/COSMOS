@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from .forms import CollectionGithubIssueForm, RequiredUrlForm
 from .models.candidate_url import CandidateURL
 from .models.collection import Collection, RequiredUrls
+from .models.collection_choice_fields import CurationStatusChoices
 from .models.pattern import DocumentTypePattern, ExcludePattern, TitlePattern
 from .serializers import (
     CandidateURLBulkCreateSerializer,
@@ -49,7 +50,7 @@ class CollectionListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["segment"] = "collections"
         context["curators"] = User.objects.filter(groups__name="Curators")
-        context["curation_status_choices"] = Collection.CurationStatusChoices
+        context["curation_status_choices"] = CurationStatusChoices
 
         return context
 
@@ -89,9 +90,7 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
         else:
             if "claim_button" in request.POST:
                 user = self.request.user
-                collection.curation_status = (
-                    Collection.CurationStatusChoices.BEING_CURATED
-                )
+                collection.curation_status = CurationStatusChoices.BEING_CURATED
                 collection.curated_by = user
                 collection.curation_started = timezone.now()
                 collection.save()
