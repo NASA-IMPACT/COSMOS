@@ -13,14 +13,9 @@ from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 
 from .forms import CollectionGithubIssueForm, RequiredUrlForm
-from .models import (
-    CandidateURL,
-    Collection,
-    DocumentTypePattern,
-    ExcludePattern,
-    RequiredUrls,
-    TitlePattern,
-)
+from .models.candidate_url import CandidateURL
+from .models.collection import Collection, RequiredUrls
+from .models.pattern import DocumentTypePattern, ExcludePattern, TitlePattern
 from .serializers import (
     CandidateURLBulkCreateSerializer,
     CandidateURLSerializer,
