@@ -93,6 +93,7 @@ class Collection(models.Model):
             5: "btn-success",
             6: "btn-primary",
             7: "btn-info",
+            8: "btn-secondary",
         }
         return color_choices[self.curation_status]
 

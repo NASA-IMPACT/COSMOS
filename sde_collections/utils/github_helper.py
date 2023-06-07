@@ -1,6 +1,8 @@
 from django.conf import settings
 from github import Github
 
+from ..models.collection_choice_fields import CurationStatusChoices
+
 
 class GitHubHandler:
     def __init__(self, collections, *args, **kwargs):
@@ -49,4 +51,6 @@ class GitHubHandler:
     def push_to_github(self):
         for collection in self.collections:
             self._update_file_contents(collection)
+            collection.curation_status = CurationStatusChoices.GITHUB_PR_CREATED
+            collection.save()
         self.create_pull_request()

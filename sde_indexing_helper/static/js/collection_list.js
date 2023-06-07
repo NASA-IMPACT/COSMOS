@@ -120,6 +120,7 @@ function handleCurationStatusSelect() {
             5: "btn-success",
             6: "btn-primary",
             7: "btn-info",
+            8: "btn-secondary",
         }
         $(`#curation-status-button-${collection_id}`).text(curation_status_text);
         $(`#curation-status-button-${collection_id}`).removeClass('btn-light btn-danger btn-warning btn-info btn-success btn-primary');
