@@ -3,7 +3,9 @@ import csv
 from django.contrib import admin, messages
 from django.http import HttpResponse
 
-from .models import CandidateURL, Collection, TitlePattern
+from .models.candidate_url import CandidateURL
+from .models.collection import Collection
+from .models.pattern import TitlePattern
 from .tasks import import_candidate_urls_from_api
 
 

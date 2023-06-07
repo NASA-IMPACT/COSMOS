@@ -1,0 +1,10 @@
+#id_github_issue_link {
+    width: 50%;
+}
+
+#github-link-error{
+    color: #f44336;
+}
+#github-link-error > ul{
+    list-style-type: none;
+}
