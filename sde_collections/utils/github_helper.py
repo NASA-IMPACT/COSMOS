@@ -2,12 +2,13 @@ from django.conf import settings
 
 
 class GitHub:
-    def __init__(self, *args, **kwargs):
+    def __init__(self, collection, *args, **kwargs):
         self.github_token = settings.GITHUB_ACCESS_TOKEN
         self.github_username = settings.GITHUB_USERNAME
         self.github_repo = settings.GITHUB_REPO
         self.github_branch = settings.GITHUB_BRANCH
         self.github_handler = GitHub(self.github_token)
+        self.collection = collection
 
     def update_file_contents(self, file_path, file_contents, commit_message):
         """
@@ -23,3 +24,6 @@ class GitHub:
             contents.sha,
             branch=self.github_branch,
         )
+
+    def push_config_to_github(self):
+        print(f"pushing config to github for collection {self.collection.name}")
