@@ -178,7 +178,7 @@ class XmlEditor:
         self._generic_mapping(
             name="sourcestr56",
             value=f'"{document_type}"',
-            selection=f'doc.url1 match "{criteria}"',
+            selection=f"doc.url1 match '{criteria}'",
         )
 
     def add_title_mapping(
@@ -194,7 +194,7 @@ class XmlEditor:
         self._generic_mapping(
             name="title",
             value=title_value,
-            selection=f'doc.url1 match "{title_criteria}"',
+            selection=f"doc.url1 match '{title_criteria}'",
         )
 
     def add_job_list_item(self, job_name):
