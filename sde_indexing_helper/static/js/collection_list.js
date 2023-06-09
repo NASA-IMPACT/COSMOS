@@ -1,6 +1,7 @@
 let table = $('#collection_table').DataTable({
     "order": [[0, 'asc']],
     "paging": false,
+    "stateSave": true,
     "dom": 'BPfritip',
     "select": true,
     "buttons": [
@@ -122,9 +123,18 @@ function handleCurationStatusSelect() {
             7: "btn-info",
             8: "btn-secondary",
         }
-        $(`#curation-status-button-${collection_id}`).text(curation_status_text);
-        $(`#curation-status-button-${collection_id}`).removeClass('btn-light btn-danger btn-warning btn-info btn-success btn-primary');
-        $(`#curation-status-button-${collection_id}`).addClass(color_choices[curation_status]);
+
+        $possible_buttons = $('body').find(`[id="curation-status-button-${collection_id}"]`);
+        if ($possible_buttons.length > 1) {
+            $button = $possible_buttons[1];
+            $button = $($button);
+        } else {
+            $button = $(`#curation-status-button-${collection_id}`);
+        }
+        $button.text(curation_status_text);
+        $button.removeClass('btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary');
+        $button.addClass(color_choices[parseInt(curation_status)]);
+        $('#collection_table').DataTable().searchPanes.rebuildPane(6);
 
         postCurationStatus(collection_id, curation_status);
     });
