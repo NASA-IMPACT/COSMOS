@@ -68,14 +68,14 @@ class GitHubHandler:
         self.create_pull_request()
 
     def get_connector_type(self):
-        mydict = {}
         for collection in self.collections:
             print("WORKING ON: ", collection.name)
             contents = self._get_file_contents(collection)
-            FILE_CONTENTS = contents.decoded_content.decode("utf-8")
 
-            if not FILE_CONTENTS:
+            if not contents:
                 continue
+
+            FILE_CONTENTS = contents.decoded_content.decode("utf-8")
 
             connector_xml = xmltodict.parse(FILE_CONTENTS)
             try:
@@ -92,5 +92,3 @@ class GitHubHandler:
             elif "hyperindex" in connector_type:
                 collection.connector_type = ConnectorChoices.JSON
             collection.save()
-            mydict[collection.name] = collection.connector_type
-        return mydict
