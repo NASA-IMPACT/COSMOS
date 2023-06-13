@@ -1,7 +1,9 @@
+import xmltodict
 from django.conf import settings
 from github import Github
+from github.GithubException import UnknownObjectException
 
-from ..models.collection_choice_fields import CurationStatusChoices
+from ..models.collection_choice_fields import ConnectorChoices, CurationStatusChoices
 
 
 class GitHubHandler:
@@ -18,15 +20,25 @@ class GitHubHandler:
         file_path = f"sources/SMD/{collection.config_folder}/default.xml"
         return file_path
 
+    def _get_file_contents(self, collection):
+        """
+        Get file contents from GitHub
+        """
+        FILE_PATH = self._get_config_file_path(collection)
+
+        try:
+            contents = self.repo.get_contents(FILE_PATH, ref=self.github_branch)
+        except UnknownObjectException:
+            return None
+
+        return contents
+
     def _update_file_contents(self, collection):
         """
         Update file contents on GitHub
         """
-        FILE_PATH = self._get_config_file_path(collection)
-        contents = self.repo.get_contents(FILE_PATH, ref=self.github_branch)
-
+        contents = self._get_file_contents(collection)
         FILE_CONTENTS = contents.decoded_content.decode("utf-8")
-        FILE_CONTENTS = collection.update_config_xml(FILE_CONTENTS)
 
         COMMIT_MESSAGE = f"Webapp: Update {collection.name}"
 
@@ -54,3 +66,31 @@ class GitHubHandler:
             collection.curation_status = CurationStatusChoices.GITHUB_PR_CREATED
             collection.save()
         self.create_pull_request()
+
+    def get_connector_type(self):
+        mydict = {}
+        for collection in self.collections:
+            print("WORKING ON: ", collection.name)
+            contents = self._get_file_contents(collection)
+            FILE_CONTENTS = contents.decoded_content.decode("utf-8")
+
+            if not FILE_CONTENTS:
+                continue
+
+            connector_xml = xmltodict.parse(FILE_CONTENTS)
+            try:
+                connector_type = connector_xml["Sinequa"]["Connector"]
+            except KeyError:
+                connector_type = None
+
+            if connector_type is None:
+                collection.connector_type = None
+            elif "crawler2" in connector_type:
+                collection.connector_type = ConnectorChoices.CRAWLER2
+            elif "json" in connector_type:
+                collection.connector_type = ConnectorChoices.JSON
+            elif "hyperindex" in connector_type:
+                collection.connector_type = ConnectorChoices.JSON
+            collection.save()
+            mydict[collection.name] = collection.connector_type
+        return mydict
