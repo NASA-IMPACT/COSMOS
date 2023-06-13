@@ -38,7 +38,10 @@ class SourceChoices(models.IntegerChoices):
 
 
 class ConnectorChoices(models.IntegerChoices):
-    crawler2 = 1, "Web crawler parallel"
+    CRAWLER2 = 1, "crawler2"
+    JSON = 2, "json"
+    HYPERINDEX = 3, "hyperindex"
+    NO_CONNECTOR = 4, "No Connector"
 
 
 class CurationStatusChoices(models.IntegerChoices):
