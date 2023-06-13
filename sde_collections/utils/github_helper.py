@@ -84,11 +84,11 @@ class GitHubHandler:
                 connector_type = None
 
             if connector_type is None:
-                collection.connector_type = None
-            elif "crawler2" in connector_type:
-                collection.connector_type = ConnectorChoices.CRAWLER2
-            elif "json" in connector_type:
-                collection.connector_type = ConnectorChoices.JSON
-            elif "hyperindex" in connector_type:
-                collection.connector_type = ConnectorChoices.JSON
+                collection.connector = ConnectorChoices.NO_CONNECTOR
+            elif connector_type == "crawler2":
+                collection.connector = ConnectorChoices.CRAWLER2
+            elif connector_type == "json":
+                collection.connector = ConnectorChoices.JSON
+            elif connector_type == "hyperindex":
+                collection.connector = ConnectorChoices.HYPERINDEX
             collection.save()

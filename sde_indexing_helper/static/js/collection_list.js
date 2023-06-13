@@ -103,6 +103,12 @@ let table = $('#collection_table').DataTable({
             },
             targets: [4]
         },
+        {
+            searchPanes: {
+                show: true
+            },
+            targets: [-2]
+        },
     ]
 });
 
