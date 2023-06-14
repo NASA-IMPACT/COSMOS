@@ -44,6 +44,7 @@ function initializeDataTable() {
             getVisitedColumn(true_icon, false_icon),
             getDocumentTypeColumn(),
             { "data": "id", "visible": false, "searchable": false },
+            { "data": "generated_title_id", "visible": false, "searchable": false },
         ],
         "createdRow": function (row, data, dataIndex) {
             if (data['excluded']) {
@@ -151,7 +152,7 @@ function getScrapedTitleColumn() {
 function getGeneratedTitleColumn() {
     return {
         "data": "generated_title", "render": function (data, type, row) {
-            return `<input type="text" class="form-control individual_title_input" value='${data}' data-url=${remove_protocol(row['url'])} />`;
+            return `<input type="text" class="form-control individual_title_input" value='${data}' data-generated-title-id=${row['generated_title_id']} data-url=${remove_protocol(row['url'])} />`;
         }
     }
 }
@@ -273,7 +274,12 @@ function handleNewTitleChange() {
     $("body").on("change", ".individual_title_input", function () {
         var match_pattern = $(this).data('url');
         var title_pattern = $(this).val();
-        postTitlePatterns(match_pattern, title_pattern, match_pattern_type = 1, title_pattern_type = 1);
+        var generated_title_id = $(this).data('generated-title-id');
+        if (!title_pattern) {
+            deletePattern(`/api/title-patterns/${generated_title_id}/`, data_type = 'Title Pattern');
+        }else{
+            postTitlePatterns(match_pattern, title_pattern, match_pattern_type = 1, title_pattern_type = 1);
+        }
     });
 }
 
@@ -342,11 +348,6 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0) {
 function postTitlePatterns(match_pattern, title_pattern, match_pattern_type = 1) {
     if (!match_pattern) {
         toastr.error('Please highlight a pattern to change the title.');
-        return;
-    }
-
-    if (!title_pattern) {
-        toastr.error('Please enter a title pattern.');
         return;
     }
 
