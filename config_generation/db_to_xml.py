@@ -1,6 +1,12 @@
+import json
 import xml.etree.ElementTree as ET
 
 import xmltodict
+
+from sde_collections.models.collection_choice_fields import (
+    ConnectorChoices,
+    DocumentTypes,
+)
 
 
 class XmlEditor:
@@ -263,3 +269,43 @@ class XmlEditor:
         ET.SubElement(
             xml_root, "UrlIndexIncluded"
         ).text = url_pattern  # this adds an indexing rule (doesn't overwrite)
+
+    def _find_treeroot_field(self):
+        treeroot = self.xml_tree.find("TreeRoot")
+        if treeroot is None:
+            treeroot = self.xml_tree.find("treeRoot")
+        return treeroot
+
+    def fetch_treeroot(self):
+        treeroot = self._find_treeroot_field()
+        return treeroot.text
+
+    def fetch_document_type(self):
+        DOCUMENT_TYPE_COLUMN = "sourcestr56"
+        try:
+            document_type_text = self.xml_tree.find(
+                f"Mapping[Name='{DOCUMENT_TYPE_COLUMN}']/Value"
+            ).text
+        except AttributeError:
+            return None
+
+        try:
+            document_type = DocumentTypes.lookup_by_text(json.loads(document_type_text))
+        except json.decoder.JSONDecodeError:
+            document_type = None
+        return document_type
+
+    def fetch_connector(self):
+        connector = self.xml_tree.find("Connector")
+        if connector is None:
+            connector = self.xml_tree.find("connector")
+
+        if connector is None:
+            connector = ConnectorChoices.NO_CONNECTOR
+        elif connector.text.strip() == "crawler2":
+            connector = ConnectorChoices.CRAWLER2
+        elif connector.text.strip() == "json":
+            connector = ConnectorChoices.JSON
+        elif connector.text.strip() == "hyperindex":
+            connector = ConnectorChoices.HYPERINDEX
+        return connector
