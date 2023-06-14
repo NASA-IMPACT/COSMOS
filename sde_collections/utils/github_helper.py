@@ -1,9 +1,10 @@
-import xmltodict
 from django.conf import settings
 from github import Github
 from github.GithubException import UnknownObjectException
 
-from ..models.collection_choice_fields import ConnectorChoices, CurationStatusChoices
+from config_generation.db_to_xml import XmlEditor
+
+from ..models.collection_choice_fields import CurationStatusChoices
 
 
 class GitHubHandler:
@@ -67,30 +68,24 @@ class GitHubHandler:
             collection.save()
         self.create_pull_request()
 
-    def get_connector_type(self):
-        mydict = {}
+    def fetch_metadata(self):
+        metadata = {}
         for collection in self.collections:
-            print("WORKING ON: ", collection.name)
             contents = self._get_file_contents(collection)
-            FILE_CONTENTS = contents.decoded_content.decode("utf-8")
 
-            if not FILE_CONTENTS:
+            if not contents:
                 continue
 
-            connector_xml = xmltodict.parse(FILE_CONTENTS)
-            try:
-                connector_type = connector_xml["Sinequa"]["Connector"]
-            except KeyError:
-                connector_type = None
+            FILE_CONTENTS = contents.decoded_content.decode("utf-8")
+            collection_xml = XmlEditor(FILE_CONTENTS)
 
-            if connector_type is None:
-                collection.connector_type = None
-            elif "crawler2" in connector_type:
-                collection.connector_type = ConnectorChoices.CRAWLER2
-            elif "json" in connector_type:
-                collection.connector_type = ConnectorChoices.JSON
-            elif "hyperindex" in connector_type:
-                collection.connector_type = ConnectorChoices.JSON
-            collection.save()
-            mydict[collection.name] = collection.connector_type
-        return mydict
+            tree_root = collection_xml.fetch_treeroot()
+            document_type = collection_xml.fetch_document_type()
+            connector_type = collection_xml.fetch_connector()
+
+            metadata[collection.config_folder] = {
+                "tree_root": tree_root,
+                "document_type": document_type,
+                "connector": connector_type,
+            }
+        return metadata

@@ -2,21 +2,7 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
 from .models.collection import Collection
-from .sinequa_utils import Sinequa
 from .tasks import import_candidate_urls_from_api
-
-
-class CollectionTestCase(TestCase):
-    def test_import_sinequa_metadata(self):
-        sinequa = Sinequa(config_folder="ARSETAppliedSciences")
-        self.assertEqual(
-            sinequa.fetch_treeroot(),
-            "Earth Science/Documents/User Guides and Training/ARSET Applied Sciences/",
-        )
-        self.assertEqual(
-            sinequa.fetch_document_type(),
-            Collection.DocumentTypes.DOCUMENTATION,
-        )
 
 
 class CreateExcludePatternTestCase(TestCase):

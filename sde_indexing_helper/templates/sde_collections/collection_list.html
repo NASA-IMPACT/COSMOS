@@ -24,6 +24,7 @@
                 <th class="text-center">Status</th>
                 <th class="text-center">Curator</th>
                 <th class="text-center">Has Config?</th>
+                <th class="text-center">Connector Type</th>
                 <th class="text-center">Config Folder</th>
             </tr>
         </thead>
@@ -93,6 +94,7 @@
                         </div>
                     </td>
                     <td>{{ collection.has_sinequa_config }}</td>
+                    <td>{{ collection.get_connector_display }}</td>
                     <td>{{ collection.config_folder }}</td>
                 </tr>
             {% endfor %}

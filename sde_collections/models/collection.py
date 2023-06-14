@@ -4,7 +4,6 @@ from slugify import slugify
 
 from config_generation.db_to_xml import XmlEditor
 
-from ..sinequa_utils import Sinequa
 from ..utils.github_helper import GitHubHandler
 from .collection_choice_fields import (
     ConnectorChoices,
@@ -158,15 +157,26 @@ class Collection(models.Model):
         """Import metadata from Sinequa."""
         if not self.config_folder:
             return False
-        sinequa = Sinequa(config_folder=self.config_folder)
+
+        gh = GitHubHandler(collections=[self])
+        metadata = gh.fetch_metadata()
+
+        try:
+            metadata[self.config_folder]
+        except KeyError:
+            return False
 
         # tree root
-        tree_root = sinequa.fetch_treeroot()
+        tree_root = metadata[self.config_folder]["tree_root"]
         self.tree_root = tree_root
 
         # document type
-        document_type = sinequa.fetch_document_type()
+        document_type = metadata[self.config_folder]["document_type"]
         self.document_type = document_type
+
+        # connector
+        connector = metadata[self.config_folder]["connector"]
+        self.connector = connector
 
         self.save()
 
