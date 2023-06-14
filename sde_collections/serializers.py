@@ -35,11 +35,8 @@ class CandidateURLSerializer(serializers.ModelSerializer):
     generated_title_id = serializers.SerializerMethodField()
 
     def get_generated_title_id(self, obj):
-        try:
-            titlepattern = obj.titlepattern_urls.last()
-            return titlepattern.id
-        except Exception:
-            return None
+        titlepattern = obj.titlepattern_urls.last()
+        return titlepattern.id if titlepattern else None
 
     class Meta:
         model = CandidateURL
