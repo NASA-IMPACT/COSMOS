@@ -23,6 +23,7 @@
                 <th class="text-center">New?</th>
                 <th class="text-center">Status</th>
                 <th class="text-center">Curator</th>
+                <th class="text-center">Has Config?</th>
                 <th class="text-center">Config Folder</th>
             </tr>
         </thead>
@@ -91,6 +92,7 @@
                             </div>
                         </div>
                     </td>
+                    <td>{{ collection.has_sinequa_config }}</td>
                     <td>{{ collection.config_folder }}</td>
                 </tr>
             {% endfor %}
