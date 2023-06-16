@@ -2,6 +2,8 @@
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 var collection_id = getCollectionId();
 var selected_text = "";
+var INDIVIDUAL_URL = 1
+var MULTI_URL_PATTERN = 2
 
 $(document).ready(function () {
     handleAjaxStartAndStop();
@@ -45,6 +47,8 @@ function initializeDataTable() {
             getDocumentTypeColumn(),
             { "data": "id", "visible": false, "searchable": false },
             { "data": "generated_title_id", "visible": false, "searchable": false },
+            { "data": "match_pattern_type", "visible": false, "searchable": false },
+            { "data": "candidate_urls_count", "visible": false, "searchable": false },
         ],
         "createdRow": function (row, data, dataIndex) {
             if (data['excluded']) {
@@ -152,7 +156,7 @@ function getScrapedTitleColumn() {
 function getGeneratedTitleColumn() {
     return {
         "data": "generated_title", "render": function (data, type, row) {
-            return `<input type="text" class="form-control individual_title_input" value='${data}' data-generated-title-id=${row['generated_title_id']} data-url=${remove_protocol(row['url'])} />`;
+            return `<input type="text" class="form-control individual_title_input" value='${data}' data-generated-title-id=${row['generated_title_id']} data-match-pattern-type=${row['match_pattern_type']} data-candidate-urls-count=${row['candidate_urls_count']} data-url=${remove_protocol(row['url'])} />`;
         }
     }
 }
@@ -275,8 +279,10 @@ function handleNewTitleChange() {
         var match_pattern = $(this).data('url');
         var title_pattern = $(this).val();
         var generated_title_id = $(this).data('generated-title-id');
+        var match_pattern_type = $(this).data('match-pattern-type');
+        var candidate_urls_count = $(this).data('candidate-urls-count');
         if (!title_pattern) {
-            deletePattern(`/api/title-patterns/${generated_title_id}/`, data_type = 'Title Pattern');
+            deletePattern(`/api/title-patterns/${generated_title_id}/`, data_type = 'Title Pattern', url_type = match_pattern_type, candidate_urls_count= candidate_urls_count);
         }else{
             postTitlePatterns(match_pattern, title_pattern, match_pattern_type = 1, title_pattern_type = 1);
         }
@@ -388,8 +394,12 @@ function postVisited(url) {
     });
 }
 
-function deletePattern(url, data_type) {
-    var confirmDelete = confirm(`Are you sure you want to delete this ${data_type}?`);
+function deletePattern(url, data_type, url_type=null, candidate_urls_count=null) {
+    if (url_type === MULTI_URL_PATTERN) {
+        var confirmDelete = confirm(`YOU ARE ATTEMPTING TO DELETE A MULTI-URL PATTERN. THIS WILL DELETE ${candidate_urls_count} TITLE PATTERNS. Are you sure you want to do this? Currently there is no way to delete a single URL from a Multi-URL pattern`);
+    } else {
+        var confirmDelete = confirm(`Are you sure you want to delete this ${data_type}?`);
+    }
     if (!confirmDelete) {
         return;
     }
