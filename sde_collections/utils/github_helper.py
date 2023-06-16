@@ -1,6 +1,6 @@
 from django.conf import settings
 from github import Github
-from github.GithubException import UnknownObjectException
+from github.GithubException import GithubException, UnknownObjectException
 
 from config_generation.db_to_xml import XmlEditor
 
@@ -40,29 +40,34 @@ class GitHubHandler:
         """
         contents = self._get_file_contents(collection)
         FILE_CONTENTS = contents.decoded_content.decode("utf-8")
+        updated_xml = collection.update_config_xml(FILE_CONTENTS)
 
         COMMIT_MESSAGE = f"Webapp: Update {collection.name}"
 
         self.repo.update_file(
             contents.path,
             COMMIT_MESSAGE,
-            FILE_CONTENTS,
+            updated_xml,
             contents.sha,
             branch=self.github_branch,
         )
 
     def create_pull_request(self):
-        title = f"Webapp: Update {self.collections.count()} config files"
+        title = "Webapp: Update config files"
         body = "\n".join(self.collections.values_list("name", flat=True))
-        self.repo.create_pull(
-            title=title,
-            body=body,
-            base=self.dev_branch,
-            head=self.github_branch,
-        )
+        try:
+            self.repo.create_pull(
+                title=title,
+                body=body,
+                base=self.dev_branch,
+                head=self.github_branch,
+            )
+        except GithubException:  # PR exists
+            print("PR exists")
 
     def push_to_github(self):
         for collection in self.collections:
+            print(f"Pushing {collection.name} to GitHub.")
             self._update_file_contents(collection)
             collection.curation_status = CurationStatusChoices.GITHUB_PR_CREATED
             collection.save()

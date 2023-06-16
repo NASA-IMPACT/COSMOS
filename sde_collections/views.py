@@ -44,6 +44,7 @@ class CollectionListView(LoginRequiredMixin, ListView):
         return (
             super()
             .get_queryset()
+            .filter(delete=False)
             .annotate(num_candidate_urls=models.Count("candidate_urls"))
             .order_by("-num_candidate_urls")
         )
@@ -291,7 +292,7 @@ class PushToGithubView(APIView):
                 "collection_ids can't be empty.", status=status.HTTP_400_BAD_REQUEST
             )
 
-        push_to_github_task(collection_ids)
+        push_to_github_task.delay(collection_ids)
 
         return Response(
             {"Success": "Started pushing collections to github"},

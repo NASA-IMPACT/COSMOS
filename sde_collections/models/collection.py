@@ -213,11 +213,6 @@ class Collection(models.Model):
         for pattern in self.documenttypepattern.all():
             pattern.apply()
 
-    def push_config_to_github(self):
-        """Push configs with rules to github."""
-        github = GitHubHandler(collection=self)
-        github.push_config_to_github()
-
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
         if not self.config_folder:

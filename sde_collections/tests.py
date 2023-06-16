@@ -2,7 +2,7 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
 from .models.collection import Collection
-from .tasks import import_candidate_urls_from_api
+from .tasks import import_candidate_urls_from_api, push_to_github_task
 
 
 class CreateExcludePatternTestCase(TestCase):
@@ -27,5 +27,5 @@ class GitHubTestCase(TestCase):
 
     def test_push_config_to_github(self):
         collection = Collection.objects.first()
-        collection.push_config_to_github()
+        push_to_github_task([collection.id])
         self.assertEqual(collection.name, "NASA POWER")
