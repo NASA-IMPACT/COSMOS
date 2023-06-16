@@ -40,13 +40,14 @@ class GitHubHandler:
         """
         contents = self._get_file_contents(collection)
         FILE_CONTENTS = contents.decoded_content.decode("utf-8")
+        updated_xml = collection.update_config_xml(FILE_CONTENTS)
 
         COMMIT_MESSAGE = f"Webapp: Update {collection.name}"
 
         self.repo.update_file(
             contents.path,
             COMMIT_MESSAGE,
-            FILE_CONTENTS,
+            updated_xml,
             contents.sha,
             branch=self.github_branch,
         )
@@ -66,6 +67,7 @@ class GitHubHandler:
 
     def push_to_github(self):
         for collection in self.collections:
+            print(f"Pushing {collection.name} to GitHub.")
             self._update_file_contents(collection)
             collection.curation_status = CurationStatusChoices.GITHUB_PR_CREATED
             collection.save()
