@@ -292,7 +292,7 @@ class PushToGithubView(APIView):
                 "collection_ids can't be empty.", status=status.HTTP_400_BAD_REQUEST
             )
 
-        push_to_github_task(collection_ids)
+        push_to_github_task.delay(collection_ids)
 
         return Response(
             {"Success": "Started pushing collections to github"},
