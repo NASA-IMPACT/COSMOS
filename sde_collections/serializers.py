@@ -32,6 +32,21 @@ class CandidateURLSerializer(serializers.ModelSerializer):
         source="get_document_type_display", read_only=True
     )
     url = serializers.CharField(required=False)
+    generated_title_id = serializers.SerializerMethodField(read_only=True)
+    match_pattern_type = serializers.SerializerMethodField(read_only=True)
+    candidate_urls_count = serializers.SerializerMethodField(read_only=True)
+
+    def get_candidate_urls_count(self, obj):
+        titlepattern = obj.titlepattern_urls.last()
+        return titlepattern.candidate_urls.count() if titlepattern else 0
+
+    def get_generated_title_id(self, obj):
+        titlepattern = obj.titlepattern_urls.last()
+        return titlepattern.id if titlepattern else None
+
+    def get_match_pattern_type(self, obj):
+        titlepattern = obj.titlepattern_urls.last()
+        return titlepattern.match_pattern_type if titlepattern else None
 
     class Meta:
         model = CandidateURL
@@ -41,6 +56,9 @@ class CandidateURLSerializer(serializers.ModelSerializer):
             "url",
             "scraped_title",
             "generated_title",
+            "generated_title_id",
+            "match_pattern_type",
+            "candidate_urls_count",
             "document_type",
             "document_type_display",
             "visited",
