@@ -63,6 +63,7 @@ DJANGO_APPS = [
     "django.contrib.admin",
     "django.forms",
     "django.contrib.humanize",
+    "django_extensions",
 ]
 THIRD_PARTY_APPS = [
     "crispy_forms",
