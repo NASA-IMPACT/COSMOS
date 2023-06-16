@@ -396,7 +396,7 @@ function postVisited(url) {
 
 function deletePattern(url, data_type, url_type=null, candidate_urls_count=null) {
     if (url_type === MULTI_URL_PATTERN) {
-        var confirmDelete = confirm(`YOU ARE ATTEMPTING TO DELETE A MULTI-URL PATTERN. THIS WILL DELETE ${candidate_urls_count} TITLE PATTERNS. Are you sure you want to do this? Currently there is no way to delete a single URL from a Multi-URL pattern`);
+        var confirmDelete = confirm(`YOU ARE ATTEMPTING TO DELETE A MULTI-URL PATTERN. THIS WILL AFFECT ${candidate_urls_count} URLs. \n\nAre you sure you want to do this? Currently there is no way to delete a single URL from a Multi-URL pattern`);
     } else {
         var confirmDelete = confirm(`Are you sure you want to delete this ${data_type}?`);
     }
