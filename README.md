@@ -118,3 +118,6 @@ See detailed [cookiecutter-django Docker documentation](http://cookiecutter-djan
 ### How to import candidate URLs from the test server
 
 Documented [here](https://github.com/NASA-IMPACT/sde-indexing-helper/wiki/How-to-bring-in-Candidate-URLs-from-the-test-server).
+
+## Adding New Features/Fixes to the Webapp
+New features and bugfixes should start with a Github issue. Then on local, ensure that you have the github cli. Branches are made based off of existing issues, and no other way. Use the cli to reference your issue number, like so `gh issue develop -c issue_number`. This will create a local branch linked to the issue, and allow github to handle all the relevant linking.
