@@ -1,23 +1,18 @@
 """
 indexes lots of stuff at once
 splits a big list of collections into n subgroups. each collection has a job created.
-each indexing job is added to one of the n subgroups. a master runner is made that executes the n 
+each indexing job is added to one of the n subgroups. a master runner is made that executes the n
 subgroups in parallel
 """
 
-from db_to_xml import XmlEditor
+from db_to_xml_file_based import XmlEditor
 
-from generate_collection_list import turned_on_remaining_webcrawlers as collection_list
-
-# fake list of collections, you can use this to test
-# collection_list = [f"test_collection_{index}" for index in range(0, 12)]
+from config import collection_list, date_of_batch, n
 
 template_root_path = "xmls/"
 joblist_template_path = f"{template_root_path}joblist_template.xml"
 
-# job_path_root = "..sinequa_configs/jobs/"
-job_path_root = "xmls/jobtesting/"  # fake test folder # TODO: putting the files directly in the jobs folder doesn't work for some reason
-n = 5  # number of collections to run in parellel (as well as number of joblists)
+job_path_root = "../sinequa_configs/jobs/"
 
 
 def create_job_name(collection_name):
@@ -25,7 +20,7 @@ def create_job_name(collection_name):
 
 
 def create_joblist_name(index):
-    return f"parallel_indexing_list-{index}.xml"
+    return f"parallel_indexing_list-{date_of_batch}-{index}.xml"
 
 
 # create single jobs to run each collection
@@ -57,4 +52,6 @@ for index, sublist in enumerate(sublists):
 master = XmlEditor(joblist_template_path)
 master.update_or_add_element_value("RunJobsInParallel", "true")
 [master.add_job_list_item(job_name) for job_name in job_names]
-master._update_config_xml(f"{job_path_root}parallel_indexing_list-master.xml")
+master._update_config_xml(
+    f"{job_path_root}parallel_indexing_list-{date_of_batch}-master.xml"
+)

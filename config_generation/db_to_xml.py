@@ -17,8 +17,7 @@ class XmlEditor:
     """
 
     def __init__(self, xml_string: str):
-        self.input_path = xml_string
-        self.xml_tree = self._get_tree(self.input_path)
+        self.xml_tree = self._get_tree(xml_string)
 
     def _get_tree(self, xml_string) -> ET.ElementTree:
         """takes the path of an xml file and opens it as an ElementTree object"""
@@ -144,6 +143,23 @@ class XmlEditor:
 
         return False
 
+    def _standardize_selection(selection):
+        """
+        some existing selections may use double quotes while new ones need to use single quotes
+        # prior rule generations were not as selective, so some old selections used a trailing *
+        #     while the new selection will not
+        this function creates two selections that will match against the old format and allow it to
+            be replaced by the _generic_mapping function
+        """
+        standardized_quotes = selection.replace('"', "'")
+        # standardized_quotes_less_selective = standardized_quotes.replace(
+        #     "*'</Selection>", "'</Selection>"
+        # )
+
+        return list(
+            set(selection, standardized_quotes)  # , standardized_quotes_less_selective)
+        )
+
     def _generic_mapping(
         self,
         name: str = "",
@@ -158,10 +174,9 @@ class XmlEditor:
 
         existing_mapping = None
         for mapping in xml_root.findall("Mapping"):
-            if (
-                mapping.find("Name").text == name
-                and mapping.find("Selection").text == selection
-            ):
+            if mapping.find("Name").text == name and mapping.find(
+                "Selection"
+            ).text in self._standardize_selection(selection):
                 existing_mapping = mapping
                 break
 
