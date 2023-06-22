@@ -26,7 +26,7 @@ boto3==1.26.158
 django-treebeard==4.7
 djangorestframework-datatables==0.7.0
 djangorestframework==3.14.0
-PyGithub==1.58.2
+PyGithub==1.59.0
 python-slugify==8.0.1
 scrapy==2.9.0
 xmltodict==0.13.0
