@@ -1,3 +1,6 @@
+# This file uses the previously written file-based xml handling code to supplement
+# the new github-based xml code so that the job-creation pipeline will still work 
+# we can remove it once we incorporate job creation into the github pipeline 
 import os
 import xml.etree.ElementTree as ET
 
