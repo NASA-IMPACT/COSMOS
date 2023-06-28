@@ -24,7 +24,7 @@ class DocumentTypes(models.IntegerChoices):
     MISSIONSINSTRUMENTS = 5, "Missions and Instruments"
 
     @classmethod
-    def lookup_by_text(cls, text):
+    def lookup_by_text(cls, text: str) -> int | None:
         for choice in cls.choices:
             if choice[1].lower() == text.lower():
                 return choice[0]

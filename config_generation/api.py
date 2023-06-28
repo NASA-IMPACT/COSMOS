@@ -2,10 +2,9 @@ from typing import Any
 
 import requests
 
-# from config import token
 from config import tokens
 
-server_configs = {
+server_configs: dict[str, dict[str, str]] = {
     "ren_server": {
         "app_name": "nasa-sba-smd",
         "query_name": "query-smd-primary",
@@ -20,7 +19,7 @@ server_configs = {
 
 
 class Api:
-    def __init__(self, server_name) -> None:
+    def __init__(self, server_name: str) -> None:
         self.headers: dict[str, str] = {
             "Authorization": f"Bearer {tokens[server_name]}"
         }
@@ -28,17 +27,17 @@ class Api:
         self.query_name: str = server_configs[server_name]["query_name"]
         self.base_url: str = server_configs[server_name]["base_url"]
 
-    def process_response(self, url: str, payload: dict[str, Any]) -> None:
+    def process_response(self, url: str, payload: dict[str, Any]) -> dict[str, Any]:
         response = requests.post(url, headers=self.headers, json=payload, verify=False)
 
         if response.status_code == 200:
             meaningful_response = response.json()
         else:
-            meaningful_response = response.text
+            meaningful_response = {"response_text": response.text}
 
         return meaningful_response
 
-    def query(self, term: str) -> None:
+    def query(self, term: str):
         url = f"{self.base_url}/api/v1/search.query"
         payload = {
             "app": self.app_name,
@@ -52,15 +51,17 @@ class Api:
             "pretty": "true",
         }
 
-        response = self.process_response(url, payload)
+        return self.process_response(url, payload)
 
-        return response
-
-    def sql(self, source: str, collection: str = "", fetch_all: bool = False) -> None:
+    def sql(
+        self, source: str, collection: str = "", fetch_all: bool = False
+    ) -> dict[str, Any]:
         url = f"{self.base_url}/api/v1/engine.sql"
 
         collection_name = f"/{source}/{collection}/"
-        sql_command_all = "select url1,title,collection from @@ScienceMissionDirectorate"
+        sql_command_all = (
+            "select url1,title,collection from @@ScienceMissionDirectorate"
+        )
         if fetch_all:
             sql_command = sql_command_all
         else:
@@ -75,7 +76,7 @@ class Api:
 
         return response
 
-    def run_indexer(self, source_name: str, collection_name: str) -> None:
+    def run_indexer(self, source_name: str, collection_name: str) -> dict[str, Any]:
         """Starts indexing on the given collection. Equivalent to pressing the play button in the
         interface. This function will return the response from the sinequa server and then the
         server will run the collection on it's own without restraining the python execution.
@@ -90,14 +91,4 @@ class Api:
             "collection": f"/{source_name}/{collection_name}/",
         }
 
-        response = self.process_response(url, payload)
-
-        return response
-
-
-if __name__ == "__main__":
-    api = Api()
-    from sources_to_scrape import remaining_sources
-
-    for source in remaining_sources[5:10]:
-        api.run_indexer(source["source_name"])
+        return self.process_response(url, payload)
