@@ -60,7 +60,7 @@ class XmlEditor:
         self,
         element_name: str,
         element_value: str,
-        parent_element_name: str = None,
+        parent_element_name: str = "",
     ) -> None:
         """can update the value of either a top level or secondary level value in the sinequa config
 
@@ -73,13 +73,16 @@ class XmlEditor:
 
         xml_root = self.xml_tree.getroot()
         parent_element = (
-            xml_root
-            if parent_element_name is None
-            else xml_root.find(parent_element_name)
+            xml_root if not parent_element_name else xml_root.find(parent_element_name)
         )
 
+        if parent_element is None:
+            raise ValueError(
+                f"Parent element '{parent_element_name}' not found in XML."
+            )
+
         existing_element = parent_element.find(element_name)
-        if existing_element is not None:
+        if existing_element:
             existing_element.text = element_value
         else:
             ET.SubElement(parent_element, element_name).text = element_value
@@ -143,6 +146,7 @@ class XmlEditor:
 
         return False
 
+    @staticmethod
     def _standardize_selection(selection):
         """
         some existing selections may use double quotes while new ones need to use single quotes
@@ -174,15 +178,23 @@ class XmlEditor:
 
         existing_mapping = None
         for mapping in xml_root.findall("Mapping"):
-            if mapping.find("Name").text == name and mapping.find(
-                "Selection"
-            ).text in self._standardize_selection(selection):
+            mapping_name = mapping.find("Name")
+            mapping_selection = mapping.find("Selection")
+
+            if (
+                mapping_name
+                and mapping_name.text == name
+                and mapping_selection
+                and mapping_selection.text in self._standardize_selection(selection)
+            ):
                 existing_mapping = mapping
                 break
 
-        if existing_mapping is not None:
+        if existing_mapping:
             # If an existing mapping is found, overwrite its values
-            existing_mapping.find("Value").text = value
+            existing_mapping_value = existing_mapping.find("Value")
+            if existing_mapping_value:
+                existing_mapping_value.text = value
         else:
             # If no existing mapping is found, create a new one
             mapping = ET.Element("Mapping")
@@ -193,18 +205,14 @@ class XmlEditor:
             ET.SubElement(mapping, "DefaultValue").text = ""
             xml_root.append(mapping)
 
-    def add_document_type_mapping(
-        self, document_type: str, criteria: str
-    ) -> ET.ElementTree:
+    def add_document_type_mapping(self, document_type: str, criteria: str) -> None:
         self._generic_mapping(
             name="sourcestr56",
             value=f'"{document_type}"',
             selection=f"doc.url1 match '{criteria}'",
         )
 
-    def add_title_mapping(
-        self, title_value: str, title_criteria: str
-    ) -> ET.ElementTree:
+    def add_title_mapping(self, title_value: str, title_criteria: str) -> None:
         title_criteria = title_criteria.rstrip("/")
         sinequa_code_markers = ["xpath", "Concat", "IfEmpty", "doc.title", "doc.url1"]
         if not any(marker in title_value for marker in sinequa_code_markers):
