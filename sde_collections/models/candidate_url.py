@@ -57,7 +57,7 @@ class CandidateURL(models.Model):
         ordering = ["url"]
         unique_together = ("collection", "url")
 
-    def splits(self):
+    def splits(self) -> list[tuple[str, str]]:
         """Split the path into multiple collections."""
         parts = []
         part_string = ""
@@ -75,5 +75,5 @@ class CandidateURL(models.Model):
             path += f"?{parsed.query}"
         return path
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.url

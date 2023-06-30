@@ -153,7 +153,7 @@ class Collection(models.Model):
 
         return slugify(self.name, separator="_")
 
-    def import_metadata_from_sinequa_config(self):
+    def import_metadata_from_sinequa_config(self) -> bool:
         """Import metadata from Sinequa."""
         if not self.config_folder:
             return False
@@ -182,29 +182,29 @@ class Collection(models.Model):
 
         return True
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Unicode representation of Collection."""
         return self.name
 
     @property
-    def has_folder(self):
+    def has_folder(self) -> bool:
         return self.config_folder != ""
 
     @property
-    def candidate_urls_count(self):
+    def candidate_urls_count(self) -> int:
         return self.candidate_urls.count()
 
     @property
-    def sinequa_configuration(self):
+    def sinequa_configuration(self) -> str:
         if not self.has_sinequa_config:
             return ""
         return f"https://github.com/NASA-IMPACT/sde-backend/blob/master/sources/SMD/{self.config_folder}/default.xml"
 
     @property
-    def github_issue_link(self):
+    def github_issue_link(self) -> str:
         return f"https://github.com/NASA-IMPACT/sde-project/issues/{self.github_issue_number}"
 
-    def apply_all_patterns(self):
+    def apply_all_patterns(self) -> None:
         """Apply all the patterns."""
         for pattern in self.excludepattern.all():
             pattern.apply()
@@ -233,5 +233,5 @@ class RequiredUrls(models.Model):
     )
     collection = models.ForeignKey("Collection", on_delete=models.CASCADE)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.url
