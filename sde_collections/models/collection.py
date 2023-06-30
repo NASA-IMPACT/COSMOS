@@ -84,7 +84,7 @@ class Collection(models.Model):
         verbose_name_plural = "Collections"
 
     @property
-    def curation_status_button_color(self):
+    def curation_status_button_color(self) -> str:
         color_choices = {
             1: "btn-light",
             2: "btn-danger",
@@ -145,7 +145,7 @@ class Collection(models.Model):
         updated_config_xml_string = editor.update_config_xml()
         return updated_config_xml_string
 
-    def _compute_config_folder_name(self):
+    def _compute_config_folder_name(self) -> str:
         """
         Take the human readable `self.name` and create a standardized machine format
         The output will be the self.name, but only alphanumeric with _ instead of spaces

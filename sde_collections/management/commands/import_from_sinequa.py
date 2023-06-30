@@ -9,7 +9,7 @@ class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options) -> None:
         for collection in Collection.objects.all():
             if collection.import_metadata_from_sinequa_config():
                 message = (

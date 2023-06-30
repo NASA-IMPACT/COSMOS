@@ -40,7 +40,8 @@ repos:
         # ignoring everything for now
         exclude: .
         additional_dependencies: [django-stubs, celery,  django-environ, django-extensions, django-crispy-forms,
-        crispy-bootstrap5, django-allauth, django-celery-beat, django-treebeard, djangorestframework, djangorestframework-datatables, django-debug-toolbar, psycopg2-binary, python-slugify, xmltodict,PyGithub, boto3, scrapy, types-requests]
+        crispy-bootstrap5, django-allauth, django-celery-beat, django-treebeard, djangorestframework, djangorestframework-datatables,
+        django-debug-toolbar, psycopg2-binary, python-slugify, xmltodict,PyGithub, boto3, scrapy, types-requests]
 
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date

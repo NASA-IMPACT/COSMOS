@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from sde_collections.models import Collection
+from sde_collections.models.collection import Collection
 
 
 class Command(BaseCommand):
