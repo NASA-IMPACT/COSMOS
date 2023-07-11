@@ -17,7 +17,7 @@ class GitHubHandler:
         self.dev_branch = self.repo.default_branch
         self.collections = collections
 
-    def _get_config_file_path(self, collection):
+    def _get_config_file_path(self, collection) -> str:
         file_path = f"sources/SMD/{collection.config_folder}/default.xml"
         return file_path
 
@@ -52,7 +52,7 @@ class GitHubHandler:
             branch=self.github_branch,
         )
 
-    def create_pull_request(self):
+    def create_pull_request(self) -> None:
         title = "Webapp: Update config files"
         body = "\n".join(self.collections.values_list("name", flat=True))
         try:
@@ -65,7 +65,7 @@ class GitHubHandler:
         except GithubException:  # PR exists
             print("PR exists")
 
-    def push_to_github(self):
+    def push_to_github(self) -> None:
         for collection in self.collections:
             print(f"Pushing {collection.name} to GitHub.")
             self._update_file_contents(collection)

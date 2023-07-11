@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from sde_collections.models import Collection
+from sde_collections.models.collection import Collection
 
 
 class Command(BaseCommand):
@@ -9,7 +9,7 @@ class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options) -> None:
         collections = [
             "GISS Datasets and Derived Materials",
             "GISS Publication List",

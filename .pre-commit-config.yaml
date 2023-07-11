@@ -32,6 +32,18 @@ repos:
         args: ["--config=setup.cfg"]
         additional_dependencies: [flake8-isort]
 
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.4.0
+    hooks:
+      - id: mypy
+        args: ["--strict"]
+        # ignoring everything for now
+        exclude: .
+        additional_dependencies: [django-stubs, celery,  django-environ, django-extensions, django-crispy-forms,
+        crispy-bootstrap5, django-allauth, django-celery-beat, django-treebeard, djangorestframework, djangorestframework-datatables,
+        django-debug-toolbar, psycopg2-binary, python-slugify, xmltodict,PyGithub, boto3, scrapy, types-requests]
+
+
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:
   autoupdate_schedule: weekly

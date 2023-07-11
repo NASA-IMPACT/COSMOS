@@ -42,10 +42,10 @@ class BaseMatchPattern(models.Model):
                     r"\*", ".*"
                 )  # allow * wildcards
             )
-        elif self.match_pattern_type == self.MatchPatternTypeChoices.XPATH_PATTERN:
+        else:
             raise NotImplementedError
 
-    def _process_match_pattern(self):
+    def _process_match_pattern(self) -> str:
         """
         Multi-Url patterns need a star at the beginning and at the end
         Individual Url Patterns need a star at the beginning
@@ -91,7 +91,7 @@ class BaseMatchPattern(models.Model):
 class ExcludePattern(BaseMatchPattern):
     reason = models.TextField("Reason for excluding", default="", blank=True)
 
-    def apply(self):
+    def apply(self) -> None:
         matched_urls = self.matched_urls()
         candidate_url_ids = list(matched_urls.values_list("id", flat=True))
         self.candidate_urls.through.objects.bulk_create(
@@ -103,7 +103,7 @@ class ExcludePattern(BaseMatchPattern):
             ]
         )
 
-    def unapply(self):
+    def unapply(self) -> None:
         "Unapplies automatically by deleting excludpattern through objects in a cascade"
         return
 
@@ -122,7 +122,7 @@ class TitlePattern(BaseMatchPattern):
         " (no quotes required) or you can write sinequa-valid code",
     )
 
-    def apply(self):
+    def apply(self) -> None:
         matched_urls = self.matched_urls()
         matched_urls.update(generated_title=self.title_pattern)
         candidate_url_ids = list(matched_urls.values_list("id", flat=True))
@@ -135,7 +135,7 @@ class TitlePattern(BaseMatchPattern):
             ]
         )
 
-    def unapply(self):
+    def unapply(self) -> None:
         self.candidate_urls.update(generated_title="")
 
     class Meta:
@@ -149,7 +149,7 @@ class TitlePattern(BaseMatchPattern):
 class DocumentTypePattern(BaseMatchPattern):
     document_type = models.IntegerField(choices=DocumentTypes.choices)
 
-    def apply(self):
+    def apply(self) -> None:
         matched_urls = self.matched_urls()
         matched_urls.update(document_type=self.document_type)
         candidate_url_ids = list(matched_urls.values_list("id", flat=True))
@@ -162,7 +162,7 @@ class DocumentTypePattern(BaseMatchPattern):
             ]
         )
 
-    def unapply(self):
+    def unapply(self) -> None:
         self.candidate_urls.update(document_type=None)
 
     class Meta:

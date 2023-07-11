@@ -25,12 +25,12 @@ server_configs = {
 
 
 class Api:
-    def __init__(self, server_name) -> None:
+    def __init__(self, server_name: str) -> None:
         self.app_name: str = server_configs[server_name]["app_name"]
         self.query_name: str = server_configs[server_name]["query_name"]
         self.base_url: str = server_configs[server_name]["base_url"]
 
-    def process_response(self, url: str, payload: dict[str, Any]) -> None:
+    def process_response(self, url: str, payload: dict[str, Any]) -> Any:
         response = requests.post(url, headers={}, json=payload, verify=False)
 
         if response.status_code == requests.status_codes.codes.ok:
@@ -40,7 +40,7 @@ class Api:
 
         return meaningful_response
 
-    def query(self, page: int, collection_config_folder: str = "") -> None:
+    def query(self, page: int, collection_config_folder: str = "") -> Any:
         url = f"{self.base_url}/api/v1/search.query"
         payload = {
             "app": self.app_name,
