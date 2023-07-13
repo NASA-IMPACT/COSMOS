@@ -1,0 +1,34 @@
+name: Add Text to New Blank Issue
+
+on:
+  issues:
+    types:
+        - opened
+
+jobs:
+  add_text:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Add text to new blank issue
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const issue = context.issue; // Gets issue details
+          const issueBody = context.payload.issue.body; // Gets issue body
+
+          if (!issueBody || issueBody.trim() === '') { // Checks if the issue body is empty
+            const fs = require('fs');
+            const filePath = '.github/workflows/issue_body.md'; // The location of your file
+            const fileContent = fs.readFileSync(filePath, 'utf8'); // Reads file content
+
+            github.rest.issues.update({
+              owner: issue.owner,
+              repo: issue.repo,
+              issue_number: issue.number,
+              body: fileContent // Uses the file content as the body
+            });
+          }

@@ -1,0 +1,44 @@
+name: Issue
+description: Create an Issue
+title: "ADD THE ISSUE TITLE HERE"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the Issue template! The values you add will be converted to a properly formatted Issue.
+  - type: textarea
+    id: overview
+    attributes:
+      label: Overview
+      description: Add two to three sentences that explain the context of this issue and what it will achieve.
+      placeholder: your text goes here
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: |
+        Add a list of criteria that must be met for the issue to be considered resolved.
+        If you type after the `- [ ]`, checkbox formatting will work automatically.
+      value: "- [ ] type your first criteria here"
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Add a list of dependencies that must be completed before this issue can be finished. Ideally, these dependencies are other issues. If there are none, leave it blank.
+      placeholder: "github automatically provides a list of possible issues if you start by typing a `#`"
+    validations:
+      required: false
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks
+      description: |
+        Add a list of risks that could prolong the milestone or prevent it from being completed. If there are none, you can delete the example text.
+        If you type after the `-`, list formatting will work automatically.
+      value: "- type your first risk here, after the dash"
+    validations:
+      required: false
