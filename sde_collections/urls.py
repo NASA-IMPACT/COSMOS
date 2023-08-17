@@ -12,6 +12,7 @@ from .views import (
     PushToGithubView,
     RequiredUrlsDeleteView,
     TitlePatternViewSet,
+    CheckRulesSyncView,
 )
 
 router = routers.DefaultRouter()
@@ -30,6 +31,11 @@ urlpatterns = [
         "api/collections/push_to_github/",
         PushToGithubView.as_view(),
         name="push-to-github",
+    ),
+    path(
+        "api/check-rules-sync",
+        view=CheckRulesSyncView.as_view(),
+        name="check-rules-sync"
     ),
     path(
         "delete-required-url/<int:pk>",

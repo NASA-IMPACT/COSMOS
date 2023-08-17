@@ -43,7 +43,19 @@ let table = $('#collection_table').DataTable({
                     },
                 });
             }
-        }
+        },
+        {
+            text: 'Check Rules Sync [Beta]',
+            action: function(e, dt, node, config) {
+                 $.ajax({
+                    url: '/api/check-rules-sync',
+                    type: "POST",
+                    data: {
+                        csrfmiddlewaretoken: csrftoken
+                    },
+                });
+            }
+        },
     ],
     "columnDefs": [
         {

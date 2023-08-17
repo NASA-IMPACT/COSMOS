@@ -1,4 +1,5 @@
 import re
+import csv
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -6,9 +7,11 @@ from django.db import models
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
+from django.views import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
+from django.http import HttpResponse
 from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -26,7 +29,8 @@ from .serializers import (
     ExcludePatternSerializer,
     TitlePatternSerializer,
 )
-from .tasks import push_to_github_task
+from .tasks import push_to_github_task, _get_data_to_import
+from .sinequa_api import Api
 
 User = get_user_model()
 
@@ -298,3 +302,68 @@ class PushToGithubView(APIView):
             {"Success": "Started pushing collections to github"},
             status=status.HTTP_200_OK,
         )
+
+
+class CheckRulesSyncView(APIView):
+    ''''
+        This view checks whether the rules in indexer db has been correctly reflected 
+        in our prod/test sinequa instances or not and at the end generates a report.
+    '''
+
+    def post(self, request):
+        # Get a list of all sources/collections
+        collections = Collection.objects.all().filter(delete=False)
+        server_name = "production"
+
+        sync_check_report = []  # final report
+        for collection in collections:
+            collection_id = collection.pk
+            collection_name = collection.name
+            collection_config_folder = collection.config_folder
+            curation_status = collection.curation_status
+
+            candidate_urls_sinequa = _get_data_to_import(collection, server_name)
+            print(len(candidate_urls_sinequa))
+
+            # now get Title Patterns in indexer db
+            title_patterns_local = TitlePattern.objects.all().filter(collection_id=collection_id)
+
+            print(len(title_patterns_local))
+
+            # check if title patterns are porperly reflected in sinequa's response
+            for title_pattern in title_patterns_local:
+                pattern = title_pattern.title_pattern
+
+                # for all the candidate urls
+                for candidate_url in candidate_urls_sinequa:
+                    url = candidate_url["fields"]["url"]
+                    scraped_title = candidate_url["fields"]["scraped_title"]
+
+                    if scraped_title != pattern:
+                        report = {
+                            "id": collection_id,
+                            "collection_name": collection_name,
+                            "config_folder": collection_config_folder,
+                            "curation_status": curation_status,  # TODO: change this to actual value
+                            "pattern_name": "Title Pattern",
+                            "pattern": pattern,
+                            "scraped_title": scraped_title,
+                            "non_compliant_url": url,
+                        }
+                        sync_check_report.append(report)
+
+            break
+
+        file_name = "report.csv"
+
+        http_response = HttpResponse(
+            content_type="text/csv",
+            headers={"Content Disposition": f'attachment; filename="{file_name}"'})
+
+        writer = csv.DictWriter(http_response, fieldnames=sync_check_report[0].keys())
+        writer.writeheader()
+
+        for item in sync_check_report:
+            writer.writerow(item)
+
+        return http_response
