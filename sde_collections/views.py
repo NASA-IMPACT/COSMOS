@@ -322,6 +322,7 @@ class CheckRulesSyncView(APIView):
             collection_config_folder = collection.config_folder
             curation_status = collection.curation_status
 
+            # TODO: Fix this as this shouldn't be used outside its pacakge
             candidate_urls_sinequa = _get_data_to_import(collection, server_name)
             print(len(candidate_urls_sinequa))
 
@@ -333,6 +334,14 @@ class CheckRulesSyncView(APIView):
             # check if title patterns are porperly reflected in sinequa's response
             for title_pattern in title_patterns_local:
                 pattern = title_pattern.title_pattern
+
+                title_pattern.match_pattern = pattern
+
+                # TODO: get list of candidate URLs for given pattern and
+                # TODO: check which URLs match with the given pattern and which do not.
+
+                print("--------------")
+                print(title_pattern.matched_urls())
 
                 # for all the candidate urls
                 for candidate_url in candidate_urls_sinequa:
