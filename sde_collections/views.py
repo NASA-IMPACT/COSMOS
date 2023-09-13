@@ -304,7 +304,7 @@ class PushToGithubView(APIView):
         )
 
 
-class CheckRulesSyncView(APIView):
+class CheckRulesSyncView(View):
     ''''
         This view checks whether the rules in indexer db has been correctly reflected 
         in our prod/test sinequa instances or not and at the end generates a report.
@@ -365,9 +365,8 @@ class CheckRulesSyncView(APIView):
 
         file_name = "report.csv"
 
-        http_response = HttpResponse(
-            content_type="text/csv",
-            headers={"Content Disposition": f'attachment; filename="{file_name}"'})
+        http_response = HttpResponse(content_type="text/csv")
+        http_response["Content-Disposition"] = f'attachment; filename="{file_name}"'
 
         writer = csv.DictWriter(http_response, fieldnames=sync_check_report[0].keys())
         writer.writeheader()
