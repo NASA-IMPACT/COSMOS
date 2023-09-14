@@ -31,6 +31,7 @@ from .serializers import (
 )
 from .tasks import push_to_github_task, _get_data_to_import
 from .sinequa_api import Api
+from .utils.quality_check import check_rules_sync
 
 User = get_user_model()
 
@@ -312,63 +313,14 @@ class CheckRulesSyncView(View):
 
     def post(self, request):
         # Get a list of all sources/collections
-        collections = Collection.objects.all().filter(delete=False)
-        server_name = "production"
+        sync_check_report = check_rules_sync(server_name="production")
 
-        sync_check_report = []  # final report
-        for collection in collections:
-            collection_id = collection.pk
-            collection_name = collection.name
-            collection_config_folder = collection.config_folder
-            curation_status = collection.curation_status
-
-            # TODO: Fix this as this shouldn't be used outside its pacakge
-            candidate_urls_sinequa = _get_data_to_import(collection, server_name)
-            print(len(candidate_urls_sinequa))
-
-            # now get Title Patterns in indexer db
-            title_patterns_local = TitlePattern.objects.all().filter(collection_id=collection_id)
-
-            print(len(title_patterns_local))
-
-            # check if title patterns are porperly reflected in sinequa's response
-            for title_pattern in title_patterns_local:
-                pattern = title_pattern.title_pattern
-
-                title_pattern.match_pattern = pattern
-
-                # TODO: get list of candidate URLs for given pattern and
-                # TODO: check which URLs match with the given pattern and which do not.
-
-                print("--------------")
-                print(title_pattern.matched_urls())
-
-                # for all the candidate urls
-                for candidate_url in candidate_urls_sinequa:
-                    url = candidate_url["fields"]["url"]
-                    scraped_title = candidate_url["fields"]["scraped_title"]
-
-                    if scraped_title != pattern:
-                        report = {
-                            "id": collection_id,
-                            "collection_name": collection_name,
-                            "config_folder": collection_config_folder,
-                            "curation_status": curation_status,  # TODO: change this to actual value
-                            "pattern_name": "Title Pattern",
-                            "pattern": pattern,
-                            "scraped_title": scraped_title,
-                            "non_compliant_url": url,
-                        }
-                        sync_check_report.append(report)
-
-            break
-
+        # download the report in CSV format
         file_name = "report.csv"
-
         http_response = HttpResponse(content_type="text/csv")
-        http_response["Content-Disposition"] = f'attachment; filename="{file_name}"'
-
-        writer = csv.DictWriter(http_response, fieldnames=sync_check_report[0].keys())
+        http_response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+        field_names = sync_check_report[0].keys()
+        writer = csv.DictWriter(http_response, fieldnames=field_names)
         writer.writeheader()
 
         for item in sync_check_report:
