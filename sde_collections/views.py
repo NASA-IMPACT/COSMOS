@@ -1,4 +1,7 @@
+import os
 import re
+import subprocess
+
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -12,6 +15,8 @@ from django.views.generic.list import ListView
 from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.http import HttpResponse, JsonResponse
+
 
 from .forms import CollectionGithubIssueForm, RequiredUrlForm
 from .models.candidate_url import CandidateURL
@@ -29,6 +34,64 @@ from .serializers import (
 from .tasks import push_to_github_task
 
 User = get_user_model()
+
+
+def run_script(request):
+    if request.method == "POST":
+        # You can also add error handling if needed
+        try:
+            url_list = request.POST.get("url_lists")
+            # Get the path to the directory one step back from the current directory
+            file_path = os.environ.get("INFERENCE_FILEPATH")
+            # # Construct the full path to the target file
+            result = subprocess.run(
+                ["python3", file_path, url_list],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            if result.returncode == 0:
+                result = result.stdout
+                # Find the start and end indices of url_list and document_type_list
+                start_url_list = result.find("url_list: [") + len("url_list: [")
+                end_url_list = result.find("]", start_url_list)
+                start_document_type_list = result.find(
+                    "document_type_list [", end_url_list
+                ) + len("document_type_list [")
+                end_document_type_list = result.find("]", start_document_type_list)
+
+                # Extract the substrings containing the lists
+                url_list_str = result[start_url_list:end_url_list]
+                document_type_list_str = result[
+                    start_document_type_list:end_document_type_list
+                ]
+                # Split the extracted strings into actual lists
+                url_list = [
+                    url.strip("' ")
+                    for url in url_list_str.split(",")
+                    if url.strip("' ")
+                ]
+                url_list = [url.replace("https://", "") for url in url_list]
+                document_type_list = (
+                    [int(item) for item in document_type_list_str.split(",")]
+                    if document_type_list_str
+                    else []
+                )
+                # Create a JSON response with the data
+                response_data = {
+                    "url_list": url_list,
+                    "document_type_list": document_type_list,
+                }
+                # Return the JSON response
+                return JsonResponse(response_data)
+            print("Error Output:")
+            print(result.stderr)
+
+        except subprocess.CalledProcessError:
+            # Handle the error here
+            pass
+        return HttpResponse(status=204)
+    return HttpResponse(status=405)  # 405 Method Not Allowed for non-POST requests
 
 
 class CollectionListView(LoginRequiredMixin, ListView):
@@ -263,20 +326,28 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         document_type = request.POST.get("document_type")
+        inferencer = request.POST.get("inferencer")
+        collection_id = request.POST.get("collection")
+        match_pattern = request.POST.get("match_pattern")
+        candidate_url = CandidateURL.objects.get(
+            collection_id=Collection.objects.get(id=collection_id),
+            url="https://" + match_pattern,
+        )
         if not int(document_type) == 0:  # 0=none
+            candidate_url.inference_by = inferencer
+            candidate_url.save()
             return super().create(request, *args, **kwargs)
-        else:
-            collection_id = request.POST.get("collection")
-            match_pattern = request.POST.get("match_pattern")
-            try:
-                DocumentTypePattern.objects.get(
-                    collection_id=Collection.objects.get(id=collection_id),
-                    match_pattern=match_pattern,
-                    match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
-                ).delete()
-                return Response(status=status.HTTP_200_OK)
-            except DocumentTypePattern.DoesNotExist:
-                return Response(status=status.HTTP_204_NO_CONTENT)
+        candidate_url.inference_by = ""
+        candidate_url.save()
+        try:
+            DocumentTypePattern.objects.get(
+                collection_id=Collection.objects.get(id=collection_id),
+                match_pattern=match_pattern,
+                match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
+            ).delete()
+            return super().create(request, *args, **kwargs)
+        except DocumentTypePattern.DoesNotExist:
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CollectionViewSet(viewsets.ModelViewSet):

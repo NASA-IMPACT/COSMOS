@@ -34,7 +34,20 @@
         </div>
     </div>
     <br>
+    <style>
+        .right-align {
+            text-align: right;
+        }
+    </style>
     <table class="table" id="candidate_urls_table">
+        <div class="right-align" style="margin-top: 50px";>
+            <h3><small class="muted">Document Type Inference</small></h3>
+        </div>
+        <div class="right-align">
+            User Inference:<span style="background-color: green; color: green; width: 200px; padding: 0px; margin-left: 25px; border-radius: 0px; font-size: 11px;">Press here for </span>
+        </div>
+        <div class="right-align">
+            Model's Inference:<button type="submit" id="create_model_button" class="create_model_button" style="background-color: purple; color: white; width: 70px; border-radius: 0px; margin-left: 4px; font-size: 11px; height: 20px;"><strong>Press here</strong></button>
         <thead>
             <tr>
                 <th scope="col" class="text-center col-1">URL</th>
@@ -265,6 +278,7 @@
                                         <a class="dropdown-item document_type_form_select" value="3">Documentation</a>
                                         <a class="dropdown-item document_type_form_select" value="4">Software and Tools</a>
                                         <a class="dropdown-item document_type_form_select" value="5">Missions and Instruments</a>
+                                        <a class="dropdown-item document_type_form_select" value="6">Training and Education</a>
                                     </div>
                                 </div>
                             </div>

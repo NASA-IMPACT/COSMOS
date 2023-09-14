@@ -4,7 +4,8 @@ var collection_id = getCollectionId();
 var selected_text = "";
 var INDIVIDUAL_URL = 1
 var MULTI_URL_PATTERN = 2
-
+var candidate_urls_table;
+var url_lists=null;
 $(document).ready(function () {
     handleAjaxStartAndStop();
     initializeDataTable();
@@ -19,7 +20,7 @@ function initializeDataTable() {
     var true_icon = '<i class="material-icons" style="color: green">check</i>';
     var false_icon = '<i class="material-icons" style="color: red">close</i>';
 
-    var candidate_urls_table = $('#candidate_urls_table').DataTable({
+    candidate_urls_table = $('#candidate_urls_table').DataTable({
         "scrollY": true,
         "serverSide": true,
         "stateSave": true,
@@ -49,6 +50,7 @@ function initializeDataTable() {
             { "data": "generated_title_id", "visible": false, "searchable": false },
             { "data": "match_pattern_type", "visible": false, "searchable": false },
             { "data": "candidate_urls_count", "visible": false, "searchable": false },
+            { "data": "inference_by", "visible": false, "searchable": false }
         ],
         "createdRow": function (row, data, dataIndex) {
             if (data['excluded']) {
@@ -56,7 +58,7 @@ function initializeDataTable() {
             }
         }
     });
-
+}
     var exclude_patterns_table = $('#exclude_patterns_table').DataTable({
         "scrollY": true,
         "serverSide": true,
@@ -119,9 +121,9 @@ function initializeDataTable() {
             { "data": "id", "visible": false, "searchable": false },
         ]
     });
-}
 
 function setupClickHandlers() {
+    handleInferenceButton();
     handleAddNewPatternClick();
 
     handleCreateDocumentTypePatternButton();
@@ -132,7 +134,7 @@ function setupClickHandlers() {
     handleDeleteExcludePatternButtonClick();
     handleDeleteTitlePatternButtonClick();
 
-    handleDocumentTypeSelect()
+    handleDocumentTypeSelect();
     handleExcludeIndividualUrlClick();
     handleNewTitleChange();
 
@@ -189,9 +191,11 @@ function getDocumentTypeColumn() {
                 3: 'Documentation',
                 4: 'Software and Tools',
                 5: 'Missions and Instruments',
+                6: 'Training and Education'
             };
+            var inferenceValue = row['inference_by']; 
             button_text = data ? dict[data] : 'Select';
-            button_color = data ? 'btn-success' : 'btn-secondary';
+            button_color = inferenceValue === 'user' ? 'btn-success' : (inferenceValue === 'model' ? 'btn-primary' : 'btn-secondary');
             return `
             <div class="dropdown document_type_dropdown" data-match-pattern=${remove_protocol(row['url'])}>
               <button class="btn ${button_color} btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -204,11 +208,13 @@ function getDocumentTypeColumn() {
                 <a class="dropdown-item document_type_select" href="#" value="3">Documentation</a>
                 <a class="dropdown-item document_type_select" href="#" value="4">Software and Tools</a>
                 <a class="dropdown-item document_type_select" href="#" value="5">Missions and Instruments</a>
+                <a class="dropdown-item document_type_select" href="#" value="6">Training and Education</a>
               </div>
             </div>`;
         }
     }
 }
+
 function handleCreateDocumentTypePatternButton() {
     $("body").on("click", ".create_document_type_pattern_button", function () {
         $modal = $('#documentTypePatternModal').modal();
@@ -227,10 +233,31 @@ function handleCreateTitlePatternButton() {
     });
 }
 
+//handling action when inference button is hit
+function handleInferenceButton() {
+    $("body").on("click", ".create_model_button", function (e) {
+        e.preventDefault(); // Prevent the default button behavior
+        getURLLists(function(url_lists) {
+            postInferenceButton(url_lists,function(url_list, document_type_list){
+                inferenceDocumentTypeListSelect(url_list, document_type_list);
+            });
+});});}
+
+//Updates the documenttypePattern table based on the inference obtained
+function inferenceDocumentTypeListSelect(matchPatternList, documentTypeList) {
+    for (let i = 0; i < matchPatternList.length; i++) {
+        const matchPattern = matchPatternList[i];
+        const documentType = documentTypeList[i];
+        postDocumentTypePatterns(matchPattern, match_pattern_type = 1, documentType, inferencer = "model");
+    }
+
+}
+
+
 function handleDocumentTypeSelect() {
     $("body").on("click", ".document_type_select", function () {
         $match_pattern = $(this).parents(".document_type_dropdown").data('match-pattern');
-        postDocumentTypePatterns($match_pattern, match_pattern_type = 1, document_type = $(this).attr("value"));
+        postDocumentTypePatterns($match_pattern, match_pattern_type = 1, document_type = $(this).attr("value"),inferencer="user");
     });
 }
 
@@ -297,12 +324,16 @@ function handleUrlLinkClick() {
     });
 }
 
-function postDocumentTypePatterns(match_pattern, match_pattern_type, document_type) {
+function postDocumentTypePatterns(match_pattern, match_pattern_type, document_type,inferencer) {
+    if (inferencer==="model")
+    {
+        $.blockUI({ message: '<div id="loadingMessage"><h3><b>Model Inference taking place...</b></h3></div>'});
+
+    }
     if (!match_pattern) {
         toastr.error('Please highlight a pattern to add document type.');
         return;
     }
-
     $.ajax({
         url: '/api/document-type-patterns/',
         type: "POST",
@@ -310,7 +341,8 @@ function postDocumentTypePatterns(match_pattern, match_pattern_type, document_ty
             collection: collection_id,
             match_pattern: match_pattern,
             match_pattern_type: match_pattern_type,
-            document_type: document_type,
+            document_type: Number(document_type),
+            inferencer:inferencer,
             csrfmiddlewaretoken: csrftoken
         },
         success: function (data) {
@@ -321,7 +353,28 @@ function postDocumentTypePatterns(match_pattern, match_pattern_type, document_ty
             var errorMessage = xhr.responseText;
             toastr.error(errorMessage);
         }
-    });
+    });}
+
+// runs the script to get predictions for given list of uninferenced urls
+function postInferenceButton(urls_list,callback){
+    $.blockUI({ message: '<div id="loadingMessage"><h3><b>Model Inference taking place...</b></h3></div>'});
+    $.ajax({
+    url: '/api/run_script',  // Use the correct URL for your Django project
+    type: 'POST',
+    data: {
+        csrfmiddlewaretoken: csrftoken,url_lists:JSON.stringify(urls_list),
+    },
+    success: function(data) {
+        url_list = data.url_list;
+        document_type_list = data.document_type_list;
+        // Call the provided callback function with the data
+        callback(url_list, document_type_list);
+    },
+    error: function(xhr, status, error) {
+        var errorMessage = xhr.responseText;
+        toastr.error(errorMessage);
+    }
+});
 }
 
 
@@ -425,6 +478,23 @@ function deletePattern(url, data_type, url_type=null, candidate_urls_count=null)
 function getCollectionId() {
     return collection_id;
 }
+
+// gets a list of urls for a given collection id
+function getURLLists(callback) {
+    var urlList = [];
+    $.ajax({
+        "url": `/api/candidate-urls/?format=datatables&collection_id=${collection_id}`,
+        method: 'GET',
+        success: function(data) {
+            data = data['data'];
+            for (var i = 0; i < data.length; i++) {
+                var url = data[i]['url'];
+                urlList.push(url);
+            }
+            callback(urlList);
+        },
+    });}
+
 
 function getParameterByName(name, url) {
     if (!url) url = window.location.href;
@@ -561,11 +631,12 @@ $('.document_type_form_select').on('click', function (e) {
         inputs[field.name] = field.value;
     });
 
-    postDocumentTypePatterns(inputs.match_pattern, 2, inputs.document_type_pattern);
+    postDocumentTypePatterns(inputs.match_pattern, 2, inputs.document_type_pattern,inferencer="user");
 
     // close the modal if it is open
     $('#documentTypePatternModal').modal('hide');
 });
+
 
 $('#filter-checkbox').on('change', function () {
     $('#candidate_urls_table').DataTable().ajax.reload();
