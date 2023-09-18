@@ -10,6 +10,11 @@ class Encoder:
         Args:
             data: The data to be encoded.
             config (dict): A dictionary containing configuration parameters for the encoder.
+            - "encoder" (dict): A sub-dictionary containing encoder-related configuration.
+                    - "image_keyword" (list): The list of keywords associated with image data.
+                    - "software_keyword" (list): The list of keywords associated with software and tools data.
+                    - "mission_keyword" (list): The list of keywords associated with mission and instruments data.
+                    - "training_keyword" (list): The list of keywords associated with training and education data.
 
         """
         self.image_keyword = config["encoder"]["image_keyword"]
