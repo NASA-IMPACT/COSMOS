@@ -20,7 +20,7 @@
     "tokenizer":"AutoTokenizer",
     "model_type":"xlnet-base-cased",
     "module_name":"transformers",
-    "saved_model_name":"Document-Classifier_inference/model.pt",
+    "saved_model_name":"Document_Classifier_inference/model.pt",
     "num_labels":6,
     "device":"cpu",
     "optimizer":"AdamW",

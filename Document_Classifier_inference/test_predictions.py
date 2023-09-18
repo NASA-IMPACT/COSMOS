@@ -3,9 +3,9 @@ import torch
 import numpy as np
 import pandas as pd
 import requests
-from model import ModelBert
-from preprocessing import Preprocessor
-from encoder import Encoder
+from Document_Classifier_inference.model import ModelBert
+from Document_Classifier_inference.preprocessing import Preprocessor
+from Document_Classifier_inference.encoder import Encoder
 
 
 class TestPredictor:

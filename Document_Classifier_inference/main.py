@@ -1,6 +1,6 @@
 import argparse
 import json
-from test_predictions import TestPredictor
+from Document_Classifier_inference.test_predictions import TestPredictor
 
 
 def predicts(config_file, url):

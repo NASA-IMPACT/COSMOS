@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from PyPDF2 import PdfReader
-from async_scraper import scraper, get_text_table
+from Document_Classifier_inference.async_scraper import scraper, get_text_table
 
 
 class Preprocessor:

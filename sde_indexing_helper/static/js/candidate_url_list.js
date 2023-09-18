@@ -239,19 +239,9 @@ function handleInferenceButton() {
         e.preventDefault(); // Prevent the default button behavior
         getURLLists(function(url_lists) {
             postInferenceButton(url_lists,function(url_list, document_type_list){
-                inferenceDocumentTypeListSelect(url_list, document_type_list);
             });
 });});}
 
-//Updates the documenttypePattern table based on the inference obtained
-function inferenceDocumentTypeListSelect(matchPatternList, documentTypeList) {
-    for (let i = 0; i < matchPatternList.length; i++) {
-        const matchPattern = matchPatternList[i];
-        const documentType = documentTypeList[i];
-        postDocumentTypePatterns(matchPattern, match_pattern_type = 1, documentType, inferencer = "model");
-    }
-
-}
 
 
 function handleDocumentTypeSelect() {
@@ -325,11 +315,6 @@ function handleUrlLinkClick() {
 }
 
 function postDocumentTypePatterns(match_pattern, match_pattern_type, document_type,inferencer) {
-    if (inferencer==="model")
-    {
-        $.blockUI({ message: '<div id="loadingMessage"><h3><b>Model Inference taking place...</b></h3></div>'});
-
-    }
     if (!match_pattern) {
         toastr.error('Please highlight a pattern to add document type.');
         return;
@@ -362,17 +347,17 @@ function postInferenceButton(urls_list,callback){
     url: '/api/run_script',  // Use the correct URL for your Django project
     type: 'POST',
     data: {
-        csrfmiddlewaretoken: csrftoken,url_lists:JSON.stringify(urls_list),
+        csrfmiddlewaretoken: csrftoken,url_lists:JSON.stringify(urls_list)
     },
-    success: function(data) {
-        url_list = data.url_list;
-        document_type_list = data.document_type_list;
-        // Call the provided callback function with the data
-        callback(url_list, document_type_list);
+    success: function() {
+        location.reload();
+        // Unblock the UI after the AJAX call is complete
+        $.unblockUI();
     },
     error: function(xhr, status, error) {
         var errorMessage = xhr.responseText;
         toastr.error(errorMessage);
+        console.log("I am in some error")
     }
 });
 }

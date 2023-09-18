@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import subprocess
 
 
@@ -17,6 +18,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.http import HttpResponse, JsonResponse
 
+from Document_Classifier_inference.main import batch_predicts
 
 from .forms import CollectionGithubIssueForm, RequiredUrlForm
 from .models.candidate_url import CandidateURL
@@ -38,60 +40,35 @@ User = get_user_model()
 
 def run_script(request):
     if request.method == "POST":
-        # You can also add error handling if needed
-        try:
-            url_list = request.POST.get("url_lists")
-            # Get the path to the directory one step back from the current directory
-            file_path = os.environ.get("INFERENCE_FILEPATH")
-            # # Construct the full path to the target file
-            result = subprocess.run(
-                ["python3", file_path, url_list],
-                capture_output=True,
-                text=True,
-                check=True,
+        url_list = request.POST.get("url_lists")
+        url_list = json.loads(url_list)  # Parse the JSON string into a list
+        url_list = list(set(url_list))
+        # Perform the database query using Django ORM
+        candidate_urls = CandidateURL.objects.filter(
+            url__in=url_list,
+        ).exclude(document_type__in=[1, 2, 3, 4, 5, 6])
+        # These list of urls are to be inferred
+        to_infer_url_list = [candidate_url.url for candidate_url in candidate_urls]
+        if to_infer_url_list:
+            collection_id = candidate_urls[0].collection_id
+            prediction = batch_predicts(
+                "Document_Classifier_inference/config.json", to_infer_url_list
             )
-            if result.returncode == 0:
-                result = result.stdout
-                # Find the start and end indices of url_list and document_type_list
-                start_url_list = result.find("url_list: [") + len("url_list: [")
-                end_url_list = result.find("]", start_url_list)
-                start_document_type_list = result.find(
-                    "document_type_list [", end_url_list
-                ) + len("document_type_list [")
-                end_document_type_list = result.find("]", start_document_type_list)
-
-                # Extract the substrings containing the lists
-                url_list_str = result[start_url_list:end_url_list]
-                document_type_list_str = result[
-                    start_document_type_list:end_document_type_list
-                ]
-                # Split the extracted strings into actual lists
-                url_list = [
-                    url.strip("' ")
-                    for url in url_list_str.split(",")
-                    if url.strip("' ")
-                ]
-                url_list = [url.replace("https://", "") for url in url_list]
-                document_type_list = (
-                    [int(item) for item in document_type_list_str.split(",")]
-                    if document_type_list_str
-                    else []
-                )
-                # Create a JSON response with the data
-                response_data = {
-                    "url_list": url_list,
-                    "document_type_list": document_type_list,
-                }
-                # Return the JSON response
-                return JsonResponse(response_data)
-            print("Error Output:")
-            print(result.stderr)
-
-        except subprocess.CalledProcessError:
-            # Handle the error here
-            pass
+            # Update document_type for corresponding URLs
+            for candidate_url in candidate_urls:
+                new_document_type = prediction.get(candidate_url.url)
+                if new_document_type is not None:
+                    candidate_url.document_type = new_document_type
+                    candidate_url.inference_by = "model"
+                    candidate_url.save() #Updating the changes in candidateurl table
+                    # Create a new DocumentTypePattern entry for each URL and its document_type
+                    DocumentTypePattern.objects.create(
+                        collection_id=candidate_url.collection_id,
+                        match_pattern=candidate_url.url,
+                        match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
+                        document_type=new_document_type,
+                    )  #Adding the new record in documenttypepattern table
         return HttpResponse(status=204)
-    return HttpResponse(status=405)  # 405 Method Not Allowed for non-POST requests
 
 
 class CollectionListView(LoginRequiredMixin, ListView):

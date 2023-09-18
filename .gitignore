@@ -291,4 +291,4 @@ config_generation/config.py
 
 
 #model's inference files
-Document-Classifier_inference/model.pt
+Document_Classifier_inference/model.pt
