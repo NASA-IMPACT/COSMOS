@@ -55,22 +55,3 @@ def batch_predicts(config_file, urls):
     return prediction
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Prediction with given configuration file."
-    )
-    subparsers = parser.add_subparsers(dest="subparser_name", help="sub-command help")
-    pred_parser = subparsers.add_parser(
-        "predicts", help="Make predictions using the model"
-    )
-    pred_parser.add_argument(
-        "--config_file", type=str, help="Path of the configuration file."
-    )
-    pred_parser.add_argument("--url", type=str, help="url link")
-
-    args = parser.parse_args()
-
-    if args.subparser_name == "predicts":
-        predicts(args.config_file, args.url)
-    else:
-        parser.print_help()
