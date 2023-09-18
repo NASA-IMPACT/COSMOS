@@ -1,7 +1,0 @@
-# PostgreSQL
-# ------------------------------------------------------------------------------
-POSTGRES_HOST=postgres
-POSTGRES_PORT=5432
-POSTGRES_DB=sde_indexing_helper
-POSTGRES_USER=VnUvMKBSdkoFIETgLongnxYHrYVJKufn
-POSTGRES_PASSWORD=j1BOAD31Rk9qyuCPHPwEAwXvX1FPj6udU8wovQvY0VBfP9c8K6JCm1NiOQieBGt5

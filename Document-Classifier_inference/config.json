@@ -15,8 +15,6 @@
     "campaign","flight","radar","test","mobility","curiosity","suspension","investigate"],
     "training_keyword":["training","education"]
 },
-"dataload":{
-    "batch_size":8},
 "model_parameters":{
     "model":"AutoModelForSequenceClassification",
     "tokenizer":"AutoTokenizer",
