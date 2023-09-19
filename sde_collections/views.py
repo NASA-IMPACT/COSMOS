@@ -29,9 +29,10 @@ from .serializers import (
     ExcludePatternSerializer,
     TitlePatternSerializer,
 )
-from .tasks import push_to_github_task, _get_data_to_import
-from .sinequa_api import Api
-from .utils.quality_check import check_rules_sync
+from .tasks import push_to_github_task
+from .utils.health_check import health_check
+from io import StringIO
+
 
 User = get_user_model()
 
@@ -305,25 +306,35 @@ class PushToGithubView(APIView):
         )
 
 
-class CheckRulesSyncView(View):
+class HealthCheckView(View):
     ''''
         This view checks whether the rules in indexer db has been correctly reflected 
         in our prod/test sinequa instances or not and at the end generates a report.
     '''
 
-    def post(self, request):
-        # Get a list of all sources/collections
-        sync_check_report = check_rules_sync(server_name="production")
+    def get(self, *args, **kwargs):
+        collection = Collection.objects.get(pk=kwargs.get('pk'))
+        sync_check_report = health_check(collection, server_name="production")
+        field_names = [
+            "id",
+            "collection_name",
+            "config_folder",
+            "curation_status",
+            "pattern_name",
+            "pattern",
+            "scraped_title",
+            "non_compliant_url"
+        ]
 
         # download the report in CSV format
-        file_name = "report.csv"
-        http_response = HttpResponse(content_type="text/csv")
-        http_response['Content-Disposition'] = f'attachment; filename="{file_name}"'
-        field_names = sync_check_report[0].keys()
-        writer = csv.DictWriter(http_response, fieldnames=field_names)
+        csv_data = StringIO()
+        writer = csv.DictWriter(csv_data, fieldnames=field_names)
         writer.writeheader()
-
         for item in sync_check_report:
             writer.writerow(item)
+
+        http_response = HttpResponse(content_type="text/csv")
+        http_response['Content-Disposition'] = 'attachment; filename="report.csv"'
+        http_response.write(csv_data.getvalue())
 
         return http_response
