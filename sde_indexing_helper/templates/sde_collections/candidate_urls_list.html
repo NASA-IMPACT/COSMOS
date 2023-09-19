@@ -27,7 +27,9 @@
         <br>
         <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small>
     </h3>
-    <a href="{% url 'sde_collections:health-check' collection.pk %}">Health Check</button>
+    <button style="background-color: #4CAF50; text-align: center;">
+        <a href="{% url 'sde_collections:health-check' collection.pk %}" style="color:white;">Health Check</button>
+    </button>
 
     <div class="row pull-right">
         <div class="form-group">

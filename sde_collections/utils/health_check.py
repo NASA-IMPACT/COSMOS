@@ -4,6 +4,7 @@ from sde_collections.models.pattern import (
     TitlePattern,
     ExcludePattern,
     DocumentTypePattern)
+from sde_collections.models.collection import CurationStatusChoices
 from sde_collections.models.candidate_url import CandidateURL
 from sde_collections.tasks import _get_data_to_import
 
@@ -20,40 +21,12 @@ def health_check(collection, server_name: str = "production") -> Dict:
     health_check_report = []
 
     collection_id = collection.pk
-    collection_name = collection.name
-    collection_config_folder = collection.config_folder
-    curation_status = collection.curation_status
 
     candidate_urls_sinequa = _fetch_candidate_urls(collection, server_name)
-    print(candidate_urls_sinequa)
 
-    # now get Title Patterns in indexer db
-    title_patterns_local = TitlePattern.objects.all().filter(collection_id=collection_id)
-
-    # check if title patterns are porperly reflected in sinequa's response
-    for title_pattern in title_patterns_local:
-        pattern = title_pattern.title_pattern
-        matched_urls = title_pattern.matched_urls()
-
-        # now check to see if the matched_urls and canidate_urls_sinequa are similar or not
-        for matched_url in matched_urls:
-            url = matched_url.url
-            if url in candidate_urls_sinequa:
-                matched_title = matched_url.scraped_title
-                sinequa_title = candidate_urls_sinequa[url].scraped_title
-
-                if _title_pattern_resolver(pattern, sinequa_title) is None:
-                    report = {
-                        "id": collection_id,
-                        "collection_name": collection_name,
-                        "config_folder": collection_config_folder,
-                        "curation_status": curation_status,  # TODO: change this to actual value
-                        "pattern_name": "Title Pattern",
-                        "pattern": pattern,
-                        "scraped_title": matched_title,
-                        "non_compliant_url": matched_url,
-                    }
-                    health_check_report.append(report)
+    # check for title patterns
+    title_pattern_report = _health_check_title_pattern(collection, candidate_urls_sinequa)
+    health_check_report.extend(title_pattern_report)
 
     # Perform exclude pattern check here
     exclude_patterns_local = ExcludePattern.objects.all().filter(collection_id=collection_id)
@@ -89,15 +62,53 @@ def _fetch_candidate_urls(collection, server_name):
     candidate_urls_sinequa = {}
     for candidate_url in candidate_urls_remote:
         url = candidate_url["fields"]["url"]
-        scraped_title = candidate_url["fields"]["scraped_title"]
         candidate_urls_sinequa[url] = CandidateURL(
             url=url,
-            scraped_title=scraped_title
+            scraped_title=candidate_url["fields"]["scraped_title"]
         )
     return candidate_urls_sinequa
 
 
-def _title_pattern_resolver(pattern, title):
+def _health_check_title_pattern(collection, candidate_urls_sinequa):
+    collection_id = collection.pk
+    collection_name = collection.name
+    collection_config_folder = collection.config_folder
+    curation_status = collection.curation_status
+
+    title_pattern_report = []
+
+    # now get Title Patterns in indexer db
+    title_patterns_local = TitlePattern.objects.all().filter(collection_id=collection_id)
+
+    # check if title patterns are porperly reflected in sinequa's response
+    for title_pattern in title_patterns_local:
+        pattern = title_pattern.title_pattern
+        matched_urls = title_pattern.matched_urls()
+
+        # now check to see if the matched_urls and candidate_urls_sinequa are similar or not
+        for matched_url in matched_urls:
+            url = matched_url.url
+            if url in candidate_urls_sinequa:
+                matched_title = matched_url.scraped_title
+                sinequa_title = candidate_urls_sinequa[url].scraped_title
+
+                if _resolve_title_pattern(pattern, sinequa_title) is None:
+                    report = {
+                        "id": collection_id,
+                        "collection_name": collection_name,
+                        "config_folder": collection_config_folder,
+                        "curation_status": CurationStatusChoices.get_status_string(curation_status),
+                        "pattern_name": "Title Pattern",
+                        "pattern": pattern,
+                        "scraped_title": matched_title,
+                        "non_compliant_url": matched_url,
+                    }
+                    title_pattern_report.append(report)
+
+    return title_pattern_report
+
+
+def _resolve_title_pattern(pattern, title):
     """
         Given a pattern check whether it is able to capture the title or not. 
 
@@ -116,5 +127,4 @@ def _title_pattern_resolver(pattern, title):
 
     regex_pattern_parenthesis = re.sub(parentheis_pattern, replace_parentheis_with_anything, pattern_with_whitespace)
     regex_pattern = re.sub(multi_pattern, replace_parentheis_with_anything, regex_pattern_parenthesis)
-    print("regex pattern: ", regex_pattern)
     return re.match(regex_pattern, title)
