@@ -30,6 +30,7 @@ class TestPredictor:
         self.tokenizer = tokenizer_class.from_pretrained(
             self.config["model_parameters"]["model_type"]
         )
+        self.pdf_lists=[]
 
     @classmethod
     def from_dict(cls, cfg: dict):
@@ -59,8 +60,9 @@ class TestPredictor:
         for category, val in self.classes.items():
             if val == value:
                 return category
+            
 
-    def process_test_data(self, url):
+    def process_test_data(self, urls):
         """
         Processes the test data by retrieving content from the provided URL and encoding it.
 
@@ -72,19 +74,18 @@ class TestPredictor:
                                 Otherwise, returns the encoded test data as a DataFrame.
 
         """
-        response = requests.get(url)
-        content_type = response.headers.get("Content-Type")
-        if content_type is not None and "image" in content_type:
-            return "Image"
-        self.dataframe["links"] = [url]
-        self.dataframe["class"] = [3]  # any random class
+        image_list,pdf_list=[],[]
+        
+        self.dataframe["links"] = urls
+        self.dataframe["class"] = [3 for i in urls]  # any random class
         processor = Preprocessor.from_dict(self.config, self.dataframe)
         processor.remove_header_footer()
-        self.dataframe = processor.preprocessed_features()
+        self.dataframe,self.pdf_lists,self.image_lists = processor.preprocessed_features()
         self.dataframe["text"] = self.dataframe["soup"]
         encoder = Encoder.from_dict(self.config, self.dataframe)
         encoded_data = encoder.encoder()
-        return encoded_data
+        return encoded_data,self.pdf_lists,self.image_lists
+
 
     def tokenize_test_data(self, encoded_data):
         """
@@ -97,6 +98,11 @@ class TestPredictor:
             Tuple[Tensor, Tensor]: The input IDs and attention masks of the tokenized test data.
 
         """
+        sentence,labels,links=[],[],[]
+        for _, row in encoded_data.iterrows():
+            sentence.append(row["text"])
+            labels.append(row["class"])
+            links.append(row["links"])
         module_name = self.config["model_parameters"]["module_name"]
         transformers = importlib.import_module(module_name)
         # Dynamically get the model class from transformers module
@@ -106,30 +112,33 @@ class TestPredictor:
         tokenizer = tokenizer_class.from_pretrained(
             self.config["model_parameters"]["model_type"]
         )
-        sentence = encoded_data.text.values[0]
-        encoded_dict = tokenizer.encode_plus(
-            text=sentence,
-            add_special_tokens=True,
-            truncation=True,
-            max_length=500,
-            padding="max_length",
-            return_attention_mask=True,
-            return_tensors="pt",
-        )
-        input_ids = encoded_dict["input_ids"]
-        attention_masks = encoded_dict["attention_mask"]
-        return input_ids, attention_masks
+        input_ids,attention_masks=[],[]
+        for sent in sentence:
+            encoded_dict = tokenizer.encode_plus(
+                text=sent,
+                add_special_tokens=True,
+                truncation=True,
+                max_length=500,
+                padding="max_length",
+                return_attention_mask=True,
+                return_tensors="pt",
+            )
+            input_ids.append(encoded_dict["input_ids"])
+            attention_masks.append(encoded_dict["attention_mask"])
+        input_ids = torch.cat(input_ids, dim=0)
+        attention_masks = torch.cat(attention_masks, dim=0)
+        return input_ids,attention_masks,links
 
     def predict_test_data(self, input_ids, attention_masks):
         """
         Predicts the category of test data given its input IDs and attention masks.
 
         Parameters:
-            input_ids (Tensor): The input IDs of the test data.
-            attention_masks (Tensor): The attention masks of the test data.
+            input_ids (list): The list of tensor of input IDs of the test data.
+            attention_masks (list): The list of tensor of attention masks of the test data.
 
         Returns:
-            str: The predicted category of the test data.
+            categories (list): The list of predicted category of the test data.
 
         """
         self.loaded_model.eval()
@@ -143,7 +152,10 @@ class TestPredictor:
         preds = outputs.logits
         preds = torch.sigmoid(preds)
         preds = preds.detach().cpu().numpy()
+        # Assuming you want to get predictions for all examples in the batch
         preds_position = [np.argmax(arr).tolist() for arr in preds]
-        confidence_score = preds[0][preds_position[0]]
-        category = self.convert_labels_to_class(preds_position[0])
-        return category, confidence_score
+        # Assuming you want confidence scores for all examples in the batch
+        confidence_scores = [preds[i][position] for i, position in enumerate(preds_position)]
+        # Assuming you want categories for all examples in the batch
+        categories = [self.convert_labels_to_class(position) for position in preds_position]
+        return categories

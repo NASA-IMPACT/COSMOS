@@ -35,8 +35,6 @@ services:
       - sde_indexing_helper_local_postgres_data_backups:/backups
     env_file:
       - ./.envs/.local/.postgres
-    ports:
-      - "6543:5432"
 
   # docs:
   #   image: sde_indexing_helper_local_docs

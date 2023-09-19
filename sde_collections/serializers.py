@@ -35,7 +35,8 @@ class CandidateURLSerializer(serializers.ModelSerializer):
     generated_title_id = serializers.SerializerMethodField(read_only=True)
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
     candidate_urls_count = serializers.SerializerMethodField(read_only=True)
-    inference_by = serializers.CharField(read_only=True)
+    inferenced_by = serializers.CharField(read_only=True)
+    is_pdf=serializers.BooleanField(required=False)
 
     def get_candidate_urls_count(self, obj):
         titlepattern = obj.titlepattern_urls.last()
@@ -63,7 +64,8 @@ class CandidateURLSerializer(serializers.ModelSerializer):
             "document_type",
             "document_type_display",
             "visited",
-            "inference_by",
+            "inferenced_by",
+            "is_pdf",
         )
 
 

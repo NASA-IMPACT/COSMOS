@@ -24,6 +24,6 @@ DJANGO_AWS_STORAGE_BUCKET_NAME=''
 
 # GitHub
 # ------------------------------------------------------------------------------
-GITHUB_ACCESS_TOKEN=''
-SINEQUA_CONFIGS_GITHUB_REPO=''
-GITHUB_BRANCH_FOR_WEBAPP=''
+GITHUB_ACCESS_TOKEN=‘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’
+SINEQUA_CONFIGS_GITHUB_REPO=‘NASA-IMPACT/sde-backend’
+GITHUB_BRANCH_FOR_WEBAPP=‘inference_added’

@@ -50,7 +50,9 @@ function initializeDataTable() {
             { "data": "generated_title_id", "visible": false, "searchable": false },
             { "data": "match_pattern_type", "visible": false, "searchable": false },
             { "data": "candidate_urls_count", "visible": false, "searchable": false },
-            { "data": "inference_by", "visible": false, "searchable": false }
+            { "data": "inferenced_by", "visible": false, "searchable": false },
+            { "data": "is_pdf", "visible": false, "searchable": false }
+
         ],
         "createdRow": function (row, data, dataIndex) {
             if (data['excluded']) {
@@ -193,7 +195,7 @@ function getDocumentTypeColumn() {
                 5: 'Missions and Instruments',
                 6: 'Training and Education'
             };
-            var inferenceValue = row['inference_by']; 
+            var inferenceValue = row['inferenced_by']; 
             button_text = data ? dict[data] : 'Select';
             button_color = inferenceValue === 'user' ? 'btn-success' : (inferenceValue === 'model' ? 'btn-primary' : 'btn-secondary');
             return `
@@ -233,16 +235,14 @@ function handleCreateTitlePatternButton() {
     });
 }
 
+
 //handling action when inference button is hit
 function handleInferenceButton() {
     $("body").on("click", ".create_model_button", function (e) {
         e.preventDefault(); // Prevent the default button behavior
-        getURLLists(function(url_lists) {
-            postInferenceButton(url_lists,function(url_list, document_type_list){
-            });
-});});}
-
-
+        postInferenceButton(collection_id);
+        console.log(collection_id)
+});}
 
 function handleDocumentTypeSelect() {
     $("body").on("click", ".document_type_select", function () {
@@ -341,13 +341,13 @@ function postDocumentTypePatterns(match_pattern, match_pattern_type, document_ty
     });}
 
 // runs the script to get predictions for given list of uninferenced urls
-function postInferenceButton(urls_list,callback){
+function postInferenceButton(collection_id){
     $.blockUI({ message: '<div id="loadingMessage"><h3><b>Model Inference taking place...</b></h3></div>'});
     $.ajax({
-    url: '/api/run_script',  // Use the correct URL for your Django project
+    url: '/api/model_inference',  // Use the correct URL for your Django project
     type: 'POST',
     data: {
-        csrfmiddlewaretoken: csrftoken,url_lists:JSON.stringify(urls_list)
+        csrfmiddlewaretoken: csrftoken,collection_id
     },
     success: function() {
         location.reload();

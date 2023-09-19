@@ -19,69 +19,46 @@ class Preprocessor:
         """
         self.data = data
         self.config = config
+        self.pdf_lists=[]
+        self.image_lists=[]
+
 
     @classmethod
     def from_dict(cls, cfg: dict, data):
         """
-        Creates an Encoder object from a dictionary and data.
+        Creates an Preprocessor object from a dictionary and data.
 
         Args:
-            cfg (dict): A dictionary containing configuration parameters for the encoder.
+            cfg (dict): A dictionary containing configuration parameters for the preprocessor.
             data: The data to be encoded.
 
         Returns:
-            Encoder: An instance of the Encoder class.
+            Preprocessor: An instance of the Preprocessor class.
 
         """
         return cls(cfg, data)
 
-    def pdf_response(self, url):
-        """
-        Fetches the PDF content from a given URL and extracts the text from it.
 
-        Args:
-            url (str): The URL of the PDF.
-
-        Returns:
-            str: The extracted text content from the PDF.
-
-        """
-        response = requests.get(url)
-        pdf_content = response.content
-        pdf_stream = BytesIO(pdf_content)
-        pdf = PdfReader(pdf_stream)
-        text_content = ""
-        for page in pdf.pages:
-            page_content = page.extract_text()
-            if "  references  " in page_content.lower():
-                return text_content
-            text_content += page.extract_text()
-        return text_content
-
-    # removing header and footer to obtain features from the html response
     def remove_header_footer(self):
         """
         Removes the header and footer from HTML content in a dataset.
 
         The method makes HTTP requests to URLs specified in the dataset, retrieves the HTML content,
         and removes the header,footer and title elements from the HTML code.
-
-        Returns:
-            pandas.DataFrame: The modified dataset after removing header, footer and title.
         """
 
         self.data["classes"] = self.data["class"]
-        classs = self.data.classes.values
-        urlss = self.data.links.values
+        data_class = self.data.classes.values
+        data_urls = self.data.links.values
         soups, urls, classes = [], [], []
-        for j, i in enumerate(urlss):
+        for enum, each_url in enumerate(data_urls):
             try:
-                response = requests.get(i)
+                response = requests.get(each_url)
             except requests.exceptions.SSLError as e:
                 continue
             content_type = response.headers.get("Content-Type")
             if content_type is not None and "image" in content_type:
-                continue
+                self.image_lists.append(each_url)
             if content_type is not None and "pdf" not in content_type:
                 html_page = response.text
                 # Parsing the HTML content using BeautifulSoup
@@ -89,7 +66,7 @@ class Preprocessor:
                 text = get_text_table(soup)
                 text = re.sub(r"\W+", " ", text)
                 if text == "" or text is None:
-                    soup, text = asyncio.get_event_loop().run_until_complete(scraper(i))
+                    soup, text = asyncio.get_event_loop().run_until_complete(scraper(each_url))
                 result = soup.find("header")
                 if result:
                     result.extract()  # removing header element from the HTML code
@@ -100,37 +77,31 @@ class Preprocessor:
                 if title:
                     title.extract()  # removing title from HTML response
                 soups.append(soup)
-                classes.append(classs[j])
-                urls.append(i)
+                classes.append(data_class[enum])
+                urls.append(each_url)
             elif content_type is not None and "pdf" in content_type:
-                text = self.pdf_response(i)
-                html_page = f"<html>{text}</html>"
-                soup = BeautifulSoup(html_page, "html.parser")
-                soups.append(soup)
-                classes.append(classs[j])
-                urls.append(i)
+                self.pdf_lists.append(each_url)
             else:
                 text = response.text
                 html_page = f"<html> {text} </html>"
                 soup = BeautifulSoup(html_page, "html.parser")
                 soups.append(soup)
-                classes.append(classs[j])
-                urls.append(i)
+                classes.append(data_class[enum])
+                urls.append(each_url)
         self.data = pd.DataFrame()
         self.data["soup"] = soups
         self.data["links"] = urls
         self.data["class"] = classes
-        return self.data
 
     def preprocessed_features(self):
         """
         Preprocesses the features of the data by removing header and footer, extracting text
         from HTML content.
         Returns:
-            pandas.DataFrame: The preprocessed data with columns soup,class and links.
+            tuple: tuple of pandas.DataFrame (The preprocessed data with columns soup,class and links), lists of urls with pdf reponse, and lists of urls with image response.
         """
         self.remove_header_footer()
         self.data["soup"] = self.data["soup"].apply(
             lambda x: re.sub(r"\W+", " ", get_text_table(x).strip())
         )
-        return self.data
+        return self.data,self.pdf_lists,self.image_lists

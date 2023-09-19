@@ -48,11 +48,16 @@ class CandidateURL(models.Model):
     visited = models.BooleanField(default=False)
     objects = CandidateURLManager()
     document_type = models.IntegerField(choices=DocumentTypes.choices, null=True)
-    inference_by = models.CharField(
+    inferenced_by = models.CharField(
         "Inferenced By",
         default="",
         blank=True,
         help_text="This keeps track of who inferenced document type",
+    )
+    is_pdf = models.BooleanField(
+        "Is PDF",
+        default=False,
+        help_text="This keeps track of whether the given url is pdf or not",
     )
 
     class Meta:

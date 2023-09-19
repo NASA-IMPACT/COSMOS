@@ -31,7 +31,7 @@ class Encoder:
 
         Args:
             cfg (dict): A dictionary containing configuration parameters for the encoder.
-            data: The data to be encoded.
+            data (dataFrame): A python dataframe with columns class, links and text response from the url
 
         Returns:
             Encoder: An instance of the Encoder class.

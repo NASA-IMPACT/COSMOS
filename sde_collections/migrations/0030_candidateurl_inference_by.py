@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name="candidateurl",
-            name="inference_by",
+            name="inferenced_by",
             field=models.CharField(
                 blank=True,
                 default="",
