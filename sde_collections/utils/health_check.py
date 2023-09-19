@@ -2,8 +2,7 @@ from typing import Dict
 
 from sde_collections.models.pattern import (
     TitlePattern,
-    ExcludePattern,
-    DocumentTypePattern)
+    ExcludePattern)
 from sde_collections.models.collection import CurationStatusChoices
 from sde_collections.models.candidate_url import CandidateURL
 from sde_collections.tasks import _get_data_to_import
@@ -20,36 +19,18 @@ def health_check(collection, server_name: str = "production") -> Dict:
     """
     health_check_report = []
 
-    collection_id = collection.pk
-
+    # get candidate URLs from sinequa
     candidate_urls_sinequa = _fetch_candidate_urls(collection, server_name)
 
     # check for title patterns
-    title_pattern_report = _health_check_title_pattern(collection, candidate_urls_sinequa)
+    title_pattern_report = _health_check_title_pattern(collection,
+                                                       candidate_urls_sinequa)
     health_check_report.extend(title_pattern_report)
 
-    # Perform exclude pattern check here
-    exclude_patterns_local = ExcludePattern.objects.all().filter(collection_id=collection_id)
-
-    for exclude_pattern in exclude_patterns_local:
-        match_pattern = exclude_pattern.match_pattern
-
-        for candidate_url in candidate_urls_sinequa:
-            # TODO: check exclude pattern here
-            break
-        break
-
-    # perform document type pattern check here
-    document_type_patterns_local = DocumentTypePattern.objects.all().filter(collection_id=collection_id)
-
-    for document_type_pattern in document_type_patterns_local:
-        print("document type pattern:")
-        print(document_type_pattern)
-
-        for candidate_url in candidate_urls_sinequa:
-            # TODO: check document type pattern here
-            break
-        break
+    # check for exclude patterns
+    exclude_pattern_report = _health_check_exclude_pattern(collection,
+                                                           candidate_urls_sinequa)
+    health_check_report.extend(exclude_pattern_report)
 
     return health_check_report
 
@@ -57,7 +38,6 @@ def health_check(collection, server_name: str = "production") -> Dict:
 def _fetch_candidate_urls(collection, server_name):
     # TODO: should we make it available throughout the project??
     candidate_urls_remote = _get_data_to_import(collection, server_name)
-    print("Total candidate URLs-->", len(candidate_urls_remote))
 
     candidate_urls_sinequa = {}
     for candidate_url in candidate_urls_remote:
@@ -78,7 +58,8 @@ def _health_check_title_pattern(collection, candidate_urls_sinequa):
     title_pattern_report = []
 
     # now get Title Patterns in indexer db
-    title_patterns_local = TitlePattern.objects.all().filter(collection_id=collection_id)
+    title_patterns_local = TitlePattern.objects.all().filter(
+        collection_id=collection_id)
 
     # check if title patterns are porperly reflected in sinequa's response
     for title_pattern in title_patterns_local:
@@ -108,6 +89,53 @@ def _health_check_title_pattern(collection, candidate_urls_sinequa):
     return title_pattern_report
 
 
+def _health_check_exclude_pattern(collection, candidate_urls_sinequa):
+    collection_id = collection.pk
+    collection_name = collection.name
+    collection_config_folder = collection.config_folder
+    curation_status = collection.curation_status
+
+    exclude_pattern_report = []
+
+    # Perform exclude pattern check here
+    exclude_patterns_local = ExcludePattern.objects.all().filter(
+        collection_id=collection_id)
+
+    def create_exclude_pattern_report(match_pattern, url):
+        return {
+            "id": collection_id,
+            "collection_name": collection_name,
+            "config_folder": collection_config_folder,
+            "curation_status": CurationStatusChoices.get_status_string(curation_status),
+            "pattern_name": "Exclude Pattern",
+            "pattern": match_pattern,
+            "non_compliant_url": url,
+        }
+
+    for exclude_pattern in exclude_patterns_local:
+        match_pattern = exclude_pattern.match_pattern
+
+        # check with http://
+        if match_pattern.find("http://") == -1:
+            url = "http://{}".format(match_pattern)
+            if url in candidate_urls_sinequa:
+                exclude_pattern_report.append(create_exclude_pattern_report(match_pattern,
+                                                                            url))
+
+        if match_pattern.find("https://") == -1:
+            url = "https://{}".format(match_pattern)
+            if url in candidate_urls_sinequa:
+                exclude_pattern_report.append(create_exclude_pattern_report(match_pattern,
+                                                                            url))
+        else:
+            url = match_pattern  # assuming it has either https or http
+            if url in candidate_urls_sinequa:
+                exclude_pattern_report.append(create_exclude_pattern_report(match_pattern,
+                                                                            url))
+
+    return exclude_pattern_report
+
+
 def _resolve_title_pattern(pattern, title):
     """
         Given a pattern check whether it is able to capture the title or not. 
@@ -125,6 +153,8 @@ def _resolve_title_pattern(pattern, title):
     def replace_parentheis_with_anything(match):
         return r'\S+'
 
-    regex_pattern_parenthesis = re.sub(parentheis_pattern, replace_parentheis_with_anything, pattern_with_whitespace)
-    regex_pattern = re.sub(multi_pattern, replace_parentheis_with_anything, regex_pattern_parenthesis)
+    regex_pattern_parenthesis = re.sub(parentheis_pattern, replace_parentheis_with_anything,
+                                       pattern_with_whitespace)
+    regex_pattern = re.sub(multi_pattern, replace_parentheis_with_anything,
+                           regex_pattern_parenthesis)
     return re.match(regex_pattern, title)
