@@ -1,11 +1,11 @@
-from io import BytesIO
-import re
 import asyncio
+import re
+
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from PyPDF2 import PdfReader
-from Document_Classifier_inference.async_scraper import scraper, get_text_table
+
+from Document_Classifier_inference.async_scraper import get_text_table, scraper
 
 
 class Preprocessor:
@@ -19,9 +19,8 @@ class Preprocessor:
         """
         self.data = data
         self.config = config
-        self.pdf_lists=[]
-        self.image_lists=[]
-
+        self.pdf_lists = []
+        self.image_lists = []
 
     @classmethod
     def from_dict(cls, cfg: dict, data):
@@ -38,7 +37,6 @@ class Preprocessor:
         """
         return cls(cfg, data)
 
-
     def remove_header_footer(self):
         """
         Removes the header and footer from HTML content in a dataset.
@@ -54,7 +52,7 @@ class Preprocessor:
         for enum, each_url in enumerate(data_urls):
             try:
                 response = requests.get(each_url)
-            except requests.exceptions.SSLError as e:
+            except requests.exceptions.SSLError:
                 continue
             content_type = response.headers.get("Content-Type")
             if content_type is not None and "image" in content_type:
@@ -66,7 +64,9 @@ class Preprocessor:
                 text = get_text_table(soup)
                 text = re.sub(r"\W+", " ", text)
                 if text == "" or text is None:
-                    soup, text = asyncio.get_event_loop().run_until_complete(scraper(each_url))
+                    soup, text = asyncio.get_event_loop().run_until_complete(
+                        scraper(each_url)
+                    )
                 result = soup.find("header")
                 if result:
                     result.extract()  # removing header element from the HTML code
@@ -98,10 +98,11 @@ class Preprocessor:
         Preprocesses the features of the data by removing header and footer, extracting text
         from HTML content.
         Returns:
-            tuple: tuple of pandas.DataFrame (The preprocessed data with columns soup,class and links), lists of urls with pdf reponse, and lists of urls with image response.
+            tuple: tuple of pandas.DataFrame (The preprocessed data with columns soup,class and links),
+              lists of urls with pdf reponse, and lists of urls with image response.
         """
         self.remove_header_footer()
         self.data["soup"] = self.data["soup"].apply(
             lambda x: re.sub(r"\W+", " ", get_text_table(x).strip())
         )
-        return self.data,self.pdf_lists,self.image_lists
+        return self.data, self.pdf_lists, self.image_lists

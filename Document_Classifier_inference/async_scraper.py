@@ -1,8 +1,9 @@
 """Asynchronously scrapes the HTML content of a given URL using a headless browser."""
 import asyncio
 import re
-from pyppeteer import launch
+
 from bs4 import BeautifulSoup
+from pyppeteer import launch
 
 
 def get_text_table(html_soup):

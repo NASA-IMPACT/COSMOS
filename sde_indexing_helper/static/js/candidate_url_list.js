@@ -195,7 +195,7 @@ function getDocumentTypeColumn() {
                 5: 'Missions and Instruments',
                 6: 'Training and Education'
             };
-            var inferenceValue = row['inferenced_by']; 
+            var inferenceValue = row['inferenced_by'];
             button_text = data ? dict[data] : 'Select';
             button_color = inferenceValue === 'user' ? 'btn-success' : (inferenceValue === 'model' ? 'btn-primary' : 'btn-secondary');
             return `
@@ -343,7 +343,7 @@ function postDocumentTypePatterns(match_pattern, match_pattern_type, document_ty
 function postInferenceButton(collection_id){
     $.blockUI({ message: '<div id="loadingMessage"><h3><b>Model Inference taking place...</b></h3></div>'});
     $.ajax({
-    url: '/api/model_inference',  
+    url: '/api/model_inference',
     type: 'POST',
     data: {
         csrfmiddlewaretoken: csrftoken,collection_id
@@ -462,22 +462,6 @@ function deletePattern(url, data_type, url_type=null, candidate_urls_count=null)
 function getCollectionId() {
     return collection_id;
 }
-
-// gets a list of urls for a given collection id
-function getURLLists(callback) {
-    var urlList = [];
-    $.ajax({
-        "url": `/api/candidate-urls/?format=datatables&collection_id=${collection_id}`,
-        method: 'GET',
-        success: function(data) {
-            data = data['data'];
-            for (var i = 0; i < data.length; i++) {
-                var url = data[i]['url'];
-                urlList.push(url);
-            }
-            callback(urlList);
-        },
-    });}
 
 
 function getParameterByName(name, url) {

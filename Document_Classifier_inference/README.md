@@ -1,9 +1,9 @@
 # Automated Document Tagging
 
 
-# Project Description: 
+# Project Description:
 This purpose of this tag the content of a given url onto one of the five classes "Image","Documentation","Software and Tools",
-"Mission and Instruments", and "Data". 
+"Mission and Instruments", and "Data".
 
 #Datasets:
 Reference link for datasets: https://docs.google.com/spreadsheets/d/1rK7hvb_HRd-sqL3jrSYll5BiDvwnzQY2qVWDmpg6Bbk/edit#gid=1560325588

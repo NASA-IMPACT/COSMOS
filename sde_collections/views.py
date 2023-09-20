@@ -1,12 +1,9 @@
-import os
 import re
-import json
-import subprocess
-
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
@@ -16,7 +13,6 @@ from django.views.generic.list import ListView
 from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.http import HttpResponse, JsonResponse
 
 from Document_Classifier_inference.main import batch_predicts
 
@@ -44,13 +40,11 @@ def model_inference(request):
         candidate_urls = CandidateURL.objects.filter(
             collection_id=Collection.objects.get(pk=collection_id),
         ).exclude(document_type__in=[1, 2, 3, 4, 5, 6])
-        print("Candidate_url",candidate_urls)
-        document_type_list=[type(candidate_url.document_type) for candidate_url in candidate_urls]
         # These list of urls are to be inferred
         to_infer_url_list = [candidate_url.url for candidate_url in candidate_urls]
         if to_infer_url_list:
             collection_id = candidate_urls[0].collection_id
-            prediction,pdf_lists = batch_predicts(
+            prediction, pdf_lists = batch_predicts(
                 "Document_Classifier_inference/config.json", to_infer_url_list
             )
             # Update document_type for corresponding URLs
@@ -59,16 +53,18 @@ def model_inference(request):
                 if new_document_type is not None:
                     candidate_url.document_type = new_document_type
                     candidate_url.inferenced_by = "model"
-                    candidate_url.save() #Updating the changes in candidateurl table
+                    candidate_url.save()  # Updating the changes in candidateurl table
                     # Create a new DocumentTypePattern entry for each URL and its document_type
                     DocumentTypePattern.objects.create(
                         collection_id=candidate_url.collection_id,
-                        match_pattern=candidate_url.url.replace("https://",""),
+                        match_pattern=candidate_url.url.replace("https://", ""),
                         match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
                         document_type=new_document_type,
-                    )  #Adding the new record in documenttypepattern table   
-                if candidate_url.url in pdf_lists:  #flagging created for url with pdf response
-                    candidate_url.is_pdf=True
+                    )  # Adding the new record in documenttypepattern table
+                if (
+                    candidate_url.url in pdf_lists
+                ):  # flagging created for url with pdf response
+                    candidate_url.is_pdf = True
                     candidate_url.save()
         return HttpResponse(status=204)
 

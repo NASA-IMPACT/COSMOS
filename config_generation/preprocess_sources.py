@@ -1,9 +1,6 @@
 from db_to_xml import XmlEditor
-from generate_collection_list import turned_on_remaining_webcrawlers, create_xml_path
-from sources_to_scrape import (
-    remove_top_limitation_sources,
-    turned_on_sources,
-)
+from generate_collection_list import create_xml_path, turned_on_remaining_webcrawlers
+from sources_to_scrape import remove_top_limitation_sources, turned_on_sources
 
 ROOT_PATH = "../sinequa_configs/sources/SMD/"
 
