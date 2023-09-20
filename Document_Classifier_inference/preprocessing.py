@@ -52,7 +52,7 @@ class Preprocessor:
         for enum, each_url in enumerate(data_urls):
             try:
                 response = requests.get(each_url)
-            except requests.exceptions.SSLError:
+            except Exception:
                 continue
             content_type = response.headers.get("Content-Type")
             if content_type is not None and "image" in content_type:
