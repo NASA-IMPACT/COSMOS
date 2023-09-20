@@ -1,6 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
 
+from . import views
 from .views import (
     CandidateURLsListView,
     CandidateURLViewSet,
@@ -47,4 +48,5 @@ urlpatterns = [
     # Update an existing CandidateURL instance: /candidate-urls/{id}/
     # Delete an existing CandidateURL instance: /candidate-urls/{id}/
     path("api/", include(router.urls)),
+    path("api/model_inference", views.model_inference, name="model_inference"),
 ]

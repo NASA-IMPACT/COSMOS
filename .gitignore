@@ -67,6 +67,7 @@ celerybeat-schedule
 
 # Environments
 .venv
+myenv/
 venv/
 ENV/
 sde_venv
@@ -288,3 +289,7 @@ sde_indexing_helper/media/
 
 # config details for the api access
 config_generation/config.py
+
+
+#model's inference files
+Document_Classifier_inference/model.pt

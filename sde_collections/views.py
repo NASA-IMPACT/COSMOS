@@ -3,6 +3,7 @@ import re
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
@@ -12,6 +13,8 @@ from django.views.generic.list import ListView
 from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from Document_Classifier_inference.main import batch_predicts
 
 from .forms import CollectionGithubIssueForm, RequiredUrlForm
 from .models.candidate_url import CandidateURL
@@ -29,6 +32,41 @@ from .serializers import (
 from .tasks import push_to_github_task
 
 User = get_user_model()
+
+
+def model_inference(request):
+    if request.method == "POST":
+        collection_id = request.POST.get("collection_id")
+        candidate_urls = CandidateURL.objects.filter(
+            collection_id=Collection.objects.get(pk=collection_id),
+        ).exclude(document_type__in=[1, 2, 3, 4, 5, 6])
+        # These list of urls are to be inferred
+        to_infer_url_list = [candidate_url.url for candidate_url in candidate_urls]
+        if to_infer_url_list:
+            collection_id = candidate_urls[0].collection_id
+            prediction, pdf_lists = batch_predicts(
+                "Document_Classifier_inference/config.json", to_infer_url_list
+            )
+            # Update document_type for corresponding URLs
+            for candidate_url in candidate_urls:
+                new_document_type = prediction.get(candidate_url.url)
+                if new_document_type is not None:
+                    candidate_url.document_type = new_document_type
+                    candidate_url.inferenced_by = "model"
+                    candidate_url.save()  # Updating the changes in candidateurl table
+                    # Create a new DocumentTypePattern entry for each URL and its document_type
+                    DocumentTypePattern.objects.create(
+                        collection_id=candidate_url.collection_id,
+                        match_pattern=candidate_url.url.replace("https://", ""),
+                        match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
+                        document_type=new_document_type,
+                    )  # Adding the new record in documenttypepattern table
+                if (
+                    candidate_url.url in pdf_lists
+                ):  # flagging created for url with pdf response
+                    candidate_url.is_pdf = True
+                    candidate_url.save()
+        return HttpResponse(status=204)
 
 
 class CollectionListView(LoginRequiredMixin, ListView):
@@ -263,20 +301,28 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         document_type = request.POST.get("document_type")
+        inferencer = request.POST.get("inferencer")
+        collection_id = request.POST.get("collection")
+        match_pattern = request.POST.get("match_pattern")
+        candidate_url = CandidateURL.objects.get(
+            collection_id=Collection.objects.get(id=collection_id),
+            url="https://" + match_pattern,
+        )
         if not int(document_type) == 0:  # 0=none
+            candidate_url.inferenced_by = inferencer
+            candidate_url.save()
             return super().create(request, *args, **kwargs)
-        else:
-            collection_id = request.POST.get("collection")
-            match_pattern = request.POST.get("match_pattern")
-            try:
-                DocumentTypePattern.objects.get(
-                    collection_id=Collection.objects.get(id=collection_id),
-                    match_pattern=match_pattern,
-                    match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
-                ).delete()
-                return Response(status=status.HTTP_200_OK)
-            except DocumentTypePattern.DoesNotExist:
-                return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            candidate_url.inferenced_by = ""
+            candidate_url.save()
+            DocumentTypePattern.objects.get(
+                collection_id=Collection.objects.get(id=collection_id),
+                match_pattern=match_pattern,
+                match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
+            ).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except DocumentTypePattern.DoesNotExist:
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CollectionViewSet(viewsets.ModelViewSet):

@@ -1,0 +1,29 @@
+{"webapp": {"image":1,"Data":2,"Documentation":3,"Software and tools":4,"mission_instruments":5,"Training and Education":6},
+"classes":{"Data":0,"Documentation":1,"mission_instruments":2,"image":3,"Software and tools":4,"Training and Education":5},
+"encoder":  {
+    "image_keyword":["image","images","photojournal","view","Images","Related"],
+    "software_keyword":["software","tools","SDK","API","toolkit","library","application","code",
+    "class","package","interface","annotation","index","tree",
+    "constructor","method","version","model","attributes","methods","seed",
+    "version","command","log","undo","fit","method","disk","settings","save","programming","object","code","script","language",
+    "scripting","embedding","function","C++","Fortran","bug","installation",
+    "syntax","interface","architecture","prompt","parameter",
+    "graphics","comment","wrapper","terminal","plot","show"
+    ,"save","clear","default","input","output","query","component","add","remove","framework","instruction",
+    "pan","view","browse","button","coordinates","position","zoom","dropdown","search","git","github"],
+    "mission_keyword":["mission","instruments","trajectory","meter","spacecraft","project","objectives","measurement","aircraft","camera",
+    "campaign","flight","radar","test","mobility","curiosity","suspension","investigate"],
+    "training_keyword":["training","education"]
+},
+"model_parameters":{
+    "model":"AutoModelForSequenceClassification",
+    "tokenizer":"AutoTokenizer",
+    "model_type":"xlnet-base-cased",
+    "module_name":"transformers",
+    "saved_model_name":"Document_Classifier_inference/model.pt",
+    "num_labels":6,
+    "device":"cpu",
+    "optimizer":"AdamW",
+    "scheduler":"get_linear_schedule_with_warmup"
+}
+}
