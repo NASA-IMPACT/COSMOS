@@ -44,6 +44,7 @@ def model_inference(request):
         candidate_urls = CandidateURL.objects.filter(
             collection_id=Collection.objects.get(pk=collection_id),
         ).exclude(document_type__in=[1, 2, 3, 4, 5, 6]).exclude(is_pdf=True)
+        print("Candidate_url",candidate_urls)
         document_type_list=[type(candidate_url.document_type) for candidate_url in candidate_urls]
         # These list of urls are to be inferred
         to_infer_url_list = [candidate_url.url for candidate_url in candidate_urls]
@@ -66,7 +67,7 @@ def model_inference(request):
                         match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
                         document_type=new_document_type,
                     )  #Adding the new record in documenttypepattern table
-                elif candidate_url in pdf_lists:  #flagging created for url with pdf response
+                if candidate_url.url in pdf_lists:  #flagging created for url with pdf response
                     candidate_url.is_pdf=True
                     candidate_url.save()
         return HttpResponse(status=204)
