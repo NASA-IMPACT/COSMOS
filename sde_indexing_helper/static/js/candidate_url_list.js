@@ -241,7 +241,6 @@ function handleInferenceButton() {
     $("body").on("click", ".create_model_button", function (e) {
         e.preventDefault(); // Prevent the default button behavior
         postInferenceButton(collection_id);
-        console.log(collection_id)
 });}
 
 function handleDocumentTypeSelect() {
@@ -344,15 +343,15 @@ function postDocumentTypePatterns(match_pattern, match_pattern_type, document_ty
 function postInferenceButton(collection_id){
     $.blockUI({ message: '<div id="loadingMessage"><h3><b>Model Inference taking place...</b></h3></div>'});
     $.ajax({
-    url: '/api/model_inference',  // Use the correct URL for your Django project
+    url: '/api/model_inference',  
     type: 'POST',
     data: {
         csrfmiddlewaretoken: csrftoken,collection_id
     },
     success: function() {
+        $.unblockUI();
         location.reload();
         // Unblock the UI after the AJAX call is complete
-        $.unblockUI();
     },
     error: function(xhr, status, error) {
         var errorMessage = xhr.responseText;
