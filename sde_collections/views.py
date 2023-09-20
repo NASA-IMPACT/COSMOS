@@ -66,7 +66,7 @@ def model_inference(request):
                         match_pattern=candidate_url.url.replace("https://",""),
                         match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
                         document_type=new_document_type,
-                    )  #Adding the new record in documenttypepattern table
+                    )  #Adding the new record in documenttypepattern table   
                 if candidate_url.url in pdf_lists:  #flagging created for url with pdf response
                     candidate_url.is_pdf=True
                     candidate_url.save()
@@ -317,12 +317,14 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             candidate_url.save()
             return super().create(request, *args, **kwargs)
         try:
+            candidate_url.inferenced_by = ""
+            candidate_url.save()
             DocumentTypePattern.objects.get(
                 collection_id=Collection.objects.get(id=collection_id),
                 match_pattern=match_pattern,
                 match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
             ).delete()
-            return super().create(request, *args, **kwargs)
+            return Response(status=status.HTTP_204_NO_CONTENT)
         except DocumentTypePattern.DoesNotExist:
             return Response(status=status.HTTP_204_NO_CONTENT)
 
