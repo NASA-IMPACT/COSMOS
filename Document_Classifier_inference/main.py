@@ -5,8 +5,7 @@ from Document_Classifier_inference.test_predictions import TestPredictor
 
 def batch_predicts(config_file, urls):
     """
-    Predicts the possible full_forms and their confidence_scores which exceed the
-    confidence_threshold given context and full_forms as input in a batch of maximum 8 urls
+    Predicts category of each url given a list of urls
     Arg(s):
             config_file: json file for config
             urls (list): The URL of the test data in the form of list
