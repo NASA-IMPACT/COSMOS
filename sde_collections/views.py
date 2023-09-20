@@ -43,7 +43,7 @@ def model_inference(request):
         collection_id = request.POST.get("collection_id")
         candidate_urls = CandidateURL.objects.filter(
             collection_id=Collection.objects.get(pk=collection_id),
-        ).exclude(document_type__in=[1, 2, 3, 4, 5, 6]).exclude(is_pdf=True)
+        ).exclude(document_type__in=[1, 2, 3, 4, 5, 6])
         print("Candidate_url",candidate_urls)
         document_type_list=[type(candidate_url.document_type) for candidate_url in candidate_urls]
         # These list of urls are to be inferred
@@ -63,7 +63,7 @@ def model_inference(request):
                     # Create a new DocumentTypePattern entry for each URL and its document_type
                     DocumentTypePattern.objects.create(
                         collection_id=candidate_url.collection_id,
-                        match_pattern=candidate_url.url,
+                        match_pattern=candidate_url.url.replace("https://",""),
                         match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
                         document_type=new_document_type,
                     )  #Adding the new record in documenttypepattern table
@@ -316,8 +316,6 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             candidate_url.inferenced_by = inferencer
             candidate_url.save()
             return super().create(request, *args, **kwargs)
-        candidate_url.inferenced_by = ""
-        candidate_url.save()
         try:
             DocumentTypePattern.objects.get(
                 collection_id=Collection.objects.get(id=collection_id),
