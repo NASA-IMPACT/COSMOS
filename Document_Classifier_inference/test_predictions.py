@@ -77,7 +77,6 @@ class TestPredictor:
         self.dataframe["links"] = urls
         self.dataframe["class"] = [3 for i in urls]  # any random class
         processor = Preprocessor.from_dict(self.config, self.dataframe)
-        processor.remove_header_footer()
         (
             self.dataframe,
             self.pdf_lists,
@@ -130,31 +129,40 @@ class TestPredictor:
         attention_masks = torch.cat(attention_masks, dim=0)
         return input_ids, attention_masks, links
 
-    def predict_test_data(self, input_ids, attention_masks):
+    def predict_test_data(self, inference_dataloader):
         """
-        Predicts the category of test data given its input IDs and attention masks.
-
+        Predicts the category of the inference data given inference dataloader
         Parameters:
-            input_ids (list): The list of tensor of input IDs of the test data.
-            attention_masks (list): The list of tensor of attention masks of the test data.
-
-        Returns:
-            categories (list): The list of predicted category of the test data.
-
+        inference_dataloader (Dataloader): Dataloader of inference data
+        Return(s): category: A list of category where each url belongs to
         """
         self.loaded_model.eval()
-        with torch.no_grad():
-            outputs = self.loaded_model(
-                input_ids,
-                token_type_ids=None,
-                attention_mask=attention_masks,
-                return_dict=True,
-            )
-        preds = outputs.logits
-        preds = torch.sigmoid(preds)
-        preds = preds.detach().cpu().numpy()
+        # tracking variables
+        predictions = []
+        for batch in inference_dataloader:
+            # Add batch to CPU
+            batch = tuple(t.to(self.device) for t in batch)
+            # Unpack the inputs from our dataloader
+            b_input_ids, b_input_mask = batch
+            # Telling the model not to compute or store gradients, saving memory and
+            # speeding up prediction
+            with torch.no_grad():
+                # Forward pass, calculate logit predictions.
+                result = self.loaded_model(
+                    b_input_ids,
+                    token_type_ids=None,
+                    attention_mask=b_input_mask,
+                    return_dict=True,
+                )
+            logits = result.logits
+            logits = torch.sigmoid(logits)
+            # Move logits and labels to CPU
+            logits = logits.detach().cpu().numpy()
+            # Store predictions and true labels
+            predictions.extend(logits)
+
         # To get predictions for all urls
-        preds_position = [np.argmax(arr).tolist() for arr in preds]
+        preds_position = [np.argmax(arr).tolist() for arr in predictions]
         # Respective categories for all the urls
         categories = [
             self.convert_labels_to_class(position) for position in preds_position
