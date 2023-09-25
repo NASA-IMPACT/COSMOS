@@ -1,5 +1,6 @@
 import json
 
+from Document_Classifier_inference.load_dataset import DataLoad
 from Document_Classifier_inference.test_predictions import TestPredictor
 
 
@@ -19,7 +20,10 @@ def batch_predicts(config_file, urls):
     encoded_data, pdf_lists, image_lists = predictor.process_test_data(urls)
     if len(encoded_data) > 0:
         input_ids, attention_masks, links = predictor.tokenize_test_data(encoded_data)
-        category = predictor.predict_test_data(input_ids, attention_masks)
+        loader = DataLoad.from_dict(config)
+        loader.dataset(input_ids, attention_masks)
+        inference_dataloader = loader.dataloader()
+        category = predictor.predict_test_data(inference_dataloader)
         for enum, each_category in enumerate(category):
             prediction[links[enum]] = config.get("webapp").get(each_category)
     for image_url in image_lists:

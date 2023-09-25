@@ -57,7 +57,7 @@ class Preprocessor:
             content_type = response.headers.get("Content-Type")
             if content_type is not None and "image" in content_type:
                 self.image_lists.append(each_url)
-            if content_type is not None and "pdf" not in content_type:
+            elif content_type is not None and "pdf" not in content_type:
                 html_page = response.text
                 # Parsing the HTML content using BeautifulSoup
                 soup = BeautifulSoup(html_page, "html.parser")
