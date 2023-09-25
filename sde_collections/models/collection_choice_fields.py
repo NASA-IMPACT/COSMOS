@@ -54,3 +54,10 @@ class CurationStatusChoices(models.IntegerChoices):
     CURATED = 5, "Curated"
     GITHUB_PR_CREATED = 8, "GitHub PR Created"
     IN_PROD = 6, "In Production"
+
+    @classmethod
+    def get_status_string(cls, value):
+        for choice in cls.choices:
+            if choice[0] == value:
+                return choice[1]
+        return "N/A"

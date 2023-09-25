@@ -1,4 +1,5 @@
 import re
+import csv
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -7,9 +8,11 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
+from django.views import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
+from django.http import HttpResponse
 from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -30,6 +33,9 @@ from .serializers import (
     TitlePatternSerializer,
 )
 from .tasks import push_to_github_task
+from .utils.health_check import health_check
+from io import StringIO
+
 
 User = get_user_model()
 
@@ -344,3 +350,37 @@ class PushToGithubView(APIView):
             {"Success": "Started pushing collections to github"},
             status=status.HTTP_200_OK,
         )
+
+
+class HealthCheckView(View):
+    ''''
+        This view checks whether the rules in indexer db has been correctly reflected 
+        in our prod/test sinequa instances or not and at the end generates a report.
+    '''
+
+    def get(self, *args, **kwargs):
+        collection = Collection.objects.get(pk=kwargs.get('pk'))
+        sync_check_report = health_check(collection, server_name="production")
+        field_names = [
+            "id",
+            "collection_name",
+            "config_folder",
+            "curation_status",
+            "pattern_name",
+            "pattern",
+            "scraped_title",
+            "non_compliant_url"
+        ]
+
+        # download the report in CSV format
+        csv_data = StringIO()
+        writer = csv.DictWriter(csv_data, fieldnames=field_names)
+        writer.writeheader()
+        for item in sync_check_report:
+            writer.writerow(item)
+
+        http_response = HttpResponse(content_type="text/csv")
+        http_response['Content-Disposition'] = 'attachment; filename="report.csv"'
+        http_response.write(csv_data.getvalue())
+
+        return http_response

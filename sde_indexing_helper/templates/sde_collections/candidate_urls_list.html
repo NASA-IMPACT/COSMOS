@@ -27,6 +27,13 @@
         <br>
         <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small>
     </h3>
+    <div class="row">
+        <button style="background-color: #4CAF50; text-align: center;">
+            <a href="{% url 'sde_collections:health-check' collection.pk %}" style="color:white;">Health Check</button>
+        </button>
+    </div>
+    
+
     <div class="row pull-right">
         <div class="form-group">
             <input type="checkbox" id="filter-checkbox">
