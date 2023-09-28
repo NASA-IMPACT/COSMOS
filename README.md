@@ -33,7 +33,7 @@ Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings
 For convenience, you can keep your normal user logged in on Chrome and your superuser logged in on Firefox (or similar), so that you can see how the site behaves for both kinds of users.
 
 ### Loading fixtures
-
+Please note that currently loading fixtures will not create a fully working database. If you are starting the project from scratch, it is probably preferable to skip to the Loading the DB from a Backup section.
 - To load collections
     ```bash
     $ docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/collections.json
