@@ -15,7 +15,9 @@ FINISHED_STATUSES = [
 
 
 def bulk_push(statuses_to_push=FINISHED_STATUSES):
-    collections = Collection.objects.filter(curation_status__in=statuses_to_push)
+    collections = Collection.objects.filter(
+        curation_status__in=statuses_to_push
+    ).exclude(name__icontains="fake")
 
     gh = GitHubHandler(collections)
     gh.push_to_github()
