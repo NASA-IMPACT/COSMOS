@@ -126,6 +126,13 @@ class Collection(models.Model):
         return document_type_rules
 
     def update_config_xml(self, original_config_string):
+        """
+        reads from the model data and creates a config that mirrors the
+            - excludes
+            - title rules
+            - doc types
+            - tree root
+        """
         editor = XmlEditor(original_config_string)
 
         URL_EXCLUDES = self._process_exclude_list()
