@@ -8,12 +8,14 @@ from sde_collections.models.collection import Collection
 from sde_collections.models.collection_choice_fields import CurationStatusChoices
 from sde_collections.utils.github_helper import GitHubHandler
 
-finished_statuses = [
+FINISHED_STATUSES = [
     CurationStatusChoices.CURATED,
     CurationStatusChoices.GITHUB_PR_CREATED,
 ]
 
-collections = Collection.objects.filter(curation_status__in=finished_statuses)
 
-gh = GitHubHandler(collections)
-gh.push_to_github()
+def bulk_push(statuses_to_push=FINISHED_STATUSES):
+    collections = Collection.objects.filter(curation_status__in=statuses_to_push)
+
+    gh = GitHubHandler(collections)
+    gh.push_to_github()
