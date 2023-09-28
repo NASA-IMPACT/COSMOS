@@ -139,8 +139,9 @@ class Collection(models.Model):
         TITLE_RULES = self._process_title_list()
         DOCUMENT_TYPE_RULES = self._process_document_type_list()
 
-        if self.tree_root:
-            editor.update_or_add_element_value("TreeRoot", self.tree_root)
+        # TODO: this was creating duplicates so it was temporarily disabled
+        # if self.tree_root:
+        #     editor.update_or_add_element_value("TreeRoot", self.tree_root)
 
         for url in URL_EXCLUDES:
             editor.add_url_exclude(url)
