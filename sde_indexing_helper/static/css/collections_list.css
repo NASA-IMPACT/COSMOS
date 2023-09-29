@@ -12,6 +12,10 @@ body {
     cursor: pointer !important;
 }
 
+.workflow_status_select {
+    cursor: pointer !important;
+}
+
 .curator_select {
     cursor: pointer !important;
 }

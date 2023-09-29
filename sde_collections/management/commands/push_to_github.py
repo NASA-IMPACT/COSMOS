@@ -20,13 +20,28 @@ class Command(BaseCommand):
             config_folder__in=config_folders
         ).filter(curation_status=5)
 
+        # workflow status 8 is Curated
+        collections2 = Collection.objects.filter(
+            config_folder__in=config_folders
+        ).filter(workflow_status=8)
+
         cant_push = Collection.objects.filter(config_folder__in=config_folders).exclude(
             curation_status=5
         )
         cant_push = list(cant_push.values_list("name", flat=True))
 
+        # filer collections that can't be pushed based on workflow status
+        cant_push2 = Collection.objects.filter(
+            config_folder__in=config_folders
+        ).exclude(workflow_status=8)
+        cant_push2 = list(cant_push2.values_list("name", flat=True))
+
         gh = GitHubHandler(collections)
         gh.push_to_github()
+
+        # github handler takes in collections2 based on workflow status
+        gh2 = GitHubHandler(collections2)
+        gh2.push_to_github()
 
         self.stdout.write(
             self.style.SUCCESS(
@@ -40,5 +55,21 @@ class Command(BaseCommand):
                 self.style.ERROR(
                     "Can't push since status is not Curated (choice_id:5) %s"
                     % cant_push
+                )
+            )
+
+        # workflow status based code addition
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Successfully pushed: %s"
+                % list(collections2.values_list("name", flat=True))
+            )
+        )
+
+        if cant_push2:
+            self.stdout.write(
+                self.style.ERROR(
+                    "Can't push since status is not Curated (choice_id:8) %s"
+                    % cant_push2
                 )
             )

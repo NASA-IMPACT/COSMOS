@@ -293,3 +293,6 @@ config_generation/config.py
 
 #model's inference files
 Document_Classifier_inference/model.pt
+
+#Database Backup
+backup.json
