@@ -4,10 +4,8 @@
 import os
 import xml.etree.ElementTree as ET
 
-from db_to_xml import XmlEditor as XmlEditorStringBased
 
-
-class XmlEditor(XmlEditorStringBased):
+class XmlEditor:
     """
     Class is instantiated with a path to an xml.
     An internal etree is generated, and changes are made in place.
@@ -79,3 +77,46 @@ class XmlEditor(XmlEditorStringBased):
 
         # self._write_xml(xml_path)
         self._update_config_xml(xml_path)
+
+    def update_or_add_element_value(
+        self,
+        element_name: str,
+        element_value: str,
+        parent_element_name: str = "",
+    ) -> None:
+        """can update the value of either a top level or secondary level value in the sinequa config
+
+        Args:
+            element_name (str): name of the sinequa element, such as "Simulate"
+            element_value (str): value to be stored to element, such as "false"
+            parent_element_name (str, optional): parent of the element, such as "IndexerClient"
+               Defaults to None.
+        """
+
+        xml_root = self.xml_tree.getroot()
+        parent_element = (
+            xml_root if not parent_element_name else xml_root.find(parent_element_name)
+        )
+
+        if parent_element is None:
+            raise ValueError(
+                f"Parent element '{parent_element_name}' not found in XML."
+            )
+
+        existing_element = parent_element.find(element_name)
+        if existing_element:
+            existing_element.text = element_value
+        else:
+            ET.SubElement(parent_element, element_name).text = element_value
+
+    def add_job_list_item(self, job_name):
+        """
+        this is specifically for editing joblist templates by adding a new collection to a joblist
+        config_generation/xmls/joblist_template.xml
+        """
+        xml_root = self.xml_tree.getroot()
+
+        mapping = ET.Element("JobListItem")
+        ET.SubElement(mapping, "Name").text = job_name
+        ET.SubElement(mapping, "StopOnError").text = "false"
+        xml_root.append(mapping)
