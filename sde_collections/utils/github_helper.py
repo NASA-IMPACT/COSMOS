@@ -52,6 +52,19 @@ class GitHubHandler:
             branch=self.github_branch,
         )
 
+    def branch_exists(self, branch_name: str) -> bool:
+        try:
+            self.repo.get_branch(branch=branch_name)
+            return True
+        except GithubException:
+            return False
+
+    def create_branch(self, branch_name: str):
+        # Get the SHA of the commit you want to branch from (basically the Dev branch)
+        base_sha = self.repo.get_branch(self.dev_branch).commit.sha
+        # Create the new branch
+        self.repo.create_git_ref(ref=f"refs/heads/{branch_name}", sha=base_sha)
+
     def create_pull_request(self) -> None:
         title = "Webapp: Update config files"
         body = "\n".join(self.collections.values_list("name", flat=True))
@@ -66,6 +79,8 @@ class GitHubHandler:
             print("PR exists")
 
     def push_to_github(self) -> None:
+        if not self.branch_exists(self.github_branch):
+            self.create_branch(self.github_branch)
         for collection in self.collections:
             print(f"Pushing {collection.name} to GitHub.")
             self._update_file_contents(collection)

@@ -61,3 +61,27 @@ class CurationStatusChoices(models.IntegerChoices):
             if choice[0] == value:
                 return choice[1]
         return "N/A"
+
+
+class WorkflowStatusChoices(models.IntegerChoices):
+    COLLECTION_CREATED = 1, "Collection Created"
+    UNENGINEERED = 2, "Unengineered"
+    ENGINEERING_IN_PROGRESS = 3, "Engineering In Progress"
+    ENGINEERING_DONE_NO_URLS = 4, "Engineering Completed But No URL's Yet"
+    URLS_DONE = 5, "URL'S Generated and Ready to Curate"
+    BEING_CURATED = 6, "Curation in Progress"
+    CURATED = 7, "Curated"
+    FINAL_CODE_REVIEWED = 8, "Final Code Reviewed"
+    DEPLOYED_TO_TEST = 9, "Deployed To Test"
+    RUNNING_ON_TEST_COMPLETED = 10, "Completed Running On Test Server"
+    QUALITY_CHECK_IN_PROGRESS = 11, "Quality Check In Progress"
+    QUALITY_CHECK_FINISHED = 12, "Quality Check Completed"
+    DEPLOYED_TO_PROD = 13, "Deployed To Production"
+    FINISHED_RUNNING_ON_PROD = 14, "Finished Running on Production"
+
+    @classmethod
+    def get_status_string(cls, value):
+        for choice in cls.choices:
+            if choice[0] == value:
+                return choice[1]
+        return "N/A"

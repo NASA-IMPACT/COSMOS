@@ -12,6 +12,7 @@ from .collection_choice_fields import (
     DocumentTypes,
     SourceChoices,
     UpdateFrequencies,
+    WorkflowStatusChoices,
 )
 
 User = get_user_model()
@@ -71,6 +72,9 @@ class Collection(models.Model):
     curation_status = models.IntegerField(
         choices=CurationStatusChoices.choices, default=1
     )
+    workflow_status = models.IntegerField(
+        choices=WorkflowStatusChoices.choices, default=1
+    )
     curated_by = models.ForeignKey(
         User, on_delete=models.DO_NOTHING, null=True, blank=True
     )
@@ -96,6 +100,26 @@ class Collection(models.Model):
             8: "btn-secondary",
         }
         return color_choices[self.curation_status]
+
+    @property
+    def workflow_status_button_color(self) -> str:
+        color_choices = {
+            1: "btn-light",
+            2: "btn-danger",
+            3: "btn-warning",
+            4: "btn-info",
+            5: "btn-info",
+            6: "btn-primary",
+            7: "btn-success",
+            8: "btn-secondary",
+            9: "btn-light",
+            10: "btn-danger",
+            11: "btn-warning",
+            12: "btn-info",
+            13: "btn-secondary",
+            14: "btn-success",
+        }
+        return color_choices[self.workflow_status]
 
     def _process_exclude_list(self):
         """Process the exclude list."""

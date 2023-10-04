@@ -151,7 +151,7 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         "division",
         "new_collection",
     )
-    list_filter = ("division", "curation_status", "turned_on")
+    list_filter = ("division", "curation_status", "workflow_status", "turned_on")
     search_fields = ("name", "url")
     actions = [
         "export_as_csv",
