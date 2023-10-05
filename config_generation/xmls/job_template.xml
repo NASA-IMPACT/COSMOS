@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Sinequa>
     <JobType>collection</JobType>
-    <Collection>/SMD/ASTRO_High-Energy_Missions_Website/</Collection>
     <Description></Description>
     <IdentityOverride></IdentityOverride>
     <CollectionOverride>_ForceReindexation</CollectionOverride>
