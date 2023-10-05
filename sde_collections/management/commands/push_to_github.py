@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
-from django.db.models import Q
 
 from sde_collections.models.collection import Collection
+from sde_collections.models.collection_choice_fields import WorkflowStatusChoices
 from sde_collections.utils.github_helper import GitHubHandler
 
 
@@ -13,45 +13,34 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("config_folders", nargs="*", type=str, default=[])
 
+    @staticmethod
+    def _get_names(collections):
+        return list(collections.values_list("name", flat=True))
+
     def handle(self, *args, **options):
-        config_folders = options["config_folders"]
-
-        # curation status 5 is Curated
-        # collections = Collection.objects.filter(
-        #    config_folder__in=config_folders
-        # ).filter(curation_status=5)
-
-        # curation status 5 is Curated and workflow status is Curated
-        collections = Collection.objects.filter(
-            Q(config_folder__in=config_folders, curation_status=5)
-            & Q(config_folder__in=config_folders, workflow_status=7)
+        selected_collections = Collection.objects.filter(
+            config_folders=options["config_folders"]
+        )
+        curated_collections = selected_collections.filter(
+            workflow_status=WorkflowStatusChoices.CURATED
+        )
+        uncurated_collections = selected_collections.exclude(
+            workflow_status=WorkflowStatusChoices.CURATED
         )
 
-        # cant_push = Collection.objects.filter(config_folder__in=config_folders).exclude(
-        #    curation_status=5
-        # )
-        # cant_push = list(cant_push.values_list("name", flat=True))
-
-        combined_query = Q(config_folder__in=config_folders, curation_status__ne=5) | Q(
-            config_folder__in=config_folders, workflow_status__ne=7
-        )
-        cant_push = Collection.objects.filter(combined_query)
-        cant_push = list(cant_push.values_list("name", flat=True))
-
-        gh = GitHubHandler(collections)
+        gh = GitHubHandler(curated_collections)
         gh.push_to_github()
 
         self.stdout.write(
             self.style.SUCCESS(
-                "Successfully pushed: %s"
-                % list(collections.values_list("name", flat=True))
+                "Successfully pushed: %s" % self._get_names(curated_collections)
             )
         )
 
-        if cant_push:
+        if uncurated_collections:
             self.stdout.write(
                 self.style.ERROR(
-                    "Can't push since status is not Curated (curation_choice_id:5 or workflow_choice_id:7) %s"
-                    % cant_push
+                    "The following collections could not be pushed because the workflow status was not Curated %s"
+                    % self._get_names(uncurated_collections)
                 )
             )
