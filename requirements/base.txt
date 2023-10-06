@@ -11,7 +11,7 @@ ipython==8.14.0
 
 # Django
 # ------------------------------------------------------------------------------
-django==4.2.3  # pyup: < 4.1  # https://www.djangoproject.com/
+django==4.2.6  # pyup: < 4.1  # https://www.djangoproject.com/
 django-environ==0.10.0  # https://github.com/joke2k/django-environ
 django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions
 django-model-utils==4.3.1  # https://github.com/jazzband/django-model-utils
