@@ -17,6 +17,7 @@ from scraper.scraper.spiders.base_spider import spider_factory
 
 from .models.candidate_url import CandidateURL
 from .models.collection import Collection
+from .models.collection_choice_fields import WorkflowStatusChoices
 from .sinequa_api import Api
 from .utils.github_helper import GitHubHandler
 
@@ -86,7 +87,9 @@ def import_candidate_urls_task(collection_ids=[], config_folder_names=[]):
         subprocess.run(f'python manage.py loaddata "{urls_file}"', shell=True)
         collection.apply_all_patterns()
         collection.curation_status = 2  # ready to curate
-        collection.workflow_status = 5  # ready to curate
+        collection.workflow_status = (
+            WorkflowStatusChoices.URLS_GENERATED
+        )  # ready to curate
         collection.save()
     shutil.rmtree(TEMP_FOLDER_NAME)
 
