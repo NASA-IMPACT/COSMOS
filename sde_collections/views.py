@@ -140,7 +140,7 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
             if "claim_button" in request.POST:
                 user = self.request.user
                 collection.curation_status = CurationStatusChoices.BEING_CURATED
-                collection.workflow_status = WorkflowStatusChoices.BEING_CURATED
+                collection.workflow_status = WorkflowStatusChoices.CURATION_IN_PROGRESS
                 collection.curated_by = user
                 collection.curation_started = timezone.now()
                 collection.save()
@@ -356,7 +356,7 @@ class PushToGithubView(APIView):
 
 
 class HealthCheckView(View):
-    """'
+    """
     This view checks whether the rules in indexer db has been correctly reflected
     in our prod/test sinequa instances or not and at the end generates a report.
     """
