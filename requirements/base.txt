@@ -79,7 +79,7 @@ protobuf==4.23.2
 psutil==5.9.5
 pydantic==2.1.1
 pydantic_core==2.4.0
-pyee==8.2.2
+pyee==11.0.0
 pyparsing==3.0.9
 PyPDF2==3.0.1
 pyppeteer==1.0.2
