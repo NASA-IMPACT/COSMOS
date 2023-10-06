@@ -90,10 +90,3 @@ class WorkflowStatusChoices(models.IntegerChoices):
     PROD_INDEXING_COMPLETED = 14, "Production Indexing Completed"
     PROD_QUALITY_IN_PROGRESS = 15, "Production Quality Checks in Progress"
     PROD_QUALITY_COMPLETE = 16, "Production Quality Checks Completed"
-
-    @classmethod
-    def get_status_string(cls, value):
-        for choice in cls.choices:
-            if choice[0] == value:
-                return choice[1]
-        return "N/A"
