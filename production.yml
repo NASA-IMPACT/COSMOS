@@ -10,8 +10,9 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
-
     image: sde_indexing_helper_production_django
+    volumes:
+      - ./backups:/app/backups
     depends_on:
       - postgres
       - redis
