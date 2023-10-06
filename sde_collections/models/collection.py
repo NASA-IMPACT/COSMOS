@@ -26,7 +26,9 @@ class Collection(models.Model):
     url = models.URLField("URL", max_length=2048, blank=True)
     division = models.IntegerField(choices=Divisions.choices)
     turned_on = models.BooleanField("Turned On", default=True)
-    connector = models.IntegerField(choices=ConnectorChoices.choices, default=1)
+    connector = models.IntegerField(
+        choices=ConnectorChoices.choices, default=ConnectorChoices.CRAWLER2
+    )
 
     source = models.IntegerField(choices=SourceChoices.choices)
     update_frequency = models.IntegerField(
@@ -70,10 +72,12 @@ class Collection(models.Model):
     cleaning_order = models.IntegerField(default=0, blank=True)
 
     curation_status = models.IntegerField(
-        choices=CurationStatusChoices.choices, default=1
+        choices=CurationStatusChoices.choices,
+        default=CurationStatusChoices.NEEDS_SCRAPING,
     )
     workflow_status = models.IntegerField(
-        choices=WorkflowStatusChoices.choices, default=1
+        choices=WorkflowStatusChoices.choices,
+        default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
     )
     curated_by = models.ForeignKey(
         User, on_delete=models.DO_NOTHING, null=True, blank=True
@@ -108,16 +112,18 @@ class Collection(models.Model):
             2: "btn-danger",
             3: "btn-warning",
             4: "btn-info",
-            5: "btn-info",
+            5: "btn-success",
             6: "btn-primary",
-            7: "btn-success",
+            7: "btn-info",
             8: "btn-secondary",
             9: "btn-light",
             10: "btn-danger",
             11: "btn-warning",
             12: "btn-info",
-            13: "btn-secondary",
-            14: "btn-success",
+            13: "btn-success",
+            14: "btn-primary",
+            15: "btn-info",
+            16: "btn-secondary",
         }
         return color_choices[self.workflow_status]
 
