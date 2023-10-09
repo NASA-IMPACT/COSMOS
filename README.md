@@ -11,21 +11,33 @@ Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings
 
 ## Basic Commands
 
+### Building The Project
+    ```bash
+    $ docker-compose -f local.yml build
+    ```
+
+### Running The Necessary Containers
+    ```bash
+    $ docker-compose -f local.yml up
+    ```
+
 ### Setting Up Your Users
 
 - To create a **normal user account**, just go to Sign Up and fill out the form. Once you submit it, you'll see a "Verify Your E-mail Address" page. Go to your console to see a simulated email verification message. Copy the link into your browser. Now the user's email should be verified and ready to go.
 
 - To create a **superuser account**, use this command:
-
-      $ python manage.py createsuperuser
+    ```bash
+    $ docker-compose -f local.yml run -rm django python manage.py createsuperuser
+    ```
 
 For convenience, you can keep your normal user logged in on Chrome and your superuser logged in on Firefox (or similar), so that you can see how the site behaves for both kinds of users.
 
 ### Loading fixtures
-
+Please note that currently loading fixtures will not create a fully working database. If you are starting the project from scratch, it is probably preferable to skip to the Loading the DB from a Backup section.
 - To load collections
-
-      docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/collections.json
+    ```bash
+    $ docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/collections.json
+    ```
 
 ### Loading scraped URLs into CandidateURLs
 
@@ -36,26 +48,74 @@ For convenience, you can keep your normal user logged in on Chrome and your supe
 - Run the crawler with `scrapy crawl <name of your spider> -o scraped_urls/<config_folder>/urls.jsonl
 
 - Then run this:
+    ```bash
+    $ docker-compose -f local.yml run --rm django python manage.py load_scraped_urls <config_folder_name>
+    ```
 
-      $ docker-compose -f local.yml run --rm django python manage.py load_scraped_urls <config_folder_name>
+### Loading The DB From A Backup
+
+- If a database backup is made available, you wouldn't have to load the fixtures or the scrapped URLs anymore. This changes a few steps necessary to get the project running.
+
+- Step 1 : Build the project (Documented Above)
+
+- Step 2 : Run the necessary containers (Documented Above)
+
+- Step 3 : Clear Out Contenet Types Using Django Shell
+
+    -- Enter the Django shell in your Docker container.
+        ```bash
+        $ docker-compose -f local.yml run --rm django python manage.py shell
+        ```
+
+    -- In the Django shell, you can now delete the content types.
+        ```bash
+        from django.contrib.contenttypes.models import ContentType
+        ContentType.objects.all().delete()
+        ```
+
+    -- Exit the shell.
+
+- Step 4 : Load Your Backup Database
+
+    Assuming your backup is a `.json` file from `dumpdata`, you'd use `loaddata` command to populate your database.
+
+    -- If the backup file is on the local machine, make sure it's accessible to the Docker container. If the backup is outside the container, you will need to copy it inside first.
+        ```bash
+        $ docker cp /path/to/your/backup.json container_name:/path/inside/container/backup.json
+        ```
+
+    -- Load the data from your backup.
+        ```bash
+        $ docker-compose -f local.yml run --rm django python manage.py loaddata /path/inside/the/container/backup.json
+        ```
+
+    -- Once loaded, you may want to run migrations to ensure everything is aligned.
+        ```bash
+        $ docker-compose -f local.yml run -rm django python manage.py migrate
+        ```
+
 
 ### Type checks
 
 Running type checks with mypy:
-
+    ```bash
     $ mypy sde_indexing_helper
+    ```
 
 ### Test coverage
 
 To run the tests, check your test coverage, and generate an HTML coverage report:
-
+    ```bash
     $ coverage run -m pytest
     $ coverage html
     $ open htmlcov/index.html
+    ```
 
 #### Running tests with pytest
 
+    ```bash
     $ pytest
+    ```
 
 ### Live reloading and Sass CSS compilation
 
@@ -63,15 +123,17 @@ Moved to [Live reloading and SASS compilation](https://cookiecutter-django.readt
 
 ### Install Celery
 
-Make sure Celery is installed in your environment.
-To install,
-pip install celery
+Make sure Celery is installed in your environment. To install :
+    ```bash
+    $ pip install celery
+    ```
 
 ### Install all requirements
 
 Install all packages listed in a 'requirements' file
-
+    ```bash
     pip install -r requirements/*.txt
+    ```
 
 ### Celery
 
@@ -99,6 +161,31 @@ or you can embed the beat service inside a worker with the `-B` option (not reco
 cd sde_indexing_helper
 celery -A config.celery_app worker -B -l info
 ```
+
+### Pre-Commit Hook Instructions
+
+Hooks have to be run on every commit to automatically take care of linting and structuring.
+
+To install pre-commit package manager :
+
+    ```bash
+    $ pip install pre-commit
+    ```
+
+Install the git hook scripts :
+
+    ```bash
+    $ pre-commit install
+    ```
+
+Run against the files :
+
+    ```bash
+    $ pre-commit run --all-files
+    ```
+
+    It's usually a good idea to run the hooks against all of the files when adding new hooks (usually `pre-commit` will only run on the chnages files during git hooks).
+
 
 ### Sentry
 

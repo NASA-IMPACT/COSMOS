@@ -156,14 +156,22 @@ class Collection(models.Model):
         return document_type_rules
 
     def update_config_xml(self, original_config_string):
+        """
+        reads from the model data and creates a config that mirrors the
+            - excludes
+            - title rules
+            - doc types
+            - tree root
+        """
         editor = XmlEditor(original_config_string)
 
         URL_EXCLUDES = self._process_exclude_list()
         TITLE_RULES = self._process_title_list()
         DOCUMENT_TYPE_RULES = self._process_document_type_list()
 
-        if self.tree_root:
-            editor.update_or_add_element_value("TreeRoot", self.tree_root)
+        # TODO: this was creating duplicates so it was temporarily disabled
+        # if self.tree_root:
+        #     editor.update_or_add_element_value("TreeRoot", self.tree_root)
 
         for url in URL_EXCLUDES:
             editor.add_url_exclude(url)

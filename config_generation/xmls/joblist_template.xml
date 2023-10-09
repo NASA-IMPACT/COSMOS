@@ -32,7 +32,7 @@
     <PauseTimeBeforeStartup></PauseTimeBeforeStartup>
     <StatusMaxOk></StatusMaxOk>
     <StartIdentity></StartIdentity>
-    <UseAsDefaultIdentity>false</UseAsDefaultIdentity>
+    <UseAsDefaultIdentity>true</UseAsDefaultIdentity>
     <RunJobsInParallel>false</RunJobsInParallel>
     <!-- <JobListItem>
         <Name>collection.SMD.ASTRO_James_Webb_Space_Telescope_Website</Name>
