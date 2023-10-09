@@ -28,8 +28,8 @@ let table = $('#collection_table').DataTable({
                     var curation_status = $(data[6]).find('button').text();
                     var workflow_status = $(data[7]).find('button').text();
 
-                    if (curation_status !== "Curated" || workflow_status !== "Curated") {
-                        toastr.error(`Can't push <strong>${collection_name}</strong> because curation and workflow status is not "Curated".`);
+                    if (workflow_status !== "Curated") {
+                        toastr.error(`Can't push <strong>${collection_name}</strong> because workflow status is not "Curated".`);
                     } else {
                         collection_ids.push(collection_id);
                         toastr.success(`Started pushing <strong>${collection_name}</strong> to GitHub...`);
