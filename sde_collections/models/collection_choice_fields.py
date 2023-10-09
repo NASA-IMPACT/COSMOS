@@ -61,3 +61,32 @@ class CurationStatusChoices(models.IntegerChoices):
             if choice[0] == value:
                 return choice[1]
         return "N/A"
+
+
+class WorkflowStatusChoices(models.IntegerChoices):
+    # someone has started making a new collection, but they aren't done
+    RESEARCH_IN_PROGRESS = 1, "Research in Progress"
+    # someone finished inputing the collection details. finishing move caused a config to be created and sent to github
+    CONFIG_CREATED = 2, "Config Created"
+    # someone has claimed this collection for dev work on a server, and are working on it
+    ENGINEERING_IN_PROGRESS = 3, "Engineering in Progress"
+    # finished config code has been merged into the dev branch via PR, but urls may not be finished scraping
+    ENGINEERING_COMPLETED = 4, "Engineering Completed"
+    # config is on dev branch, and urls are fully scraped and imported into the webapp
+    URLS_GENERATED = 5, "URLs Generated and Ready to Curate"
+    # someone has claimed the collection and is in the process of curating it
+    CURATION_IN_PROGRESS = 6, "Curation in Progress"
+    # curation is finished, and this action sent a pr to github
+    CURATED = 7, "Curated"
+    # code made by webapp was reviewed and merged to test branch. status exists bc of the lag between review and deploy
+    CURATION_CODE_REVIEWED = 8, "Curation Code Reviewed"
+    # test branch code is deployed to test server and indexing has been kicked off
+    TEST_DEPLOYMENT_COMPLETED = 9, "Test Deployment Completed"
+    TEST_INDEXING_COMPLETED = 10, "Test Indexing Completed"
+    TEST_QUALITY_IN_PROGRESS = 11, "Test Quality Checks in Progress"
+    TEST_QUALITY_COMPLETE = 12, "Test Quality Checks Completed"
+    # test branch code is deployed to test server and indexing has been kicked off
+    PROD_DEPLOYMENT_COMPLETED = 13, "Production Deployment Completed"
+    PROD_INDEXING_COMPLETED = 14, "Production Indexing Completed"
+    PROD_QUALITY_IN_PROGRESS = 15, "Production Quality Checks in Progress"
+    PROD_QUALITY_COMPLETE = 16, "Production Quality Checks Completed"

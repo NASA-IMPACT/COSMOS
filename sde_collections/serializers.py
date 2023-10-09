@@ -10,13 +10,18 @@ class CollectionSerializer(serializers.ModelSerializer):
     curation_status_display = serializers.CharField(
         source="get_curation_status_display", read_only=True
     )
+    workflow_status_display = serializers.CharField(
+        source="get_workflow_status_display", read_only=True
+    )
 
     class Meta:
         model = Collection
         fields = (
             "id",
             "curation_status",
+            "workflow_status",
             "curation_status_display",
+            "workflow_status_display",
             "curated_by",
         )
         # extra_kwargs = {

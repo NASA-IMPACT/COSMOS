@@ -25,10 +25,11 @@ let table = $('#collection_table').DataTable({
                     var data = this.data();
                     var collection_name = $(data[1]).text().slice(0, -14); // remove " chevron_right" from end of string
                     var collection_id = $(data[1]).attr('href').slice(1, -1); // we get /932/ from href="/932/"
-                    var curation_status = $(data[6]).find('button').text(); // we get /932/ from href="/932/"
+                    var curation_status = $(data[6]).find('button').text();
+                    var workflow_status = $(data[7]).find('button').text();
 
-                    if (curation_status != "Curated") {
-                        toastr.error(`Can't push <strong>${collection_name}</strong> because its status is not "Curated".`);
+                    if (workflow_status !== "Curated") {
+                        toastr.error(`Can't push <strong>${collection_name}</strong> because workflow status is not "Curated".`);
                     } else {
                         collection_ids.push(collection_id);
                         toastr.success(`Started pushing <strong>${collection_name}</strong> to GitHub...`);
@@ -146,6 +147,44 @@ function handleCurationStatusSelect() {
     });
 }
 
+function handleWorkflowStatusSelect() {
+    $("body").on("click", ".workflow_status_select", function () {
+        var collection_id = $(this).data('collection-id');
+        var workflow_status = $(this).attr('value');
+        var workflow_status_text = $(this).text();
+        var color_choices = {
+            1: "btn-light",
+            2: "btn-danger",
+            3: "btn-warning",
+            4: "btn-info",
+            5: "btn-info",
+            6: "btn-primary",
+            7: "btn-success",
+            8: "btn-secondary",
+            9: "btn-light",
+            10: "btn-danger",
+            11: "btn-warning",
+            12: "btn-info",
+            13: "btn-secondary",
+            14: "btn-success",
+        }
+
+        $possible_buttons = $('body').find(`[id="workflow-status-button-${collection_id}"]`);
+        if ($possible_buttons.length > 1) {
+            $button = $possible_buttons[1];
+            $button = $($button);
+        } else {
+            $button = $(`#workflow-status-button-${collection_id}`);
+        }
+        $button.text(workflow_status_text);
+        $button.removeClass('btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary');
+        $button.addClass(color_choices[parseInt(workflow_status)]);
+        $('#collection_table').DataTable().searchPanes.rebuildPane(6);
+
+        postWorkflowStatus(collection_id, workflow_status);
+    });
+}
+
 function handleCuratorSelect() {
     $("body").on("click", ".curator_select", function () {
         var collection_id = $(this).data('collection-id');
@@ -178,6 +217,24 @@ function postCurationStatus(collection_id, curation_status) {
     });
 }
 
+function postWorkflowStatus(collection_id, workflow_status) {
+    var url = `/api/collections/${collection_id}/`;
+    $.ajax({
+        url: url,
+        type: "PUT",
+        data: {
+            workflow_status: workflow_status,
+            csrfmiddlewaretoken: csrftoken
+        },
+        headers: {
+            'X-CSRFToken': csrftoken
+        },
+        success: function (data) {
+            toastr.success('Workflow Status Updated!');
+        },
+    });
+}
+
 function postCurator(collection_id, curator_id) {
     var url = `/api/collections/${collection_id}/`;
     $.ajax({
@@ -202,5 +259,6 @@ $(document).ready(function () {
 
 function setupClickHandlers() {
     handleCurationStatusSelect();
+    handleWorkflowStatusSelect();
     handleCuratorSelect();
 }

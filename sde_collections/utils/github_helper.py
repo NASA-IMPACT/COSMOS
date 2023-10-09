@@ -84,8 +84,8 @@ class GitHubHandler:
             print("PR exists")
 
     def push_to_github(self) -> None:
-        if not self.branch_exists(self.github_update_branch):
-            self.create_branch(self.github_update_branch)
+        if not self.branch_exists(self.github_branch):
+            self.create_branch(self.github_branch)
         for collection in self.collections:
             print(f"Pushing {collection.name} to GitHub.")
             self._update_file_contents(collection)
