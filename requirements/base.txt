@@ -110,7 +110,7 @@ typing_extensions==4.8.0
 tzdata==2023.3
 urllib3==1.26.16
 uvicorn==0.23.2
-wandb==0.15.4
+wandb==0.15.12
 websockets==10.4
 zipp==3.15.0
 SQLAlchemy==1.4.25
