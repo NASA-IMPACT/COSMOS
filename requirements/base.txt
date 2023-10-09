@@ -101,7 +101,7 @@ soupsieve==2.5
 starlette==0.27.0
 sympy==1.12
 threadpoolctl==3.1.0
-tokenizers==0.13.3
+tokenizers==0.14.1
 tomli==2.0.1
 torch==2.0.1
 tqdm==4.65.0
