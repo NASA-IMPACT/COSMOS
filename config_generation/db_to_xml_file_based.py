@@ -109,6 +109,14 @@ class XmlEditor:
         else:
             ET.SubElement(parent_element, element_name).text = element_value
 
+    def add_column_update(self, column, value, selection=None):
+        xml_root = self.xml_tree.getroot()
+        column_update = ET.Element("UpdateColumn")
+        ET.SubElement(column_update, "Column").text = column
+        ET.SubElement(column_update, "Value").text = value
+        ET.SubElement(column_update, "Selection").text = selection
+        xml_root.append(column_update)
+
     def add_job_list_item(self, job_name):
         """
         this is specifically for editing joblist templates by adding a new collection to a joblist
