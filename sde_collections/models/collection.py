@@ -221,19 +221,27 @@ class Collection(models.Model):
         except KeyError:
             return False
 
+        print(f"Updating metadata for {self.name}")
         # tree root
         tree_root = metadata[self.config_folder]["tree_root"]
+        if tree_root != self.tree_root:
+            print(f"Updating tree root for {self.name} to {tree_root}")
         self.tree_root = tree_root
 
         # document type
         document_type = metadata[self.config_folder]["document_type"]
+        if document_type != self.document_type:
+            print(f"Updating document type for {self.name} to {document_type}")
         self.document_type = document_type
 
         # connector
-        connector = metadata[self.config_folder]["connector"]
-        self.connector = connector
+        # connector = metadata[self.config_folder]["connector"]
+        # if connector != self.connector:
+        #     print(f"Updating connector for {self.name} to {connector}")
+        # self.connector = connector
 
         self.save()
+        print("\n\n")
 
         return True
 
