@@ -23,43 +23,43 @@ let table = $('#collection_table').DataTable({
                     {
                         label: '0 URLs',
                         value: function (rowData, rowIdx) {
-                            return $(rowData[4]).text() == 0;
+                            return $(rowData[3]).text() == 0;
                         }
                     },
                     {
                         label: '1 solo URL',
                         value: function (rowData, rowIdx) {
-                            return $(rowData[4]).text() == 1;
+                            return $(rowData[3]).text() == 1;
                         }
                     },
                     {
                         label: '1 to 100 URLs',
                         value: function (rowData, rowIdx) {
-                            return $(rowData[4]).text() <= 100 && $(rowData[4]).text() > 1;
+                            return $(rowData[3]).text() <= 100 && $(rowData[3]).text() > 1;
                         }
                     },
                     {
                         label: '100 to 1,000 URLs',
                         value: function (rowData, rowIdx) {
-                            return $(rowData[4]).text() <= 1000 && $(rowData[4]).text() > 100;
+                            return $(rowData[3]).text() <= 1000 && $(rowData[3]).text() > 100;
                         }
                     },
                     {
                         label: '1000 to 10,000 URLs',
                         value: function (rowData, rowIdx) {
-                            return $(rowData[4]).text() <= 10000 && $(rowData[4]).text() > 1000;
+                            return $(rowData[3]).text() <= 10000 && $(rowData[3]).text() > 1000;
                         }
                     },
                     {
                         label: '10000 to 100,000 URLs',
                         value: function (rowData, rowIdx) {
-                            return $(rowData[4]).text() <= 100000 && $(rowData[4]).text() > 10000;
+                            return $(rowData[3]).text() <= 100000 && $(rowData[3]).text() > 10000;
                         }
                     },
                     {
                         label: 'Over 100,000 URLs',
                         value: function (rowData, rowIdx) {
-                            return $(rowData[4]).text() > 100000;
+                            return $(rowData[3]).text() > 100000;
                         }
                     }
                 ]
