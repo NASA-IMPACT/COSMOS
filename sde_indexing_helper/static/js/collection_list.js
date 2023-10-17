@@ -2,7 +2,6 @@ let table = $('#collection_table').DataTable({
     "paging": false,
     "stateSave": true,
     "dom": 'BPfritip',
-    "select": true,
     "buttons": [
         'csv',
         {
