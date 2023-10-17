@@ -13,7 +13,6 @@ from .views import (
     PushToGithubView,
     RequiredUrlsDeleteView,
     TitlePatternViewSet,
-    HealthCheckView,
 )
 
 router = routers.DefaultRouter()
@@ -34,11 +33,6 @@ urlpatterns = [
         name="push-to-github",
     ),
     path(
-        "api/health-check/<int:pk>",
-        view=HealthCheckView.as_view(),
-        name="health-check"
-    ),
-    path(
         "delete-required-url/<int:pk>",
         view=RequiredUrlsDeleteView.as_view(),
         name="delete_required_url",
@@ -54,5 +48,4 @@ urlpatterns = [
     # Update an existing CandidateURL instance: /candidate-urls/{id}/
     # Delete an existing CandidateURL instance: /candidate-urls/{id}/
     path("api/", include(router.urls)),
-    path("api/model_inference", views.model_inference, name="model_inference"),
 ]

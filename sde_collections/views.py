@@ -1,15 +1,11 @@
-import csv
 import re
-from io import StringIO
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
-from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
-from django.views import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
@@ -17,15 +13,10 @@ from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from Document_Classifier_inference.main import batch_predicts
-
 from .forms import CollectionGithubIssueForm, RequiredUrlForm
 from .models.candidate_url import CandidateURL
 from .models.collection import Collection, RequiredUrls
-from .models.collection_choice_fields import (
-    CurationStatusChoices,
-    WorkflowStatusChoices,
-)
+from .models.collection_choice_fields import CurationStatusChoices, WorkflowStatusChoices
 from .models.pattern import DocumentTypePattern, ExcludePattern, TitlePattern
 from .serializers import (
     CandidateURLBulkCreateSerializer,
@@ -36,44 +27,8 @@ from .serializers import (
     TitlePatternSerializer,
 )
 from .tasks import push_to_github_task
-from .utils.health_check import health_check
 
 User = get_user_model()
-
-
-def model_inference(request):
-    if request.method == "POST":
-        collection_id = request.POST.get("collection_id")
-        candidate_urls = CandidateURL.objects.filter(
-            collection_id=Collection.objects.get(pk=collection_id),
-        ).exclude(document_type__in=[1, 2, 3, 4, 5, 6])
-        # These list of urls are to be inferred
-        to_infer_url_list = [candidate_url.url for candidate_url in candidate_urls]
-        if to_infer_url_list:
-            collection_id = candidate_urls[0].collection_id
-            prediction, pdf_lists = batch_predicts(
-                "Document_Classifier_inference/config.json", to_infer_url_list
-            )
-            # Update document_type for corresponding URLs
-            for candidate_url in candidate_urls:
-                new_document_type = prediction.get(candidate_url.url)
-                if new_document_type is not None:
-                    candidate_url.document_type = new_document_type
-                    candidate_url.inferenced_by = "model"
-                    candidate_url.save()  # Updating the changes in candidateurl table
-                    # Create a new DocumentTypePattern entry for each URL and its document_type
-                    DocumentTypePattern.objects.create(
-                        collection_id=candidate_url.collection_id,
-                        match_pattern=candidate_url.url.replace("https://", ""),
-                        match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
-                        document_type=new_document_type,
-                    )  # Adding the new record in documenttypepattern table
-                if (
-                    candidate_url.url in pdf_lists
-                ):  # flagging created for url with pdf response
-                    candidate_url.is_pdf = True
-                    candidate_url.save()
-        return HttpResponse(status=204)
 
 
 class CollectionListView(LoginRequiredMixin, ListView):
@@ -139,8 +94,7 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
         else:
             if "claim_button" in request.POST:
                 user = self.request.user
-                collection.curation_status = CurationStatusChoices.BEING_CURATED
-                collection.workflow_status = WorkflowStatusChoices.CURATION_IN_PROGRESS
+                collection.curation_status = WorkflowStatusChoices.CURATION_IN_PROGRESS
                 collection.curated_by = user
                 collection.curation_started = timezone.now()
                 collection.save()
@@ -310,28 +264,20 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         document_type = request.POST.get("document_type")
-        inferencer = request.POST.get("inferencer")
-        collection_id = request.POST.get("collection")
-        match_pattern = request.POST.get("match_pattern")
-        candidate_url = CandidateURL.objects.get(
-            collection_id=Collection.objects.get(id=collection_id),
-            url="https://" + match_pattern,
-        )
         if not int(document_type) == 0:  # 0=none
-            candidate_url.inferenced_by = inferencer
-            candidate_url.save()
             return super().create(request, *args, **kwargs)
-        try:
-            candidate_url.inferenced_by = ""
-            candidate_url.save()
-            DocumentTypePattern.objects.get(
-                collection_id=Collection.objects.get(id=collection_id),
-                match_pattern=match_pattern,
-                match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
-            ).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except DocumentTypePattern.DoesNotExist:
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            collection_id = request.POST.get("collection")
+            match_pattern = request.POST.get("match_pattern")
+            try:
+                DocumentTypePattern.objects.get(
+                    collection_id=Collection.objects.get(id=collection_id),
+                    match_pattern=match_pattern,
+                    match_pattern_type=DocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
+                ).delete()
+                return Response(status=status.HTTP_200_OK)
+            except DocumentTypePattern.DoesNotExist:
+                return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CollectionViewSet(viewsets.ModelViewSet):
@@ -353,38 +299,3 @@ class PushToGithubView(APIView):
             {"Success": "Started pushing collections to github"},
             status=status.HTTP_200_OK,
         )
-
-
-class HealthCheckView(View):
-    """
-    This view checks whether the rules in indexer db has been correctly reflected
-    in our prod/test sinequa instances or not and at the end generates a report.
-    """
-
-    def get(self, *args, **kwargs):
-        collection = Collection.objects.get(pk=kwargs.get("pk"))
-        sync_check_report = health_check(collection, server_name="production")
-        field_names = [
-            "id",
-            "collection_name",
-            "config_folder",
-            "curation_status",
-            "workflow_status",
-            "pattern_name",
-            "pattern",
-            "scraped_title",
-            "non_compliant_url",
-        ]
-
-        # download the report in CSV format
-        csv_data = StringIO()
-        writer = csv.DictWriter(csv_data, fieldnames=field_names)
-        writer.writeheader()
-        for item in sync_check_report:
-            writer.writerow(item)
-
-        http_response = HttpResponse(content_type="text/csv")
-        http_response["Content-Disposition"] = 'attachment; filename="report.csv"'
-        http_response.write(csv_data.getvalue())
-
-        return http_response

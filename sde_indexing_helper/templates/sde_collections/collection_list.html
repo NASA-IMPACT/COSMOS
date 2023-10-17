@@ -15,16 +15,12 @@
     <table id="collection_table" class="table table-striped">
         <thead>
             <tr>
-                <th class="text-center">Priority</th>
                 <th class="text-center">Name</th>
                 <th class="text-center">URL</th>
                 <th class="text-center">Division</th>
                 <th class="text-center">Candidate URLs</th>
-                <th class="text-center">New?</th>
-                <th class="text-center">Status</th>
                 <th class="text-center">Workflow Status</th>
                 <th class="text-center">Curator</th>
-                <th class="text-center">Has Config?</th>
                 <th class="text-center">Connector Type</th>
                 <th class="text-center">Config Folder</th>
             </tr>
@@ -32,7 +28,6 @@
         <tbody>
             {% for collection in collections %}
                 <tr>
-                    <td>{{ collection.cleaning_order }}</td>
                     <td>
                         <a href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }} <i class="material-icons">chevron_right</i></a>
                     </td>
@@ -46,33 +41,6 @@
                         <a href=" {% if collection.num_candidate_urls > 0 %} {% url 'sde_collections:candidate_urls' collection.pk %} {% endif %} "
                            class="btn btn-sm {% if collection.num_candidate_urls > 0 %}btn-primary {% else %}disabled{% endif %}"
                            role="button">{{ collection.num_candidate_urls }}</a>
-                    </td>
-                    <td>
-                        {% if collection.new_collection %}
-                            <i class="material-icons" style="color:green;">check</i>
-                        {% else %}
-                            <i class="material-icons" style="color:red;">close</i>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div class="dropdown curation_status_dropdown"
-                             data-match-pattern
-                             remove_protocol
-                             row
-                             url>
-                            <button class="btn {{ collection.curation_status_button_color }} btn-sm dropdown-toggle"
-                                    type="button"
-                                    id="curation-status-button-{{ collection.id }}"
-                                    data-toggle="dropdown"
-                                    aria-haspopup="true"
-                                    aria-expanded="false">{{ collection.get_curation_status_display }}</button>
-                            <div class="dropdown-menu"
-                                 aria-labelledby="curation-status-button-{{ collection.id }}">
-                                {% for choice in curation_status_choices %}
-                                    <a class="dropdown-item curation_status_select" value="{{ choice }}" data-collection-id={{ collection.id }}>{{ choice.label }}</a>
-                                {% endfor %}
-                            </div>
-                        </div>
                     </td>
                     <td>
                         <div class="dropdown workflow_status_dropdown"
@@ -114,7 +82,6 @@
                             </div>
                         </div>
                     </td>
-                    <td>{{ collection.has_sinequa_config }}</td>
                     <td>{{ collection.get_connector_display }}</td>
                     <td>{{ collection.config_folder }}</td>
                 </tr>
