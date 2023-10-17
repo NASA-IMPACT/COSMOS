@@ -1,3 +1,6 @@
+import json
+import urllib.parse
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from slugify import slugify
@@ -90,6 +93,20 @@ class Collection(models.Model):
 
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
+
+    @property
+    def server_url_test(self) -> str:
+        base_url = "https://sciencediscoveryengine.test.nasa.gov"
+        payload = {
+            "name": "query-smd-primary",
+            "scope": "All",
+            "text": "",
+            "advanced": {
+                "collection": f"/SMD/{self.config_folder}/",
+            },
+        }
+        encoded_payload = urllib.parse.quote(json.dumps(payload))
+        return f"{base_url}/app/nasa-sba-smd/#/search?query={encoded_payload}"
 
     @property
     def curation_status_button_color(self) -> str:
