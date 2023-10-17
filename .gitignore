@@ -286,13 +286,11 @@ sde_indexing_helper/media/
 **/.ipynb_checkpoints/
 **/*.xlsx
 
-
-# config details for the api access
+# Config details for the api access
 config_generation/config.py
 
-
-#model's inference files
+# Model's inference files
 Document_Classifier_inference/model.pt
 
-#Database Backup
+# Database backup
 backup.json
