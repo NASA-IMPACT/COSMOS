@@ -77,7 +77,7 @@ pathtools==0.1.2
 platformdirs==3.5.3
 protobuf==4.23.2
 psutil==5.9.5
-pydantic==2.1.1
+pydantic==2.4.2
 pydantic_core==2.4.0
 pyee==8.2.2
 pyparsing==3.0.9
