@@ -71,7 +71,7 @@ def _get_data_to_import(collection, server_name):
     return data_to_import
 
 
-@celery_app.task()
+@celery_app.task(soft_time_limit=10000)
 def import_candidate_urls_from_api(server_name="test", collection_ids=[]):
     TEMP_FOLDER_NAME = "temp"
     os.makedirs(TEMP_FOLDER_NAME, exist_ok=True)
