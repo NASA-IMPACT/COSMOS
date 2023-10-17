@@ -13,7 +13,6 @@ from .views import (
     PushToGithubView,
     RequiredUrlsDeleteView,
     TitlePatternViewSet,
-    HealthCheckView,
 )
 
 router = routers.DefaultRouter()
