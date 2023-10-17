@@ -1,5 +1,4 @@
 let table = $('#collection_table').DataTable({
-    "order": [[0, 'asc']],
     "paging": false,
     "stateSave": true,
     "dom": 'BPfritip',
@@ -19,14 +18,6 @@ let table = $('#collection_table').DataTable({
         }
     ],
     "columnDefs": [
-        {
-            target: -1,
-            visible: false,
-        },
-        {
-            target: 3,
-            sortable: false,
-        },
         {
             searchPanes: {
                 options: [
@@ -74,14 +65,8 @@ let table = $('#collection_table').DataTable({
                     }
                 ]
             },
-            targets: [4]
-        },
-        {
-            searchPanes: {
-                show: true
-            },
-            targets: [-2]
-        },
+            targets: [3]
+        }
     ]
 });
 
