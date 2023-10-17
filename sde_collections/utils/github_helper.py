@@ -106,11 +106,9 @@ class GitHubHandler:
 
             tree_root = collection_xml.fetch_treeroot()
             document_type = collection_xml.fetch_document_type()
-            connector_type = collection_xml.fetch_connector()
 
             metadata[collection.config_folder] = {
                 "tree_root": tree_root,
                 "document_type": document_type,
-                "connector": connector_type,
             }
         return metadata
