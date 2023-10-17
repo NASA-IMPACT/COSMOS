@@ -207,7 +207,7 @@ def _get_data_to_import(collection, server_name):
             if full_collection_name in ignore_collections:
                 continue
 
-            url = record.get("url1")
+            url = record.get("download_url")
             title = record.get("title", "")
             collection_pk = collection.pk
 
