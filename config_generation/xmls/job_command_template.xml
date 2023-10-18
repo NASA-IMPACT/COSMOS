@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Sinequa>
+    <Description></Description>
+    <JobType>command</JobType>
+    <IdentityOverride></IdentityOverride>
+    <Trigger>
+        <Enabled>false</Enabled>
+        <TriggerType></TriggerType>
+        <StartDate></StartDate>
+        <StartTime></StartTime>
+        <ExpireDate></ExpireDate>
+        <ExpireTime></ExpireTime>
+        <DailyRecurrence></DailyRecurrence>
+        <WeeklyRecurrence></WeeklyRecurrence>
+        <WeeklyDays></WeeklyDays>
+        <MonthlyMonths></MonthlyMonths>
+        <MonthlyDays></MonthlyDays>
+        <MonthlyOnOrder></MonthlyOnOrder>
+        <MonthlyOnDays></MonthlyOnDays>
+        <RepeatEvery>false</RepeatEvery>
+        <RepeatEveryInterval></RepeatEveryInterval>
+        <RepeatDuration></RepeatDuration>
+    </Trigger>
+    <System>
+        <LogLevel></LogLevel>
+    </System>
+    <StopIfRunLongerThan>false</StopIfRunLongerThan>
+    <StopIfRunLongerThanDelay></StopIfRunLongerThanDelay>
+    <StartIfAlreadyRunning>true</StartIfAlreadyRunning>
+    <IncludeInstanceText>false</IncludeInstanceText>
+    <InstanceText></InstanceText>
+    <PauseTimeBeforeStartup></PauseTimeBeforeStartup>
+    <StatusMaxOk></StatusMaxOk>
+    <Command>collectioncache.GCMD.CASEI_Campaign</Command>
+</Sinequa>

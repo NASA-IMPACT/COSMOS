@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Sinequa>
+    <Revision>2</Revision>
+    <Description></Description>
+    <CommandType>updatecolumns</CommandType> <!-- subject to change -->
+    <Identity></Identity>
+    <Plugin></Plugin>
+    <Framework>Auto</Framework>
+    <System>
+        <LogLevel></LogLevel>
+        <LogInConsole>true</LogInConsole>
+    </System>
+    <Force32Bits>false</Force32Bits>
+    <StatusMaxOk></StatusMaxOk>
+    <Java>
+        <Server>true</Server>
+		<Xms></Xms>
+		<Xmx></Xmx>
+		<DisablePerfData>true</DisablePerfData>
+		<OtherOptions></OtherOptions>git </Java>
+    <Engines></Engines>
+    <IsSqlPattern>false</IsSqlPattern>
+    <SelectColumns></SelectColumns>
+    <IndexList>@@ScienceMissionDirectorate</IndexList>  <!-- subject to change -->
+    <TargetIndex></TargetIndex>
+    <Simulate>false</Simulate>
+    <MaxLog></MaxLog>
+    <RuntimeToRunWith></RuntimeToRunWith>
+</Sinequa>
