@@ -18,6 +18,10 @@
     text-decoration-thickness: 1px;
 }
 
+.dataTables_scrollHead, .dataTables_scrollBody {
+    overflow: visible !important;
+}
+
 
 .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
     background: none;
