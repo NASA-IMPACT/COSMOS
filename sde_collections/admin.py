@@ -151,6 +151,7 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         "division",
         "new_collection",
     )
+    readonly_fields = ("config_folder",)
     list_filter = ("division", "curation_status", "workflow_status", "turned_on")
     search_fields = ("name", "url")
     actions = [
