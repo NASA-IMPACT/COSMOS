@@ -42,7 +42,9 @@ class Collection(models.Model):
     document_type = models.IntegerField(
         choices=DocumentTypes.choices, null=True, blank=True
     )
-    tree_root = models.CharField("Tree Root", max_length=1024, default="", blank=True)
+    tree_root_deprecated = models.CharField(
+        "Tree Root", max_length=1024, default="", blank=True
+    )
     delete = models.BooleanField(default=False)
 
     # audit columns for production
@@ -95,6 +97,10 @@ class Collection(models.Model):
 
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
+
+    @property
+    def tree_root(self) -> str:
+        return f"{self.get_division_display()}/{self.name}"
 
     @property
     def server_url_test(self) -> str:
