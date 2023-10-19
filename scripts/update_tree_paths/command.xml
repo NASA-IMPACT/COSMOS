@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Sinequa>
+    <Revision>2</Revision>
+    <Description></Description>
+    <CommandType>updatecolumns</CommandType>
+    <Identity></Identity>
+    <Plugin></Plugin>
+    <System>
+        <LogLevel></LogLevel>
+        <LogInConsole>true</LogInConsole>
+    </System>
+    <Force32Bits>false</Force32Bits>
+    <StatusMaxOk></StatusMaxOk>
+    <RuntimeToRunWith></RuntimeToRunWith>
+    <Java>
+        <Server>true</Server>
+        <Xms></Xms>
+        <Xmx></Xmx>
+        <DisablePerfData>true</DisablePerfData>
+        <OtherOptions></OtherOptions>
+    </Java>
+    <SelectColumns>treepath</SelectColumns>
+    <IndexList>@@ScienceMissionDirectorate</IndexList>
+    <WhereClause>collection='/SMD/nasa_science_missions_earth/'</WhereClause>
+    <TargetIndex></TargetIndex>
+    <Simulate>false</Simulate>
+    <MaxLog>1000</MaxLog>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>Earth Science/NASA Science Missions: Earth/</Value>
+        <Selection></Selection>
+    </UpdateColumn>
+</Sinequa>
