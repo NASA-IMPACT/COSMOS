@@ -20,15 +20,15 @@ with open("job.xml") as jobfile:
     job = xmltodict.parse(jobfile.read())
 
 for collection_config_folder, collection_tree_root in collections.items():
-    COMMAND_FILE_NAME = f"update_treepath_{collection_config_folder.split('/')[2]}"
-    command["Sinequa"]["WhereClause"] = f"collection='{collection_config_folder}/'"
-    command["Sinequa"]["UpdateColumn"]["Value"] = f'"/{collection_tree_root}"'
-    job["Sinequa"]["Command"] = COMMAND_FILE_NAME
+    COMMAND_FILE_NAME = "consolidated_tree_path_update_command"
+    # command["Sinequa"]["WhereClause"] = f"collection='{collection_config_folder}/'"
+    # command["Sinequa"]["UpdateColumn"]["Value"] = f'"/{collection_tree_root}"'
+    # job["Sinequa"]["Command"] = COMMAND_FILE_NAME
 
-    with open(f"commands/{COMMAND_FILE_NAME}.xml", "w") as collection_command_file:
+    with open(f"{COMMAND_FILE_NAME}.xml", "w") as collection_command_file:
         collection_command_file.write(xmltodict.unparse(command, pretty=True))
 
-    with open(
-        f"jobs/update_treepath_{collection_config_folder.split('/')[2]}_job.xml", "w"
-    ) as collection_job_file:
-        collection_job_file.write(xmltodict.unparse(job, pretty=True))
+    # with open(
+    #     f"jobs/update_treepath_{collection_config_folder.split('/')[2]}_job.xml", "w"
+    # ) as collection_job_file:
+    #     collection_job_file.write(xmltodict.unparse(job, pretty=True))
