@@ -22,8 +22,8 @@ DJANGO_AWS_ACCESS_KEY_ID=''
 DJANGO_AWS_SECRET_ACCESS_KEY=''
 DJANGO_AWS_STORAGE_BUCKET_NAME=''
 
-# GitHub
+# GitHub (please create a new file called .env and put these in there)
 # ------------------------------------------------------------------------------
-GITHUB_ACCESS_TOKEN=''
-SINEQUA_CONFIGS_GITHUB_REPO=''
-GITHUB_BRANCH_FOR_WEBAPP=''
+# GITHUB_ACCESS_TOKEN=''
+# SINEQUA_CONFIGS_GITHUB_REPO=''
+# GITHUB_BRANCH_FOR_WEBAPP=''
