@@ -100,7 +100,7 @@ class Collection(models.Model):
 
     @property
     def tree_root(self) -> str:
-        return f"{self.get_division_display()}/{self.name}/"
+        return f"/{self.get_division_display()}/{self.name}/"
 
     @property
     def server_url_test(self) -> str:
