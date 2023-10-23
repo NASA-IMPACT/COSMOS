@@ -42,6 +42,18 @@ class CandidateURL(models.Model):
         blank=True,
         help_text="This is the title generated based on a Title Pattern",
     )
+    test_title = models.CharField(
+        "Title on Test Server",
+        default="Default",
+        blank=True,
+        help_text="This is the title present on Test Server",
+    )
+    production_title = models.CharField(
+        "Title on Production Server",
+        default="Default",
+        blank=True,
+        help_text="This is the title present on Production Server",
+    )
     level = models.IntegerField(
         "Level", default=0, blank=True, help_text="Level in the tree. Based on /."
     )
@@ -58,6 +70,16 @@ class CandidateURL(models.Model):
         "Is PDF",
         default=False,
         help_text="This keeps track of whether the given url is pdf or not",
+    )
+    present_on_test = models.BooleanField(
+        "URL Present In Test Environment?",
+        default=False,
+        help_text="Helps keep track if the Current URL is present in test environment or not",
+    )
+    present_on_prod = models.BooleanField(
+        "URL Present In Production?",
+        default=False,
+        help_text="Helps keep track if the Current URL is present in production or not",
     )
 
     class Meta:

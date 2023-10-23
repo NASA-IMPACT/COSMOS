@@ -67,6 +67,10 @@ class CandidateURLSerializer(serializers.ModelSerializer):
             "document_type",
             "document_type_display",
             "visited",
+            "test_title",
+            "production_title",
+            "present_on_test",
+            "present_on_prod",
         )
 
 

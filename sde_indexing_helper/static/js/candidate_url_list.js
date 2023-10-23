@@ -41,8 +41,12 @@ function initializeDataTable() {
         "columns": [
             getURLColumn(),
             getExcludedColumn(true_icon, false_icon),
+            getIsPresentOnTestColumn(true_icon, false_icon),
+            getIsPresentInProductionColumn(true_icon, false_icon),
             getScrapedTitleColumn(),
             getGeneratedTitleColumn(),
+            getTestTitleColumn(),
+            getProdTitleColumn(),
             getVisitedColumn(true_icon, false_icon),
             getDocumentTypeColumn(),
             { "data": "id", "visible": false, "searchable": false },
@@ -161,6 +165,17 @@ function getGeneratedTitleColumn() {
     }
 }
 
+function getTestTitleColumn() {
+    return {
+        "data": "test_title"
+    }
+}
+
+function getProdTitleColumn() {
+    return {
+        "data": "production_title"
+    }
+}
 
 function getExcludedColumn(true_icon, false_icon) {
     return {
@@ -176,6 +191,22 @@ function getVisitedColumn(true_icon, false_icon) {
     return {
         "data": "visited", "class": "col-1 text-center", "render": function (data, type, row) {
             return (data === true) ? true_icon : false_icon;
+        }
+    }
+}
+
+function getIsPresentOnTestColumn(true_icon, false_icon){
+    return {
+        "data": "present_on_test", "class": "col-1 text-center", "render": function (data, type, row) {
+            return (data === true) ? true_icon : false_icon
+        }
+    }
+}
+
+function getIsPresentInProductionColumn(true_icon, false_icon){
+    return {
+        "data": "present_on_prod", "class": "col-1 text-center", "render": function (data, type, row) {
+            return (data === true) ? true_icon : false_icon
         }
     }
 }
