@@ -7,7 +7,7 @@ subgroups in parallel
 
 from db_to_xml_file_based import XmlEditor
 
-from config import collection_list, date_of_batch, n
+from config import available_indexers, collection_list, date_of_batch
 
 
 class ParallelJobCreator:
@@ -58,14 +58,12 @@ class ParallelJobCreator:
         for collection in self.collection_list:
             job = XmlEditor(f"{self.template_root_path}job_template.xml")
             job.update_or_add_element_value("Collection", f"/SMD/{collection}/")
-            job._update_config_xml(
-                f"{self.job_path_root}{self._create_job_name(collection)}"
-            )
+            job._update_config_xml(f"{self.job_path_root}{self._create_job_name(collection)}")
 
     def make_all_parallel_jobs(self):
         # create initial single jobs that will be referenced by the parallel job lists
         self._create_collection_jobs()
-
+        n = len(available_indexers)
         # Create an empty list of lists
         sublists = [[] for _ in range(n)]
 
@@ -79,22 +77,17 @@ class ParallelJobCreator:
         job_names = []
         for index, sublist in enumerate(sublists):
             joblist = XmlEditor(self.joblist_template_path)
+            joblist.update_or_add_element_value("StartIdentity", available_indexers[index])
             for collection in sublist:
-                joblist.add_job_list_item(
-                    self._create_job_name(collection).replace(".xml", "")
-                )
+                joblist.add_job_list_item(self._create_job_name(collection).replace(".xml", ""))
 
-            joblist._update_config_xml(
-                f"{self.job_path_root}{self._create_joblist_name(index)}"
-            )
+            joblist._update_config_xml(f"{self.job_path_root}{self._create_joblist_name(index)}")
             job_names.append(self._create_joblist_name(index).replace(".xml", ""))
 
         master = XmlEditor(self.joblist_template_path)
         master.update_or_add_element_value("RunJobsInParallel", "true")
         [master.add_job_list_item(job_name) for job_name in job_names]
-        master._update_config_xml(
-            f"{self.job_path_root}parallel_indexing_list-{date_of_batch}-master.xml"
-        )
+        master._update_config_xml(f"{self.job_path_root}parallel_indexing_list-{date_of_batch}-master.xml")
 
 
 if __name__ == "__main__":
