@@ -63,7 +63,7 @@ def _health_check_on_urls_titles(server_name: str):
                     title_field,
                     urls_server_info_dict.get(candidate_urls_object.url)["title"],
                 )
-            except AttributeError:
+            except TypeError:
                 setattr(candidate_urls_object, title_field, "Unavailable")
             candidate_urls_object.save()
         print(
