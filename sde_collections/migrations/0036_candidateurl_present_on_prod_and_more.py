@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
             name="production_title",
             field=models.CharField(
                 blank=True,
-                default="Default",
+                default="",
                 help_text="This is the title present on Production Server",
                 verbose_name="Title on Production Server",
             ),
