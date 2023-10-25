@@ -44,13 +44,13 @@ class CandidateURL(models.Model):
     )
     test_title = models.CharField(
         "Title on Test Server",
-        default="Default",
+        default="",
         blank=True,
         help_text="This is the title present on Test Server",
     )
     production_title = models.CharField(
         "Title on Production Server",
-        default="Default",
+        default="",
         blank=True,
         help_text="This is the title present on Production Server",
     )
