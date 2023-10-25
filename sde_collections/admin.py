@@ -115,7 +115,6 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
                     "config_folder",
                     "url",
                     "division",
-                    "tree_root",
                     "document_type",
                     "update_frequency",
                     "source",
