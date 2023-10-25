@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
             name="test_title",
             field=models.CharField(
                 blank=True,
-                default="Default",
+                default="",
                 help_text="This is the title present on Test Server",
                 verbose_name="Title on Test Server",
             ),
