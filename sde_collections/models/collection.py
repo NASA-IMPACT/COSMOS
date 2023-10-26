@@ -283,10 +283,6 @@ class Collection(models.Model):
         url = f"{BASE_URL}/api/collections-read/{self.id}/"
         response = requests.get(url)
 
-        import ipdb
-
-        ipdb.set_trace()
-
         if response.status_code == 404:  # collection was deleted
             self.delete = True
             self.save()
@@ -299,32 +295,32 @@ class Collection(models.Model):
         response_json = response.json()
         print(f"Syncing collection: {self.name}")
 
-        self.name = response_json["name"]
-        self.url = response_json["url"]
-        self.division = response_json["division"]
-        self.turned_on = response_json["turned_on"]
-        self.connector = response_json["connector"]
-        self.source = response_json["source"]
-        self.update_frequency = response_json["update_frequency"]
-        self.document_type = response_json["document_type"]
-        self.tree_root_deprecated = response_json["tree_root"]
-        self.delete = response_json["delete"]
-        self.audit_hierarchy = response_json["audit_hierarchy"]
-        self.audit_url = response_json["audit_url"]
-        self.audit_mapping = response_json["audit_mapping"]
-        self.audit_label = response_json["audit_label"]
-        self.audit_query = response_json["audit_query"]
         self.audit_duplicate_results = response_json["audit_duplicate_results"]
+        self.audit_hierarchy = response_json["audit_hierarchy"]
+        self.audit_label = response_json["audit_label"]
+        self.audit_mapping = response_json["audit_mapping"]
         self.audit_metrics = response_json["audit_metrics"]
-        self.github_issue_number = response_json["github_issue_number"]
-        self.notes = response_json["notes"]
-        self.updated_at = response_json["updated_at"]
-        self.new_collection = response_json["new_collection"]
+        self.audit_query = response_json["audit_query"]
+        self.audit_url = response_json["audit_url"]
         self.cleaning_order = response_json["cleaning_order"]
-        self.curation_status = response_json["curation_status"]
-        self.workflow_status = response_json["workflow_status"]
+        self.connector = response_json["connector"]
         self.curation_started = response_json["curation_started"]
+        self.curation_status = response_json["curation_status"]
+        self.delete = response_json["delete"]
+        self.division = response_json["division"]
+        self.document_type = response_json["document_type"]
+        self.github_issue_number = response_json["github_issue_number"]
         self.has_sinequa_config = response_json["has_sinequa_config"]
+        self.name = response_json["name"]
+        self.new_collection = response_json["new_collection"]
+        self.notes = response_json["notes"]
+        self.source = response_json["source"]
+        self.tree_root_deprecated = response_json["tree_root_deprecated"]
+        self.turned_on = response_json["turned_on"]
+        self.update_frequency = response_json["update_frequency"]
+        self.updated_at = response_json["updated_at"]
+        self.url = response_json["url"]
+        self.workflow_status = response_json["workflow_status"]
 
         self.save()
 
