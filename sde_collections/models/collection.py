@@ -199,7 +199,9 @@ class Collection(models.Model):
             )
 
         updated_config_xml_string = editor.update_config_xml()
-        return updated_config_xml_string
+
+        gh = GitHubHandler([self])
+        return gh.create_and_initialize_config_file(self, updated_config_xml_string)
 
     def update_config_xml(self, original_config_string):
         """

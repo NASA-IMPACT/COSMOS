@@ -34,10 +34,28 @@ class GitHubHandler:
                 contents = self.repo.get_contents(
                     FILE_PATH, ref=self.github_update_branch
                 )
-            except UnknownObjectException:
+            except (UnknownObjectException, GithubException):
                 return None
 
         return contents
+
+    def create_and_initialize_config_file(self, collection, xml_string=""):
+        """
+        Create file contents on GitHub
+        """
+        FILE_PATH = self._get_config_file_path(collection)
+        COMMIT_MESSAGE = f"Webapp: Create {collection.name}"
+
+        if self._get_file_contents(collection) is None:
+            self.repo.create_file(
+                FILE_PATH,
+                COMMIT_MESSAGE,
+                xml_string,
+                branch=self.github_update_branch,
+            )
+            return "Created"
+        else:
+            return "Exists"
 
     def _update_file_contents(self, collection):
         """
