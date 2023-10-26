@@ -8,6 +8,7 @@ from .views import (
     CollectionDetailView,
     CollectionListView,
     CollectionViewSet,
+    CollectionReadViewSet,
     DocumentTypePatternViewSet,
     ExcludePatternViewSet,
     PushToGithubView,
@@ -17,6 +18,7 @@ from .views import (
 
 router = routers.DefaultRouter()
 router.register(r"collections", CollectionViewSet)
+router.register(r"collections-read", CollectionReadViewSet)
 router.register(r"candidate-urls", CandidateURLViewSet)
 router.register(r"exclude-patterns", ExcludePatternViewSet)
 router.register(r"title-patterns", TitlePatternViewSet)

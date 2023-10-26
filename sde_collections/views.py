@@ -16,12 +16,16 @@ from rest_framework.views import APIView
 from .forms import CollectionGithubIssueForm, RequiredUrlForm
 from .models.candidate_url import CandidateURL
 from .models.collection import Collection, RequiredUrls
-from .models.collection_choice_fields import CurationStatusChoices, WorkflowStatusChoices
+from .models.collection_choice_fields import (
+    CurationStatusChoices,
+    WorkflowStatusChoices,
+)
 from .models.pattern import DocumentTypePattern, ExcludePattern, TitlePattern
 from .serializers import (
     CandidateURLBulkCreateSerializer,
     CandidateURLSerializer,
     CollectionSerializer,
+    CollectionReadSerializer,
     DocumentTypePatternSerializer,
     ExcludePatternSerializer,
     TitlePatternSerializer,
@@ -283,6 +287,11 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
+
+
+class CollectionReadViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Collection.objects.all()
+    serializer_class = CollectionReadSerializer
 
 
 class PushToGithubView(APIView):
