@@ -79,7 +79,7 @@ class XmlEditor:
 
         # Traverse and/or create the path
         current_element = root
-        for element in elements[1:]:  # Skip the root element
+        for element in elements:  # Skip the root element
             # If the child exists, move to it; otherwise, create it
             next_element = current_element.find(element)
             if next_element is None:
@@ -211,10 +211,14 @@ class XmlEditor:
             xml_root.append(mapping)
 
     def add_document_type_mapping(self, document_type: str, criteria: str) -> None:
+        if criteria:
+            selection = f"doc.url1 match '{criteria}'"
+        else:
+            selection = ""
         self._generic_mapping(
             name="sourcestr56",
             value=f'"{document_type}"',
-            selection=f"doc.url1 match '{criteria}'",
+            selection=selection,
         )
 
     def add_title_mapping(self, title_value: str, title_criteria: str) -> None:
