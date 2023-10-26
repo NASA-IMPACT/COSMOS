@@ -24,8 +24,8 @@ from .models.pattern import DocumentTypePattern, ExcludePattern, TitlePattern
 from .serializers import (
     CandidateURLBulkCreateSerializer,
     CandidateURLSerializer,
-    CollectionSerializer,
     CollectionReadSerializer,
+    CollectionSerializer,
     DocumentTypePatternSerializer,
     ExcludePatternSerializer,
     TitlePatternSerializer,
