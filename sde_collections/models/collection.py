@@ -181,6 +181,22 @@ class Collection(models.Model):
             document_type_rules.append(processed_pattern)
         return document_type_rules
 
+    def create_config_xml(self):
+        """
+        Reads from the model data and creates a new config folder
+        and xml file on sde-backend/sources/SMD/<config_folder>/default.xml
+        """
+
+        original_config_string = open(
+            "config_generation/xmls/indexing_template.xml"
+        ).read()
+        editor = XmlEditor(original_config_string)
+
+        editor.update_or_add_element_value("TreeRoot", self.tree_root)
+
+        updated_config_xml_string = editor.update_config_xml()
+        return updated_config_xml_string
+
     def update_config_xml(self, original_config_string):
         """
         reads from the model data and creates a config that mirrors the
