@@ -43,9 +43,7 @@ def test_update_or_add_element_value():
     editor = XmlEditor(xml_string)
 
     # To update an existing element's value
-    updated_xml = editor.update_or_add_element_value(
-        "root/child/grandchild", "new_value"
-    )
+    updated_xml = editor.update_or_add_element_value("child/grandchild", "new_value")
     expected_output = """<root>
         <child>
             <grandchild>new_value</grandchild>
@@ -55,7 +53,7 @@ def test_update_or_add_element_value():
     assert xmls_equal(updated_xml, expected_output)
 
     # To create a new element and set its value
-    new_xml = editor.update_or_add_element_value("root/newchild", "some_value")
+    new_xml = editor.update_or_add_element_value("newchild", "some_value")
     expected_output = """<root>
         <child>
             <grandchild>new_value</grandchild>
