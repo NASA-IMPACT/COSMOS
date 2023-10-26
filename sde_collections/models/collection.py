@@ -193,12 +193,15 @@ class Collection(models.Model):
         editor = XmlEditor(original_config_string)
 
         editor.update_or_add_element_value("TreeRoot", self.tree_root)
-        editor.add_document_type_mapping(
-            document_type=self.get_document_type_display(), criteria=None
-        )
+        if self.document_type:
+            editor.add_document_type_mapping(
+                document_type=self.get_document_type_display(), criteria=None
+            )
 
         updated_config_xml_string = editor.update_config_xml()
-        return updated_config_xml_string
+
+        gh = GitHubHandler([self])
+        return gh.create_and_initialize_config_file(self, updated_config_xml_string)
 
     def update_config_xml(self, original_config_string):
         """
