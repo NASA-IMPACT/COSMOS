@@ -48,3 +48,9 @@
     "vo_simple_cone_search",
     "wise_neowise_coadder",
 ]
+
+# most are delete=True
+# these two are not
+# exoplanet_follow_up_observing_program
+# nasa_sea_level_change
+# create configs for them on the github
