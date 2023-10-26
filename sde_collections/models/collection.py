@@ -193,6 +193,13 @@ class Collection(models.Model):
         editor = XmlEditor(original_config_string)
 
         editor.update_or_add_element_value("TreeRoot", self.tree_root)
+        editor.add_document_type_mapping(
+            document_type=self.get_document_type_display(), criteria=None
+        )
+
+        import ipdb
+
+        ipdb.set_trace()
 
         updated_config_xml_string = editor.update_config_xml()
         return updated_config_xml_string
