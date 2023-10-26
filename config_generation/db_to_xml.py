@@ -56,36 +56,41 @@ class XmlEditor:
         xml = xmltodict.parse(xml_string)
         return xmltodict.unparse(xml, pretty=True)
 
-    def update_or_add_element_value(
-        self,
-        element_name: str,
-        element_value: str,
-        parent_element_name: str = "",
-    ) -> None:
-        """can update the value of either a top level or secondary level value in the sinequa config
+    def update_or_add_element_value(self, path, new_value, parent_element_name=None):
+        """
+        Update or create a value in the XML.
 
-        Args:
-            element_name (str): name of the sinequa element, such as "Simulate"
-            element_value (str): value to be stored to element, such as "false"
-            parent_element_name (str, optional): parent of the element, such as "IndexerClient"
-               Defaults to None.
+        Parameters:
+        - xml_string (str): The original XML string.
+        - path (str): The path to the element. Elements are separated by '/'. Example: 'root/child/grandchild'
+        - new_value (str): The new value to set.
+
+        Returns:
+        - str: The updated XML string.
         """
 
-        xml_root = self.xml_tree.getroot()
-        parent_element = (
-            xml_root if not parent_element_name else xml_root.find(parent_element_name)
-        )
+        # Parse the XML string into an ElementTree
+        root = self.xml_tree.getroot()
 
-        if parent_element is None:
-            raise ValueError(
-                f"Parent element '{parent_element_name}' not found in XML."
-            )
+        # Split the path into its components
+        if parent_element_name is not None:
+            path = f"{parent_element_name}/{path}"
+        elements = path.split("/")
 
-        existing_element = parent_element.find(element_name)
-        if existing_element is None:
-            existing_element.text = element_value
-        else:
-            ET.SubElement(parent_element, element_name).text = element_value
+        # Traverse and/or create the path
+        current_element = root
+        for element in elements[1:]:  # Skip the root element
+            # If the child exists, move to it; otherwise, create it
+            next_element = current_element.find(element)
+            if next_element is None:
+                next_element = ET.SubElement(current_element, element)
+            current_element = next_element
+
+        # Set the value
+        current_element.text = new_value
+
+        # Return the updated XML as a string
+        return ET.tostring(root, encoding="utf-8").decode("utf-8")
 
     def convert_indexer_to_scraper(self) -> None:
         """
