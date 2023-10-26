@@ -282,4 +282,11 @@
 		<Selection></Selection>
 		<DefaultValue></DefaultValue>
 	</Mapping>
+	<Mapping>
+		<Name>sourcestr56</Name>
+		<Value>""</Value>
+		<Description>Tab on which this document appears</Description>
+		<Selection></Selection>
+		<DefaultValue></DefaultValue>
+	</Mapping>
 </Sinequa>
