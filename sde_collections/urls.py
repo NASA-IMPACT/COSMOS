@@ -2,44 +2,33 @@ from django.urls import include, path
 from rest_framework import routers
 
 from . import views
-from .views import (
-    CandidateURLsListView,
-    CandidateURLViewSet,
-    CollectionDetailView,
-    CollectionListView,
-    CollectionViewSet,
-    DocumentTypePatternViewSet,
-    ExcludePatternViewSet,
-    PushToGithubView,
-    RequiredUrlsDeleteView,
-    TitlePatternViewSet,
-)
 
 router = routers.DefaultRouter()
-router.register(r"collections", CollectionViewSet)
-router.register(r"candidate-urls", CandidateURLViewSet)
-router.register(r"exclude-patterns", ExcludePatternViewSet)
-router.register(r"title-patterns", TitlePatternViewSet)
-router.register(r"document-type-patterns", DocumentTypePatternViewSet)
+router.register(r"collections", views.CollectionViewSet)
+router.register(r"collections-read", views.CollectionReadViewSet)
+router.register(r"candidate-urls", views.CandidateURLViewSet)
+router.register(r"exclude-patterns", views.ExcludePatternViewSet)
+router.register(r"title-patterns", views.TitlePatternViewSet)
+router.register(r"document-type-patterns", views.DocumentTypePatternViewSet)
 
 app_name = "sde_collections"
 
 urlpatterns = [
-    path("", view=CollectionListView.as_view(), name="list"),
-    path("<int:pk>/", view=CollectionDetailView.as_view(), name="detail"),
+    path("", view=views.CollectionListView.as_view(), name="list"),
+    path("<int:pk>/", view=views.CollectionDetailView.as_view(), name="detail"),
     path(
         "api/collections/push_to_github/",
-        PushToGithubView.as_view(),
+        views.PushToGithubView.as_view(),
         name="push-to-github",
     ),
     path(
         "delete-required-url/<int:pk>",
-        view=RequiredUrlsDeleteView.as_view(),
+        view=views.RequiredUrlsDeleteView.as_view(),
         name="delete_required_url",
     ),
     path(
         "<int:pk>/candidate-urls",
-        view=CandidateURLsListView.as_view(),
+        view=views.CandidateURLsListView.as_view(),
         name="candidate_urls",
     ),
     # List all CandidateURL instances: /candidate-urls/
