@@ -49,7 +49,7 @@ class GitHubHandler:
                 FILE_PATH,
                 COMMIT_MESSAGE,
                 xml_string,
-                branch=self.github_update_branch,
+                branch=self.github_branch,
             )
             return "Created"
         else:
