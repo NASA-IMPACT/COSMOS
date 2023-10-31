@@ -11,7 +11,7 @@ class GitHubHandler:
     def __init__(self, collections, *args, **kwargs):
         self.github_token = settings.GITHUB_ACCESS_TOKEN
         self.github_repo = settings.SINEQUA_CONFIGS_GITHUB_REPO
-        self.github_update_branch = settings.GITHUB_BRANCH_FOR_WEBAPP
+        self.github_branch = settings.GITHUB_BRANCH_FOR_WEBAPP
         self.g = Github(self.github_token)
         self.repo = self.g.get_repo(f"{self.github_repo}")
         self.dev_branch = self.repo.default_branch
@@ -31,10 +31,8 @@ class GitHubHandler:
             contents = self.repo.get_contents(FILE_PATH, ref=self.dev_branch)
         except UnknownObjectException:
             try:
-                contents = self.repo.get_contents(
-                    FILE_PATH, ref=self.github_update_branch
-                )
-            except (UnknownObjectException, GithubException):
+                contents = self.repo.get_contents(FILE_PATH, ref=self.github_branch)
+            except UnknownObjectException:
                 return None
 
         return contents
@@ -51,7 +49,7 @@ class GitHubHandler:
                 FILE_PATH,
                 COMMIT_MESSAGE,
                 xml_string,
-                branch=self.github_update_branch,
+                branch=self.github_branch,
             )
             return "Created"
         else:
@@ -72,7 +70,7 @@ class GitHubHandler:
             COMMIT_MESSAGE,
             updated_xml,
             contents.sha,
-            branch=self.github_update_branch,
+            branch=self.github_branch,
         )
 
     def branch_exists(self, branch_name: str) -> bool:
@@ -96,7 +94,7 @@ class GitHubHandler:
                 title=title,
                 body=body,
                 base=self.dev_branch,
-                head=self.github_update_branch,
+                head=self.github_branch,
             )
         except GithubException:  # PR exists
             print("PR exists")
