@@ -1,23 +1,13 @@
 import json
 import os
 import shutil
-import subprocess
-import zipfile
 
-import boto3
-import botocore
-from django.conf import settings
 from django.core import management
 from django.core.management.commands import loaddata
-from scrapy.crawler import CrawlerProcess
-from scrapy.utils.project import get_project_settings
 
 from config import celery_app
-from scraper.scraper.spiders.base_spider import spider_factory
 
-from .models.candidate_url import CandidateURL
 from .models.collection import Collection
-from .models.collection_choice_fields import WorkflowStatusChoices
 from .sinequa_api import Api
 from .utils.github_helper import GitHubHandler
 
@@ -110,3 +100,9 @@ def push_to_github_task(collection_ids):
     collections = Collection.objects.filter(id__in=collection_ids)
     github_handler = GitHubHandler(collections)
     github_handler.push_to_github()
+
+
+@celery_app.task()
+def sync_with_production_webapp():
+    for collection in Collection.objects.all():
+        collection.sync_with_production_webapp()

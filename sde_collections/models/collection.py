@@ -1,6 +1,7 @@
 import json
 import urllib.parse
 
+import requests
 from django.contrib.auth import get_user_model
 from django.db import models
 from slugify import slugify
@@ -180,6 +181,28 @@ class Collection(models.Model):
             document_type_rules.append(processed_pattern)
         return document_type_rules
 
+    def create_config_xml(self):
+        """
+        Reads from the model data and creates a new config folder
+        and xml file on sde-backend/sources/SMD/<config_folder>/default.xml
+        """
+
+        original_config_string = open(
+            "config_generation/xmls/indexing_template.xml"
+        ).read()
+        editor = XmlEditor(original_config_string)
+
+        editor.update_or_add_element_value("TreeRoot", self.tree_root)
+        if self.document_type:
+            editor.add_document_type_mapping(
+                document_type=self.get_document_type_display(), criteria=None
+            )
+
+        updated_config_xml_string = editor.update_config_xml()
+
+        gh = GitHubHandler([self])
+        return gh.create_and_initialize_config_file(self, updated_config_xml_string)
+
     def update_config_xml(self, original_config_string):
         """
         reads from the model data and creates a config that mirrors the
@@ -274,6 +297,54 @@ class Collection(models.Model):
     @property
     def github_issue_link(self) -> str:
         return f"https://github.com/NASA-IMPACT/sde-project/issues/{self.github_issue_number}"
+
+    def sync_with_production_webapp(self) -> None:
+        """Sync with the production webapp."""
+
+        BASE_URL = "https://sde-indexing-helper.nasa-impact.net"
+        url = f"{BASE_URL}/api/collections-read/{self.id}/"
+        response = requests.get(url)
+
+        if response.status_code == 404:  # collection was deleted
+            self.delete = True
+            self.save()
+            return
+
+        if response.status_code != 200:
+            print(f"Error: {response.status_code} for {self.name}")
+            return
+
+        response_json = response.json()
+        print(f"Syncing collection: {self.name}")
+
+        self.audit_duplicate_results = response_json["audit_duplicate_results"]
+        self.audit_hierarchy = response_json["audit_hierarchy"]
+        self.audit_label = response_json["audit_label"]
+        self.audit_mapping = response_json["audit_mapping"]
+        self.audit_metrics = response_json["audit_metrics"]
+        self.audit_query = response_json["audit_query"]
+        self.audit_url = response_json["audit_url"]
+        self.cleaning_order = response_json["cleaning_order"]
+        self.connector = response_json["connector"]
+        self.curation_started = response_json["curation_started"]
+        self.curation_status = response_json["curation_status"]
+        self.delete = response_json["delete"]
+        self.division = response_json["division"]
+        self.document_type = response_json["document_type"]
+        self.github_issue_number = response_json["github_issue_number"]
+        self.has_sinequa_config = response_json["has_sinequa_config"]
+        self.name = response_json["name"]
+        self.new_collection = response_json["new_collection"]
+        self.notes = response_json["notes"]
+        self.source = response_json["source"]
+        self.tree_root_deprecated = response_json["tree_root_deprecated"]
+        self.turned_on = response_json["turned_on"]
+        self.update_frequency = response_json["update_frequency"]
+        self.updated_at = response_json["updated_at"]
+        self.url = response_json["url"]
+        self.workflow_status = response_json["workflow_status"]
+
+        self.save()
 
     def apply_all_patterns(self) -> None:
         """Apply all the patterns."""

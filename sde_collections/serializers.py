@@ -31,6 +31,12 @@ class CollectionSerializer(serializers.ModelSerializer):
         # }
 
 
+class CollectionReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Collection
+        fields = "__all__"
+
+
 class CandidateURLSerializer(serializers.ModelSerializer):
     excluded = serializers.BooleanField(required=False)
     document_type_display = serializers.CharField(

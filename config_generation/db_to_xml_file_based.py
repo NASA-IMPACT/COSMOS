@@ -104,7 +104,7 @@ class XmlEditor:
             )
 
         existing_element = parent_element.find(element_name)
-        if existing_element:
+        if existing_element is None:
             existing_element.text = element_value
         else:
             ET.SubElement(parent_element, element_name).text = element_value
