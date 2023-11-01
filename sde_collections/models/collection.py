@@ -298,8 +298,42 @@ class Collection(models.Model):
     def github_issue_link(self) -> str:
         return f"https://github.com/NASA-IMPACT/sde-project/issues/{self.github_issue_number}"
 
+    @classmethod
+    def _fetch_json_results(cls, url):
+        response = requests.get(url)
+
+        if response.status_code != 200:
+            print(f"Error: {response.status_code}")
+            return
+
+        return response.json()
+
+    @classmethod
+    def _create_from_json(cls, json_results):
+        for collection in json_results:
+            print("Creating collection: ", collection["name"])
+            collection.pop("curated_by")
+            cls.objects.create(**collection)
+
+    @classmethod
+    def purge_and_reset_collections(cls) -> None:
+        """Delete all collections from local, and get the whole list of collections from prod."""
+        cls.objects.all().delete()
+
+        BASE_URL = "https://sde-indexing-helper.nasa-impact.net/api/collections-read/"
+
+        response_json = cls._fetch_json_results(BASE_URL)
+        cls._create_from_json(response_json["results"])
+
+        while response_json["next"]:
+            response_json = cls._fetch_json_results(response_json["next"])
+            cls._create_from_json(response_json["results"])
+
     def sync_with_production_webapp(self) -> None:
-        """Sync with the production webapp."""
+        """Sync with the production webapp.
+        This is useful when syncing a particular collection.
+        To delete all existing collections from local, and get the whole list of collections from prod,
+        use the purge_and_reset_collections function."""
 
         BASE_URL = "https://sde-indexing-helper.nasa-impact.net"
         url = f"{BASE_URL}/api/collections-read/{self.id}/"
