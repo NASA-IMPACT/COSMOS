@@ -7,7 +7,7 @@ subgroups in parallel
 
 from db_to_xml_file_based import XmlEditor
 
-from config import available_indexers, collection_list, date_of_batch
+from config import available_indexers, collection_list, date_of_batch, source
 
 
 class ParallelJobCreator:
@@ -16,6 +16,7 @@ class ParallelJobCreator:
         collection_list,
         template_root_path="xmls/",
         job_path_root="../sinequa_configs/jobs/",
+        source=source,
     ):
         """
         these default values rely on the old file structure, where the sinequa_configs were a
@@ -27,6 +28,7 @@ class ParallelJobCreator:
         self.template_root_path = template_root_path
         self.joblist_template_path = f"{template_root_path}joblist_template.xml"
         self.job_path_root = job_path_root
+        self.source = source
 
     def _create_job_name(self, collection_name):
         """
@@ -57,7 +59,7 @@ class ParallelJobCreator:
         # create single jobs to run each collection
         for collection in self.collection_list:
             job = XmlEditor(f"{self.template_root_path}job_template.xml")
-            job.update_or_add_element_value("Collection", f"/SMD/{collection}/")
+            job.update_or_add_element_value("Collection", f"/{self.source}/{collection}/")
             job._update_config_xml(f"{self.job_path_root}{self._create_job_name(collection)}")
 
     def make_all_parallel_jobs(self):

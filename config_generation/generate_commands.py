@@ -5,6 +5,8 @@ this file provides a quick framework to generate a batch of commands based on an
 from db_to_xml_file_based import XmlEditor
 from generate_jobs import ParallelJobCreator
 
+from config import source
+
 
 # note that there is an xml folder that contains templates
 class CommandGenerator:
@@ -13,12 +15,14 @@ class CommandGenerator:
         command_batch_name,
         template_root_path="xmls/",
         command_root_path="../sinequa_configs/commands/",
+        source=source,
     ):
         self.command_batch_name = command_batch_name  # this is used to name the commands
         self.template_root_path = template_root_path
         self.command_template_path = f"{template_root_path}command_template.xml"
         self.job_command_template_path = f"{template_root_path}job_command_template.xml"
         self.command_root_path = command_root_path
+        self.source = source
 
     def _generate_job_command_name(self, collection_name):
         # TODO
@@ -39,7 +43,7 @@ class CommandGenerator:
         command_file = XmlEditor(self.command_template_path)
         command_file.update_or_add_element_value(
             element_name="WhereClause",
-            element_value=f"collection='/SMD/{collection_name}'",
+            element_value=f"collection='/{self.source}/{collection_name}'",
         )
         for command in commands:
             command_file.add_column_update(

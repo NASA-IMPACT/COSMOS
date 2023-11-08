@@ -10,6 +10,7 @@ import os
 import shutil
 
 from config import collections_to_delete as collection_names
+from config import source
 
 
 def delete_folders_by_name(collection_names, directory):
@@ -41,6 +42,10 @@ def delete_xml_files_by_name(collection_names, directory):
                 print(f"Error deleting file {file_path}: {e.strerror}")
 
 
-delete_folders_by_name(collection_names, "../sinequa_configs/sources/SMD/")
-delete_xml_files_by_name(collection_names, "../sinequa_configs/commands/")
-delete_xml_files_by_name(collection_names, "../sinequa_configs/jobs/")
+delete_folders_by_name(collection_names, f"../sinequa_configs/sources/{source}/")
+delete_xml_files_by_name(
+    collection_names, "../sinequa_configs/commands/"
+)  # this might delete jobs from any source, however not a huge issue right now
+delete_xml_files_by_name(
+    collection_names, "../sinequa_configs/jobs/"
+)  # this might delete jobs from any source, however not a huge issue right now
