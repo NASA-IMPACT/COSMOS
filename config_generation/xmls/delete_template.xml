@@ -1,0 +1,23 @@
+<Sinequa>
+    <Revision>2</Revision>
+    <Description></Description>
+    <CommandType>sql</CommandType>
+    <Identity></Identity>
+    <Plugin></Plugin>
+    <System>
+        <LogLevel></LogLevel>
+        <LogInConsole>true</LogInConsole>
+    </System>
+    <Force32Bits>false</Force32Bits>
+    <StatusMaxOk></StatusMaxOk>
+    <RuntimeToRunWith></RuntimeToRunWith>
+    <Java>
+        <Server>true</Server>
+        <Xms></Xms>
+        <Xmx></Xmx>
+        <DisablePerfData>true</DisablePerfData>
+        <OtherOptions></OtherOptions>
+    </Java>
+    <Engines>@Engine_1,@Engine_2,@Engine_3</Engines>
+    <IsSqlPattern>false</IsSqlPattern>
+</Sinequa>
