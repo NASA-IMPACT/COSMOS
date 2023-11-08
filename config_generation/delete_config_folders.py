@@ -9,7 +9,7 @@ import glob
 import os
 import shutil
 
-from config import collections_to_delete as collection_names
+from config import collection_list as collection_names
 from config import source
 
 

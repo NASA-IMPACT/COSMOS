@@ -2,21 +2,16 @@
 
 from db_to_xml_file_based import XmlEditor
 
-from config import (
-    collections_to_delete,
-    indexes_to_delete_from,
-    name_of_delete_file,
-    source,
-)
+from config import batch_name, collection_list, indexes_to_delete_from, source
 
 COMMAND_FILES_PATH = "../sinequa_configs/commands/"
 DELETE_COMMAND_TEMPLATE_PATH = "xmls/delete_template.xml"
 
 command_file = XmlEditor(DELETE_COMMAND_TEMPLATE_PATH)
 
-for collection in collections_to_delete:
+for collection in collection_list:
     for index in indexes_to_delete_from:
         sql = f"delete from {index} where collection='/{source}/{collection}/'"
         command_file.update_or_add_element_value(element_name="SQL", element_value=sql, add_duplicate=True)
-file_name = f"{COMMAND_FILES_PATH}{name_of_delete_file}.xml"
+file_name = f"{COMMAND_FILES_PATH}{batch_name}.xml"
 command_file._update_config_xml(file_name)
