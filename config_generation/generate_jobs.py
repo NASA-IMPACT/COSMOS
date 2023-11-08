@@ -7,7 +7,7 @@ subgroups in parallel
 
 from db_to_xml_file_based import XmlEditor
 
-from config import available_indexers, collection_list, date_of_batch, source
+from config import available_indexers, batch_name, collection_list, source
 
 
 class ParallelJobCreator:
@@ -46,7 +46,7 @@ class ParallelJobCreator:
         this code generates that file name as a string, and it will be passed to the function that
             creates the actual job file
         """
-        return f"parallel_indexing_list-{date_of_batch}-{index}.xml"
+        return f"parallel_indexing_list-{batch_name}-{index}.xml"
 
     def _create_collection_jobs(self):
         """
@@ -89,7 +89,7 @@ class ParallelJobCreator:
         master = XmlEditor(self.joblist_template_path)
         master.update_or_add_element_value("RunJobsInParallel", "true")
         [master.add_job_list_item(job_name) for job_name in job_names]
-        master._update_config_xml(f"{self.job_path_root}parallel_indexing_list-{date_of_batch}-master.xml")
+        master._update_config_xml(f"{self.job_path_root}parallel_indexing_list-{batch_name}-master.xml")
 
 
 if __name__ == "__main__":
