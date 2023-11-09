@@ -76,5 +76,5 @@ batch_name: str = "delete_everywhere_20231108_test"
 server = "test"
 
 # auto assigned
-available_indexers = SERVER_INFO[server]["indexes"]
-indexes_to_delete_from = SERVER_INFO[server]["indexers"]
+available_indexers = SERVER_INFO[server]["indexers"]
+indexes_to_delete_from = SERVER_INFO[server]["indexes"]
