@@ -76,6 +76,16 @@ def import_candidate_urls_production(modeladmin, request, queryset):
     import_candidate_urls_from_api_caller(modeladmin, request, queryset, "production")
 
 
+@admin.action(description="Import candidate URLs from Secret Test")
+def import_candidate_urls_secret_test(modeladmin, request, queryset):
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "secret_test")
+
+
+@admin.action(description="Import candidate URLs from Secret Production")
+def import_candidate_urls_secret_production(modeladmin, request, queryset):
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "secret_production")
+
+
 class ExportCsvMixin:
     def export_as_csv(self, request, queryset):
         meta = self.model._meta
