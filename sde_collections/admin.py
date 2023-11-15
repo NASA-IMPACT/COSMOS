@@ -168,6 +168,8 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         "update_config",
         import_candidate_urls_test,
         import_candidate_urls_production,
+        import_candidate_urls_secret_test,
+        import_candidate_urls_secret_production,
     ]
     ordering = ("cleaning_order",)
 
