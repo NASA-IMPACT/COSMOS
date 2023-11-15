@@ -64,7 +64,7 @@ class Api:
         }
 
         if collection_config_folder:
-            payload["query"]["advanced"]["collection"] = f"/SMD/{collection_config_folder}/"
+            payload["query"]["advanced"]["collection"] = f"/SDE/{collection_config_folder}/"
 
         response = self.process_response(url, payload)
 
