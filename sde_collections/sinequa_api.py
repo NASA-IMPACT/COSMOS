@@ -21,6 +21,16 @@ server_configs = {
         "query_name": "query-smd-primary",
         "base_url": "https://sciencediscoveryengine.nasa.gov",
     },
+    "secret_test": {
+        "app_name": "nasa-sba-sde",
+        "query_name": "query-sde-primary",
+        "base_url": "https://sciencediscoveryengine.test.nasa.gov",
+    },
+    "secret_production": {
+        "app_name": "nasa-sba-sde",
+        "query_name": "query-sde-primary",
+        "base_url": "https://sciencediscoveryengine.nasa.gov",
+    },
 }
 
 
@@ -54,9 +64,7 @@ class Api:
         }
 
         if collection_config_folder:
-            payload["query"]["advanced"][
-                "collection"
-            ] = f"/SMD/{collection_config_folder}/"
+            payload["query"]["advanced"]["collection"] = f"/SDE/{collection_config_folder}/"
 
         response = self.process_response(url, payload)
 
