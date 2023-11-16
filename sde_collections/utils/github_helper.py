@@ -1,3 +1,5 @@
+import datetime
+
 from django.conf import settings
 from github import Github
 from github.GithubException import GithubException, UnknownObjectException
@@ -11,7 +13,8 @@ class GitHubHandler:
     def __init__(self, collections, *args, **kwargs):
         self.github_token = settings.GITHUB_ACCESS_TOKEN
         self.github_repo = settings.SINEQUA_CONFIGS_GITHUB_REPO
-        self.github_branch = settings.GITHUB_BRANCH_FOR_WEBAPP
+        self.time_stamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.github_branch = settings.GITHUB_BRANCH_FOR_WEBAPP + self.time_stamp
         self.g = Github(self.github_token)
         self.repo = self.g.get_repo(f"{self.github_repo}")
         self.dev_branch = self.repo.default_branch
