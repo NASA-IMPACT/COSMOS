@@ -1,4 +1,5 @@
 import json
+import sys
 import time
 import urllib.parse
 
@@ -6,7 +7,11 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-COLLECTION_CONFIG_FOLDER = "mast"
+try:
+    COLLECTION_CONFIG_FOLDER = sys.argv[1]
+except IndexError:
+    print("Please provide the collection config folder as an argument.")
+    sys.exit(1)
 
 
 def server_url(config_folder, server="test", secret=True) -> str:
@@ -56,6 +61,8 @@ for server in ["test", "prod"]:
         new_title = f"{'Secret' if secret else 'Regular'}{server.title()}"
         driver.execute_script("document.title = arguments[0]", new_title)
         first = False
+        break
+    break
 driver.switch_to.window(driver.window_handles[0])
 
 # Keep the browser open indefinitely
