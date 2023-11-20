@@ -18,7 +18,7 @@ class GitHubHandler:
         self.collections = collections
 
     def _get_config_file_path(self, collection) -> str:
-        file_path = f"sources/SMD/{collection.config_folder}/default.xml"
+        file_path = f"sources/SDE/{collection.config_folder}/default.xml"
         return file_path
 
     def _get_file_contents(self, collection):
