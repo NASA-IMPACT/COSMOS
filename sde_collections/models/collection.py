@@ -184,7 +184,7 @@ class Collection(models.Model):
     def create_config_xml(self):
         """
         Reads from the model data and creates a new config folder
-        and xml file on sde-backend/sources/SMD/<config_folder>/default.xml
+        and xml file on sde-backend/sources/SDE/<config_folder>/default.xml
         """
 
         original_config_string = open(
@@ -292,7 +292,7 @@ class Collection(models.Model):
     def sinequa_configuration(self) -> str:
         if not self.has_sinequa_config:
             return ""
-        return f"https://github.com/NASA-IMPACT/sde-backend/blob/master/sources/SMD/{self.config_folder}/default.xml"
+        return f"https://github.com/NASA-IMPACT/sde-backend/blob/master/sources/SDE/{self.config_folder}/default.xml"
 
     @property
     def github_issue_link(self) -> str:

@@ -2,7 +2,7 @@ from db_to_xml import XmlEditor
 from generate_collection_list import create_xml_path, turned_on_remaining_webcrawlers
 from sources_to_scrape import remove_top_limitation_sources, turned_on_sources
 
-ROOT_PATH = "../sinequa_configs/sources/SMD/"
+ROOT_PATH = "../sinequa_configs/sources/SDE/"
 
 
 def remove_top_only_limitation(path):
