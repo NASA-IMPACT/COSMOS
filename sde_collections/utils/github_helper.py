@@ -133,21 +133,6 @@ class GitHubHandler:
     def _get_config_folder(self, collection_folder):
         return collection_folder.removeprefix("sources/SDE/")
 
-    def _get_name(self, collection_xml):
-        pass
-
-    def _get_url(self, collection_xml):
-        pass
-
-    def _get_division(self, collection_xml):
-        pass
-
-    def _get_tree_root(self, collection_xml):
-        pass
-
-    def _get_document_type(self, collection_xml):
-        pass
-
     def _get_list_of_collections(self):
         BASE_PATH = "sources/SDE"
         collections = self.repo.get_contents(BASE_PATH, ref=self.dev_branch)
@@ -162,9 +147,11 @@ class GitHubHandler:
     def _get_contents_from_path(self, path):
         # we don't need to check if the file exists because we already did that in _get_list_of_collections
         contents = self.repo.get_contents(path, ref=self.dev_branch)
-        return contents
+        FILE_CONTENTS = contents.decoded_content.decode("utf-8")
+        collection_xml = XmlEditor(FILE_CONTENTS)
+        return collection_xml
 
-    def sync_db_with_github(self, config_folders=[]):
+    def get_collections_from_github(self, config_folders=[]):
         # get a list of folders in sources/SDE/ from the dev branch on github
         collection_folders = self._get_list_of_collections()
 
@@ -174,20 +161,29 @@ class GitHubHandler:
         # for each folder in the list, get the metadata: config_folder, name, url, division, tree_root, document_type
         for collection_folder in tqdm(collection_folders):
             config_folder = self._get_config_folder(collection_folder)
-            print(f"Working on {config_folder}")
             collection_xml_file_path = self._get_config_file_path(config_folder)
             collection_xml = self._get_contents_from_path(collection_xml_file_path)
 
+            division, name = collection_xml.fetch_division_name()
+            url = collection_xml.fetch_url()
+
+            if not division or not name:
+                print(f"Skipping {config_folder} because it has no division or name")
+                continue
+
+            if not url:
+                print(f"{config_folder} has no url. Setting to blank")
+                continue
+
             collection_dict = {
                 "config_folder": config_folder,
-                "name": self._get_name(collection_xml),
-                "url": self._get_url(collection_xml),
-                "division": self._get_division(collection_xml),
-                "tree_root": self._get_tree_root(collection_xml),
-                "document_type": self._get_document_type(collection_xml),
+                "name": name,
+                "url": collection_xml.fetch_url(),
+                "division": division,
+                "document_type": collection_xml.fetch_document_type(),
+                "connector": collection_xml.fetch_connector(),
             }
             collection_list.append(collection_dict)
-            break
 
         # return the list of collections and their metadata
         return collection_list
