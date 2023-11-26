@@ -91,7 +91,6 @@ class Collection(models.Model):
         User, on_delete=models.DO_NOTHING, null=True, blank=True
     )
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
-    has_sinequa_config = models.BooleanField(default=True)
 
     class Meta:
         """Meta definition for Collection."""
@@ -290,8 +289,6 @@ class Collection(models.Model):
 
     @property
     def sinequa_configuration(self) -> str:
-        if not self.has_sinequa_config:
-            return ""
         return f"https://github.com/NASA-IMPACT/sde-backend/blob/master/sources/SDE/{self.config_folder}/default.xml"
 
     @property
@@ -366,7 +363,6 @@ class Collection(models.Model):
         self.division = response_json["division"]
         self.document_type = response_json["document_type"]
         self.github_issue_number = response_json["github_issue_number"]
-        self.has_sinequa_config = response_json["has_sinequa_config"]
         self.name = response_json["name"]
         self.new_collection = response_json["new_collection"]
         self.notes = response_json["notes"]
