@@ -194,6 +194,9 @@ class Collection(models.Model):
         ).read()
         editor = XmlEditor(original_config_string)
 
+        # add the URL
+        editor.update_or_add_element_value("Url", self.url)
+
         editor.update_or_add_element_value("TreeRoot", self.tree_root)
         if self.document_type:
             editor.add_document_type_mapping(
