@@ -165,14 +165,9 @@ class GitHubHandler:
             collection_xml = self._get_contents_from_path(collection_xml_file_path)
 
             division, name = collection_xml.fetch_division_name()
-            url = collection_xml.fetch_url()
 
             if not division or not name:
                 print(f"Skipping {config_folder} because it has no division or name")
-                continue
-
-            if not url:
-                print(f"{config_folder} has no url. Setting to blank")
                 continue
 
             collection_dict = {
