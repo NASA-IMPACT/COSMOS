@@ -1,7 +1,9 @@
+import json
+
 from django.core.management.base import BaseCommand
 
-# from sde_collections.models.collection import Collection
-# from sde_collections.models.collection_choice_fields import WorkflowStatusChoices
+from sde_collections.models.collection import Collection
+from sde_collections.models.collection_choice_fields import Divisions, SourceChoices
 from sde_collections.utils.github_helper import GitHubHandler
 
 
@@ -19,32 +21,21 @@ class Command(BaseCommand):
     #     return list(collections.values_list("name", flat=True))
 
     def handle(self, *args, **options):
-        gh = GitHubHandler()
+        gh = GitHubHandler(collections=Collection.objects.none())
+        collections = gh.get_collections_from_github()
 
-        if not options["config_folders"]:
-            print("Syncing all collections")
-            print(len(gh._get_list_of_collections()))
-            print(gh._get_list_of_collections())
-            pass
-        # selected_collections = Collection.objects.filter(
-        #     config_folders=options["config_folders"]
-        # )
-        # curated_collections = selected_collections.filter(
-        #     workflow_status=WorkflowStatusChoices.CURATED
-        # )
-        # uncurated_collections = selected_collections.exclude(
-        #     workflow_status=WorkflowStatusChoices.CURATED
-        # )
+        with open("github_collections.json", "w") as f:
+            json.dump(collections, f)
 
-        # gh = GitHubHandler(curated_collections)
-        # gh.push_to_github()
+        for collection in collections:
+            Collection.objects.create(
+                config_folder=collection["config_folder"],
+                name=collection["name"],
+                url=collection["url"],
+                division=Divisions.lookup_by_text(collection["division"]),
+                document_type=collection["document_type"],
+                source=SourceChoices.BOTH,
+                connector=collection["connector"],
+            )
 
         self.stdout.write(self.style.SUCCESS("Successfully synced"))
-
-        # if uncurated_collections:
-        #     self.stdout.write(
-        #         self.style.ERROR(
-        #             "The following collections could not be pushed because the workflow status was not Curated %s"
-        #             % self._get_names(uncurated_collections)
-        #         )
-        #     )
