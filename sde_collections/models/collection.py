@@ -36,7 +36,9 @@ class Collection(models.Model):
         choices=ConnectorChoices.choices, default=ConnectorChoices.CRAWLER2
     )
 
-    source = models.IntegerField(choices=SourceChoices.choices)
+    source = models.IntegerField(
+        choices=SourceChoices.choices, default=SourceChoices.BOTH
+    )
     update_frequency = models.IntegerField(
         choices=UpdateFrequencies.choices, default=UpdateFrequencies.WEEKLY
     )
