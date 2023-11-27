@@ -1,6 +1,9 @@
 import json
-import os
 import re
+
+import boto3
+import botocore
+from django.conf import settings
 
 from sde_collections.models.candidate_url import CandidateURL
 from sde_collections.models.collection import (
@@ -210,6 +213,32 @@ def parse_int_values(github_value, db_value, field):
 
 def generate_db_github_metadata_differences(reindex_configs_from_github=False):
     report = []
+    if reindex_configs_from_github:
+        pull_latest_collection_metadata_from_github.delay()
+        return report
+
+    # for each folder in github get the metadata from the default.xml file
+    FILENAME = "github_collections.json"
+
+    s3 = boto3.resource(
+        "s3",
+        region_name="us-east-1",
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    )
+
+    try:
+        s3.Object(settings.AWS_STORAGE_BUCKET_NAME, FILENAME).load()
+    except botocore.exceptions.ClientError as e:
+        if e.response["Error"]["Code"] == "404":
+            pull_latest_collection_metadata_from_github.delay()
+            return report
+        else:
+            raise
+    else:
+        collections = json.load(
+            s3.Object(settings.AWS_STORAGE_BUCKET_NAME, FILENAME).get()["Body"]
+        )
 
     fields = {
         "config_folder",
@@ -219,14 +248,6 @@ def generate_db_github_metadata_differences(reindex_configs_from_github=False):
         "document_type",
         "connector",
     }
-
-    # for each folder in github get the metadata from the default.xml file
-    FILENAME = "github_collections.json"
-    if os.path.exists(FILENAME) and not reindex_configs_from_github:
-        collections = json.load(open(FILENAME))
-    else:
-        pull_latest_collection_metadata_from_github.delay()
-        return report
 
     # also fetch same metadata from the database
     for collection in collections:
