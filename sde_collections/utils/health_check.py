@@ -226,6 +226,7 @@ def generate_db_github_metadata_differences(reindex_configs_from_github=False):
         collections = json.load(open(FILENAME))
     else:
         pull_latest_collection_metadata_from_github.delay()
+        return report
 
     # also fetch same metadata from the database
     for collection in collections:
