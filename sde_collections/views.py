@@ -1,11 +1,13 @@
 import re
 
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
+from django.views.generic import TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
@@ -17,7 +19,10 @@ from .forms import CollectionGithubIssueForm, RequiredUrlForm
 from .models.candidate_url import CandidateURL
 from .models.collection import Collection, RequiredUrls
 from .models.collection_choice_fields import (
+    ConnectorChoices,
     CurationStatusChoices,
+    Divisions,
+    DocumentTypes,
     WorkflowStatusChoices,
 )
 from .models.pattern import DocumentTypePattern, ExcludePattern, TitlePattern
@@ -31,6 +36,7 @@ from .serializers import (
     TitlePatternSerializer,
 )
 from .tasks import push_to_github_task
+from .utils.health_check import generate_db_github_metadata_differences
 
 User = get_user_model()
 
@@ -308,3 +314,45 @@ class PushToGithubView(APIView):
             {"Success": "Started pushing collections to github"},
             status=status.HTTP_200_OK,
         )
+
+
+class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
+    """
+    Display a list of collections in the system
+    """
+
+    template_name = "sde_collections/consolidate_db_and_github_configs.html"
+
+    def post(self, request, *args, **kwargs):
+        config_folder = self.request.POST.get("config_folder")
+        field = self.request.POST.get("field")
+        new_value = self.request.POST.get("github_value")
+
+        if new_value and new_value != "None":
+            new_value = new_value.strip()
+            if field == "division":
+                new_value = Divisions.lookup_by_text(new_value)
+            elif field == "document_type":
+                new_value = DocumentTypes.lookup_by_text(new_value)
+            elif field == "connector":
+                new_value = ConnectorChoices.lookup_by_text(new_value)
+
+            Collection.objects.filter(config_folder=config_folder).update(
+                **{field: new_value}
+            )
+            messages.success(
+                request, f"Successfully updated {field} of {config_folder}."
+            )
+        else:
+            messages.error(
+                request,
+                f"Can't update empty value from GitHub: {field} of {config_folder}.",
+            )
+
+        return redirect("sde_collections:consolidate_db_and_github_configs")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["differences"] = generate_db_github_metadata_differences()
+
+        return context

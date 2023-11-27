@@ -1,0 +1,59 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+{% block title %}Consolidation between webapp and GitHub{% endblock %}
+{% block stylesheets %}
+    {{ block.super }}
+    <link href="//cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/b-html5-2.3.6/b-print-2.3.6/cr-1.6.2/date-1.4.1/fc-4.2.2/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/rr-1.3.3/sc-2.1.1/sb-1.4.2/sp-2.1.2/sl-1.6.2/sr-1.2.2/datatables.min.css"
+          rel="stylesheet" />
+{% endblock stylesheets %}
+{% block content %}
+    {% csrf_token %}
+    <br>
+    <h2>Collection metadata differences between Webapp and GitHub</h2>
+    <table id="consolidation_table" class="table table-striped">
+        <thead>
+            <tr>
+                <th class="text-center">Collection</th>
+                <th class="text-center">Field</th>
+                <th class="text-center">Webapp Value</th>
+                <th class="text-center">GitHub Value</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for difference in differences %}
+                <tr>
+                    <td>{{ difference.config_folder }}</td>
+                    <td>{{ difference.field }}</td>
+                    <td>{{ difference.db_value }}</td>
+                    <td>{{ difference.github_value }}</td>
+                    <td>
+                        <form action="{% url 'sde_collections:consolidate_db_and_github_configs' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="config_folder" value="{{ difference.config_folder }}">
+                            <input type="hidden" name="field" value="{{ difference.field }}">
+                            <input type="hidden" name="db_value" value="{{ difference.db_value }}">
+                            <input type="hidden" name="github_value" value="{{ difference.github_value }}">
+                            <button class="btn btn-success" type="submit">Keep GitHub Value</button>
+                        </form>
+                        {% comment %} <button class="btn btn-primary" disabled>Keep Webapp Value</button> {% endcomment %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}
+{% block javascripts %}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="//cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/b-html5-2.3.6/b-print-2.3.6/cr-1.6.2/date-1.4.1/fc-4.2.2/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/rr-1.3.3/sc-2.1.1/sb-1.4.2/sp-2.1.2/sl-1.6.2/sr-1.2.2/datatables.min.js"></script>
+    <script src="{% static 'js/consolidate_db_and_github_configs.js' %}"></script>
+    <script>
+        {% if messages %}
+            {% for message in messages %}
+                toastr["{{ message.tags }}"]("{{ message }}")
+            {% endfor %}
+        {% endif %}
+    </script>
+{% endblock javascripts %}

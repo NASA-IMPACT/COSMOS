@@ -51,6 +51,13 @@ class ConnectorChoices(models.IntegerChoices):
     HYPERINDEX = 3, "hyperindex"
     NO_CONNECTOR = 4, "No Connector"
 
+    @classmethod
+    def lookup_by_text(cls, text: str) -> int | None:
+        for choice in cls.choices:
+            if choice[1].lower() == text.lower():
+                return choice[0]
+        return None
+
 
 class CurationStatusChoices(models.IntegerChoices):
     NEEDS_SCRAPING = 1, "Needs Scraping"
