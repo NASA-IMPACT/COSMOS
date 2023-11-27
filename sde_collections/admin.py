@@ -83,7 +83,9 @@ def import_candidate_urls_secret_test(modeladmin, request, queryset):
 
 @admin.action(description="Import candidate URLs from Secret Production")
 def import_candidate_urls_secret_production(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "secret_production")
+    import_candidate_urls_from_api_caller(
+        modeladmin, request, queryset, "secret_production"
+    )
 
 
 class ExportCsvMixin:
@@ -162,7 +164,7 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
     )
     readonly_fields = ("config_folder",)
     list_filter = ("division", "curation_status", "workflow_status", "turned_on")
-    search_fields = ("name", "url")
+    search_fields = ("name", "url", "config_folder")
     actions = [
         "export_as_csv",
         "update_config",
