@@ -109,7 +109,7 @@ def sync_with_production_webapp():
 
 
 @celery_app.task()
-def pull_latest_collection_metadata_from_github(collection_ids):
+def pull_latest_collection_metadata_from_github():
     FILENAME = "github_collections.json"
     gh = GitHubHandler(collections=Collection.objects.none())
     collections = gh.get_collections_from_github()
