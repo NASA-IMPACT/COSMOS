@@ -2,8 +2,6 @@ pytz==2023.3.post1  # https://github.com/stub42/pytz
 python-slugify==8.0.1  # https://github.com/un33k/python-slugify
 Pillow==10.1.0  # https://github.com/python-pillow/Pillow
 argon2-cffi==23.1.0  # https://github.com/hynek/argon2_cffi
-redis==4.6.0  # https://github.com/redis/redis-py
-hiredis==2.2.3  # https://github.com/redis/hiredis-py
 celery==5.3.4  # pyup: < 6.0  # https://github.com/celery/celery
 django-celery-beat==2.5.0  # https://github.com/celery/django-celery-beat
 flower==2.0.0  # https://github.com/mher/flower
@@ -18,13 +16,13 @@ django-model-utils==4.3.1  # https://github.com/jazzband/django-model-utils
 django-allauth==0.54.0  # https://github.com/pennersr/django-allauth
 django-crispy-forms==2.0  # https://github.com/django-crispy-forms/django-crispy-forms
 crispy-bootstrap5==0.7  # https://github.com/django-crispy-forms/crispy-bootstrap5
-django-redis==5.3.0  # https://github.com/jazzband/django-redis
 
 # project-specific
 beautifulsoup4==4.12.2
 boto3==1.28.70
 djangorestframework-datatables==0.7.0
 djangorestframework==3.14.0
+pycurl==7.45.2
 PyGithub==1.59.0
 python-slugify==8.0.1
 scrapy==2.11.0
