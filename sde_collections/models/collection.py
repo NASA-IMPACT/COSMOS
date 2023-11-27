@@ -36,7 +36,9 @@ class Collection(models.Model):
         choices=ConnectorChoices.choices, default=ConnectorChoices.CRAWLER2
     )
 
-    source = models.IntegerField(choices=SourceChoices.choices)
+    source = models.IntegerField(
+        choices=SourceChoices.choices, default=SourceChoices.BOTH
+    )
     update_frequency = models.IntegerField(
         choices=UpdateFrequencies.choices, default=UpdateFrequencies.WEEKLY
     )
@@ -190,6 +192,9 @@ class Collection(models.Model):
             "config_generation/xmls/indexing_template.xml"
         ).read()
         editor = XmlEditor(original_config_string)
+
+        # add the URL
+        editor.update_or_add_element_value("Url", self.url)
 
         editor.update_or_add_element_value("TreeRoot", self.tree_root)
         if self.document_type:

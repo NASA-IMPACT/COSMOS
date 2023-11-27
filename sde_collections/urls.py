@@ -31,6 +31,11 @@ urlpatterns = [
         view=views.CandidateURLsListView.as_view(),
         name="candidate_urls",
     ),
+    path(
+        "consolidate/",
+        view=views.WebappGitHubConsolidationView.as_view(),
+        name="consolidate_db_and_github_configs",
+    ),
     # List all CandidateURL instances: /candidate-urls/
     # Retrieve a specific CandidateURL instance: /candidate-urls/{id}/
     # Create a new CandidateURL instance: /candidate-urls/

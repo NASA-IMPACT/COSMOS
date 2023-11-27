@@ -312,6 +312,27 @@ class XmlEditor:
         treeroot = self._find_treeroot_field()
         return treeroot.text
 
+    def fetch_division_name(self):
+        # this is pretty brittle and can break easily if the treeRoot field is changed
+        treeroot = self.fetch_treeroot()
+        splits = [split for split in treeroot.split("/") if split]
+        try:
+            division, name = splits
+        except ValueError:
+            print(f"Could not find division and name in {treeroot}")
+            division = ""
+            name = ""
+        return division, name
+
+    def fetch_url(self):
+        url = self.xml_tree.find("Url")
+        if url is None:
+            url = self.xml_tree.find("url")
+        try:
+            return url.text
+        except AttributeError:
+            return ""
+
     def fetch_document_type(self):
         DOCUMENT_TYPE_COLUMN = "sourcestr56"
         try:
@@ -340,4 +361,6 @@ class XmlEditor:
             connector = ConnectorChoices.JSON
         elif connector.text.strip() == "hyperindex":
             connector = ConnectorChoices.HYPERINDEX
+        else:  # as a catch all
+            connector = ConnectorChoices.NO_CONNECTOR
         return connector
