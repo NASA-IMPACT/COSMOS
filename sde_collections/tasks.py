@@ -106,3 +106,11 @@ def push_to_github_task(collection_ids):
 def sync_with_production_webapp():
     for collection in Collection.objects.all():
         collection.sync_with_production_webapp()
+
+
+@celery_app.task()
+def pull_latest_collection_metadata_from_github(collection_ids):
+    FILENAME = "github_collections.json"
+    gh = GitHubHandler(collections=Collection.objects.none())
+    collections = gh.get_collections_from_github()
+    json.dump(collections, open(FILENAME, "w"), indent=4)
