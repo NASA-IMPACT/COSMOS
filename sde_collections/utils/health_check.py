@@ -14,8 +14,10 @@ from sde_collections.models.collection_choice_fields import (
     DocumentTypes,
 )
 from sde_collections.models.pattern import ExcludePattern, TitlePattern
-from sde_collections.tasks import _get_data_to_import
-from sde_collections.utils.github_helper import GitHubHandler
+from sde_collections.tasks import (
+    _get_data_to_import,
+    pull_latest_collection_metadata_from_github,
+)
 
 
 def health_check(collection, server_name: str = "production") -> dict:
@@ -223,9 +225,7 @@ def generate_db_github_metadata_differences(reindex_configs_from_github=False):
     if os.path.exists(FILENAME) and not reindex_configs_from_github:
         collections = json.load(open(FILENAME))
     else:
-        gh = GitHubHandler(collections=Collection.objects.none())
-        collections = gh.get_collections_from_github()
-        json.dump(collections, open(FILENAME, "w"), indent=4)
+        pull_latest_collection_metadata_from_github.delay()
 
     # also fetch same metadata from the database
     for collection in collections:
