@@ -1,4 +1,5 @@
 import json
+import os
 import re
 
 from sde_collections.models.candidate_url import CandidateURL
@@ -14,8 +15,7 @@ from sde_collections.models.collection_choice_fields import (
 )
 from sde_collections.models.pattern import ExcludePattern, TitlePattern
 from sde_collections.tasks import _get_data_to_import
-
-# from sde_collections.utils.github_helper import GitHubHandler
+from sde_collections.utils.github_helper import GitHubHandler
 
 
 def health_check(collection, server_name: str = "production") -> dict:
@@ -206,7 +206,7 @@ def parse_int_values(github_value, db_value, field):
     return github_value, db_value
 
 
-def generate_db_github_metadata_differences():
+def generate_db_github_metadata_differences(reindex_configs_from_github=False):
     report = []
 
     fields = {
@@ -219,10 +219,13 @@ def generate_db_github_metadata_differences():
     }
 
     # for each folder in github get the metadata from the default.xml file
-    # gh = GitHubHandler(collections=Collection.objects.none())
-    # collections = gh.get_collections_from_github()
-    # json.dump(collections, open("github_collections_2.json", "w"), indent=4)
-    collections = json.load(open("github_collections_2.json"))
+    FILENAME = "github_collections.json"
+    if os.path.exists(FILENAME) and not reindex_configs_from_github:
+        collections = json.load(open(FILENAME))
+    else:
+        gh = GitHubHandler(collections=Collection.objects.none())
+        collections = gh.get_collections_from_github()
+        json.dump(collections, open(FILENAME, "w"), indent=4)
 
     # also fetch same metadata from the database
     for collection in collections:

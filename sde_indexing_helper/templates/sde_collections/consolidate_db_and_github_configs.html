@@ -10,7 +10,8 @@
 {% block content %}
     {% csrf_token %}
     <br>
-    <h2>Collection metadata differences between Webapp and GitHub</h2>
+    <h2>Collection metadata differences between Webapp and GitHub<a href="{% url 'sde_collections:consolidate_db_and_github_configs' %}?reindex=true"><button class="btn btn-primary pull-right">Pull latest collection metadata from GitHub</button></a></h2>
+
     <table id="consolidation_table" class="table table-striped">
         <thead>
             <tr>

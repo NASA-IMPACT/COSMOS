@@ -323,6 +323,17 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
 
     template_name = "sde_collections/consolidate_db_and_github_configs.html"
 
+    def get(self, request, *args, **kwargs):
+        if not request.GET.get("reindex") == "true":
+            self.data = generate_db_github_metadata_differences()
+        else:
+            # this needs to be a celery task eventually
+            self.data = generate_db_github_metadata_differences(
+                reindex_configs_from_github=True
+            )
+
+        return super().get(request, *args, **kwargs)
+
     def post(self, request, *args, **kwargs):
         config_folder = self.request.POST.get("config_folder")
         field = self.request.POST.get("field")
@@ -353,6 +364,6 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["differences"] = generate_db_github_metadata_differences()
+        context["differences"] = self.data
 
         return context
