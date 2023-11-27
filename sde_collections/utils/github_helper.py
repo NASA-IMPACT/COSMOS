@@ -1,7 +1,6 @@
 from django.conf import settings
 from github import Github
 from github.GithubException import GithubException, UnknownObjectException
-from tqdm import tqdm
 
 from config_generation.db_to_xml import XmlEditor
 
@@ -159,7 +158,7 @@ class GitHubHandler:
         collection_list = []
 
         # for each folder in the list, get the metadata: config_folder, name, url, division, tree_root, document_type
-        for collection_folder in tqdm(collection_folders):
+        for collection_folder in collection_folders:
             config_folder = self._get_config_folder(collection_folder)
             collection_xml_file_path = self._get_config_file_path(config_folder)
             collection_xml = self._get_contents_from_path(collection_xml_file_path)
