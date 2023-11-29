@@ -9,6 +9,31 @@ from .models.pattern import TitlePattern
 from .tasks import import_candidate_urls_from_api
 
 
+@admin.action(description="Download candidate URLs as csv")
+def download_candidate_urls_as_csv(modeladmin, request, queryset):
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="candidate_urls.csv"'
+
+    writer = csv.writer(response)
+
+    if len(queryset) > 1:
+        messages.add_message(
+            request, messages.ERROR, "You can only export one collection at a time."
+        )
+        return
+
+    urls = CandidateURL.objects.filter(collection=queryset.first()).values_list(
+        "url", flat=True
+    )
+
+    # Write your headers here
+    writer.writerow(["candidate_url"])
+    for url in urls:
+        writer.writerow([url])
+
+    return response
+
+
 @admin.action(description="Import metadata from Sinequa configs")
 def import_sinequa_metadata(modeladmin, request, queryset):
     for collection in queryset.all():
@@ -168,6 +193,7 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
     actions = [
         "export_as_csv",
         "update_config",
+        download_candidate_urls_as_csv,
         import_candidate_urls_test,
         import_candidate_urls_production,
         import_candidate_urls_secret_test,
