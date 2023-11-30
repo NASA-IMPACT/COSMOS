@@ -293,14 +293,19 @@ class XmlEditor:
         includes a url or url pattern, such as
         - https://webb.nasa.gov/content/forEducators/realworld*
         - https://webb.nasa.gov/content/features/index.html
+        - *.rtf
         I'm not sure if exclusion rules override includes or if includes override
         exclusion rules.
         """
 
         xml_root = self.xml_tree.getroot()
-        ET.SubElement(
-            xml_root, "UrlIndexIncluded"
-        ).text = url_pattern  # this adds an indexing rule (doesn't overwrite)
+
+        for url_index_included in xml_root.findall("UrlIndexIncluded"):
+            if url_index_included.text == url_pattern:
+                return  # stop the function if the url pattern already exists
+
+        # add the url pattern if it doesn't already exist
+        ET.SubElement(xml_root, "UrlIndexIncluded").text = url_pattern
 
     def _find_treeroot_field(self):
         treeroot = self.xml_tree.find("TreeRoot")
