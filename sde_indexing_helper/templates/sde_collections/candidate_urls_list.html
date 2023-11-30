@@ -84,6 +84,34 @@
     </table>
     <hr>
     <h3>
+        Include Patterns
+        <button class="btn btn-primary btn-sm create_include_pattern_button">
+            <i class="material-icons">add</i>
+        </button>
+    </h3>
+    <table class="table" id="include_patterns_table">
+        <thead>
+            <tr>
+                <th scope="col" class="text-center col-1">
+                    <strong>Match Pattern</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Match Pattern Type</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Affected URLs</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>Actions</strong>
+                </th>
+                <th scope="col" class="text-center col-1">
+                    <strong>ID</strong>
+                </th>
+            </tr>
+        </thead>
+    </table>
+    <hr>
+    <h3>
         Title Patterns
         <button class="btn btn-primary btn-sm create_title_pattern_button">
             <i class="material-icons">add</i>
@@ -146,6 +174,7 @@
     </table>
     <ul class="custom-menu list-group">
         <li data-action="exclude-pattern" class="list-group-item">Create Exclude Pattern</li>
+        <li data-action="include-pattern" class="list-group-item">Create Include Pattern</li>
         <li data-action="title-pattern" class="list-group-item">Create Title Pattern</li>
         <li data-action="document-type-pattern" class="list-group-item">Create Document Type Pattern</li>
     </ul>
@@ -165,6 +194,40 @@
                     </button>
                 </div>
                 <form id="exclude_pattern_form">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="match_pattern_input">Match Pattern*</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="match_pattern_input"
+                                   required
+                                   name="match_pattern">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+        <div class="modal fade"
+         id="includePatternModal"
+         data-backdrop="static"
+         data-keyboard="false"
+         tabindex="-1"
+         aria-labelledby="includePatternModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="includePatternModalLabel">Include Pattern Form</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="include_pattern_form">
                     <div class="modal-body">
                         <div class="form-group">
                             <label for="match_pattern_input">Match Pattern*</label>
