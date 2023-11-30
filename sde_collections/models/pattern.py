@@ -122,7 +122,7 @@ class IncludePattern(BaseMatchPattern):
         self.candidate_urls.through.objects.bulk_create(
             objs=[
                 IncludePattern.candidate_urls.through(
-                    candidateurl_id=candidate_url_id, Includepattern_id=self.id
+                    candidateurl_id=candidate_url_id, includepattern_id=self.id
                 )
                 for candidate_url_id in candidate_url_ids
             ]

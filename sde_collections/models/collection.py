@@ -160,6 +160,12 @@ class Collection(models.Model):
             pattern._process_match_pattern() for pattern in self.excludepattern.all()
         ]
 
+    def _process_include_list(self):
+        """Process the include list."""
+        return [
+            pattern._process_match_pattern() for pattern in self.includepattern.all()
+        ]
+
     def _process_title_list(self):
         """Process the title list"""
         title_rules = []
@@ -218,6 +224,7 @@ class Collection(models.Model):
         editor = XmlEditor(original_config_string)
 
         URL_EXCLUDES = self._process_exclude_list()
+        URL_INCLUDES = self._process_include_list()
         TITLE_RULES = self._process_title_list()
         DOCUMENT_TYPE_RULES = self._process_document_type_list()
 
@@ -227,6 +234,8 @@ class Collection(models.Model):
 
         for url in URL_EXCLUDES:
             editor.add_url_exclude(url)
+        for url in URL_INCLUDES:
+            editor.add_url_include(url)
         for title_rule in TITLE_RULES:
             editor.add_title_mapping(**title_rule)
         for rule in DOCUMENT_TYPE_RULES:
@@ -384,6 +393,8 @@ class Collection(models.Model):
     def apply_all_patterns(self) -> None:
         """Apply all the patterns."""
         for pattern in self.excludepattern.all():
+            pattern.apply()
+        for pattern in self.includepattern.all():
             pattern.apply()
         for pattern in self.titlepattern.all():
             pattern.apply()
