@@ -82,6 +82,26 @@ function initializeDataTable() {
         ]
     });
 
+    var include_patterns_table = $('#include_patterns_table').DataTable({
+        "scrollY": true,
+        "serverSide": true,
+        "ajax": `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
+        "columns": [
+            { "data": "match_pattern" },
+            { "data": "match_pattern_type_display", "class": "text-center", "sortable": false },
+            { "data": "candidate_urls_count", "class": "text-center", "sortable": false },
+            {
+                "data": null,
+                "sortable": false,
+                "class": "text-center",
+                "render": function (data, type, row) {
+                    return `<button class="btn btn-danger btn-sm delete-include-pattern-button" data-row-id="${row['id']}"><i class="material-icons">delete</i></button >`;
+                }
+            },
+            { "data": "id", "visible": false, "searchable": false },
+        ]
+    });
+
     var title_patterns_table = $('#title_patterns_table').DataTable({
         "scrollY": true,
         "serverSide": true,
@@ -130,10 +150,12 @@ function setupClickHandlers() {
 
     handleCreateDocumentTypePatternButton();
     handleCreateExcludePatternButton();
+    handleCreateIncludePatternButton();
     handleCreateTitlePatternButton();
 
     handleDeleteDocumentTypeButtonClick();
     handleDeleteExcludePatternButtonClick();
+    handleDeleteIncludePatternButtonClick();
     handleDeleteTitlePatternButtonClick();
 
     handleDocumentTypeSelect()
@@ -195,7 +217,7 @@ function getVisitedColumn(true_icon, false_icon) {
     }
 }
 
-function getIsPresentOnTestColumn(true_icon, false_icon){
+function getIsPresentOnTestColumn(true_icon, false_icon) {
     return {
         "data": "present_on_test", "class": "col-1 text-center", "render": function (data, type, row) {
             return (data === true) ? true_icon : false_icon
@@ -203,7 +225,7 @@ function getIsPresentOnTestColumn(true_icon, false_icon){
     }
 }
 
-function getIsPresentInProductionColumn(true_icon, false_icon){
+function getIsPresentInProductionColumn(true_icon, false_icon) {
     return {
         "data": "present_on_prod", "class": "col-1 text-center", "render": function (data, type, row) {
             return (data === true) ? true_icon : false_icon
@@ -254,6 +276,12 @@ function handleCreateExcludePatternButton() {
     });
 }
 
+function handleCreateIncludePatternButton() {
+    $("body").on("click", ".create_include_pattern_button", function () {
+        $modal = $('#includePatternModal').modal();
+    });
+}
+
 function handleCreateTitlePatternButton() {
     $("body").on("click", ".create_title_pattern_button", function () {
         $modal = $('#titlePatternModal').modal();
@@ -286,6 +314,13 @@ function handleDeleteExcludePatternButtonClick() {
     });
 }
 
+function handleDeleteIncludePatternButtonClick() {
+    $("body").on("click", ".delete-include-pattern-button", function () {
+        row_id = $(this).data('row-id');
+        deletePattern(`/api/include-patterns/${row_id}/`, data_type = 'Include Pattern');
+    });
+}
+
 function handleDeleteTitlePatternButtonClick() {
     $("body").on("click", ".delete-title-pattern-button", function () {
         row_id = $(this).data('row-id');
@@ -315,8 +350,8 @@ function handleNewTitleChange() {
         var match_pattern_type = $(this).data('match-pattern-type');
         var candidate_urls_count = $(this).data('candidate-urls-count');
         if (!title_pattern) {
-            deletePattern(`/api/title-patterns/${generated_title_id}/`, data_type = 'Title Pattern', url_type = match_pattern_type, candidate_urls_count= candidate_urls_count);
-        }else{
+            deletePattern(`/api/title-patterns/${generated_title_id}/`, data_type = 'Title Pattern', url_type = match_pattern_type, candidate_urls_count = candidate_urls_count);
+        } else {
             postTitlePatterns(match_pattern, title_pattern, match_pattern_type = 1, title_pattern_type = 1);
         }
     });
@@ -384,6 +419,32 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0) {
     });
 }
 
+function postIncludePatterns(match_pattern, match_pattern_type = 0) {
+    if (!match_pattern) {
+        toastr.error('Please highlight a pattern to include.');
+        return;
+    }
+
+    $.ajax({
+        url: '/api/include-patterns/',
+        type: "POST",
+        data: {
+            collection: collection_id,
+            match_pattern: match_pattern,
+            match_pattern_type: match_pattern_type,
+            csrfmiddlewaretoken: csrftoken
+        },
+        success: function (data) {
+            $('#candidate_urls_table').DataTable().ajax.reload();
+            $('#include_patterns_table').DataTable().ajax.reload();
+        },
+        error: function (xhr, status, error) {
+            var errorMessage = xhr.responseText;
+            toastr.error(errorMessage);
+        }
+    });
+}
+
 function postTitlePatterns(match_pattern, title_pattern, match_pattern_type = 1) {
     if (!match_pattern) {
         toastr.error('Please highlight a pattern to change the title.');
@@ -427,7 +488,7 @@ function postVisited(url) {
     });
 }
 
-function deletePattern(url, data_type, url_type=null, candidate_urls_count=null) {
+function deletePattern(url, data_type, url_type = null, candidate_urls_count = null) {
     if (url_type === MULTI_URL_PATTERN) {
         var confirmDelete = confirm(`YOU ARE ATTEMPTING TO DELETE A MULTI-URL PATTERN. THIS WILL AFFECT ${candidate_urls_count} URLs. \n\nAre you sure you want to do this? Currently there is no way to delete a single URL from a Multi-URL pattern`);
     } else {
@@ -448,6 +509,7 @@ function deletePattern(url, data_type, url_type=null, candidate_urls_count=null)
         success: function (data) {
             $('#candidate_urls_table').DataTable().ajax.reload();
             $('#exclude_patterns_table').DataTable().ajax.reload();
+            $('#include_patterns_table').DataTable().ajax.reload();
             $('#title_patterns_table').DataTable().ajax.reload();
             $('#document_type_patterns_table').DataTable().ajax.reload();
         }
@@ -569,6 +631,20 @@ $('#exclude_pattern_form').on('submit', function (e) {
 
     // close the modal if it is open
     $('#excludePatternModal').modal('hide');
+});
+
+$('#include_pattern_form').on('submit', function (e) {
+    e.preventDefault();
+    inputs = {};
+    input_serialized = $(this).serializeArray();
+    input_serialized.forEach(field => {
+        inputs[field.name] = field.value;
+    });
+
+    postIncludePatterns(match_pattern = inputs.match_pattern, match_pattern_type = 2);
+
+    // close the modal if it is open
+    $('#includePatternModal').modal('hide');
 });
 
 $('#title_pattern_form').on('submit', function (e) {

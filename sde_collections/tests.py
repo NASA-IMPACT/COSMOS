@@ -14,6 +14,15 @@ class CreateExcludePatternTestCase(TestCase):
         self.assertCountEqual(response, "hey")
 
 
+class CreateIncludePatternTestCase(TestCase):
+    def test_create_include_pattern(self):
+        factory = APIRequestFactory()
+        response = factory.post(
+            "/api/create-include-pattern", {"title": "new idea"}, format="json"
+        )
+        self.assertCountEqual(response, "hey")
+
+
 class ImportCandidateURLsTestCase(TestCase):
     def test_import_all_candidate_urls_from_api(self):
         import_candidate_urls_from_api()
