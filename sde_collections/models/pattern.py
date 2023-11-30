@@ -104,7 +104,7 @@ class ExcludePattern(BaseMatchPattern):
         )
 
     def unapply(self) -> None:
-        "Unapplies automatically by deleting excludpattern through objects in a cascade"
+        "Unapplies automatically by deleting include pattern through objects in a cascade"
         return
 
     class Meta:
@@ -112,6 +112,31 @@ class ExcludePattern(BaseMatchPattern):
 
         verbose_name = "Exclude Pattern"
         verbose_name_plural = "Exclude Patterns"
+        unique_together = ("collection", "match_pattern")
+
+
+class IncludePattern(BaseMatchPattern):
+    def apply(self) -> None:
+        matched_urls = self.matched_urls()
+        candidate_url_ids = list(matched_urls.values_list("id", flat=True))
+        self.candidate_urls.through.objects.bulk_create(
+            objs=[
+                IncludePattern.candidate_urls.through(
+                    candidateurl_id=candidate_url_id, Includepattern_id=self.id
+                )
+                for candidate_url_id in candidate_url_ids
+            ]
+        )
+
+    def unapply(self) -> None:
+        "Unapplies automatically by deleting includepattern through objects in a cascade"
+        return
+
+    class Meta:
+        """Meta definition for IncludePattern."""
+
+        verbose_name = "Include Pattern"
+        verbose_name_plural = "Include Patterns"
         unique_together = ("collection", "match_pattern")
 
 
