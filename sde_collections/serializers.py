@@ -3,7 +3,12 @@ from rest_framework import serializers
 from .models.candidate_url import CandidateURL
 from .models.collection import Collection
 from .models.collection_choice_fields import DocumentTypes
-from .models.pattern import DocumentTypePattern, ExcludePattern, TitlePattern
+from .models.pattern import (
+    DocumentTypePattern,
+    ExcludePattern,
+    IncludePattern,
+    TitlePattern,
+)
 
 
 class CollectionSerializer(serializers.ModelSerializer):
@@ -114,6 +119,12 @@ class ExcludePatternSerializer(BasePatternSerializer, serializers.ModelSerialize
     class Meta:
         model = ExcludePattern
         fields = BasePatternSerializer.Meta.fields + ("reason",)
+
+
+class IncludePatternSerializer(BasePatternSerializer, serializers.ModelSerializer):
+    class Meta:
+        model = IncludePattern
+        fields = BasePatternSerializer.Meta.fields
 
 
 class TitlePatternSerializer(BasePatternSerializer, serializers.ModelSerializer):
