@@ -39,6 +39,7 @@ class Api:
         self.app_name: str = server_configs[server_name]["app_name"]
         self.query_name: str = server_configs[server_name]["query_name"]
         self.base_url: str = server_configs[server_name]["base_url"]
+        self.folder: str = "SDE" if self.app_name == "nasa-sba-sde" else "SMD"
 
     def process_response(self, url: str, payload: dict[str, Any]) -> Any:
         response = requests.post(url, headers={}, json=payload, verify=False)
@@ -63,8 +64,10 @@ class Api:
             },
         }
 
-        if collection_config_folder:
-            payload["query"]["advanced"]["collection"] = f"/SDE/{collection_config_folder}/"
+        # if collection_config_folder:
+        payload["query"]["advanced"][
+            "collection"
+        ] = f"/{self.folder}/{collection_config_folder}/"
 
         response = self.process_response(url, payload)
 

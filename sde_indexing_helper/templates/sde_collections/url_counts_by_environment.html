@@ -1,0 +1,53 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load get_server_url %}
+{% block title %}URL counts by environment{% endblock %}
+{% block stylesheets %}
+    {{ block.super }}
+    <link href="//cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/b-html5-2.3.6/b-print-2.3.6/cr-1.6.2/date-1.4.1/fc-4.2.2/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/rr-1.3.3/sc-2.1.1/sb-1.4.2/sp-2.1.2/sl-1.6.2/sr-1.2.2/datatables.min.css"
+          rel="stylesheet" />
+{% endblock stylesheets %}
+{% block content %}
+    {% csrf_token %}
+    <br>
+    <h2>URL counts by environment<a href="#"><button class="btn btn-primary pull-right">Pull latest data</button></a></h2>
+
+    <table id="url_counts_table" class="table table-striped">
+        <thead>
+            <tr>
+                <th class="text-center">Folder</th>
+                <th class="text-center">Name</th>
+                <th class="text-center">Test</th>
+                <th class="text-center">Secret Test</th>
+                <th class="text-center">Production</th>
+                <th class="text-center">Secret Production</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for collection in collections %}
+                <tr>
+                    <td>{{ collection.config_folder }}</td>
+                    <td>{{ collection.name }}</td>
+                    <td><a href="{% get_server_url collection 'test' %}" target="_blank">{{ collection.url_count_test }}</a></td>
+                    <td><a href="{% get_server_url collection 'secret_test' %}" target="_blank">{{ collection.url_count_secret_test }}</a></td>
+                    <td><a href="{% get_server_url collection 'production' %}" target="_blank">{{ collection.url_count_production }}</a></td>
+                    <td><a href="{% get_server_url collection 'secret_production' %}" target="_blank">{{ collection.url_count_secret_production }}</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}
+{% block javascripts %}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="//cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/b-html5-2.3.6/b-print-2.3.6/cr-1.6.2/date-1.4.1/fc-4.2.2/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/rr-1.3.3/sc-2.1.1/sb-1.4.2/sp-2.1.2/sl-1.6.2/sr-1.2.2/datatables.min.js"></script>
+    <script src="{% static 'js/url_counts.js' %}"></script>
+    <script>
+        {% if messages %}
+            {% for message in messages %}
+                toastr["{{ message.tags }}"]("{{ message }}")
+            {% endfor %}
+        {% endif %}
+    </script>
+{% endblock javascripts %}

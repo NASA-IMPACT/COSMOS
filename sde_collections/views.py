@@ -393,3 +393,58 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
         context["differences"] = self.data
 
         return context
+
+
+class URLCountView(LoginRequiredMixin, ListView):
+    """
+    Show the count of URLs on various systems
+    """
+
+    template_name = "sde_collections/url_counts_by_environment.html"
+    model = Collection
+    context_object_name = "collections"
+
+    # def get(self, request, *args, **kwargs):
+    #     if not request.GET.get("reindex") == "true":
+    #         self.data = generate_db_github_metadata_differences()
+    #     else:
+    #         # this needs to be a celery task eventually
+    #         self.data = generate_db_github_metadata_differences(
+    #             reindex_configs_from_github=True
+    #         )
+
+    #     return super().get(request, *args, **kwargs)
+
+    # def post(self, request, *args, **kwargs):
+    #     config_folder = self.request.POST.get("config_folder")
+    #     field = self.request.POST.get("field")
+    #     new_value = self.request.POST.get("github_value")
+
+    #     if new_value and new_value != "None":
+    #         new_value = new_value.strip()
+    #         if field == "division":
+    #             new_value = Divisions.lookup_by_text(new_value)
+    #         elif field == "document_type":
+    #             new_value = DocumentTypes.lookup_by_text(new_value)
+    #         elif field == "connector":
+    #             new_value = ConnectorChoices.lookup_by_text(new_value)
+
+    #         Collection.objects.filter(config_folder=config_folder).update(
+    #             **{field: new_value}
+    #         )
+    #         messages.success(
+    #             request, f"Successfully updated {field} of {config_folder}."
+    #         )
+    #     else:
+    #         messages.error(
+    #             request,
+    #             f"Can't update empty value from GitHub: {field} of {config_folder}.",
+    #         )
+
+    #     return redirect("sde_collections:consolidate_db_and_github_configs")
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context["differences"] = self.data
+
+    #     return context
