@@ -4,6 +4,10 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
+from rest_framework import generics
+
+from .models import ContactFormModel
+from .serializers import ContactFormModelSerializer
 
 User = get_user_model()
 
@@ -43,3 +47,8 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
 
 user_redirect_view = UserRedirectView.as_view()
+
+
+class ContactFormModelView(generics.CreateAPIView):
+    queryset = ContactFormModel.objects.all()
+    serializer_class = ContactFormModelSerializer
