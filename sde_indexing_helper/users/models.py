@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 from django.db.models import CharField
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -24,3 +25,17 @@ class User(AbstractUser):
 
         """
         return reverse("users:detail", kwargs={"username": self.username})
+
+
+class ContactFormModel(models.Model):
+    name = models.CharField(max_length=150)
+    email = models.EmailField()
+    subject = models.CharField(max_length=400)
+    comment = models.TextField()
+
+    def __str__(self):
+        return self.subject
+
+    class Meta:
+        verbose_name = "Contact-Us Response"
+        verbose_name_plural = "Contact-Us Responses"
