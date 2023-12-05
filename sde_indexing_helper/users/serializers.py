@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import ContactFormModel
+from .models import ContactFormModel, ContentCurationRequestModel
 
 
 class ContactFormModelSerializer(serializers.ModelSerializer):
@@ -12,3 +12,16 @@ class ContactFormModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactFormModel
         fields = ["Name", "Email", "Subject", "comments_questions"]
+
+
+class ContentCurationRequestModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContentCurationRequestModel
+        fields = [
+            "name",
+            "email",
+            "scientific_focus",
+            "data_type",
+            "data_link",
+            "additional_info",
+        ]
