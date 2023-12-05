@@ -76,10 +76,7 @@ THIRD_PARTY_APPS = [
     "rest_framework_datatables",
 ]
 
-LOCAL_APPS = [
-    "sde_indexing_helper.users",
-    "sde_collections",
-]
+LOCAL_APPS = ["sde_indexing_helper.users", "sde_collections", "feedback"]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 

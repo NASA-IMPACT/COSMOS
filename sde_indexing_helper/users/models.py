@@ -1,5 +1,4 @@
 from django.contrib.auth.models import AbstractUser
-from django.db import models
 from django.db.models import CharField
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -25,27 +24,3 @@ class User(AbstractUser):
 
         """
         return reverse("users:detail", kwargs={"username": self.username})
-
-
-class ContactFormModel(models.Model):
-    name = models.CharField(max_length=150)
-    email = models.EmailField()
-    subject = models.CharField(max_length=400)
-    comment = models.TextField()
-
-    class Meta:
-        verbose_name = "Contact-Us Response"
-        verbose_name_plural = "Contact-Us Responses"
-
-
-class ContentCurationRequestModel(models.Model):
-    name = models.CharField(max_length=150)
-    email = models.EmailField()
-    scientific_focus = models.CharField(max_length=200)
-    data_type = models.CharField(max_length=100)
-    data_link = models.CharField(max_length=1000)
-    additional_info = models.TextField()
-
-    class Meta:
-        verbose_name = "Content Curation Request"
-        verbose_name_plural = "Content Curation Requests"
