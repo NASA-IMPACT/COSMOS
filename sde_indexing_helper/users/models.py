@@ -33,9 +33,19 @@ class ContactFormModel(models.Model):
     subject = models.CharField(max_length=400)
     comment = models.TextField()
 
-    def __str__(self):
-        return self.subject
-
     class Meta:
         verbose_name = "Contact-Us Response"
         verbose_name_plural = "Contact-Us Responses"
+
+
+class ContentCurationRequestModel(models.Model):
+    name = models.CharField(max_length=150)
+    email = models.EmailField()
+    scientific_focus = models.CharField(max_length=200)
+    data_type = models.CharField(max_length=100)
+    data_link = models.CharField(max_length=1000)
+    additional_info = models.TextField()
+
+    class Meta:
+        verbose_name = "Content Curation Request"
+        verbose_name_plural = "Content Curation Requests"
