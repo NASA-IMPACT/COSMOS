@@ -18,7 +18,7 @@ class ContentCurationRequest(models.Model):
     scientific_focus = models.CharField(max_length=200)
     data_type = models.CharField(max_length=100)
     data_link = models.CharField(max_length=1000)
-    additional_info = models.TextField()
+    additional_info = models.TextField(default="", blank=True)
 
     class Meta:
         verbose_name = "Content Curation Request"
