@@ -15,7 +15,6 @@ services:
       - ./backups:/app/backups
     depends_on:
       - postgres
-      - redis
     env_file:
       - ./.envs/.production/.django
       - ./.envs/.production/.postgres
@@ -45,9 +44,6 @@ services:
       - "0.0.0.0:80:80"
       - "0.0.0.0:443:443"
       - "0.0.0.0:5555:5555"
-
-  redis:
-    image: redis:6
 
   celeryworker:
     <<: *django

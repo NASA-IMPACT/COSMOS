@@ -36,7 +36,9 @@ class Collection(models.Model):
         choices=ConnectorChoices.choices, default=ConnectorChoices.CRAWLER2
     )
 
-    source = models.IntegerField(choices=SourceChoices.choices)
+    source = models.IntegerField(
+        choices=SourceChoices.choices, default=SourceChoices.BOTH
+    )
     update_frequency = models.IntegerField(
         choices=UpdateFrequencies.choices, default=UpdateFrequencies.WEEKLY
     )
@@ -91,7 +93,6 @@ class Collection(models.Model):
         User, on_delete=models.DO_NOTHING, null=True, blank=True
     )
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
-    has_sinequa_config = models.BooleanField(default=True)
 
     class Meta:
         """Meta definition for Collection."""
@@ -159,6 +160,12 @@ class Collection(models.Model):
             pattern._process_match_pattern() for pattern in self.excludepattern.all()
         ]
 
+    def _process_include_list(self):
+        """Process the include list."""
+        return [
+            pattern._process_match_pattern() for pattern in self.includepattern.all()
+        ]
+
     def _process_title_list(self):
         """Process the title list"""
         title_rules = []
@@ -192,6 +199,9 @@ class Collection(models.Model):
         ).read()
         editor = XmlEditor(original_config_string)
 
+        # add the URL
+        editor.update_or_add_element_value("Url", self.url)
+
         editor.update_or_add_element_value("TreeRoot", self.tree_root)
         if self.document_type:
             editor.add_document_type_mapping(
@@ -214,6 +224,7 @@ class Collection(models.Model):
         editor = XmlEditor(original_config_string)
 
         URL_EXCLUDES = self._process_exclude_list()
+        URL_INCLUDES = self._process_include_list()
         TITLE_RULES = self._process_title_list()
         DOCUMENT_TYPE_RULES = self._process_document_type_list()
 
@@ -223,6 +234,8 @@ class Collection(models.Model):
 
         for url in URL_EXCLUDES:
             editor.add_url_exclude(url)
+        for url in URL_INCLUDES:
+            editor.add_url_include(url)
         for title_rule in TITLE_RULES:
             editor.add_title_mapping(**title_rule)
         for rule in DOCUMENT_TYPE_RULES:
@@ -290,8 +303,6 @@ class Collection(models.Model):
 
     @property
     def sinequa_configuration(self) -> str:
-        if not self.has_sinequa_config:
-            return ""
         return f"https://github.com/NASA-IMPACT/sde-backend/blob/master/sources/SDE/{self.config_folder}/default.xml"
 
     @property
@@ -366,7 +377,6 @@ class Collection(models.Model):
         self.division = response_json["division"]
         self.document_type = response_json["document_type"]
         self.github_issue_number = response_json["github_issue_number"]
-        self.has_sinequa_config = response_json["has_sinequa_config"]
         self.name = response_json["name"]
         self.new_collection = response_json["new_collection"]
         self.notes = response_json["notes"]
@@ -383,6 +393,8 @@ class Collection(models.Model):
     def apply_all_patterns(self) -> None:
         """Apply all the patterns."""
         for pattern in self.excludepattern.all():
+            pattern.apply()
+        for pattern in self.includepattern.all():
             pattern.apply()
         for pattern in self.titlepattern.all():
             pattern.apply()

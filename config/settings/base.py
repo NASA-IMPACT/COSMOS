@@ -66,20 +66,31 @@ DJANGO_APPS = [
     "django_extensions",
 ]
 THIRD_PARTY_APPS = [
-    "crispy_forms",
-    "crispy_bootstrap5",
-    "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "allauth",
+    "corsheaders",
+    "crispy_bootstrap5",
+    "crispy_forms",
     "django_celery_beat",
-    "rest_framework",
     "rest_framework_datatables",
+    "rest_framework",
 ]
 
-LOCAL_APPS = [
-    "sde_indexing_helper.users",
-    "sde_collections",
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://sde-lrm.nasa-impact.net",
+    "https://sde-qa.nasa-impact.net",
+    "https://sciencediscoveryengine.test.nasa.gov",
+    "https://sciencediscoveryengine.nasa.gov",
+    "http://sde-qa.nasa-impact.net",
+    "http://sciencediscoveryengine.test.nasa.gov",
+    "http://sciencediscoveryengine.nasa.gov",
+    "https://localhost:4200",
+    "http://localhost:4200",
 ]
+
+LOCAL_APPS = ["sde_indexing_helper.users", "sde_collections", "feedback"]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -134,6 +145,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 # STATIC
@@ -259,7 +271,7 @@ if USE_TZ:
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#std:setting-broker_url
 CELERY_BROKER_URL = env("CELERY_BROKER_URL")
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#std:setting-result_backend
-CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_RESULT_BACKEND = None
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#result-extended
 CELERY_RESULT_EXTENDED = True
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#result-backend-always-retry

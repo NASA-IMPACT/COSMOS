@@ -2,6 +2,8 @@ import json
 import os
 import shutil
 
+import boto3
+from django.conf import settings
 from django.core import management
 from django.core.management.commands import loaddata
 
@@ -106,3 +108,24 @@ def push_to_github_task(collection_ids):
 def sync_with_production_webapp():
     for collection in Collection.objects.all():
         collection.sync_with_production_webapp()
+
+
+@celery_app.task()
+def pull_latest_collection_metadata_from_github():
+    FILENAME = "github_collections.json"
+
+    gh = GitHubHandler(collections=Collection.objects.none())
+    collections = gh.get_collections_from_github()
+
+    json.dump(collections, open(FILENAME, "w"), indent=4)
+
+    # Upload the file to S3
+    s3_bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+    s3_key = FILENAME
+    s3_client = boto3.client(
+        "s3",
+        region_name="us-east-1",
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    )
+    s3_client.upload_file(FILENAME, s3_bucket_name, s3_key)

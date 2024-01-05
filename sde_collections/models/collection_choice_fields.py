@@ -8,6 +8,13 @@ class Divisions(models.IntegerChoices):
     HELIOPHYSICS = 4, "Heliophysics"
     PLANETARY = 5, "Planetary Science"
 
+    @classmethod
+    def lookup_by_text(cls, text: str) -> int | None:
+        for choice in cls.choices:
+            if choice[1].lower() == text.lower():
+                return choice[0]
+        return None
+
 
 class UpdateFrequencies(models.IntegerChoices):
     DAILY = 1, "Daily"
@@ -43,6 +50,13 @@ class ConnectorChoices(models.IntegerChoices):
     JSON = 2, "json"
     HYPERINDEX = 3, "hyperindex"
     NO_CONNECTOR = 4, "No Connector"
+
+    @classmethod
+    def lookup_by_text(cls, text: str) -> int | None:
+        for choice in cls.choices:
+            if choice[1].lower() == text.lower():
+                return choice[0]
+        return None
 
 
 class CurationStatusChoices(models.IntegerChoices):

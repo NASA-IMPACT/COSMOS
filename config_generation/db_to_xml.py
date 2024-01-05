@@ -293,14 +293,19 @@ class XmlEditor:
         includes a url or url pattern, such as
         - https://webb.nasa.gov/content/forEducators/realworld*
         - https://webb.nasa.gov/content/features/index.html
+        - *.rtf
         I'm not sure if exclusion rules override includes or if includes override
         exclusion rules.
         """
 
         xml_root = self.xml_tree.getroot()
-        ET.SubElement(
-            xml_root, "UrlIndexIncluded"
-        ).text = url_pattern  # this adds an indexing rule (doesn't overwrite)
+
+        for url_index_included in xml_root.findall("UrlIndexIncluded"):
+            if url_index_included.text == url_pattern:
+                return  # stop the function if the url pattern already exists
+
+        # add the url pattern if it doesn't already exist
+        ET.SubElement(xml_root, "UrlIndexIncluded").text = url_pattern
 
     def _find_treeroot_field(self):
         treeroot = self.xml_tree.find("TreeRoot")
@@ -311,6 +316,27 @@ class XmlEditor:
     def fetch_treeroot(self):
         treeroot = self._find_treeroot_field()
         return treeroot.text
+
+    def fetch_division_name(self):
+        # this is pretty brittle and can break easily if the treeRoot field is changed
+        treeroot = self.fetch_treeroot()
+        splits = [split for split in treeroot.split("/") if split]
+        try:
+            division, name = splits
+        except ValueError:
+            print(f"Could not find division and name in {treeroot}")
+            division = ""
+            name = ""
+        return division, name
+
+    def fetch_url(self):
+        url = self.xml_tree.find("Url")
+        if url is None:
+            url = self.xml_tree.find("url")
+        try:
+            return url.text
+        except AttributeError:
+            return ""
 
     def fetch_document_type(self):
         DOCUMENT_TYPE_COLUMN = "sourcestr56"
@@ -340,4 +366,6 @@ class XmlEditor:
             connector = ConnectorChoices.JSON
         elif connector.text.strip() == "hyperindex":
             connector = ConnectorChoices.HYPERINDEX
+        else:  # as a catch all
+            connector = ConnectorChoices.NO_CONNECTOR
         return connector

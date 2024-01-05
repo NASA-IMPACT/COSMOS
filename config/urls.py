@@ -12,6 +12,7 @@ admin.site.site_title = "SDE Indexing"  # default: "Django site admin"
 
 urlpatterns = [
     path("", include("sde_collections.urls", namespace="sde_collections")),
+    path("feedback/", include("feedback.urls", namespace="feedback")),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     # User management

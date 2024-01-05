@@ -5,8 +5,33 @@ from django.http import HttpResponse
 
 from .models.candidate_url import CandidateURL
 from .models.collection import Collection
-from .models.pattern import TitlePattern
+from .models.pattern import IncludePattern, TitlePattern
 from .tasks import import_candidate_urls_from_api
+
+
+@admin.action(description="Download candidate URLs as csv")
+def download_candidate_urls_as_csv(modeladmin, request, queryset):
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="candidate_urls.csv"'
+
+    writer = csv.writer(response)
+
+    if len(queryset) > 1:
+        messages.add_message(
+            request, messages.ERROR, "You can only export one collection at a time."
+        )
+        return
+
+    urls = CandidateURL.objects.filter(collection=queryset.first()).values_list(
+        "url", flat=True
+    )
+
+    # Write your headers here
+    writer.writerow(["candidate_url"])
+    for url in urls:
+        writer.writerow([url])
+
+    return response
 
 
 @admin.action(description="Import metadata from Sinequa configs")
@@ -83,7 +108,9 @@ def import_candidate_urls_secret_test(modeladmin, request, queryset):
 
 @admin.action(description="Import candidate URLs from Secret Production")
 def import_candidate_urls_secret_production(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "secret_production")
+    import_candidate_urls_from_api_caller(
+        modeladmin, request, queryset, "secret_production"
+    )
 
 
 class ExportCsvMixin:
@@ -162,10 +189,11 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
     )
     readonly_fields = ("config_folder",)
     list_filter = ("division", "curation_status", "workflow_status", "turned_on")
-    search_fields = ("name", "url")
+    search_fields = ("name", "url", "config_folder")
     actions = [
         "export_as_csv",
         "update_config",
+        download_candidate_urls_as_csv,
         import_candidate_urls_test,
         import_candidate_urls_production,
         import_candidate_urls_secret_test,
@@ -217,3 +245,4 @@ class TitlePatternAdmin(admin.ModelAdmin):
 
 admin.site.register(CandidateURL, CandidateURLAdmin)
 admin.site.register(TitlePattern, TitlePatternAdmin)
+admin.site.register(IncludePattern)
