@@ -6,6 +6,7 @@ class Feedback(models.Model):
     email = models.EmailField()
     subject = models.CharField(max_length=400)
     comments = models.TextField()
+    source = models.CharField(max_length=50, default="SDE")
 
     class Meta:
         verbose_name = "Feedback Response"
