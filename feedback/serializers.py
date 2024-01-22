@@ -6,7 +6,7 @@ from .models import ContentCurationRequest, Feedback
 class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
-        fields = ["name", "email", "subject", "comments"]
+        fields = ["name", "email", "subject", "comments", "source"]
 
 
 class ContentCurationRequestSerializer(serializers.ModelSerializer):
