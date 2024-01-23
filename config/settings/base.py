@@ -75,6 +75,7 @@ THIRD_PARTY_APPS = [
     "django_celery_beat",
     "rest_framework_datatables",
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -333,6 +334,9 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework_datatables.pagination.DatatablesPageNumberPagination",
     "PAGE_SIZE": 50,
     "EXCEPTION_HANDLER": "sde_indexing_helper.utils.exceptions.custom_exception_handler",
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
 }
 
 GITHUB_ACCESS_TOKEN = env("GITHUB_ACCESS_TOKEN")
