@@ -5,7 +5,7 @@ from .models import ContentCurationRequest, Feedback
 
 @admin.register(Feedback)
 class ContactFormAdmin(admin.ModelAdmin):
-    list_display = ["name", "email", "subject", "comments"]
+    list_display = ["name", "email", "subject", "comments", "source"]
     search_fields = ["name", "email"]
     list_filter = ["subject"]
 
