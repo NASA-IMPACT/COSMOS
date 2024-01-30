@@ -23,7 +23,7 @@ boto3==1.28.70
 djangorestframework-datatables==0.7.0
 djangorestframework==3.14.0
 pycurl==7.45.2
-PyGithub==1.59.0
+PyGithub==2.2.0
 python-slugify==8.0.1
 scrapy==2.11.0
 tqdm==4.65.0
