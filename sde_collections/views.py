@@ -15,9 +15,9 @@ from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .forms import CollectionGithubIssueForm, RequiredUrlForm
+from .forms import CollectionGithubIssueForm, CommentsForm, RequiredUrlForm
 from .models.candidate_url import CandidateURL
-from .models.collection import Collection, RequiredUrls
+from .models.collection import Collection, Comments, RequiredUrls
 from .models.collection_choice_fields import (
     ConnectorChoices,
     CurationStatusChoices,
@@ -90,6 +90,7 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
 
         form = RequiredUrlForm(request.POST)
         github_form = CollectionGithubIssueForm(request.POST)
+        comments_form = CommentsForm(request.POST)
 
         if "github_issue_link" in request.POST and github_form.is_valid():
             github_issue_link = github_form.cleaned_data["github_issue_link"]
@@ -105,6 +106,13 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
                 return self.render_to_response(
                     self.get_context_data(form=form, github_form=github_form)
                 )
+            return redirect("sde_collections:detail", pk=collection.pk)
+
+        elif "comment_button" in request.POST and comments_form.is_valid():
+            comment = comments_form.save(commit=False)
+            comment.collection = collection
+            comment.user = self.request.user
+            comment.save()
             return redirect("sde_collections:detail", pk=collection.pk)
 
         else:
@@ -127,13 +135,20 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         if "form" not in context:
             context["form"] = RequiredUrlForm()
+        if "github_form" not in context:
             context["github_form"] = CollectionGithubIssueForm(
                 initial={"github_issue_link": self.get_object().github_issue_link}
             )
+        if "comments_form" not in context:
+            context["comments_form"] = CommentsForm()
+
         context["required_urls"] = RequiredUrls.objects.filter(
             collection=self.get_object()
         )
         context["segment"] = "collection-detail"
+        context["comments"] = Comments.objects.filter(
+            collection=self.get_object()
+        ).order_by("-created_at")
         return context
 
 
