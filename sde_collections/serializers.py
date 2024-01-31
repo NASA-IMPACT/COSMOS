@@ -103,7 +103,6 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
         model = CandidateURL
         fields = (
             "url",
-            "scraped_title",
             "generated_title",
             "document_type_display",
             "hash",
