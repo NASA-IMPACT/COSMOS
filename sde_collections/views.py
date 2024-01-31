@@ -245,9 +245,9 @@ class CandidateURLBulkCreateView(generics.ListCreateAPIView):
 
 
 class CandidateURLAPIView(APIView):
-    def get(self, request, collection_name):
+    def get(self, request, config_folder):
         try:
-            collection = Collection.objects.get(name=collection_name)
+            collection = Collection.objects.get(config_folder=config_folder)
         except Collection.DoesNotExist:
             return Response(
                 {"error": "Collection not found"}, status=status.HTTP_404_NOT_FOUND
