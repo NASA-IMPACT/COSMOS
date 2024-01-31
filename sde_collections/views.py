@@ -32,6 +32,7 @@ from .models.pattern import (
     TitlePattern,
 )
 from .serializers import (
+    CandidateURLAPISerializer,
     CandidateURLBulkCreateSerializer,
     CandidateURLSerializer,
     CollectionReadSerializer,
@@ -241,6 +242,20 @@ class CandidateURLBulkCreateView(generics.ListCreateAPIView):
         collection.apply_all_patterns()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class CandidateURLAPIView(APIView):
+    def get(self, request, collection_name):
+        try:
+            collection = Collection.objects.get(name=collection_name)
+        except Collection.DoesNotExist:
+            return Response(
+                {"error": "Collection not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        candidate_urls = CandidateURL.objects.filter(collection=collection)
+        serializer = CandidateURLAPISerializer(candidate_urls, many=True)
+        return Response(serializer.data)
 
 
 class ExcludePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
