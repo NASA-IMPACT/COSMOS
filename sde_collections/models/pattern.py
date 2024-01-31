@@ -1,7 +1,9 @@
 import re
 
 from django.db import models
+from django.db.models import Case, F, Q, When
 
+from ..pattern_interpreter import interpret_title_pattern
 from .collection_choice_fields import DocumentTypes
 
 
@@ -149,7 +151,20 @@ class TitlePattern(BaseMatchPattern):
 
     def apply(self) -> None:
         matched_urls = self.matched_urls()
-        matched_urls.update(generated_title=self.title_pattern)
+
+        # Update generated_title using the update function
+        matched_urls.update(
+            generated_title=Case(
+                When(
+                    Q(url=F("url"), scraped_title=F("scraped_title")),
+                    then=interpret_title_pattern(
+                        F("url"), F("scraped_title"), self.title_pattern
+                    ),
+                ),
+                default=F("generated_title"),
+            )
+        )
+
         candidate_url_ids = list(matched_urls.values_list("id", flat=True))
         self.candidate_urls.through.objects.bulk_create(
             objs=[
