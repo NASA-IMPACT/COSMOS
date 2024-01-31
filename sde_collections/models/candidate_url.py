@@ -1,3 +1,4 @@
+import hashlib
 from urllib.parse import urlparse
 
 from django.db import models
@@ -30,6 +31,7 @@ class CandidateURL(models.Model):
         Collection, on_delete=models.CASCADE, related_name="candidate_urls"
     )
     url = models.CharField("URL")
+    hash = models.CharField("Hash", max_length=32, blank=True, default="")
     scraped_title = models.CharField(
         "Scraped Title",
         default="",
@@ -109,3 +111,13 @@ class CandidateURL(models.Model):
 
     def __str__(self) -> str:
         return self.url
+
+    def save(self, *args, **kwargs):
+        # Generate the hash based on the model values
+        hash_string = f"{self.url}{self.generated_title}{self.document_type}"
+        hash_value = hashlib.md5(hash_string.encode()).hexdigest()
+
+        # Set the hash value
+        self.hash = hash_value
+
+        super().save(*args, **kwargs)
