@@ -2,6 +2,7 @@ import re
 
 from django.db import models
 
+from ..pattern_interpreter import interpret_title_pattern
 from .collection_choice_fields import DocumentTypes
 
 
@@ -149,7 +150,16 @@ class TitlePattern(BaseMatchPattern):
 
     def apply(self) -> None:
         matched_urls = self.matched_urls()
-        matched_urls.update(generated_title=self.title_pattern)
+
+        # since this is not running in celery, this is a bit slow
+        for url, scraped_title in matched_urls.values_list("url", "scraped_title"):
+            generated_title = interpret_title_pattern(
+                url, scraped_title, self.title_pattern
+            )
+            matched_urls.filter(url=url, scraped_title=scraped_title).update(
+                generated_title=generated_title
+            )
+
         candidate_url_ids = list(matched_urls.values_list("id", flat=True))
         self.candidate_urls.through.objects.bulk_create(
             objs=[
