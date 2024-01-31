@@ -44,7 +44,7 @@ urlpatterns = [
     # Delete an existing CandidateURL instance: /candidate-urls/{id}/
     path("api/", include(router.urls)),
     path(
-        "candidate-urls-api/<str:collection_name>/",
+        "candidate-urls-api/<str:config_folder>/",
         view=views.CandidateURLAPIView.as_view(),
         name="candidate-url-api",
     ),
