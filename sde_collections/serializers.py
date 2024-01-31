@@ -94,6 +94,22 @@ class CandidateURLBulkCreateSerializer(serializers.ModelSerializer):
         )
 
 
+class CandidateURLAPISerializer(serializers.ModelSerializer):
+    document_type_display = serializers.CharField(
+        source="get_document_type_display", read_only=True
+    )
+
+    class Meta:
+        model = CandidateURL
+        fields = (
+            "url",
+            "scraped_title",
+            "generated_title",
+            "document_type_display",
+            "hash",
+        )
+
+
 class BasePatternSerializer(serializers.ModelSerializer):
     match_pattern_type_display = serializers.CharField(
         source="get_match_pattern_type_display", read_only=True
