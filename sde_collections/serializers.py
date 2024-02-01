@@ -95,16 +95,17 @@ class CandidateURLBulkCreateSerializer(serializers.ModelSerializer):
 
 
 class CandidateURLAPISerializer(serializers.ModelSerializer):
-    document_type_display = serializers.CharField(
+    document_type = serializers.CharField(
         source="get_document_type_display", read_only=True
     )
+    title = serializers.CharField(source="generated_title")
 
     class Meta:
         model = CandidateURL
         fields = (
             "url",
-            "generated_title",
-            "document_type_display",
+            "title",
+            "document_type",
             "hash",
         )
 
