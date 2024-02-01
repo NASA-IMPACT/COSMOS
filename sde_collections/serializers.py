@@ -98,7 +98,7 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
     document_type = serializers.CharField(
         source="get_document_type_display", read_only=True
     )
-    title = serializers.CharField(source="generated_title")
+    title = serializers.CharField(source="scraped_title")
 
     class Meta:
         model = CandidateURL
