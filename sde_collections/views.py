@@ -248,12 +248,10 @@ class CandidateURLAPIView(APIView):
     def get(self, request, config_folder):
         try:
             collection = Collection.objects.get(config_folder=config_folder)
+            candidate_urls = CandidateURL.objects.filter(collection=collection)
         except Collection.DoesNotExist:
-            return Response(
-                {"error": "Collection not found"}, status=status.HTTP_404_NOT_FOUND
-            )
+            candidate_urls = CandidateURL.objects.none()
 
-        candidate_urls = CandidateURL.objects.filter(collection=collection)
         serializer = CandidateURLAPISerializer(candidate_urls, many=True)
         return Response(serializer.data)
 
