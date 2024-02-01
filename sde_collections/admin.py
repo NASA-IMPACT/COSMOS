@@ -79,7 +79,7 @@ def import_candidate_urls_from_api_caller(modeladmin, request, queryset, server_
             " Consider using the django shell for bulk imports.",
         )
         return
-    import_candidate_urls_from_api.delay(
+    import_candidate_urls_from_api(
         collection_ids=list(queryset.values_list("id", flat=True)),
         server_name=server_name,
     )

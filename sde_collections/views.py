@@ -12,6 +12,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
 from rest_framework import generics, status, viewsets
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -244,16 +245,19 @@ class CandidateURLBulkCreateView(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class CandidateURLAPIView(APIView):
-    def get(self, request, config_folder):
-        try:
-            collection = Collection.objects.get(config_folder=config_folder)
-            candidate_urls = CandidateURL.objects.filter(collection=collection)
-        except Collection.DoesNotExist:
-            candidate_urls = CandidateURL.objects.none()
+class CandidateURLAPIView(ListAPIView):
+    serializer_class = CandidateURLAPISerializer
 
-        serializer = CandidateURLAPISerializer(candidate_urls, many=True)
-        return Response(serializer.data)
+    def get(self, request, *args, **kwargs):
+        config_folder = kwargs.get("config_folder")
+        self.config_folder = config_folder
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = CandidateURL.objects.filter(
+            collection__config_folder=self.config_folder
+        )
+        return queryset
 
 
 class ExcludePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
