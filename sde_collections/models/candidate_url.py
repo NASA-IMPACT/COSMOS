@@ -31,7 +31,7 @@ class CandidateURL(models.Model):
         Collection, on_delete=models.CASCADE, related_name="candidate_urls"
     )
     url = models.CharField("URL")
-    hash = models.CharField("Hash", max_length=32, blank=True, default="")
+    hash = models.CharField("Hash", max_length=32, blank=True, default="1")
     scraped_title = models.CharField(
         "Scraped Title",
         default="",
