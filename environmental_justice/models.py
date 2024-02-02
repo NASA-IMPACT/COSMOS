@@ -30,4 +30,4 @@ class EnvironmentalJusticeRow(models.Model):
         verbose_name_plural = "Environmental Justice Rows"
 
     def __str__(self):
-        return self.name
+        return self.dataset
