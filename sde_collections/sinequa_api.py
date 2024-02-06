@@ -34,7 +34,7 @@ server_configs = {
     "lis_server": {
         "app_name": "nasa-sba-smd",
         "query_name": "query-smd-primary",
-        "base_url": "http://sde-xli.nasa-impact.net/",
+        "base_url": "http://sde-xli.nasa-impact.net",
     },
 }
 
@@ -69,7 +69,9 @@ class Api:
         }
 
         if collection_config_folder:
-            payload["query"]["advanced"]["collection"] = f"/SDE/{collection_config_folder}/"
+            payload["query"]["advanced"][
+                "collection"
+            ] = f"/SMD/{collection_config_folder}/"
 
         response = self.process_response(url, payload)
 
