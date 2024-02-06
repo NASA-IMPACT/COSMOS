@@ -34,7 +34,7 @@ server_configs = {
     "lis_server": {
         "app_name": "nasa-sba-smd",
         "query_name": "query-smd-primary",
-        "base_url": "https://lis-server.nasa.gov",
+        "base_url": "http://sde-xli.nasa-impact.net/",
     },
 }
 
