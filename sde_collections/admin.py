@@ -17,14 +17,10 @@ def download_candidate_urls_as_csv(modeladmin, request, queryset):
     writer = csv.writer(response)
 
     if len(queryset) > 1:
-        messages.add_message(
-            request, messages.ERROR, "You can only export one collection at a time."
-        )
+        messages.add_message(request, messages.ERROR, "You can only export one collection at a time.")
         return
 
-    urls = CandidateURL.objects.filter(collection=queryset.first()).values_list(
-        "url", flat=True
-    )
+    urls = CandidateURL.objects.filter(collection=queryset.first()).values_list("url", flat=True)
 
     # Write your headers here
     writer.writerow(["candidate_url"])
@@ -108,9 +104,12 @@ def import_candidate_urls_secret_test(modeladmin, request, queryset):
 
 @admin.action(description="Import candidate URLs from Secret Production")
 def import_candidate_urls_secret_production(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(
-        modeladmin, request, queryset, "secret_production"
-    )
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "secret_production")
+
+
+@admin.action(description="Import candidate URLs from Li's Server")
+def import_candidate_urls_lis_server(modeladmin, request, queryset):
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lis_server")
 
 
 class ExportCsvMixin:
@@ -198,6 +197,7 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         import_candidate_urls_production,
         import_candidate_urls_secret_test,
         import_candidate_urls_secret_production,
+        import_candidate_urls_lis_server,
     ]
     ordering = ("cleaning_order",)
 

@@ -31,6 +31,11 @@ server_configs = {
         "query_name": "query-sde-primary",
         "base_url": "https://sciencediscoveryengine.nasa.gov",
     },
+    "lis_server": {
+        "app_name": "nasa-sba-smd",
+        "query_name": "query-smd-primary",
+        "base_url": "http://sde-xli.nasa-impact.net/",
+    },
 }
 
 
