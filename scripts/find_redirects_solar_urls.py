@@ -1,3 +1,9 @@
+"""
+sinequa does not handle redirects well, needed a python script to find the actual url
+and any better titles that might be available. this particular script runs on a csv
+containing solar urls
+"""
+
 import csv
 import json
 
