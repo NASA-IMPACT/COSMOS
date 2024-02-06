@@ -1,3 +1,8 @@
+"""
+import a list of urls directly into the database
+you will need to log onto the server and run the following script
+"""
+
 import json
 
 from sde_collections.models.candidate_url import CandidateURL
