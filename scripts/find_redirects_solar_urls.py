@@ -58,7 +58,7 @@ for index, url_data in enumerate(urls):
         }
     )
 
-    if index % 100 == 0:
+    if index % 1000 == 0:
         print(f"Processed {index} URLs.")
         json.dump(processed_urls, open(f"solar_urls/{index}.json", "w"))
         processed_urls = []
