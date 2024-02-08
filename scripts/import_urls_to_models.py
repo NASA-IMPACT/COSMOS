@@ -15,7 +15,7 @@ collection = Collection.objects.get(name="Solar System Exploration")
 for url in urls:
     candidate_url = CandidateURL.objects.create(
         url=url["url"],
-        collection=Collection.objects.get(id=1),
+        collection=collection,
         hash="1",
         scraped_title=url["title"],
         generated_title=url["generated_title"],
