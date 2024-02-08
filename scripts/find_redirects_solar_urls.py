@@ -44,7 +44,8 @@ for index, url_data in enumerate(urls):
         except (AssertionError, Exception) as parse_error:
             scraped_title = ""
             print(f"Error parsing URL {url_info['url']}: {parse_error}")
-    except Exception:
+    except requests.RequestException as e:
+        print(f"Error fetching URL {url_info['url']}: {e}")
         response_url = ""
         scraped_title = ""
 
