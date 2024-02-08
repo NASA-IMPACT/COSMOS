@@ -41,7 +41,7 @@ for index, url_data in enumerate(urls):
         try:
             soup = BeautifulSoup(response.content, "html.parser")
             scraped_title = soup.find("title").text.strip() if soup.find("title") else ""
-        except Exception:
+        except (AssertionError, Exception) as parse_error:
             scraped_title = ""
     except Exception:
         response_url = ""
