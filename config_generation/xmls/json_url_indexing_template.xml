@@ -159,7 +159,7 @@
             <ToBeIndexed>true</ToBeIndexed>
             <Name>url_list</Name>
             <Method>GET</Method>
-            <Source>https://sde-indexing-helper.nasa-impact.net/candidate-urls-api/solar_system_exploration/</Source>
+            <Source>https://sde-indexing-helper.nasa-impact.net/candidate-urls-api/CONFIG_FOLDER_HERE/</Source>
             <Root>$.results</Root>
             <Description></Description>
             <WaitBeforeNext></WaitBeforeNext>
