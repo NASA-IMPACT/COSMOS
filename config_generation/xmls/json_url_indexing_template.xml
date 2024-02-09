@@ -163,7 +163,7 @@
             <Root>$.results</Root>
             <Description></Description>
             <WaitBeforeNext></WaitBeforeNext>
-            <NextPageExpression>https://sde-indexing-helper.nasa-impact.net/candidate-urls-api/solar_system_exploration/?format=json&amp;page={Add(datasource.url_list.pagenumber,1)}</NextPageExpression>
+            <NextPageExpression>https://sde-indexing-helper.nasa-impact.net/candidate-urls-api/CONFIG_FOLDER_HERE/?format=json&amp;page={Add(datasource.url_list.pagenumber,1)}</NextPageExpression>
             <EndPageExpression>datasource.url_list.pagenumber=132</EndPageExpression>
             <ContentType></ContentType>
             <Content></Content>
