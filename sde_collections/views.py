@@ -246,7 +246,11 @@ class CandidateURLAPIView(ListAPIView):
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
-        queryset = CandidateURL.objects.filter(collection__config_folder=self.config_folder).with_exclusion_status()
+        queryset = (
+            CandidateURL.objects.filter(collection__config_folder=self.config_folder)
+            .with_exclusion_status()
+            .filter(excluded=False)
+        )
         return queryset
 
 
