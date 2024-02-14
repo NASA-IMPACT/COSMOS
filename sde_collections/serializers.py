@@ -89,9 +89,8 @@ class CandidateURLBulkCreateSerializer(serializers.ModelSerializer):
 
 
 class CandidateURLAPISerializer(serializers.ModelSerializer):
-    document_type = serializers.CharField(source="get_document_type_display", read_only=True)
+    document_type = serializers.SerializerMethodField()
     title = serializers.CharField(source="scraped_title")
-    excluded = serializers.SerializerMethodField()
 
     class Meta:
         model = CandidateURL
@@ -100,11 +99,15 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
             "title",
             "document_type",
             "hash",
-            "excluded",
         )
 
-    def get_excluded(self, obj):
-        return getattr(obj, "excluded", False)
+    def get_document_type(self, obj):
+        if obj.document_type is not None:
+            return obj.get_document_type_display()
+        elif obj.collection.document_type is not None:
+            return obj.collection.get_document_type_display()
+        else:
+            return "Unknown"
 
 
 class BasePatternSerializer(serializers.ModelSerializer):
