@@ -34,7 +34,7 @@
         <CollectionStateParallelRowFetch>0</CollectionStateParallelRowFetch>
     </Indexation>
     <System>
-        <LogLevel>TRACE</LogLevel>
+        <LogLevel>20</LogLevel>
     </System>
     <DisplayLongProperties>false</DisplayLongProperties>
     <LongPropertyLimit></LongPropertyLimit>
