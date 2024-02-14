@@ -101,12 +101,8 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
                 collection.github_issue_number = github_issue_number
                 collection.save()
             else:
-                github_form.add_error(
-                    "github_issue_link", "Invalid GitHub issue link format"
-                )
-                return self.render_to_response(
-                    self.get_context_data(form=form, github_form=github_form)
-                )
+                github_form.add_error("github_issue_link", "Invalid GitHub issue link format")
+                return self.render_to_response(self.get_context_data(form=form, github_form=github_form))
             return redirect("sde_collections:detail", pk=collection.pk)
 
         else:
@@ -132,9 +128,7 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
             context["github_form"] = CollectionGithubIssueForm(
                 initial={"github_issue_link": self.get_object().github_issue_link}
             )
-        context["required_urls"] = RequiredUrls.objects.filter(
-            collection=self.get_object()
-        )
+        context["required_urls"] = RequiredUrls.objects.filter(collection=self.get_object())
         context["segment"] = "collection-detail"
         return context
 
@@ -143,9 +137,7 @@ class RequiredUrlsDeleteView(LoginRequiredMixin, DeleteView):
     model = RequiredUrls
 
     def get_success_url(self, *args, **kwargs):
-        return reverse(
-            "sde_collections:detail", kwargs={"pk": self.object.collection.pk}
-        )
+        return reverse("sde_collections:detail", kwargs={"pk": self.object.collection.pk})
 
 
 class CandidateURLsListView(LoginRequiredMixin, ListView):
@@ -254,9 +246,7 @@ class CandidateURLAPIView(ListAPIView):
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
-        queryset = CandidateURL.objects.filter(
-            collection__config_folder=self.config_folder
-        )
+        queryset = CandidateURL.objects.filter(collection__config_folder=self.config_folder).with_exclusion_status()
         return queryset
 
 
@@ -347,9 +337,7 @@ class PushToGithubView(APIView):
     def post(self, request):
         collection_ids = request.POST.getlist("collection_ids[]", [])
         if len(collection_ids) == 0:
-            return Response(
-                "collection_ids can't be empty.", status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response("collection_ids can't be empty.", status=status.HTTP_400_BAD_REQUEST)
 
         push_to_github_task.delay(collection_ids)
 
@@ -371,9 +359,7 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
             self.data = generate_db_github_metadata_differences()
         else:
             # this needs to be a celery task eventually
-            self.data = generate_db_github_metadata_differences(
-                reindex_configs_from_github=True
-            )
+            self.data = generate_db_github_metadata_differences(reindex_configs_from_github=True)
 
         return super().get(request, *args, **kwargs)
 
@@ -391,12 +377,8 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
             elif field == "connector":
                 new_value = ConnectorChoices.lookup_by_text(new_value)
 
-            Collection.objects.filter(config_folder=config_folder).update(
-                **{field: new_value}
-            )
-            messages.success(
-                request, f"Successfully updated {field} of {config_folder}."
-            )
+            Collection.objects.filter(config_folder=config_folder).update(**{field: new_value})
+            messages.success(request, f"Successfully updated {field} of {config_folder}.")
         else:
             messages.error(
                 request,
