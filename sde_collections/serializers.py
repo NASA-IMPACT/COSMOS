@@ -90,7 +90,7 @@ class CandidateURLBulkCreateSerializer(serializers.ModelSerializer):
 
 class CandidateURLAPISerializer(serializers.ModelSerializer):
     document_type = serializers.SerializerMethodField()
-    title = serializers.CharField(source="scraped_title")
+    title = serializers.SerializerMethodField()
 
     class Meta:
         model = CandidateURL
@@ -108,6 +108,9 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
             return obj.collection.get_document_type_display()
         else:
             return "Unknown"
+
+    def get_title(self, obj):
+        return obj.generated_title if obj.generated_title else obj.scraped_title
 
 
 class BasePatternSerializer(serializers.ModelSerializer):
