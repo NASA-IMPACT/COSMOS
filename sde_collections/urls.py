@@ -1,6 +1,8 @@
 from django.urls import include, path
 from rest_framework import routers
 
+from environmental_justice.views import EnvironmentalJusticeRowViewSet
+
 from . import views
 
 router = routers.DefaultRouter()
@@ -11,6 +13,7 @@ router.register(r"exclude-patterns", views.ExcludePatternViewSet)
 router.register(r"include-patterns", views.IncludePatternViewSet)
 router.register(r"title-patterns", views.TitlePatternViewSet)
 router.register(r"document-type-patterns", views.DocumentTypePatternViewSet)
+router.register(r"environmental-justice", EnvironmentalJusticeRowViewSet)
 
 app_name = "sde_collections"
 
@@ -48,4 +51,9 @@ urlpatterns = [
     # Update an existing CandidateURL instance: /candidate-urls/{id}/
     # Delete an existing CandidateURL instance: /candidate-urls/{id}/
     path("api/", include(router.urls)),
+    path(
+        "candidate-urls-api/<str:config_folder>/",
+        view=views.CandidateURLAPIView.as_view(),
+        name="candidate-url-api",
+    ),
 ]
