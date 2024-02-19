@@ -2,6 +2,7 @@ import json
 import urllib.parse
 
 import requests
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from slugify import slugify
@@ -26,54 +27,28 @@ class Collection(models.Model):
     """Model definition for Collection."""
 
     name = models.CharField("Name", max_length=1024)
-    config_folder = models.CharField(
-        "Config Folder", max_length=2048, unique=True, editable=False
-    )
+    config_folder = models.CharField("Config Folder", max_length=2048, unique=True, editable=False)
     url = models.URLField("URL", max_length=2048, blank=True)
     division = models.IntegerField(choices=Divisions.choices)
     turned_on = models.BooleanField("Turned On", default=True)
-    connector = models.IntegerField(
-        choices=ConnectorChoices.choices, default=ConnectorChoices.CRAWLER2
-    )
+    connector = models.IntegerField(choices=ConnectorChoices.choices, default=ConnectorChoices.CRAWLER2)
 
-    source = models.IntegerField(
-        choices=SourceChoices.choices, default=SourceChoices.BOTH
-    )
-    update_frequency = models.IntegerField(
-        choices=UpdateFrequencies.choices, default=UpdateFrequencies.WEEKLY
-    )
-    document_type = models.IntegerField(
-        choices=DocumentTypes.choices, null=True, blank=True
-    )
-    tree_root_deprecated = models.CharField(
-        "Tree Root", max_length=1024, default="", blank=True
-    )
+    source = models.IntegerField(choices=SourceChoices.choices, default=SourceChoices.BOTH)
+    update_frequency = models.IntegerField(choices=UpdateFrequencies.choices, default=UpdateFrequencies.WEEKLY)
+    document_type = models.IntegerField(choices=DocumentTypes.choices, null=True, blank=True)
+    tree_root_deprecated = models.CharField("Tree Root", max_length=1024, default="", blank=True)
     delete = models.BooleanField(default=False)
 
     # audit columns for production
-    audit_hierarchy = models.CharField(
-        "Audit Hierarchy", max_length=2048, default="", blank=True
-    )
+    audit_hierarchy = models.CharField("Audit Hierarchy", max_length=2048, default="", blank=True)
     audit_url = models.CharField("Audit URL", max_length=2048, default="", blank=True)
-    audit_mapping = models.CharField(
-        "Audit Mapping", max_length=2048, default="", blank=True
-    )
-    audit_label = models.CharField(
-        "Audit Label", max_length=2048, default="", blank=True
-    )
-    audit_query = models.CharField(
-        "Audit Query", max_length=2048, default="", blank=True
-    )
-    audit_duplicate_results = models.CharField(
-        "Audit Duplicate Results", max_length=2048, default="", blank=True
-    )
-    audit_metrics = models.CharField(
-        "Audit Metrics", max_length=2048, default="", blank=True
-    )
+    audit_mapping = models.CharField("Audit Mapping", max_length=2048, default="", blank=True)
+    audit_label = models.CharField("Audit Label", max_length=2048, default="", blank=True)
+    audit_query = models.CharField("Audit Query", max_length=2048, default="", blank=True)
+    audit_duplicate_results = models.CharField("Audit Duplicate Results", max_length=2048, default="", blank=True)
+    audit_metrics = models.CharField("Audit Metrics", max_length=2048, default="", blank=True)
 
-    cleaning_assigned_to = models.CharField(
-        "Cleaning Assigned To", max_length=128, default="", blank=True
-    )
+    cleaning_assigned_to = models.CharField("Cleaning Assigned To", max_length=128, default="", blank=True)
 
     github_issue_number = models.IntegerField("Issue Number in Github", default=0)
     notes = models.TextField("Notes", blank=True, default="")
@@ -89,9 +64,7 @@ class Collection(models.Model):
         choices=WorkflowStatusChoices.choices,
         default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
     )
-    curated_by = models.ForeignKey(
-        User, on_delete=models.DO_NOTHING, null=True, blank=True
-    )
+    curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
 
     class Meta:
@@ -156,15 +129,11 @@ class Collection(models.Model):
 
     def _process_exclude_list(self):
         """Process the exclude list."""
-        return [
-            pattern._process_match_pattern() for pattern in self.excludepattern.all()
-        ]
+        return [pattern._process_match_pattern() for pattern in self.excludepattern.all()]
 
     def _process_include_list(self):
         """Process the include list."""
-        return [
-            pattern._process_match_pattern() for pattern in self.includepattern.all()
-        ]
+        return [pattern._process_match_pattern() for pattern in self.includepattern.all()]
 
     def _process_title_list(self):
         """Process the title list"""
@@ -194,9 +163,7 @@ class Collection(models.Model):
         and xml file on sde-backend/sources/SDE/<config_folder>/default.xml
         """
 
-        original_config_string = open(
-            "config_generation/xmls/indexing_template.xml"
-        ).read()
+        original_config_string = open("config_generation/xmls/indexing_template.xml").read()
         editor = XmlEditor(original_config_string)
 
         # add the URL
@@ -204,9 +171,7 @@ class Collection(models.Model):
 
         editor.update_or_add_element_value("TreeRoot", self.tree_root)
         if self.document_type:
-            editor.add_document_type_mapping(
-                document_type=self.get_document_type_display(), criteria=None
-            )
+            editor.add_document_type_mapping(document_type=self.get_document_type_display(), criteria=None)
 
         updated_config_xml_string = editor.update_config_xml()
 
@@ -403,11 +368,28 @@ class Collection(models.Model):
 
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
+        is_new = self._state.adding
+
         if not self.config_folder:
             self.config_folder = self._compute_config_folder_name()
 
         # Call the parent class's save method
         super().save(*args, **kwargs)
+
+        if is_new:
+            self.notify_slack()
+
+    def notify_slack(self):
+        # This function is called every time a new collection is created and a team member is notified
+        webhook_url = settings.XLI_SLACK_WEBHOOK_URL
+        message = f"A new collection named '{self.name}' has been created."
+        data = {"text": message}
+
+        try:
+            response = requests.post(webhook_url, json=data)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f"Failed to send notification to Slack: {e}")
 
 
 class RequiredUrls(models.Model):
