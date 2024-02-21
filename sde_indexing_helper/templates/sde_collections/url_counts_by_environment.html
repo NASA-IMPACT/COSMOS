@@ -18,10 +18,9 @@
             <tr>
                 <th class="text-center">Folder</th>
                 <th class="text-center">Name</th>
+                <th class="text-center">Dev</th>
                 <th class="text-center">Test</th>
-                <th class="text-center">Secret Test</th>
                 <th class="text-center">Production</th>
-                <th class="text-center">Secret Production</th>
             </tr>
         </thead>
         <tbody>
@@ -29,16 +28,14 @@
                 <tr>
                     <td>{{ collection.config_folder }}</td>
                     <td>{{ collection.name }}</td>
+                    <td><a href="{% get_server_url collection 'dev' %}" target="_blank">{{ collection.url_count_dev }}</a></td>
                     <td><a href="{% get_server_url collection 'test' %}" target="_blank">{{ collection.url_count_test }}</a></td>
-                    <td><a href="{% get_server_url collection 'secret_test' %}" target="_blank">{{ collection.url_count_secret_test }}</a></td>
                     <td><a href="{% get_server_url collection 'production' %}" target="_blank">{{ collection.url_count_production }}</a></td>
-                    <td><a href="{% get_server_url collection 'secret_production' %}" target="_blank">{{ collection.url_count_secret_production }}</a></td>
                 </tr>
             {% endfor %}
         </tbody>
         <tfoot>
             <tr>
-                <th></th>
                 <th></th>
                 <th></th>
                 <th></th>

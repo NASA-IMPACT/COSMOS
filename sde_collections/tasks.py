@@ -119,6 +119,27 @@ def import_candidate_urls_counts_from_api(server_name, collection_ids=[]):
     return len(data_to_import)
 
 
+@celery_app.task(soft_time_limit=10000)
+def import_candidate_urls_counts_from_api_all_collections_all_servers():
+    for collection in Collection.objects.all():
+        if not (
+            collection.url_count_dev == 0
+            and collection.url_count_test == 0
+            and collection.url_count_production == 0
+        ):
+            continue
+        collection_ids = [collection.id]
+        server_names = [
+            # "dev",
+            "test",
+            "production",
+        ]
+        for server_name in server_names:
+            count = import_candidate_urls_counts_from_api(server_name, collection_ids)
+            setattr(collection, f"url_count_{server_name}", count)
+            collection.save()
+
+
 @celery_app.task()
 def push_to_github_task(collection_ids):
     collections = Collection.objects.filter(id__in=collection_ids)

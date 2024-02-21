@@ -21,7 +21,6 @@ from .collection_choice_fields import (
 )
 
 # from ..tasks import import_candidate_urls_counts_from_api
-# from sde_collections.tasks import import_candidate_urls_counts_from_api
 
 
 User = get_user_model()
@@ -99,10 +98,9 @@ class Collection(models.Model):
     )
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
 
+    url_count_dev = models.IntegerField(default=0)
     url_count_test = models.IntegerField(default=0)
-    url_count_secret_test = models.IntegerField(default=0)
     url_count_production = models.IntegerField(default=0)
-    url_count_secret_production = models.IntegerField(default=0)
 
     class Meta:
         """Meta definition for Collection."""
@@ -169,17 +167,12 @@ class Collection(models.Model):
         app_name = server_configs[server_name]["app_name"]
         query_name = server_configs[server_name]["query_name"]
 
-        if "secret" in server_name:
-            folder = "SDE"
-        else:
-            folder = "SMD"
-
         payload = {
             "name": query_name,
             "scope": "All",
             "text": "",
             "advanced": {
-                "collection": f"/{folder}/{self.config_folder}/",
+                "collection": f"/SMD/{self.config_folder}/",
             },
         }
         encoded_payload = urllib.parse.quote(json.dumps(payload))
@@ -196,15 +189,12 @@ class Collection(models.Model):
     #             continue
     #         collection_ids = [collection.id]
     #         server_names = [
+    #             # "dev",
     #             "test",
-    #             "secret_test",
     #             "production",
-    #             "secret_production",
     #         ]
     #         for server_name in server_names:
-    #             count = import_candidate_urls_counts_from_api(
-    #                 server_name, collection_ids
-    #             )
+    #             count = import_candidate_urls_counts_from_api(server_name, collection_ids)
     #             setattr(collection, f"url_count_{server_name}", count)
     #             collection.save()
 
@@ -536,3 +526,30 @@ class RequiredUrls(models.Model):
 
     def __str__(self) -> str:
         return self.url
+
+
+class Server(models.Model):
+    name = models.CharField(max_length=255)
+    base_url = models.CharField(max_length=255)
+    app_name = models.CharField(max_length=255)
+    query_name = models.CharField(max_length=255)
+    username = models.CharField(max_length=255, blank=True, default="")
+    password = models.CharField(max_length=255, blank=True, default="")
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class IndexingMetadata(models.Model):
+    server = models.ForeignKey("Server", on_delete=models.CASCADE)
+    collection = models.ForeignKey("Collection", on_delete=models.CASCADE)
+    last_indexed = models.DateTimeField(null=True, blank=True)
+    last_indexed_count = models.IntegerField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return f"{self.collection.name} - {self.server.name}"
+
+    def update_last_indexed(self, last_indexed, last_indexed_count):
+        self.last_indexed = last_indexed
+        self.last_indexed_count = last_indexed_count
+        self.save()
