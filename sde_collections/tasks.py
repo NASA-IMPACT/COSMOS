@@ -13,6 +13,10 @@ from .models.collection import Collection
 from .sinequa_api import Api
 from .utils.github_helper import GitHubHandler
 
+# from django.apps import apps
+
+# Collection = apps.get_model("Collection")
+
 
 def _get_data_to_import(collection, server_name):
     # ignore these because they are API collections and don't have URLs
@@ -24,6 +28,13 @@ def _get_data_to_import(collection, server_name):
         "/SMD/CASEI_Platform/",
         "/SMD/CMR_API/",
         "/SMD/PDS_API_Legacy_All/",
+        "/SDE/ASTRO_NAVO_HEASARC/",
+        "/SDE/CASEI_Campaign/",
+        "/SDE/CASEI_Deployment/",
+        "/SDE/CASEI_Instrument/",
+        "/SDE/CASEI_Platform/",
+        "/SDE/CMR_API/",
+        "/SDE/PDS_API_Legacy_All/",
     ]
 
     data_to_import = []
@@ -95,6 +106,38 @@ def import_candidate_urls_from_api(server_name="test", collection_ids=[]):
 
     print("Deleting temp files")
     shutil.rmtree(TEMP_FOLDER_NAME)
+
+
+@celery_app.task(soft_time_limit=10000)
+def import_candidate_urls_counts_from_api(server_name, collection_ids=[]):
+    collections = Collection.objects.filter(id__in=collection_ids)
+
+    for collection in collections:
+        data_to_import = _get_data_to_import(
+            server_name=server_name, collection=collection
+        )
+    return len(data_to_import)
+
+
+@celery_app.task(soft_time_limit=10000)
+def import_candidate_urls_counts_from_api_all_collections_all_servers():
+    for collection in Collection.objects.all():
+        if not (
+            collection.url_count_dev == 0
+            and collection.url_count_test == 0
+            and collection.url_count_production == 0
+        ):
+            continue
+        collection_ids = [collection.id]
+        server_names = [
+            # "dev",
+            "test",
+            "production",
+        ]
+        for server_name in server_names:
+            count = import_candidate_urls_counts_from_api(server_name, collection_ids)
+            setattr(collection, f"url_count_{server_name}", count)
+            collection.save()
 
 
 @celery_app.task()

@@ -9,7 +9,12 @@ server_configs = {
     "dev": {
         "app_name": "nasa-sba-smd",
         "query_name": "query-smd-primary",
-        "base_url": "http://sde-renaissance.nasa-impact.net",
+        "base_url": "http://sde-xli.nasa-impact.net",
+    },
+    "lis_server": {
+        "app_name": "nasa-sba-smd",
+        "query_name": "query-smd-primary",
+        "base_url": "http://sde-xli.nasa-impact.net",
     },
     "test": {
         "app_name": "nasa-sba-smd",
@@ -21,21 +26,6 @@ server_configs = {
         "query_name": "query-smd-primary",
         "base_url": "https://sciencediscoveryengine.nasa.gov",
     },
-    "secret_test": {
-        "app_name": "nasa-sba-sde",
-        "query_name": "query-sde-primary",
-        "base_url": "https://sciencediscoveryengine.test.nasa.gov",
-    },
-    "secret_production": {
-        "app_name": "nasa-sba-sde",
-        "query_name": "query-sde-primary",
-        "base_url": "https://sciencediscoveryengine.nasa.gov",
-    },
-    "lis_server": {
-        "app_name": "nasa-sba-smd",
-        "query_name": "query-smd-primary",
-        "base_url": "http://sde-xli.nasa-impact.net",
-    },
 }
 
 
@@ -45,6 +35,7 @@ class Api:
         self.app_name: str = server_configs[server_name]["app_name"]
         self.query_name: str = server_configs[server_name]["query_name"]
         self.base_url: str = server_configs[server_name]["base_url"]
+        self.folder: str = "SDE" if self.app_name == "nasa-sba-sde" else "SMD"
 
     def process_response(self, url: str, payload: dict[str, Any]) -> Any:
         response = requests.post(url, headers={}, json=payload, verify=False)

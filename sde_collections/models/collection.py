@@ -8,6 +8,7 @@ from slugify import slugify
 
 from config_generation.db_to_xml import XmlEditor
 
+from ..sinequa_api import server_configs
 from ..utils.github_helper import GitHubHandler
 from .collection_choice_fields import (
     ConnectorChoices,
@@ -18,6 +19,9 @@ from .collection_choice_fields import (
     UpdateFrequencies,
     WorkflowStatusChoices,
 )
+
+# from ..tasks import import_candidate_urls_counts_from_api
+
 
 User = get_user_model()
 
@@ -94,6 +98,10 @@ class Collection(models.Model):
     )
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
 
+    url_count_dev = models.IntegerField(default=0)
+    url_count_test = models.IntegerField(default=0)
+    url_count_production = models.IntegerField(default=0)
+
     class Meta:
         """Meta definition for Collection."""
 
@@ -153,6 +161,101 @@ class Collection(models.Model):
             16: "btn-secondary",
         }
         return color_choices[self.workflow_status]
+
+    def get_server_url(self, server_name) -> str:
+        base_url = server_configs[server_name]["base_url"]
+        app_name = server_configs[server_name]["app_name"]
+        query_name = server_configs[server_name]["query_name"]
+
+        payload = {
+            "name": query_name,
+            "scope": "All",
+            "text": "",
+            "advanced": {
+                "collection": f"/SMD/{self.config_folder}/",
+            },
+        }
+        encoded_payload = urllib.parse.quote(json.dumps(payload))
+        return f"{base_url}/app/{app_name}/#/search?query={encoded_payload}"
+
+    # def fetch_url_counts(self):
+    #     for collection in Collection.objects.all():
+    #         if not (
+    #             collection.url_count_test == 0
+    #             and collection.url_count_secret_test == 0
+    #             and collection.url_count_production == 0
+    #             and collection.url_count_secret_production == 0
+    #         ):
+    #             continue
+    #         collection_ids = [collection.id]
+    #         server_names = [
+    #             # "dev",
+    #             "test",
+    #             "production",
+    #         ]
+    #         for server_name in server_names:
+    #             count = import_candidate_urls_counts_from_api(server_name, collection_ids)
+    #             setattr(collection, f"url_count_{server_name}", count)
+    #             collection.save()
+
+    # def fetch_url_counts(self):
+    #     """Fetch the URL counts from the production webapp."""
+    #     ENVIRONMENTS = {
+    #         "test": {
+    #             "url": "https://sciencediscoveryengine.test.nasa.gov",
+    #             "query": "query-smd-primary",
+    #             "app": "nasa-sba-smd",
+    #             "variable": "url_count_test",
+    #             "folder": "SMD",
+    #         },
+    #         "secret_test": {
+    #             "url": "https://sciencediscoveryengine.test.nasa.gov",
+    #             "query": "query-sde-primary",
+    #             "app": "nasa-sba-sde",
+    #             "variable": "url_count_secret_test",
+    #             "folder": "SDE",
+    #         },
+    #         "prod": {
+    #             "url": "https://sciencediscoveryengine.nasa.gov",
+    #             "query": "query-smd-primary",
+    #             "app": "nasa-sba-smd",
+    #             "variable": "url_count_prod",
+    #             "folder": "SMD",
+    #         },
+    #         "secret_prod": {
+    #             "url": "https://sciencediscoveryengine.nasa.gov",
+    #             "query": "query-sde-primary",
+    #             "app": "nasa-sba-sde",
+    #             "variable": "url_count_secret_prod",
+    #             "folder": "SDE",
+    #         },
+    #     }
+
+    #     totals = []
+
+    #     for environment_name, environment_config in ENVIRONMENTS.items():
+    #         count = import_candidate_urls_counts_from_api(
+    #             server_name=environment_name, collection_ids=[self.id]
+    #         )
+
+    #         # setattr(self, environment_config["variable"], response_json["total"])
+    #         totals.append(count)
+    #         # self.save()
+    #     return totals
+
+    # from sde_collections.tasks import import_candidate_urls_counts_from_api
+    # for collection in Collection.objects.all():
+    # collection_ids = [collection.id]
+    # server_names = [
+    #     "test",
+    #     "secret_test",
+    #     "production",
+    #     "secret_production",
+    # ]
+    # for server_name in server_names:
+    #     count = import_candidate_urls_counts_from_api(server_name, collection_ids)
+    #     setattr(collection, f"url_count_{server_name}", count)
+    #     collection.save()
 
     def _process_exclude_list(self):
         """Process the exclude list."""
@@ -423,3 +526,30 @@ class RequiredUrls(models.Model):
 
     def __str__(self) -> str:
         return self.url
+
+
+class Server(models.Model):
+    name = models.CharField(max_length=255)
+    base_url = models.CharField(max_length=255)
+    app_name = models.CharField(max_length=255)
+    query_name = models.CharField(max_length=255)
+    username = models.CharField(max_length=255, blank=True, default="")
+    password = models.CharField(max_length=255, blank=True, default="")
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class IndexingMetadata(models.Model):
+    server = models.ForeignKey("Server", on_delete=models.CASCADE)
+    collection = models.ForeignKey("Collection", on_delete=models.CASCADE)
+    last_indexed = models.DateTimeField(null=True, blank=True)
+    last_indexed_count = models.IntegerField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return f"{self.collection.name} - {self.server.name}"
+
+    def update_last_indexed(self, last_indexed, last_indexed_count):
+        self.last_indexed = last_indexed
+        self.last_indexed_count = last_indexed_count
+        self.save()
