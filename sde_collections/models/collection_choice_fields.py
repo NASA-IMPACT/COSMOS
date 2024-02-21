@@ -7,6 +7,7 @@ class Divisions(models.IntegerChoices):
     EARTH_SCIENCE = 3, "Earth Science"
     HELIOPHYSICS = 4, "Heliophysics"
     PLANETARY = 5, "Planetary Science"
+    GENERAL = 6, "General"
 
     @classmethod
     def lookup_by_text(cls, text: str) -> int | None:
