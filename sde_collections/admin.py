@@ -1,5 +1,7 @@
 import csv
 
+import requests
+from django.conf import settings
 from django.contrib import admin, messages
 from django.http import HttpResponse
 
@@ -65,6 +67,18 @@ def generate_candidate_urls(modeladmin, request, queryset):
     )
 
 
+def send_slack_notification(message):
+    webhook_url = settings.EMILY_SLACK_WEBHOOK_URL
+    payload = {"text": message}
+
+    try:
+        response = requests.post(webhook_url, json=payload)
+        response.raise_for_status()
+        print("Notification sent to Slack successfully.")
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to send notification to Slack: {e}")
+
+
 def import_candidate_urls_from_api_caller(modeladmin, request, queryset, server_name):
     id_list = queryset.values_list("id", flat=True)
     if len(id_list) > 1:
@@ -85,6 +99,21 @@ def import_candidate_urls_from_api_caller(modeladmin, request, queryset, server_
         messages.INFO,
         f"Started importing URLs from the API for: {collection_names} from {server_name.title()}",
     )
+    if server_name == "lis_server":
+        config_folder = ", ".join(queryset.values_list("config_folder", flat=True))
+        try:
+            collection = Collection.objects.get(config_folder=config_folder)
+        except Collection.DoesNotExist:
+            messages.add_message(
+                request,
+                messages.ERROR,
+                f"No collection found with the config folder: {config_folder}.",
+            )
+            return
+        candidate_urls_count = len(CandidateURL.objects.filter(collection=collection))
+        if candidate_urls_count > 0:
+            message = f"{collection_names} is populated with URLs and is now ready for you curate on the Webapp."
+            send_slack_notification(message)
 
 
 @admin.action(description="Import candidate URLs from Test")
