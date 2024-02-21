@@ -25,6 +25,8 @@ class EnvironmentalJusticeRow(models.Model):
     temporal_extent = models.CharField("Temporal Extent")
     temporal_resolution = models.CharField("Temporal Resolution")
 
+    sde_links = models.CharField("SDE Links")
+
     class Meta:
         verbose_name = "Environmental Justice Row"
         verbose_name_plural = "Environmental Justice Rows"
