@@ -131,9 +131,7 @@ PASSWORD_HASHERS = [
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -254,12 +252,7 @@ MANAGERS = ADMINS
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "%(levelname)s %(asctime)s %(module)s "
-            "%(process)d %(thread)d %(message)s"
-        }
-    },
+    "formatters": {"verbose": {"format": "%(levelname)s %(asctime)s %(module)s " "%(process)d %(thread)d %(message)s"}},
     "handlers": {
         "console": {
             "level": "DEBUG",
@@ -334,9 +327,7 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_datatables.renderers.DatatablesRenderer",
     ),
-    "DEFAULT_FILTER_BACKENDS": (
-        "rest_framework_datatables.filters.DatatablesFilterBackend",
-    ),
+    "DEFAULT_FILTER_BACKENDS": ("rest_framework_datatables.filters.DatatablesFilterBackend",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework_datatables.pagination.DatatablesPageNumberPagination",
     "PAGE_SIZE": 50,
     "EXCEPTION_HANDLER": "sde_indexing_helper.utils.exceptions.custom_exception_handler",
@@ -345,3 +336,7 @@ REST_FRAMEWORK = {
 GITHUB_ACCESS_TOKEN = env("GITHUB_ACCESS_TOKEN")
 SINEQUA_CONFIGS_GITHUB_REPO = env("SINEQUA_CONFIGS_GITHUB_REPO")
 GITHUB_BRANCH_FOR_WEBAPP = env("GITHUB_BRANCH_FOR_WEBAPP")
+
+# Slack webhook URLs
+# ------------------------------------------------------------------------------
+EMILY_SLACK_WEBHOOK_URL = env("EMILY_SLACK_WEBHOOK_URL")
