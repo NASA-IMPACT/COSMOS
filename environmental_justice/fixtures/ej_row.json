@@ -19,7 +19,7 @@
             "spatial_resolution": "50 kilometers",
             "temporal_extent": "1992-01-01 to 2018-01-01",
             "temporal_resolution": "Monthly - < Annual",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543742-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543813-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2129189870-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543739-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543730-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543752-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543702-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543740-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543724-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543733-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543742-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -42,7 +42,7 @@
             "spatial_resolution": "50 kilometers",
             "temporal_extent": "1992-01-01 to 2018-01-01",
             "temporal_resolution": "Daily- < Weekly",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543819-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543744-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2129186341-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543699-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543807-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543814-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543726-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543812-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543731-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543818-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1991543819-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -155,7 +155,7 @@
             "spatial_resolution": "",
             "temporal_extent": "1992-09-25 to Present",
             "temporal_resolution": "Weekly - < Monthly",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2204129664-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2205556193-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2204125877-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2204129664-POCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -471,7 +471,7 @@
             "spatial_resolution": "90 meters",
             "temporal_extent": "2000-03-04 to Present",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1299783630-LPDAAC_ECS&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1299783607-LPDAAC_ECS&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1299783630-LPDAAC_ECS&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -494,7 +494,7 @@
             "spatial_resolution": "30 meters",
             "temporal_extent": "2015-11-28 to Present",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2021957295-LPCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2021957657-LPCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2021957295-LPCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -894,7 +894,7 @@
             "spatial_resolution": "50 kilometers",
             "temporal_extent": "2011-11-13 to present",
             "temporal_resolution": "1 minute - < 1 hour",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1386443916-GES_DISC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1439272084-OMINRT&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1412974465-GES_DISC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1439296101-OMINRT&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1386443916-GES_DISC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1052,7 +1052,7 @@
             "spatial_resolution": "1 kilometer",
             "temporal_extent": "2010-07-01 00:00:00",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1597149465-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1596819702-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1597149465-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1075,7 +1075,7 @@
             "spatial_resolution": "",
             "temporal_extent": "1990-01-01 to 2002-12-31",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001946-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001945-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001946-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1144,7 +1144,7 @@
             "spatial_resolution": "1700 kilometers",
             "temporal_extent": "1990-01-01, 2025-12-31",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001925-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001924-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001925-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1167,7 +1167,7 @@
             "spatial_resolution": "5 kilometers",
             "temporal_extent": "2000-01-01 to 2000-12-31",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001767-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001790-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001764-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001767-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1213,7 +1213,7 @@
             "spatial_resolution": "1 kilometer",
             "temporal_extent": "1970-01-01 to 2000-12-31",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1000000660-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1427515664-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1427603020-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1000000660-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1466,7 +1466,7 @@
             "spatial_resolution": "1 meter",
             "temporal_extent": "1985-01-01 to 2003-12-31",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001777-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001778-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001784-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001777-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1533,7 +1533,7 @@
             "spatial_resolution": "",
             "temporal_extent": "1990-01-01, 2000-01-01, 2015-01-01",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2187533258-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1000000400-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179002007-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2187533258-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1645,7 +1645,7 @@
             "spatial_resolution": "1 meter",
             "temporal_extent": "2000-01-01 to 2000-12-31",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001764-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001788-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001764-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1668,7 +1668,7 @@
             "spatial_resolution": "1 meter",
             "temporal_extent": "2000-01-01 to 2000-12-31",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001781-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001790-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001780-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001781-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1691,7 +1691,7 @@
             "spatial_resolution": "1 meter",
             "temporal_extent": "2000-01-01 to 2000-12-31",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001780-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001788-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001780-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1760,7 +1760,7 @@
             "spatial_resolution": "1 kilometer",
             "temporal_extent": "1990-01-01, 2000-01-01 2015-01-01",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2187533258-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1000000400-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179002007-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2187533258-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1805,7 +1805,7 @@
             "spatial_resolution": "1.5 kilometers",
             "temporal_extent": "1979-01-02 to Present",
             "temporal_resolution": "Hourly - < Daily",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2069246977-GES_DISC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1888969640-GES_DISC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2069246977-GES_DISC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1873,7 +1873,7 @@
             "spatial_resolution": "30 meters",
             "temporal_extent": "2010-01-01 to 2010-12-31",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1517102461-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1517101319-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1517102461-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1919,7 +1919,7 @@
             "spatial_resolution": "1 kilometer",
             "temporal_extent": "1970-01-01 to 2000-12-31",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1000000660-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1427515664-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1427603020-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1000000660-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -1964,7 +1964,7 @@
             "spatial_resolution": "1 kilometer",
             "temporal_extent": "1995-07-01",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2210244511-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2038014399-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2210244511-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -2797,7 +2797,7 @@
             "spatial_resolution": "50 kilometers",
             "temporal_extent": "2011-11-07 to Present",
             "temporal_resolution": "Hourly - < Daily",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1564538427-GES_DISC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1657477341-OMINRT&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1386443916-GES_DISC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1439272084-OMINRT&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1412974465-GES_DISC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1439296101-OMINRT&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C1564538427-GES_DISC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -2866,7 +2866,7 @@
             "spatial_resolution": "",
             "temporal_extent": "2023-06-01 to present",
             "temporal_resolution": "Daily - < Weekly",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2706359459-ASIPS&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2600303218-LAADS&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2600305692-LAADS&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2706359459-ASIPS&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -2955,7 +2955,7 @@
             "spatial_resolution": "1 kilometer",
             "temporal_extent": "2002-07-04 to Present",
             "temporal_resolution": "1 minute - < 1 hour",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2278858993-LPCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2271754179-LPCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2278858993-LPCLOUD&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -3226,7 +3226,7 @@
             "spatial_resolution": "",
             "temporal_extent": "2000-01-01 to 2000-12-31",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001943-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2013463595-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C179001943-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -3339,7 +3339,7 @@
             "spatial_resolution": "",
             "temporal_extent": "2011-01-01 to 2011-12-31",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2210194026-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2210186323-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2210194026-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     },
     {
@@ -3362,7 +3362,7 @@
             "spatial_resolution": "",
             "temporal_extent": "2011-01-01 to 2011-12-31",
             "temporal_resolution": "",
-            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2210186323-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D;https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2210194026-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
+            "sde_links": "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview?id=/SDE/CMR_API/|C2210186323-SEDAC&query=%7B%22name%22:%22query-smd-primary%22,%22scope%22:%22All%22%7D"
         }
     }
 ]
