@@ -26,6 +26,11 @@ urlpatterns = [
         name="push-to-github",
     ),
     path(
+        "api/indexing_instructions/",
+        views.IndexingInstructionsView.as_view(),
+        name="indexing_instructions",
+    ),
+    path(
         "delete-required-url/<int:pk>",
         view=views.RequiredUrlsDeleteView.as_view(),
         name="delete_required_url",
