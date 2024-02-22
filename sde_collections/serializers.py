@@ -91,6 +91,7 @@ class CandidateURLBulkCreateSerializer(serializers.ModelSerializer):
 class CandidateURLAPISerializer(serializers.ModelSerializer):
     document_type = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
+    file_extension = serializers.SerializerMethodField()
 
     class Meta:
         model = CandidateURL
@@ -99,6 +100,7 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
             "title",
             "document_type",
             "hash",
+            "file_extension",
         )
 
     def get_document_type(self, obj):
@@ -111,6 +113,9 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
 
     def get_title(self, obj):
         return obj.generated_title if obj.generated_title else obj.scraped_title
+
+    def get_file_extension(self, obj):
+        return obj.fileext
 
 
 class BasePatternSerializer(serializers.ModelSerializer):

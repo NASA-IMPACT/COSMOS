@@ -1,4 +1,5 @@
 import hashlib
+import os
 from urllib.parse import urlparse
 
 from django.db import models
@@ -90,6 +91,27 @@ class CandidateURL(models.Model):
         verbose_name = "Candidate URL"
         verbose_name_plural = "Candidate URLs"
         ordering = ["url"]
+
+    @property
+    def fileext(self) -> str:
+        # Parse the URL to get the path
+        parsed_url = urlparse(self.url)
+        path = parsed_url.path
+
+        # Check for cases where the path ends with a slash or is empty, implying a directory or default file
+        if path.endswith("/") or not path:
+            return "html"
+
+        # Extract the extension from the path
+        extension = os.path.splitext(path)[1]
+
+        # Default to .html if no extension is found
+        if not extension:
+            return "html"
+
+        if extension.startswith("."):
+            return extension[1:]
+        return extension
 
     def splits(self) -> list[tuple[str, str]]:
         """Split the path into multiple collections."""
