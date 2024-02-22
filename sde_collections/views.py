@@ -352,6 +352,10 @@ class PushToGithubView(APIView):
 
 
 class IndexingInstructionsView(APIView):
+    """
+    Serves the name of the first curated collection to be indexed
+    """
+
     def get(self, request):
         curated_collections = Collection.objects.filter(workflow_status=WorkflowStatusChoices.CURATED)
 
