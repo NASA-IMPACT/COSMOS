@@ -351,6 +351,27 @@ class PushToGithubView(APIView):
         )
 
 
+class IndexingInstructionsView(APIView):
+    """
+    Serves the name of the first curated collection to be indexed
+    """
+
+    def get(self, request):
+        curated_collections = Collection.objects.filter(workflow_status=WorkflowStatusChoices.CURATED)
+
+        job_name = ""
+        if curated_collections.exists():
+            collection = curated_collections.first()
+            job_name = f"collection.indexer.{collection.config_folder}.xml"
+
+        return Response(
+            {
+                "job_name": job_name,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
     """
     Display a list of collections in the system
