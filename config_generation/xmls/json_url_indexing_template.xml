@@ -34,7 +34,7 @@
         <CollectionStateParallelRowFetch>0</CollectionStateParallelRowFetch>
     </Indexation>
     <System>
-        <LogLevel>TRACE</LogLevel>
+        <LogLevel>20</LogLevel>
     </System>
     <DisplayLongProperties>false</DisplayLongProperties>
     <LongPropertyLimit></LongPropertyLimit>
@@ -353,6 +353,20 @@
         <Name>title</Name>
         <Value>$.url_list.title</Value>
         <Description>Data item title</Description>
+        <Selection></Selection>
+        <DefaultValue></DefaultValue>
+    </Mapping>
+    <Mapping>
+        <Name>sourcestr56</Name>
+        <Value>$.url_list.document_type</Value>
+        <Description>Data item document type</Description>
+        <Selection></Selection>
+        <DefaultValue></DefaultValue>
+    </Mapping>
+    <Mapping>
+        <Name>fileext</Name>
+        <Value>$.url_list.file_extension</Value>
+        <Description>Data item file extension</Description>
         <Selection></Selection>
         <DefaultValue></DefaultValue>
     </Mapping>
