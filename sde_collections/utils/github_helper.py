@@ -8,7 +8,7 @@ from ..models.collection_choice_fields import CurationStatusChoices
 
 
 class GitHubHandler:
-    def __init__(self, collections, *args, **kwargs):
+    def __init__(self, collections, config_path: str = "sources/SDE", *args, **kwargs):
         self.github_token = settings.GITHUB_ACCESS_TOKEN
         self.github_repo = settings.SINEQUA_CONFIGS_GITHUB_REPO
         self.github_branch = settings.GITHUB_BRANCH_FOR_WEBAPP
@@ -16,9 +16,10 @@ class GitHubHandler:
         self.repo = self.g.get_repo(f"{self.github_repo}")
         self.dev_branch = self.repo.default_branch
         self.collections = collections
+        self.config_path: str = config_path
 
     def _get_config_file_path(self, config_folder) -> str:
-        file_path = f"sources/SDE/{config_folder}/default.xml"
+        file_path = f"{self.config_path}/{config_folder}/default.xml"
         return file_path
 
     def _get_file_contents(self, collection):
@@ -130,16 +131,14 @@ class GitHubHandler:
         return metadata
 
     def _get_config_folder(self, collection_folder):
-        return collection_folder.removeprefix("sources/SDE/")
+        return collection_folder.removeprefix(f"{self.config_path}/")
 
     def _get_list_of_collections(self):
-        BASE_PATH = "sources/SDE"
-        collections = self.repo.get_contents(BASE_PATH, ref=self.dev_branch)
+        collections = self.repo.get_contents(self.config_path, ref=self.dev_branch)
         collection_folders = [
             collection.path
             for collection in collections
-            if ".xml"
-            not in collection.path  # to prevent source.xml from being included
+            if ".xml" not in collection.path  # to prevent source.xml from being included
         ]
         return collection_folders
 
@@ -151,7 +150,7 @@ class GitHubHandler:
         return collection_xml
 
     def get_collections_from_github(self, config_folders=[]):
-        # get a list of folders in sources/SDE/ from the dev branch on github
+        # get a list of folders in self.config_path from the dev branch on github
         collection_folders = self._get_list_of_collections()
 
         # create a dict of all collections and their metadata
