@@ -36,6 +36,11 @@ server_configs = {
         "query_name": "query-smd-primary",
         "base_url": "http://sde-xli.nasa-impact.net",
     },
+    "lrm_dev_server": {
+        "app_name": "nasa-sba-smd",
+        "query_name": "query-smd-primary",
+        "base_url": "http://sde-lrm.nasa-impact.net",
+    },
 }
 
 
@@ -59,6 +64,8 @@ class Api:
     def query(self, page: int, collection_config_folder: str = "") -> Any:
         if self.server_name == "lis_server":
             url = f"{self.base_url}/api/v1/search.query?Password=admin&User=admin"
+        elif self.server_name == "lrm_dev_server":
+            url = f"{self.base_url}/api/v1/search.query?Password=QDZ8ASZagUpRCHR&User=lrmdev"
         else:
             url = f"{self.base_url}/api/v1/search.query"
         payload = {
@@ -73,9 +80,7 @@ class Api:
         }
 
         if collection_config_folder:
-            payload["query"]["advanced"][
-                "collection"
-            ] = f"/SDE/{collection_config_folder}/"
+            payload["query"]["advanced"]["collection"] = f"/SDE/{collection_config_folder}/"
 
         response = self.process_response(url, payload)
 
