@@ -112,6 +112,11 @@ def import_candidate_urls_lis_server(modeladmin, request, queryset):
     import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lis_server")
 
 
+@admin.action(description="Import candidate URLs from LRM Dev Server")
+def import_candidate_urls_lrm_dev_server(modeladmin, request, queryset):
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lrm_dev_server")
+
+
 class ExportCsvMixin:
     def export_as_csv(self, request, queryset):
         meta = self.model._meta
@@ -198,6 +203,7 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         import_candidate_urls_secret_test,
         import_candidate_urls_secret_production,
         import_candidate_urls_lis_server,
+        import_candidate_urls_lrm_dev_server,
     ]
     ordering = ("cleaning_order",)
 
