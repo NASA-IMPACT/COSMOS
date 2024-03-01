@@ -92,6 +92,7 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
     document_type = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
     file_extension = serializers.SerializerMethodField()
+    tree_root = serializers.SerializerMethodField()
 
     class Meta:
         model = CandidateURL
@@ -101,6 +102,7 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
             "document_type",
             "hash",
             "file_extension",
+            "tree_root",
         )
 
     def get_document_type(self, obj):
@@ -116,6 +118,9 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
 
     def get_file_extension(self, obj):
         return obj.fileext
+
+    def get_tree_root(self, obj):
+        return obj.collection.tree_root
 
 
 class BasePatternSerializer(serializers.ModelSerializer):
