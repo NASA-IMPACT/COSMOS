@@ -139,7 +139,6 @@ class TitlePattern(BaseMatchPattern):
     def apply(self) -> None:
         CandidateURL = apps.get_model("sde_collections", "CandidateURL")
         matched_urls = self.matched_urls()
-        print(f"{len(matched_urls)} urls have been affected")
         updated_urls = []
 
         for candidate_url in matched_urls:
