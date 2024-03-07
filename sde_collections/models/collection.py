@@ -105,18 +105,18 @@ class Collection(models.Model):
         return f"/{self.get_division_display()}/{self.name}/"
 
     @property
-    def server_url_test(self) -> str:
-        base_url = "https://sciencediscoveryengine.test.nasa.gov"
+    def server_url_secret_prod(self) -> str:
+        base_url = "https://sciencediscoveryengine.nasa.gov"
         payload = {
-            "name": "query-smd-primary",
+            "name": "query-sde-primary",
             "scope": "All",
             "text": "",
             "advanced": {
-                "collection": f"/SMD/{self.config_folder}/",
+                "collection": f"/SDE/{self.config_folder}/",
             },
         }
         encoded_payload = urllib.parse.quote(json.dumps(payload))
-        return f"{base_url}/app/nasa-sba-smd/#/search?query={encoded_payload}"
+        return f"{base_url}/app/nasa-sba-sde/#/search?query={encoded_payload}"
 
     @property
     def server_url_prod(self) -> str:
