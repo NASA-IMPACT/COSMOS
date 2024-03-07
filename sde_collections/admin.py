@@ -18,7 +18,7 @@ def generate_deployment_message(modeladmin, request, queryset):
 Hello Team,
 
 I'm pleased to announce that we have successfully moved several key collections
-to our production environment as part of our latest deployment! :tada:
+to our production environment as part of our latest deployment! :tada:\n
 Collections Now Live in Prod:\n"""
 
     message_middle = "\n\n".join(
