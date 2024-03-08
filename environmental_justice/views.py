@@ -9,7 +9,7 @@ class EnvironmentalJusticeRowViewSet(viewsets.ModelViewSet):
     API endpoint that allows environmental justice rows to be read.
     """
 
-    queryset = EnvironmentalJusticeRow.objects.filter(sde_links__icontains="http")
+    queryset = EnvironmentalJusticeRow.objects.all()
     serializer_class = EnvironmentalJusticeRowSerializer
     http_method_names = [
         "get",

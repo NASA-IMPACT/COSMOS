@@ -23,5 +23,5 @@ class EnvironmentalJusticeRowSerializer(serializers.HyperlinkedModelSerializer):
             "spatial_resolution",
             "temporal_extent",
             "temporal_resolution",
-            "sde_links",
+            "sde_link",
         ]
