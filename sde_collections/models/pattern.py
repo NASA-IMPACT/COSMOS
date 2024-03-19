@@ -142,7 +142,7 @@ class TitlePattern(BaseMatchPattern):
         updated_urls = []
 
         for candidate_url in matched_urls:
-            context = {"url": candidate_url.url, "scraped_title": candidate_url.scraped_title}
+            context = {"url": candidate_url.url, "title": candidate_url.scraped_title}
 
             try:
                 generated_title = safe_f_string_evaluation(self.title_pattern, context)
