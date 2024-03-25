@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import TemplateView
@@ -353,7 +353,7 @@ class PushToGithubView(APIView):
 
 class IndexingInstructionsView(APIView):
     """
-    Serves the name of the first curated collection to be indexed
+    Serves the name of the first curated collection to be indexed and updates collection workflow status
     """
 
     def get(self, request):
@@ -368,6 +368,23 @@ class IndexingInstructionsView(APIView):
             {
                 "job_name": job_name,
             },
+            status=status.HTTP_200_OK,
+        )
+
+    def post(self, request):
+        config_folder = request.data.get("config_folder")
+
+        if not config_folder:
+            return Response({"error": "Config folder name is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if config_folder:
+            collection = get_object_or_404(Collection, config_folder=config_folder)
+
+        collection.workflow_status = WorkflowStatusChoices.READY_FOR_FINAL_QUALITY_CHECK
+        collection.save()
+
+        return Response(
+            {"message": f"Workflow status for collection '{collection.name}' updated successfully."},
             status=status.HTTP_200_OK,
         )
 
