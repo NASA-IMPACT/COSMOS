@@ -7,6 +7,7 @@ class Divisions(models.IntegerChoices):
     EARTH_SCIENCE = 3, "Earth Science"
     HELIOPHYSICS = 4, "Heliophysics"
     PLANETARY = 5, "Planetary Science"
+    GENERAL = 6, "General"
 
     @classmethod
     def lookup_by_text(cls, text: str) -> int | None:
@@ -78,29 +79,19 @@ class CurationStatusChoices(models.IntegerChoices):
 
 
 class WorkflowStatusChoices(models.IntegerChoices):
-    # someone has started making a new collection, but they aren't done
     RESEARCH_IN_PROGRESS = 1, "Research in Progress"
-    # someone finished inputing the collection details. finishing move caused a config to be created and sent to github
-    CONFIG_CREATED = 2, "Config Created"
-    # someone has claimed this collection for dev work on a server, and are working on it
+    READY_FOR_ENGINEERING = 2, "Ready for Engineering"
     ENGINEERING_IN_PROGRESS = 3, "Engineering in Progress"
-    # finished config code has been merged into the dev branch via PR, but urls may not be finished scraping
-    ENGINEERING_COMPLETED = 4, "Engineering Completed"
-    # config is on dev branch, and urls are fully scraped and imported into the webapp
-    URLS_GENERATED = 5, "URLs Generated and Ready to Curate"
-    # someone has claimed the collection and is in the process of curating it
-    CURATION_IN_PROGRESS = 6, "Curation in Progress"
-    # curation is finished, and this action sent a pr to github
-    CURATED = 7, "Curated"
-    # code made by webapp was reviewed and merged to test branch. status exists bc of the lag between review and deploy
-    CURATION_CODE_REVIEWED = 8, "Curation Code Reviewed"
-    # test branch code is deployed to test server and indexing has been kicked off
-    TEST_DEPLOYMENT_COMPLETED = 9, "Test Deployment Completed"
-    TEST_INDEXING_COMPLETED = 10, "Test Indexing Completed"
-    TEST_QUALITY_IN_PROGRESS = 11, "Test Quality Checks in Progress"
-    TEST_QUALITY_COMPLETE = 12, "Test Quality Checks Completed"
-    # test branch code is deployed to test server and indexing has been kicked off
-    PROD_DEPLOYMENT_COMPLETED = 13, "Production Deployment Completed"
-    PROD_INDEXING_COMPLETED = 14, "Production Indexing Completed"
-    PROD_QUALITY_IN_PROGRESS = 15, "Production Quality Checks in Progress"
-    PROD_QUALITY_COMPLETE = 16, "Production Quality Checks Completed"
+    READY_FOR_CURATION = 4, "Ready for Curation"
+    CURATION_IN_PROGRESS = 5, "Curation in Progress"
+    CURATED = 6, "Curated"
+    QUALITY_FIXED = 7, "Quality Fixed"
+    SECRET_DEPLOYMENT_STARTED = 8, "Secret Deployment Started"
+    SECRET_DEPLOYMENT_FAILED = 9, "Secret Deployment Failed"
+    READY_FOR_LRM_QUALITY_CHECK = 10, "Ready for LRM Quality Check"
+    READY_FOR_FINAL_QUALITY_CHECK = 11, "Ready for Quality Check"
+    QUALITY_CHECK_FAILED = 12, "Quality Check Failed"
+    READY_FOR_PUBLIC_PROD = 13, "Ready for Public Production"
+    PERFECT_ON_PROD = 14, "Perfect and on Production"
+    LOW_PRIORITY_PROBLEMS_ON_PROD = 15, "Low Priority Problems on Production"
+    HIGH_PRIORITY_PROBLEMS_ON_PROD = 16, "High Priority Problems on Production, only for old sources"

@@ -31,11 +31,22 @@ server_configs = {
         "query_name": "query-sde-primary",
         "base_url": "https://sciencediscoveryengine.nasa.gov",
     },
+    "lis_server": {
+        "app_name": "nasa-sba-smd",
+        "query_name": "query-smd-primary",
+        "base_url": "http://sde-xli.nasa-impact.net",
+    },
+    "lrm_dev_server": {
+        "app_name": "nasa-sba-smd",
+        "query_name": "query-smd-primary",
+        "base_url": "http://sde-lrm.nasa-impact.net",
+    },
 }
 
 
 class Api:
     def __init__(self, server_name: str) -> None:
+        self.server_name = server_name
         self.app_name: str = server_configs[server_name]["app_name"]
         self.query_name: str = server_configs[server_name]["query_name"]
         self.base_url: str = server_configs[server_name]["base_url"]
@@ -51,7 +62,12 @@ class Api:
         return meaningful_response
 
     def query(self, page: int, collection_config_folder: str = "") -> Any:
-        url = f"{self.base_url}/api/v1/search.query"
+        if self.server_name == "lis_server":
+            url = f"{self.base_url}/api/v1/search.query?Password=admin&User=admin"
+        elif self.server_name == "lrm_dev_server":
+            url = f"{self.base_url}/api/v1/search.query?Password=QDZ8ASZagUpRCHR&User=lrmdev"
+        else:
+            url = f"{self.base_url}/api/v1/search.query"
         payload = {
             "app": self.app_name,
             "query": {

@@ -12,6 +12,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
 from rest_framework import generics, status, viewsets
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -32,6 +33,7 @@ from .models.pattern import (
     TitlePattern,
 )
 from .serializers import (
+    CandidateURLAPISerializer,
     CandidateURLBulkCreateSerializer,
     CandidateURLSerializer,
     CollectionReadSerializer,
@@ -100,12 +102,8 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
                 collection.github_issue_number = github_issue_number
                 collection.save()
             else:
-                github_form.add_error(
-                    "github_issue_link", "Invalid GitHub issue link format"
-                )
-                return self.render_to_response(
-                    self.get_context_data(form=form, github_form=github_form)
-                )
+                github_form.add_error("github_issue_link", "Invalid GitHub issue link format")
+                return self.render_to_response(self.get_context_data(form=form, github_form=github_form))
             return redirect("sde_collections:detail", pk=collection.pk)
 
         elif "comment_button" in request.POST and comments_form.is_valid():
@@ -156,9 +154,7 @@ class RequiredUrlsDeleteView(LoginRequiredMixin, DeleteView):
     model = RequiredUrls
 
     def get_success_url(self, *args, **kwargs):
-        return reverse(
-            "sde_collections:detail", kwargs={"pk": self.object.collection.pk}
-        )
+        return reverse("sde_collections:detail", kwargs={"pk": self.object.collection.pk})
 
 
 class CandidateURLsListView(LoginRequiredMixin, ListView):
@@ -258,6 +254,23 @@ class CandidateURLBulkCreateView(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class CandidateURLAPIView(ListAPIView):
+    serializer_class = CandidateURLAPISerializer
+
+    def get(self, request, *args, **kwargs):
+        config_folder = kwargs.get("config_folder")
+        self.config_folder = config_folder
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = (
+            CandidateURL.objects.filter(collection__config_folder=self.config_folder)
+            .with_exclusion_status()
+            .filter(excluded=False)
+        )
+        return queryset
+
+
 class ExcludePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     queryset = ExcludePattern.objects.all()
     serializer_class = ExcludePatternSerializer
@@ -345,14 +358,33 @@ class PushToGithubView(APIView):
     def post(self, request):
         collection_ids = request.POST.getlist("collection_ids[]", [])
         if len(collection_ids) == 0:
-            return Response(
-                "collection_ids can't be empty.", status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response("collection_ids can't be empty.", status=status.HTTP_400_BAD_REQUEST)
 
         push_to_github_task.delay(collection_ids)
 
         return Response(
             {"Success": "Started pushing collections to github"},
+            status=status.HTTP_200_OK,
+        )
+
+
+class IndexingInstructionsView(APIView):
+    """
+    Serves the name of the first curated collection to be indexed
+    """
+
+    def get(self, request):
+        curated_collections = Collection.objects.filter(workflow_status=WorkflowStatusChoices.CURATED)
+
+        job_name = ""
+        if curated_collections.exists():
+            collection = curated_collections.first()
+            job_name = f"collection.indexer.{collection.config_folder}.xml"
+
+        return Response(
+            {
+                "job_name": job_name,
+            },
             status=status.HTTP_200_OK,
         )
 
@@ -369,9 +401,7 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
             self.data = generate_db_github_metadata_differences()
         else:
             # this needs to be a celery task eventually
-            self.data = generate_db_github_metadata_differences(
-                reindex_configs_from_github=True
-            )
+            self.data = generate_db_github_metadata_differences(reindex_configs_from_github=True)
 
         return super().get(request, *args, **kwargs)
 
@@ -389,12 +419,8 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
             elif field == "connector":
                 new_value = ConnectorChoices.lookup_by_text(new_value)
 
-            Collection.objects.filter(config_folder=config_folder).update(
-                **{field: new_value}
-            )
-            messages.success(
-                request, f"Successfully updated {field} of {config_folder}."
-            )
+            Collection.objects.filter(config_folder=config_folder).update(**{field: new_value})
+            messages.success(request, f"Successfully updated {field} of {config_folder}.")
         else:
             messages.error(
                 request,

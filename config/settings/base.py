@@ -1,6 +1,7 @@
 """
 Base settings to build other settings files upon.
 """
+
 from pathlib import Path
 
 import environ
@@ -90,7 +91,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
 ]
 
-LOCAL_APPS = ["sde_indexing_helper.users", "sde_collections", "feedback"]
+LOCAL_APPS = [
+    "environmental_justice",
+    "sde_indexing_helper.users",
+    "sde_collections",
+    "feedback",
+]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -146,6 +152,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 # STATIC

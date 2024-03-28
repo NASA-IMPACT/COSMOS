@@ -9,6 +9,35 @@ from .models.pattern import IncludePattern, TitlePattern
 from .tasks import import_candidate_urls_from_api
 
 
+@admin.action(description="Generate deployment message")
+def generate_deployment_message(modeladmin, request, queryset):
+    # generate deployment message
+    response = HttpResponse(content_type="text/txt")
+
+    message_start = """:rocket: Production Deployment Update :rocket:
+Hello Team,
+
+I'm pleased to announce that we have successfully moved several key collections
+to our production environment as part of our latest deployment! :tada:\n
+Collections Now Live in Prod:\n"""
+
+    message_middle = "\n\n".join(
+        [
+            f"- {collection.name} | {collection.server_url_prod}"
+            for collection in queryset.all()
+        ]
+    )
+
+    message_end = """
+If you find something needs changing, please let us know.
+
+Dev Team"""
+
+    response.content = f"{message_start}\n{message_middle}\n{message_end}"
+
+    return response
+
+
 @admin.action(description="Download candidate URLs as csv")
 def download_candidate_urls_as_csv(modeladmin, request, queryset):
     response = HttpResponse(content_type="text/csv")
@@ -79,7 +108,7 @@ def import_candidate_urls_from_api_caller(modeladmin, request, queryset, server_
             " Consider using the django shell for bulk imports.",
         )
         return
-    import_candidate_urls_from_api.delay(
+    import_candidate_urls_from_api(
         collection_ids=list(queryset.values_list("id", flat=True)),
         server_name=server_name,
     )
@@ -110,6 +139,18 @@ def import_candidate_urls_secret_test(modeladmin, request, queryset):
 def import_candidate_urls_secret_production(modeladmin, request, queryset):
     import_candidate_urls_from_api_caller(
         modeladmin, request, queryset, "secret_production"
+    )
+
+
+@admin.action(description="Import candidate URLs from Li's Server")
+def import_candidate_urls_lis_server(modeladmin, request, queryset):
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lis_server")
+
+
+@admin.action(description="Import candidate URLs from LRM Dev Server")
+def import_candidate_urls_lrm_dev_server(modeladmin, request, queryset):
+    import_candidate_urls_from_api_caller(
+        modeladmin, request, queryset, "lrm_dev_server"
     )
 
 
@@ -191,6 +232,7 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
     list_filter = ("division", "curation_status", "workflow_status", "turned_on")
     search_fields = ("name", "url", "config_folder")
     actions = [
+        generate_deployment_message,
         "export_as_csv",
         "update_config",
         download_candidate_urls_as_csv,
@@ -198,6 +240,8 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         import_candidate_urls_production,
         import_candidate_urls_secret_test,
         import_candidate_urls_secret_production,
+        import_candidate_urls_lis_server,
+        import_candidate_urls_lrm_dev_server,
     ]
     ordering = ("cleaning_order",)
 
