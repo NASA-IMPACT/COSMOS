@@ -114,6 +114,38 @@
                     </form>
                 </td>
             </tr>
+            <tr>
+                <th>Comments</th>
+                <td>
+                    <div id="comments-display">
+                        {% for comment in comments %}
+                            <div class="comment">
+                                <strong>{{ comment.user.username }}</strong>
+                                <span>{{ comment.created_at|date:"M. d, Y, P" }}</span>
+                                <p>{{ comment.text }}</p>
+                            </div>
+                        {% empty %}
+                            <p>No comments yet</p>
+                        {% endfor %}
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>Post a Comment</th>
+                <td>
+                    <div id="comment-form-container">
+                        {% if user.is_authenticated %}
+                            <form method="post" action="{% url 'sde_collections:detail' collection.pk %}">
+                                {% csrf_token %}
+                                <textarea name="text" class="form-control">{{ comment_form.text.value }}</textarea>
+                                <button type="submit" name="comment_button" class="btn btn-primary">Submit</button>
+                            </form>
+                        {% else %}
+                            <p>Please log in to post comments.</p>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
         </tbody>
     </table>
 {% endblock content %}
