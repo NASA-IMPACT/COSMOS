@@ -123,6 +123,12 @@
                                 <strong>{{ comment.user.username }}</strong>
                                 <span>{{ comment.created_at|date:"M. d, Y, P" }}</span>
                                 <p>{{ comment.text }}</p>
+                                {% if user.is_authenticated and user == comment.user or user.is_staff %}
+                                    <form method="post" action="{% url 'sde_collections:delete_comment' collection.pk comment.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" name="delete_comment" class="delete-button">Delete</button>
+                                    </form>
+                                {% endif %}
                             </div>
                         {% empty %}
                             <p>No comments yet</p>
