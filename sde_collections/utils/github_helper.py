@@ -8,56 +8,95 @@ from ..models.collection_choice_fields import CurationStatusChoices
 
 
 class GitHubHandler:
-    def __init__(self, collections, *args, **kwargs):
+    def __init__(self, collections=None, *args, **kwargs):
         self.github_token = settings.GITHUB_ACCESS_TOKEN
-        self.github_repo = settings.SINEQUA_CONFIGS_GITHUB_REPO
-        self.github_branch = settings.GITHUB_BRANCH_FOR_WEBAPP
         self.g = Github(self.github_token)
-        self.repo = self.g.get_repo(f"{self.github_repo}")
-        self.dev_branch = self.repo.default_branch
+        self.repo = self.g.get_repo(f"{settings.SINEQUA_CONFIGS_GITHUB_REPO}")
+        self.master_branch = settings.SINEQUA_CONFIGS_REPO_MASTER_BRANCH
+        self.dev_branch = settings.SINEQUA_CONFIGS_REPO_DEV_BRANCH
+        self.webapp_pr_branch = settings.SINEQUA_CONFIGS_REPO_WEBAPP_PR_BRANCH
         self.collections = collections
+        # if we still need operations performed on a collection list
+        # we should refactor, as this functionality should not be a
+        # part of the base GithubHandler class.
+        # maybe it should just be passed to an individual method
 
-    def _get_config_file_path(self, config_folder) -> str:
-        file_path = f"sources/SDE/{config_folder}/default.xml"
-        return file_path
-
-    def _get_file_contents(self, collection):
+    def _get_file_contents(self, file_path, strict=True):
         """
-        Get file contents from GitHub dev or update branch
+        try to get file contents, first from the pr branch and then from the dev branch
+        if strict is True, raise an exception if the file is not found
         """
-        FILE_PATH = self._get_config_file_path(collection.config_folder)
 
         try:
-            contents = self.repo.get_contents(FILE_PATH, ref=self.dev_branch)
+            contents = self.repo.get_contents(file_path, ref=self.webapp_pr_branch)
         except UnknownObjectException:
             try:
-                contents = self.repo.get_contents(FILE_PATH, ref=self.github_branch)
+                contents = self.repo.get_contents(file_path, ref=self.dev_branch)
             except UnknownObjectException:
+                if strict:
+                    raise Exception(
+                        f"File {file_path} not found on {self.dev_branch} or {self.webapp_pr_branch} branches"
+                    )
                 return None
 
         return contents
 
-    def create_and_initialize_config_file(self, collection, xml_string=""):
+    def check_file_exists(self, file_path):
+        """
+        Check if file exists on GitHub
+        """
+
+        if self._get_file_contents(file_path, strict=False) is None:
+            return False
+        else:
+            return True
+
+    def create_file(self, file_path, file_string, branch=None):
         """
         Create file contents on GitHub
+        if no branch is provided, it will default to the webapp_pr_branch
         """
-        FILE_PATH = self._get_config_file_path(collection)
-        COMMIT_MESSAGE = f"Webapp: Create {collection.name}"
 
-        if self._get_file_contents(collection) is None:
-            self.repo.create_file(
-                FILE_PATH,
-                COMMIT_MESSAGE,
-                xml_string,
-                branch=self.github_branch,
-            )
-            return "Created"
-        else:
-            return "Exists"
+        if not branch:
+            branch = self.webapp_pr_branch
 
-    def _update_file_contents(self, collection):
+        if self.check_file_exists(file_path):
+            raise Exception(f"File {file_path} already exists on GitHub")
+
+        COMMIT_MESSAGE = f"Webapp: Create {file_path}"
+
+        self.repo.create_file(
+            file_path,
+            COMMIT_MESSAGE,
+            file_string,
+            branch=branch,
+        )
+
+    def update_file(self, file_path, file_string, branch=None):
         """
         Update file contents on GitHub
+        if no branch is provided, it will default to the webapp_pr_branch
+        """
+
+        if not branch:
+            branch = self.webapp_pr_branch
+
+        contents = self._get_file_contents(file_path)
+        COMMIT_MESSAGE = f"Webapp: Update {file_path}"
+
+        self.repo.update_file(
+            contents.path,
+            COMMIT_MESSAGE,
+            file_string,
+            contents.sha,
+            branch=branch,
+        )
+
+    def update_config_with_current_rules(self, collection):
+        """
+        DEPRECATED?
+        this runs the update_config_xml method from the collection model
+        which adds the latest rules to the xml file
         """
         contents = self._get_file_contents(collection)
         FILE_CONTENTS = contents.decoded_content.decode("utf-8")
@@ -72,6 +111,16 @@ class GitHubHandler:
             contents.sha,
             branch=self.github_branch,
         )
+
+    def create_or_update_file(self, file_path, file_string):
+        """
+        Create or update file contents on GitHub
+        """
+
+        if self.check_file_exists(file_path):
+            self.update_file_contents(file_path, file_string)
+        else:
+            self.create_file(file_path, file_string)
 
     def branch_exists(self, branch_name: str) -> bool:
         try:
@@ -104,7 +153,7 @@ class GitHubHandler:
             self.create_branch(self.github_branch)
         for collection in self.collections:
             print(f"Pushing {collection.name} to GitHub.")
-            self._update_file_contents(collection)
+            self.update_config_with_current_rules(collection)
             collection.curation_status = CurationStatusChoices.GITHUB_PR_CREATED
             collection.save()
         self.create_pull_request()
@@ -138,8 +187,7 @@ class GitHubHandler:
         collection_folders = [
             collection.path
             for collection in collections
-            if ".xml"
-            not in collection.path  # to prevent source.xml from being included
+            if ".xml" not in collection.path  # to prevent source.xml from being included
         ]
         return collection_folders
 
