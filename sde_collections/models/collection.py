@@ -182,39 +182,44 @@ class Collection(models.Model):
             document_type_rules.append(processed_pattern)
         return document_type_rules
 
+    def _write_to_github(self, path, content, overwrite):
+        gh = GitHubHandler()
+        if overwrite:
+            gh.update_file(path, content)
+        else:
+            gh.create_file(path, content)
+
     def create_scraper_config(self, overwrite: bool = False):
         """
-        Reads from the model data and creates a new config folder
-        and xml file on sde-backend/sources/SDE/<config_folder>/default.xml
+        Reads from the model data and creates the initial scraper config xml file
+
         if overwrite is True, it will overwrite the existing file
         """
 
         scraper_template = open("config_generation/xmls/webcrawler_initial_crawl.xml").read()
         editor = XmlEditor(scraper_template)
-
-        # add the URL
-        editor.update_or_add_element_value("Url", self.url)
-
-        editor.update_or_add_element_value("TreeRoot", self.tree_root)
-        if self.document_type:
-            editor.add_document_type_mapping(document_type=self.get_document_type_display(), criteria=None)
-
-        scraper_config = editor.update_config_xml()
-
-        gh = GitHubHandler()
-        if overwrite:
-            gh.update_file(self._scraper_config_path, scraper_config)
-        else:
-            gh.create_file(self._scraper_config_path, scraper_config)
+        scraper_config = editor.convert_template_to_scraper(self)
+        self._write_to_github(self._scraper_config_path, scraper_config, overwrite)
 
     def create_plugin_config(self, overwrite: bool = False):
-        plugin_config = open("config_generation/xmls/plugin_indexing_template.xml").read()
+        """
+        Reads from the model data and creates the plugin config xml file that calls the api
 
-        gh = GitHubHandler()
-        if overwrite:
-            gh.update_file(self._plugin_config_path, plugin_config)
-        else:
-            gh.create_file(self._plugin_config_path, plugin_config)
+        if overwrite is True, it will overwrite the existing file
+        """
+        plugin_config = open("config_generation/xmls/plugin_indexing_template.xml").read()
+        self._write_to_github(self._plugin_config_path, plugin_config, overwrite)
+
+    def create_indexer_config(self, overwrite: bool = False):
+        """
+        Reads from the model data and creates indexer job that calls the plugin config
+
+        if overwrite is True, it will overwrite the existing file
+        """
+        indexer_template = open("config_generation/xmls/job_template.xml").read()
+        editor = XmlEditor(indexer_template)
+        indexer_config = editor.convert_template_to_indexer(self)
+        self._write_to_github(self._indexer_config_path, indexer_config, overwrite)
 
     def update_config_xml(self, original_config_string):
         """
@@ -404,17 +409,15 @@ class Collection(models.Model):
         for pattern in self.documenttypepattern.all():
             pattern.apply()
 
-    def _create_indexing_files(self) -> None:
-        # TODO: actually write this code....
-        pass
-
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
         if not self.config_folder:
             self.config_folder = self._compute_config_folder_name()
 
-        # create folders here
-        self._create_indexing_files()
+        # create all initial config files
+        self.create_scraper_config(overwrite=False)
+        self.create_plugin_config(overwrite=False)
+        self.create_indexer_config(overwrite=False)
 
         # Call the parent class's save method
         super().save(*args, **kwargs)
