@@ -56,4 +56,9 @@ urlpatterns = [
         view=views.CandidateURLAPIView.as_view(),
         name="candidate-url-api",
     ),
+    path(
+        "collections/<int:collection_id>/delete-comment/<int:comment_id>/",
+        view=views.DeleteCommentView.as_view(),
+        name="delete_comment",
+    ),
 ]
