@@ -14,6 +14,7 @@ router.register(r"include-patterns", views.IncludePatternViewSet)
 router.register(r"title-patterns", views.TitlePatternViewSet)
 router.register(r"document-type-patterns", views.DocumentTypePatternViewSet)
 router.register(r"environmental-justice", EnvironmentalJusticeRowViewSet)
+router.register(r"comments", views.CommentsViewSet)
 
 app_name = "sde_collections"
 
@@ -55,10 +56,5 @@ urlpatterns = [
         "candidate-urls-api/<str:config_folder>/",
         view=views.CandidateURLAPIView.as_view(),
         name="candidate-url-api",
-    ),
-    path(
-        "collections/<int:collection_id>/delete-comment/<int:comment_id>/",
-        view=views.DeleteCommentView.as_view(),
-        name="delete_comment",
     ),
 ]
