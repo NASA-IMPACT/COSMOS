@@ -16,3 +16,18 @@ document.getElementById('cancel-github-link-button').addEventListener('click', f
     document.getElementById('github-link-form').style.display = 'none';
     document.getElementById('id_github_issue_link').value = originalValue;
 });
+
+function deleteComment(element) {
+    var commentId = element.getAttribute('data-comment-id');
+    $.ajax({
+        url: `/api/comments/${commentId}/`,
+        type: 'DELETE',
+        headers: { 'X-CSRFToken': csrftoken },
+        success: function(result) {
+            $(element).closest('.comment').remove();
+        },
+        error: function(xhr, status, error) {
+            console.error('Comment deletion failed:', error);
+        }
+    });
+}
