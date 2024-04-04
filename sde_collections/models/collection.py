@@ -26,54 +26,28 @@ class Collection(models.Model):
     """Model definition for Collection."""
 
     name = models.CharField("Name", max_length=1024)
-    config_folder = models.CharField(
-        "Config Folder", max_length=2048, unique=True, editable=False
-    )
+    config_folder = models.CharField("Config Folder", max_length=2048, unique=True, editable=False)
     url = models.URLField("URL", max_length=2048, blank=True)
     division = models.IntegerField(choices=Divisions.choices)
     turned_on = models.BooleanField("Turned On", default=True)
-    connector = models.IntegerField(
-        choices=ConnectorChoices.choices, default=ConnectorChoices.CRAWLER2
-    )
+    connector = models.IntegerField(choices=ConnectorChoices.choices, default=ConnectorChoices.CRAWLER2)
 
-    source = models.IntegerField(
-        choices=SourceChoices.choices, default=SourceChoices.BOTH
-    )
-    update_frequency = models.IntegerField(
-        choices=UpdateFrequencies.choices, default=UpdateFrequencies.WEEKLY
-    )
-    document_type = models.IntegerField(
-        choices=DocumentTypes.choices, null=True, blank=True
-    )
-    tree_root_deprecated = models.CharField(
-        "Tree Root", max_length=1024, default="", blank=True
-    )
+    source = models.IntegerField(choices=SourceChoices.choices, default=SourceChoices.BOTH)
+    update_frequency = models.IntegerField(choices=UpdateFrequencies.choices, default=UpdateFrequencies.WEEKLY)
+    document_type = models.IntegerField(choices=DocumentTypes.choices, null=True, blank=True)
+    tree_root_deprecated = models.CharField("Tree Root", max_length=1024, default="", blank=True)
     delete = models.BooleanField(default=False)
 
     # audit columns for production
-    audit_hierarchy = models.CharField(
-        "Audit Hierarchy", max_length=2048, default="", blank=True
-    )
+    audit_hierarchy = models.CharField("Audit Hierarchy", max_length=2048, default="", blank=True)
     audit_url = models.CharField("Audit URL", max_length=2048, default="", blank=True)
-    audit_mapping = models.CharField(
-        "Audit Mapping", max_length=2048, default="", blank=True
-    )
-    audit_label = models.CharField(
-        "Audit Label", max_length=2048, default="", blank=True
-    )
-    audit_query = models.CharField(
-        "Audit Query", max_length=2048, default="", blank=True
-    )
-    audit_duplicate_results = models.CharField(
-        "Audit Duplicate Results", max_length=2048, default="", blank=True
-    )
-    audit_metrics = models.CharField(
-        "Audit Metrics", max_length=2048, default="", blank=True
-    )
+    audit_mapping = models.CharField("Audit Mapping", max_length=2048, default="", blank=True)
+    audit_label = models.CharField("Audit Label", max_length=2048, default="", blank=True)
+    audit_query = models.CharField("Audit Query", max_length=2048, default="", blank=True)
+    audit_duplicate_results = models.CharField("Audit Duplicate Results", max_length=2048, default="", blank=True)
+    audit_metrics = models.CharField("Audit Metrics", max_length=2048, default="", blank=True)
 
-    cleaning_assigned_to = models.CharField(
-        "Cleaning Assigned To", max_length=128, default="", blank=True
-    )
+    cleaning_assigned_to = models.CharField("Cleaning Assigned To", max_length=128, default="", blank=True)
 
     github_issue_number = models.IntegerField("Issue Number in Github", default=0)
     notes = models.TextField("Notes", blank=True, default="")
@@ -89,9 +63,7 @@ class Collection(models.Model):
         choices=WorkflowStatusChoices.choices,
         default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
     )
-    curated_by = models.ForeignKey(
-        User, on_delete=models.DO_NOTHING, null=True, blank=True
-    )
+    curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
 
     class Meta:
@@ -99,6 +71,18 @@ class Collection(models.Model):
 
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
+
+    @property
+    def _scraper_config_path(self) -> str:
+        return f"sources/scrapers/{self.config_folder}/default.xml"
+
+    @property
+    def _plugin_config_path(self) -> str:
+        return f"sources/SDE/{self.config_folder}/default.xml"
+
+    @property
+    def _indexer_config_path(self) -> str:
+        return f"jobs/collection.indexer.{self.config_folder}.xml"
 
     @property
     def tree_root(self) -> str:
@@ -170,15 +154,11 @@ class Collection(models.Model):
 
     def _process_exclude_list(self):
         """Process the exclude list."""
-        return [
-            pattern._process_match_pattern() for pattern in self.excludepattern.all()
-        ]
+        return [pattern._process_match_pattern() for pattern in self.excludepattern.all()]
 
     def _process_include_list(self):
         """Process the include list."""
-        return [
-            pattern._process_match_pattern() for pattern in self.includepattern.all()
-        ]
+        return [pattern._process_match_pattern() for pattern in self.includepattern.all()]
 
     def _process_title_list(self):
         """Process the title list"""
@@ -202,30 +182,39 @@ class Collection(models.Model):
             document_type_rules.append(processed_pattern)
         return document_type_rules
 
-    def create_config_xml(self):
+    def create_scraper_config(self, overwrite: bool = False):
         """
         Reads from the model data and creates a new config folder
         and xml file on sde-backend/sources/SDE/<config_folder>/default.xml
+        if overwrite is True, it will overwrite the existing file
         """
 
-        original_config_string = open(
-            "config_generation/xmls/indexing_template.xml"
-        ).read()
-        editor = XmlEditor(original_config_string)
+        scraper_template = open("config_generation/xmls/webcrawler_initial_crawl.xml").read()
+        editor = XmlEditor(scraper_template)
 
         # add the URL
         editor.update_or_add_element_value("Url", self.url)
 
         editor.update_or_add_element_value("TreeRoot", self.tree_root)
         if self.document_type:
-            editor.add_document_type_mapping(
-                document_type=self.get_document_type_display(), criteria=None
-            )
+            editor.add_document_type_mapping(document_type=self.get_document_type_display(), criteria=None)
 
-        updated_config_xml_string = editor.update_config_xml()
+        scraper_config = editor.update_config_xml()
 
-        gh = GitHubHandler([self])
-        return gh.create_and_initialize_config_file(self, updated_config_xml_string)
+        gh = GitHubHandler()
+        if overwrite:
+            gh.update_file(self._scraper_config_path, scraper_config)
+        else:
+            gh.create_file(self._scraper_config_path, scraper_config)
+
+    def create_plugin_config(self, overwrite: bool = False):
+        plugin_config = open("config_generation/xmls/plugin_indexing_template.xml").read()
+
+        gh = GitHubHandler()
+        if overwrite:
+            gh.update_file(self._plugin_config_path, plugin_config)
+        else:
+            gh.create_file(self._plugin_config_path, plugin_config)
 
     def update_config_xml(self, original_config_string):
         """
@@ -415,10 +404,17 @@ class Collection(models.Model):
         for pattern in self.documenttypepattern.all():
             pattern.apply()
 
+    def _create_indexing_files(self) -> None:
+        # TODO: actually write this code....
+        pass
+
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
         if not self.config_folder:
             self.config_folder = self._compute_config_folder_name()
+
+        # create folders here
+        self._create_indexing_files()
 
         # Call the parent class's save method
         super().save(*args, **kwargs)
@@ -440,9 +436,7 @@ class RequiredUrls(models.Model):
 
 
 class Comments(models.Model):
-    collection = models.ForeignKey(
-        "Collection", related_name="comments", on_delete=models.CASCADE
-    )
+    collection = models.ForeignKey("Collection", related_name="comments", on_delete=models.CASCADE)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
