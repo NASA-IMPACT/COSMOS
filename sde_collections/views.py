@@ -4,9 +4,10 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
+from django.views import View
 from django.views.generic import TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
@@ -140,13 +141,9 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
         if "comments_form" not in context:
             context["comments_form"] = CommentsForm()
 
-        context["required_urls"] = RequiredUrls.objects.filter(
-            collection=self.get_object()
-        )
+        context["required_urls"] = RequiredUrls.objects.filter(collection=self.get_object())
         context["segment"] = "collection-detail"
-        context["comments"] = Comments.objects.filter(
-            collection=self.get_object()
-        ).order_by("-created_at")
+        context["comments"] = Comments.objects.filter(collection=self.get_object()).order_by("-created_at")
         return context
 
 
@@ -434,3 +431,15 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
         context["differences"] = self.data
 
         return context
+
+
+class DeleteCommentView(View):
+    def post(self, request, collection_id, comment_id):
+        collection = get_object_or_404(Collection, pk=collection_id)
+        comment = get_object_or_404(Comments, pk=comment_id, collection=collection)
+
+        if request.user == comment.user or request.user.is_staff:
+            comment.delete()
+            return redirect("sde_collections:detail", pk=collection_id)
+        else:
+            return redirect("sde_collections:detail", pk=collection_id)
