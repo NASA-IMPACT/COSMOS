@@ -4,15 +4,14 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
-from django.views import View
 from django.views.generic import TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -39,6 +38,7 @@ from .serializers import (
     CandidateURLSerializer,
     CollectionReadSerializer,
     CollectionSerializer,
+    CommentsSerializer,
     DocumentTypePatternSerializer,
     ExcludePatternSerializer,
     IncludePatternSerializer,
@@ -433,13 +433,19 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class DeleteCommentView(View):
-    def post(self, request, collection_id, comment_id):
-        collection = get_object_or_404(Collection, pk=collection_id)
-        comment = get_object_or_404(Comments, pk=comment_id, collection=collection)
+class CommentsViewSet(viewsets.ModelViewSet):
+    queryset = Comments.objects.all()
+    serializer_class = CommentsSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get_permissions(self):
+        if self.action == "destroy":
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
+
+    def destroy(self, request, *args, **kwargs):
+        comment = self.get_object()
         if request.user == comment.user or request.user.is_staff:
-            comment.delete()
-            return redirect("sde_collections:detail", pk=collection_id)
+            return super().destroy(request, *args, **kwargs)
         else:
-            return redirect("sde_collections:detail", pk=collection_id)
+            return Response(status=status.HTTP_403_FORBIDDEN)
