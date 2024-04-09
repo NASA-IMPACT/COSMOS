@@ -80,7 +80,10 @@ class Api:
         }
 
         if collection_config_folder:
-            payload["query"]["advanced"]["collection"] = f"/SDE/{collection_config_folder}/"
+            if self.server_name == "lis_server":
+                payload["query"]["advanced"]["collection"] = f"/scrapers/{collection_config_folder}/"
+            else:
+                payload["query"]["advanced"]["collection"] = f"/SDE/{collection_config_folder}/"
 
         response = self.process_response(url, payload)
 
