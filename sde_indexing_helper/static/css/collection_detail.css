@@ -8,3 +8,31 @@
 #github-link-error > ul{
     list-style-type: none;
 }
+#comment-form-container textarea.form-control {
+    height: 100px;
+    width: 50%;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 4px;
+}
+#comment-form-container button.btn-primary {
+    margin-top: -3;
+}
+.comment {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+.comment strong {
+    color: #007bff;
+}
+.comment span {
+    color: #6c6840;
+    font-size: 0.9em;
+    margin-bottom: 10px;
+}
+.comment p {
+    margin-top: 5px;
+}

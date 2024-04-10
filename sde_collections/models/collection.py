@@ -437,3 +437,15 @@ class RequiredUrls(models.Model):
 
     def __str__(self) -> str:
         return self.url
+
+
+class Comments(models.Model):
+    collection = models.ForeignKey(
+        "Collection", related_name="comments", on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.text

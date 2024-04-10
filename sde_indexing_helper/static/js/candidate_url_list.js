@@ -32,6 +32,13 @@ function initializeDataTable() {
             "selector": 'td:nth-child(5)'
         },
         'rowId': 'url',
+        "stateLoadCallback": function (settings) {
+            var state = JSON.parse(localStorage.getItem('DataTables_candidate_urls_' + window.location.pathname));
+            if (!state) {
+                settings.oInit.pageLength = 1;
+            }
+            return state;
+        },
         "ajax": {
             "url": `/api/candidate-urls/?format=datatables&collection_id=${collection_id}`,
             "data": function (d) {
@@ -350,8 +357,8 @@ function postDocumentTypePatterns(match_pattern, match_pattern_type, document_ty
             csrfmiddlewaretoken: csrftoken
         },
         success: function (data) {
-            $('#candidate_urls_table').DataTable().ajax.reload();
-            $('#document_type_patterns_table').DataTable().ajax.reload();
+            $('#candidate_urls_table').DataTable().ajax.reload(null, false);
+            $('#document_type_patterns_table').DataTable().ajax.reload(null, false);
         },
         error: function (xhr, status, error) {
             var errorMessage = xhr.responseText;
@@ -377,8 +384,8 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0) {
             csrfmiddlewaretoken: csrftoken
         },
         success: function (data) {
-            $('#candidate_urls_table').DataTable().ajax.reload();
-            $('#exclude_patterns_table').DataTable().ajax.reload();
+            $('#candidate_urls_table').DataTable().ajax.reload(null, false);
+            $('#exclude_patterns_table').DataTable().ajax.reload(null, false);
         },
         error: function (xhr, status, error) {
             var errorMessage = xhr.responseText;
@@ -403,8 +410,8 @@ function postIncludePatterns(match_pattern, match_pattern_type = 0) {
             csrfmiddlewaretoken: csrftoken
         },
         success: function (data) {
-            $('#candidate_urls_table').DataTable().ajax.reload();
-            $('#include_patterns_table').DataTable().ajax.reload();
+            $('#candidate_urls_table').DataTable().ajax.reload(null, false);
+            $('#include_patterns_table').DataTable().ajax.reload(null, false);
         },
         error: function (xhr, status, error) {
             var errorMessage = xhr.responseText;
@@ -430,8 +437,8 @@ function postTitlePatterns(match_pattern, title_pattern, match_pattern_type = 1)
             csrfmiddlewaretoken: csrftoken
         },
         success: function (data) {
-            $('#candidate_urls_table').DataTable().ajax.reload();
-            $('#title_patterns_table').DataTable().ajax.reload();
+            $('#candidate_urls_table').DataTable().ajax.reload(null, false);
+            $('#title_patterns_table').DataTable().ajax.reload(null, false);
         },
         error: function (xhr, status, error) {
             var errorMessage = xhr.responseText;
@@ -475,11 +482,11 @@ function deletePattern(url, data_type, url_type = null, candidate_urls_count = n
             'X-CSRFToken': csrftoken
         },
         success: function (data) {
-            $('#candidate_urls_table').DataTable().ajax.reload();
-            $('#exclude_patterns_table').DataTable().ajax.reload();
-            $('#include_patterns_table').DataTable().ajax.reload();
-            $('#title_patterns_table').DataTable().ajax.reload();
-            $('#document_type_patterns_table').DataTable().ajax.reload();
+            $('#candidate_urls_table').DataTable().ajax.reload(null, false);
+            $('#exclude_patterns_table').DataTable().ajax.reload(null, false);
+            $('#include_patterns_table').DataTable().ajax.reload(null, false);
+            $('#title_patterns_table').DataTable().ajax.reload(null, false);
+            $('#document_type_patterns_table').DataTable().ajax.reload(null, false);
         }
     });
 }
@@ -645,5 +652,5 @@ $('.document_type_form_select').on('click', function (e) {
 });
 
 $('#filter-checkbox').on('change', function () {
-    $('#candidate_urls_table').DataTable().ajax.reload();
+    $('#candidate_urls_table').DataTable().ajax.reload(null, false);
 });
