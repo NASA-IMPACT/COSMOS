@@ -31,22 +31,8 @@
     <MaxRedirection>10</MaxRedirection>
     <CrawlMaxSize>-1</CrawlMaxSize>
     <CrawlTimeout>-1</CrawlTimeout>
-    <NormalizeUrls>true</NormalizeUrls>
-    <CorrectDomainCookies>false</CorrectDomainCookies>
-    <IgnoreSessionCookies>false</IgnoreSessionCookies>
-    <DownloadImages>false</DownloadImages>
-    <DownloadMedia>false</DownloadMedia>
-    <DownloadCss>false</DownloadCss>
-    <DownloadFtp>true</DownloadFtp>
-    <DownloadFile>true</DownloadFile>
-    <IndexJs>false</IndexJs>
-    <FollowJs>true</FollowJs>
-    <CrawlFlash>true</CrawlFlash>
     <IndexEmptyPages>true</IndexEmptyPages>
     <CrawlWebsphereSeedlist>true</CrawlWebsphereSeedlist>
-    <KeepHashFragmentInUrl>false</KeepHashFragmentInUrl>
-    <RetryCount>1</RetryCount>
-    <RetryPause>1000 ms</RetryPause>
     <HttpCodesToRetry></HttpCodesToRetry>
     <UseIfModifiedSince>true</UseIfModifiedSince>
     <UseIfNoneMatch>no</UseIfNoneMatch>
@@ -54,7 +40,6 @@
     <ForcedEncoding></ForcedEncoding>
     <UseCompression>false</UseCompression>
     <UseUnsafeHeaderParsing>false</UseUnsafeHeaderParsing>
-    <NormalizeSecureSchemesWhenTestingVisited>false</NormalizeSecureSchemesWhenTestingVisited>
     <ExactDeduplication>false</ExactDeduplication>
     <NearDeduplication>false</NearDeduplication>
     <CrawlPauseDelay></CrawlPauseDelay>
@@ -224,8 +209,6 @@
     <RealTimeInfoOnError>false</RealTimeInfoOnError>
     <ConversionProxies></ConversionProxies>
     <ConversionPlan></ConversionPlan>
-    <AddBaseHref>true</AddBaseHref>
-    <AddMetaContentType>false</AddMetaContentType>
     <Throttle></Throttle>
     <DocumentClass></DocumentClass>
     <ConnectorLanguage></ConnectorLanguage>
