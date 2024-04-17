@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import TemplateView
@@ -12,6 +12,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
 from rest_framework import generics, status, viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -140,13 +141,9 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
         if "comments_form" not in context:
             context["comments_form"] = CommentsForm()
 
-        context["required_urls"] = RequiredUrls.objects.filter(
-            collection=self.get_object()
-        )
+        context["required_urls"] = RequiredUrls.objects.filter(collection=self.get_object())
         context["segment"] = "collection-detail"
-        context["comments"] = Comments.objects.filter(
-            collection=self.get_object()
-        ).order_by("-created_at")
+        context["comments"] = Comments.objects.filter(collection=self.get_object()).order_by("-created_at")
         return context
 
 
@@ -370,7 +367,7 @@ class PushToGithubView(APIView):
 
 class IndexingInstructionsView(APIView):
     """
-    Serves the name of the first curated collection to be indexed
+    Serves the name of the first curated collection to be indexed and updates collection workflow status
     """
 
     def get(self, request):
@@ -387,6 +384,37 @@ class IndexingInstructionsView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+    def post(self, request):
+        config_folder = request.data.get("collection")
+        indexing_status = request.data.get("status")
+
+        if not config_folder or not indexing_status:
+            raise ValidationError({"error": "Config folder name and indexing status are required."})
+
+        collection = get_object_or_404(Collection, config_folder=config_folder)
+
+        if indexing_status == "STARTED_INDEXING" and collection.workflow_status == WorkflowStatusChoices.CURATED:
+            collection.workflow_status = WorkflowStatusChoices.SECRET_DEPLOYMENT_STARTED
+            collection.save()
+
+            return Response(
+                {"message": f"Status for collection '{collection.name}' updated to Secret Deployment Started."},
+                status=status.HTTP_200_OK,
+            )
+        elif (
+            indexing_status == "FINISHED_INDEXING"
+            and collection.workflow_status == WorkflowStatusChoices.SECRET_DEPLOYMENT_STARTED
+        ):
+            collection.workflow_status = WorkflowStatusChoices.READY_FOR_LRM_QUALITY_CHECK
+            collection.save()
+
+            return Response(
+                {"message": f"Status for collection '{collection.name}' updated to Ready For LRM Quality Check."},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response({"error": "Invalid indexing or workflow status."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
