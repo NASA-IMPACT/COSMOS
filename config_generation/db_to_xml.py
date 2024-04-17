@@ -98,38 +98,45 @@ class XmlEditor:
         some values must now be modified so it will be an effective scraper
         """
         self.update_or_add_element_value("Indexers", "")
-        self.update_or_add_element_value(
-            "Plugin", "SMD_Plugins/Sinequa.Plugin.ListCandidateUrls"
-        )
+        self.update_or_add_element_value("Plugin", "SMD_Plugins/Sinequa.Plugin.ListCandidateUrls")
         self.update_or_add_element_value("ShardIndexes", "")
         self.update_or_add_element_value("ShardingStrategy", "")
         self.update_or_add_element_value("WorkerCount", "8")
         self.update_or_add_element_value("LogLevel", "0", parent_element_name="System")
-        self.update_or_add_element_value(
-            "Simulate", "true", parent_element_name="IndexerClient"
-        )
+        self.update_or_add_element_value("Simulate", "true", parent_element_name="IndexerClient")
 
     def convert_scraper_to_indexer(self) -> None:
         # this is specialized for the production instance right now
         self.update_or_add_element_value("Indexers", "")
         self.update_or_add_element_value("Plugin", "")
-        self.update_or_add_element_value(
-            "Identity", "NodeIndexer1/identity0"
-        )  # maybe make this blank?
+        self.update_or_add_element_value("Identity", "NodeIndexer1/identity0")  # maybe make this blank?
         self.update_or_add_element_value("ShardIndexes", "")
         self.update_or_add_element_value("ShardingStrategy", "")
         self.update_or_add_element_value("WorkerCount", "8")
         self.update_or_add_element_value("LogLevel", "20", parent_element_name="System")
-        self.update_or_add_element_value(
-            "Simulate", "false", parent_element_name="IndexerClient"
-        )
+        self.update_or_add_element_value("Simulate", "false", parent_element_name="IndexerClient")
 
-    def convert_template_to_scraper(self, url: str) -> None:
+    def convert_template_to_scraper(self, collection) -> None:
         """
         assuming this class has been instantiated with the scraper_template.xml
-        the only remaining step is to add the base url to be scraped
         """
-        self.update_or_add_element_value("Url", url)
+        self.update_or_add_element_value("Url", collection.url)
+
+        self.update_or_add_element_value("TreeRoot", collection.tree_root)
+        if collection.document_type:
+            self.add_document_type_mapping(document_type=collection.get_document_type_display(), criteria=None)
+
+        scraper_config = self.update_config_xml()
+        return scraper_config
+
+    def convert_template_to_indexer(self, collection) -> None:
+        """
+        assuming this class has been instantiated with the indexer_template.xml
+        """
+        self.update_or_add_element_value("Collection", f"/SDE/{collection.config_folder}/")
+        indexer_config = self.update_config_xml()
+
+        return indexer_config
 
     def _mapping_exists(self, new_mapping: ET.Element):
         """
@@ -138,14 +145,8 @@ class XmlEditor:
         xml_root = self.xml_tree.getroot()
 
         for mapping in xml_root.findall("Mapping"):
-            existing_mapping = {
-                child.tag: (child.text if child.text is not None else "")
-                for child in mapping
-            }
-            new_mapping_dict = {
-                child.tag: (child.text if child.text is not None else "")
-                for child in new_mapping
-            }
+            existing_mapping = {child.tag: (child.text if child.text is not None else "") for child in mapping}
+            new_mapping_dict = {child.tag: (child.text if child.text is not None else "") for child in new_mapping}
             if existing_mapping == new_mapping_dict:
                 return True
 
@@ -165,9 +166,7 @@ class XmlEditor:
         #     "*'</Selection>", "'</Selection>"
         # )
 
-        return list(
-            set(selection, standardized_quotes)  # , standardized_quotes_less_selective)
-        )
+        return list(set(selection, standardized_quotes))  # , standardized_quotes_less_selective)
 
     def _generic_mapping(
         self,
@@ -341,9 +340,7 @@ class XmlEditor:
     def fetch_document_type(self):
         DOCUMENT_TYPE_COLUMN = "sourcestr56"
         try:
-            document_type_text = self.xml_tree.find(
-                f"Mapping[Name='{DOCUMENT_TYPE_COLUMN}']/Value"
-            ).text
+            document_type_text = self.xml_tree.find(f"Mapping[Name='{DOCUMENT_TYPE_COLUMN}']/Value").text
         except AttributeError:
             return None
 
