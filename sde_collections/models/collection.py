@@ -4,6 +4,9 @@ import urllib.parse
 import requests
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from model_utils import FieldTracker
 from slugify import slugify
 
 from config_generation.db_to_xml import XmlEditor
@@ -63,6 +66,8 @@ class Collection(models.Model):
         choices=WorkflowStatusChoices.choices,
         default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
     )
+    tracker = FieldTracker(fields=["workflow_status"])
+
     curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
 
@@ -427,11 +432,6 @@ class Collection(models.Model):
         if not self.config_folder:
             self.config_folder = self._compute_config_folder_name()
 
-        # create all initial config files
-        self.create_scraper_config(overwrite=False)
-        self.create_plugin_config(overwrite=False)
-        self.create_indexer_config(overwrite=False)
-
         # Call the parent class's save method
         super().save(*args, **kwargs)
 
@@ -459,3 +459,17 @@ class Comments(models.Model):
 
     def __str__(self):
         return self.text
+
+
+@receiver(post_save, sender=Collection)
+def create_configs_on_status_change(sender, instance, created, **kwargs):
+    """
+    Creates various config files on certain workflow status changes
+    """
+
+    if "workflow_status" in instance.tracker.changed():
+        if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
+            instance.create_plugin_config(overwrite=True)
+        elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
+            instance.create_scraper_config(overwrite=False)
+            instance.create_indexer_config(overwrite=False)
