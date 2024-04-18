@@ -207,7 +207,20 @@ class Collection(models.Model):
 
         if overwrite is True, it will overwrite the existing file
         """
-        plugin_config = open("config_generation/xmls/plugin_indexing_template.xml").read()
+
+        # there needs to be a scraper config file before creating the plugin config
+        gh = GitHubHandler()
+        scraper_exists = gh.check_file_exists(self._scraper_config_path)
+        if not scraper_exists:
+            raise ValueError(f"Scraper does not exist for the collection {self.config_folder}")
+        else:
+            scraper_content = gh._get_file_contents(self._scraper_config_path)
+            scraper_content = scraper_content.decoded_content.decode("utf-8")
+            scraper_editor = XmlEditor(scraper_content)
+
+        plugin_template = open("config_generation/xmls/plugin_indexing_template.xml").read()
+        plugin_editor = XmlEditor(plugin_template)
+        plugin_config = plugin_editor.convert_template_to_plugin_indexer(scraper_editor)
         self._write_to_github(self._plugin_config_path, plugin_config, overwrite)
 
     def create_indexer_config(self, overwrite: bool = False):

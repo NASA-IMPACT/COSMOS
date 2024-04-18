@@ -23,12 +23,31 @@ class XmlEditor:
         """takes the path of an xml file and opens it as an ElementTree object"""
         return ET.ElementTree(ET.fromstring(xml_string))
 
-    def get_tag_value(self, tag_name: str) -> list:
+    def get_tag_value(self, tag_name: str, strict: bool = False) -> str | list[str]:
         """
-        tag_name can be either the top level tag
-        or you can get a child by saying 'parent/child'
+        Retrieves the value of the specified XML tag. If 'strict' is True, the function will
+        raise an error if more than one value is found, and it will return the single value.
+
+        Parameters:
+        - tag_name (str): Can be either the top level tag or a path specifying a child tag, e.g., 'parent/child'.
+        - strict (bool): If True, raises an error when more than one value is found, or if no values are found.
+
+        Returns:
+        - str: The text of the single XML element matching the tag_name if strict is True and exactly one match exists.
+
+        Raises:
+        - ValueError: If 'strict' is True and either no values or more than one value is found.
         """
-        return [element.text for element in self.xml_tree.findall(tag_name)]
+
+        elements = self.xml_tree.findall(tag_name)
+        if strict:
+            if len(elements) == 0:
+                raise ValueError(f"No elements found for the tag '{tag_name}'")
+            elif len(elements) > 1:
+                raise ValueError(f"Multiple elements found for the tag '{tag_name}': expected exactly one.")
+            return elements[0].text
+        else:
+            return [element.text for element in elements]
 
     def _add_declaration(self, xml_string: str):
         """adds xml declaration to xml string"""
@@ -125,6 +144,50 @@ class XmlEditor:
         self.update_or_add_element_value("TreeRoot", collection.tree_root)
         if collection.document_type:
             self.add_document_type_mapping(document_type=collection.get_document_type_display(), criteria=None)
+
+        scraper_config = self.update_config_xml()
+        return scraper_config
+
+    def convert_template_to_plugin_indexer(self, scraper_editor) -> None:
+        """
+        assuming this class has been instantiated with the scraper_template.xml
+        """
+
+        transfer_fields = [
+            "KeepHashFragmentInUrl",
+            "CorrectDomainCookies",
+            "IgnoreSessionCookies",
+            "DownloadImages",
+            "DownloadMedia",
+            "DownloadCss",
+            "DownloadFtp",
+            "DownloadFile",
+            "IndexJs",
+            "FollowJs",
+            "CrawlFlash",
+            "NormalizeSecureSchemesWhenTestingVisited",
+            "RetryCount",
+            "RetryPause",
+            "AddBaseHref",
+            "AddMetaContentType",
+            "NormalizeUrls",
+        ]
+
+        double_transfer_fields = [
+            ("UrlAccess", "AllowXPathCookies"),
+            ("UrlAccess", "UseBrowserForWebRequests"),
+            ("UrlAccess", "UseHttpClientForWebRequests"),
+        ]
+
+        for field in transfer_fields:
+            print(field, scraper_editor.get_tag_value(field, strict=True))
+            self.update_or_add_element_value(field, scraper_editor.get_tag_value(field, strict=True))
+
+        for parent, child in double_transfer_fields:
+            print(parent, child, scraper_editor.get_tag_value(f"{parent}/{child}", strict=True))
+            self.update_or_add_element_value(
+                f"{parent}/{child}", scraper_editor.get_tag_value(f"{parent}/{child}", strict=True)
+            )
 
         scraper_config = self.update_config_xml()
         return scraper_config
