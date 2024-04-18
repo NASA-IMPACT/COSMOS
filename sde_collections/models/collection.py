@@ -462,9 +462,9 @@ class Comments(models.Model):
 
 
 @receiver(post_save, sender=Collection)
-def create_plugin_config_on_status_change(sender, instance, created, **kwargs):
+def create_configs_on_status_change(sender, instance, created, **kwargs):
     """
-    Signal to run create_plugin_config method when workflow_status changes to READY_FOR_CURATION.
+    Creates various config files on certain workflow status changes
     """
 
     if "workflow_status" in instance.tracker.changed():
