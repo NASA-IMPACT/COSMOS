@@ -4,6 +4,9 @@ import urllib.parse
 import requests
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from model_utils import FieldTracker
 from slugify import slugify
 
 from config_generation.db_to_xml import XmlEditor
@@ -26,54 +29,28 @@ class Collection(models.Model):
     """Model definition for Collection."""
 
     name = models.CharField("Name", max_length=1024)
-    config_folder = models.CharField(
-        "Config Folder", max_length=2048, unique=True, editable=False
-    )
+    config_folder = models.CharField("Config Folder", max_length=2048, unique=True, editable=False)
     url = models.URLField("URL", max_length=2048, blank=True)
     division = models.IntegerField(choices=Divisions.choices)
     turned_on = models.BooleanField("Turned On", default=True)
-    connector = models.IntegerField(
-        choices=ConnectorChoices.choices, default=ConnectorChoices.CRAWLER2
-    )
+    connector = models.IntegerField(choices=ConnectorChoices.choices, default=ConnectorChoices.CRAWLER2)
 
-    source = models.IntegerField(
-        choices=SourceChoices.choices, default=SourceChoices.BOTH
-    )
-    update_frequency = models.IntegerField(
-        choices=UpdateFrequencies.choices, default=UpdateFrequencies.WEEKLY
-    )
-    document_type = models.IntegerField(
-        choices=DocumentTypes.choices, null=True, blank=True
-    )
-    tree_root_deprecated = models.CharField(
-        "Tree Root", max_length=1024, default="", blank=True
-    )
+    source = models.IntegerField(choices=SourceChoices.choices, default=SourceChoices.BOTH)
+    update_frequency = models.IntegerField(choices=UpdateFrequencies.choices, default=UpdateFrequencies.WEEKLY)
+    document_type = models.IntegerField(choices=DocumentTypes.choices, default=DocumentTypes.DOCUMENTATION)
+    tree_root_deprecated = models.CharField("Tree Root", max_length=1024, default="", blank=True)
     delete = models.BooleanField(default=False)
 
     # audit columns for production
-    audit_hierarchy = models.CharField(
-        "Audit Hierarchy", max_length=2048, default="", blank=True
-    )
+    audit_hierarchy = models.CharField("Audit Hierarchy", max_length=2048, default="", blank=True)
     audit_url = models.CharField("Audit URL", max_length=2048, default="", blank=True)
-    audit_mapping = models.CharField(
-        "Audit Mapping", max_length=2048, default="", blank=True
-    )
-    audit_label = models.CharField(
-        "Audit Label", max_length=2048, default="", blank=True
-    )
-    audit_query = models.CharField(
-        "Audit Query", max_length=2048, default="", blank=True
-    )
-    audit_duplicate_results = models.CharField(
-        "Audit Duplicate Results", max_length=2048, default="", blank=True
-    )
-    audit_metrics = models.CharField(
-        "Audit Metrics", max_length=2048, default="", blank=True
-    )
+    audit_mapping = models.CharField("Audit Mapping", max_length=2048, default="", blank=True)
+    audit_label = models.CharField("Audit Label", max_length=2048, default="", blank=True)
+    audit_query = models.CharField("Audit Query", max_length=2048, default="", blank=True)
+    audit_duplicate_results = models.CharField("Audit Duplicate Results", max_length=2048, default="", blank=True)
+    audit_metrics = models.CharField("Audit Metrics", max_length=2048, default="", blank=True)
 
-    cleaning_assigned_to = models.CharField(
-        "Cleaning Assigned To", max_length=128, default="", blank=True
-    )
+    cleaning_assigned_to = models.CharField("Cleaning Assigned To", max_length=128, default="", blank=True)
 
     github_issue_number = models.IntegerField("Issue Number in Github", default=0)
     notes = models.TextField("Notes", blank=True, default="")
@@ -89,9 +66,9 @@ class Collection(models.Model):
         choices=WorkflowStatusChoices.choices,
         default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
     )
-    curated_by = models.ForeignKey(
-        User, on_delete=models.DO_NOTHING, null=True, blank=True
-    )
+    tracker = FieldTracker(fields=["workflow_status"])
+
+    curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
 
     class Meta:
@@ -99,6 +76,18 @@ class Collection(models.Model):
 
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
+
+    @property
+    def _scraper_config_path(self) -> str:
+        return f"sources/scrapers/{self.config_folder}/default.xml"
+
+    @property
+    def _plugin_config_path(self) -> str:
+        return f"sources/SDE/{self.config_folder}/default.xml"
+
+    @property
+    def _indexer_config_path(self) -> str:
+        return f"jobs/collection.indexer.{self.config_folder}.xml"
 
     @property
     def tree_root(self) -> str:
@@ -170,15 +159,11 @@ class Collection(models.Model):
 
     def _process_exclude_list(self):
         """Process the exclude list."""
-        return [
-            pattern._process_match_pattern() for pattern in self.excludepattern.all()
-        ]
+        return [pattern._process_match_pattern() for pattern in self.excludepattern.all()]
 
     def _process_include_list(self):
         """Process the include list."""
-        return [
-            pattern._process_match_pattern() for pattern in self.includepattern.all()
-        ]
+        return [pattern._process_match_pattern() for pattern in self.includepattern.all()]
 
     def _process_title_list(self):
         """Process the title list"""
@@ -202,30 +187,57 @@ class Collection(models.Model):
             document_type_rules.append(processed_pattern)
         return document_type_rules
 
-    def create_config_xml(self):
+    def _write_to_github(self, path, content, overwrite):
+        gh = GitHubHandler()
+        if overwrite:
+            gh.update_file(path, content)
+        else:
+            gh.create_file(path, content)
+
+    def create_scraper_config(self, overwrite: bool = False):
         """
-        Reads from the model data and creates a new config folder
-        and xml file on sde-backend/sources/SDE/<config_folder>/default.xml
+        Reads from the model data and creates the initial scraper config xml file
+
+        if overwrite is True, it will overwrite the existing file
         """
 
-        original_config_string = open(
-            "config_generation/xmls/indexing_template.xml"
-        ).read()
-        editor = XmlEditor(original_config_string)
+        scraper_template = open("config_generation/xmls/webcrawler_initial_crawl.xml").read()
+        editor = XmlEditor(scraper_template)
+        scraper_config = editor.convert_template_to_scraper(self)
+        self._write_to_github(self._scraper_config_path, scraper_config, overwrite)
 
-        # add the URL
-        editor.update_or_add_element_value("Url", self.url)
+    def create_plugin_config(self, overwrite: bool = False):
+        """
+        Reads from the model data and creates the plugin config xml file that calls the api
 
-        editor.update_or_add_element_value("TreeRoot", self.tree_root)
-        if self.document_type:
-            editor.add_document_type_mapping(
-                document_type=self.get_document_type_display(), criteria=None
-            )
+        if overwrite is True, it will overwrite the existing file
+        """
 
-        updated_config_xml_string = editor.update_config_xml()
+        # there needs to be a scraper config file before creating the plugin config
+        gh = GitHubHandler()
+        scraper_exists = gh.check_file_exists(self._scraper_config_path)
+        if not scraper_exists:
+            raise ValueError(f"Scraper does not exist for the collection {self.config_folder}")
+        else:
+            scraper_content = gh._get_file_contents(self._scraper_config_path)
+            scraper_content = scraper_content.decoded_content.decode("utf-8")
+            scraper_editor = XmlEditor(scraper_content)
 
-        gh = GitHubHandler([self])
-        return gh.create_and_initialize_config_file(self, updated_config_xml_string)
+        plugin_template = open("config_generation/xmls/plugin_indexing_template.xml").read()
+        plugin_editor = XmlEditor(plugin_template)
+        plugin_config = plugin_editor.convert_template_to_plugin_indexer(scraper_editor)
+        self._write_to_github(self._plugin_config_path, plugin_config, overwrite)
+
+    def create_indexer_config(self, overwrite: bool = False):
+        """
+        Reads from the model data and creates indexer job that calls the plugin config
+
+        if overwrite is True, it will overwrite the existing file
+        """
+        indexer_template = open("config_generation/xmls/job_template.xml").read()
+        editor = XmlEditor(indexer_template)
+        indexer_config = editor.convert_template_to_indexer(self)
+        self._write_to_github(self._indexer_config_path, indexer_config, overwrite)
 
     def update_config_xml(self, original_config_string):
         """
@@ -440,12 +452,24 @@ class RequiredUrls(models.Model):
 
 
 class Comments(models.Model):
-    collection = models.ForeignKey(
-        "Collection", related_name="comments", on_delete=models.CASCADE
-    )
+    collection = models.ForeignKey("Collection", related_name="comments", on_delete=models.CASCADE)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.text
+
+
+@receiver(post_save, sender=Collection)
+def create_configs_on_status_change(sender, instance, created, **kwargs):
+    """
+    Creates various config files on certain workflow status changes
+    """
+
+    if "workflow_status" in instance.tracker.changed():
+        if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
+            instance.create_plugin_config(overwrite=True)
+        elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
+            instance.create_scraper_config(overwrite=False)
+            instance.create_indexer_config(overwrite=False)
