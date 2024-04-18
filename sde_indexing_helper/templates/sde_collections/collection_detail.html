@@ -123,7 +123,7 @@
                                 <strong>{{ comment.user.username }}</strong>
                                 <span>{{ comment.created_at|date:"M. d, Y, P" }}</span>
                                 <p>{{ comment.text }}</p>
-                                {% if user.is_authenticated and user == comment.user or user.is_staff %}
+                                {% if user.is_authenticated and user == comment.user %}
                                     <button data-comment-id="{{ comment.id }}" onclick="deleteComment(this)" class="delete-button">Delete</button>
                                 {% endif %}
                             </div>
