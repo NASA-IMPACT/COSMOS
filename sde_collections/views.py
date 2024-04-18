@@ -445,7 +445,7 @@ class CommentsViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         comment = self.get_object()
-        if request.user == comment.user or request.user.is_staff:
+        if request.user == comment.user:
             return super().destroy(request, *args, **kwargs)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
