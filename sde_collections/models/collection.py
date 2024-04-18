@@ -34,7 +34,7 @@ class Collection(models.Model):
 
     source = models.IntegerField(choices=SourceChoices.choices, default=SourceChoices.BOTH)
     update_frequency = models.IntegerField(choices=UpdateFrequencies.choices, default=UpdateFrequencies.WEEKLY)
-    document_type = models.IntegerField(choices=DocumentTypes.choices, null=True, blank=True)
+    document_type = models.IntegerField(choices=DocumentTypes.choices, default=DocumentTypes.DOCUMENTATION)
     tree_root_deprecated = models.CharField("Tree Root", max_length=1024, default="", blank=True)
     delete = models.BooleanField(default=False)
 
