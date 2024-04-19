@@ -190,7 +190,7 @@ class Collection(models.Model):
     def _write_to_github(self, path, content, overwrite):
         gh = GitHubHandler()
         if overwrite:
-            gh.update_file(path, content)
+            gh.create_or_update_file(path, content)
         else:
             gh.create_file(path, content)
 

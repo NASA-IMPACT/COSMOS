@@ -72,7 +72,7 @@ class GitHubHandler:
             branch=branch,
         )
 
-    def update_file(self, file_path, file_string, branch=None):
+    def create_or_update_file(self, file_path, file_string, branch=None):
         """
         Update file contents on GitHub
         if no branch is provided, it will default to the webapp_pr_branch
@@ -81,16 +81,19 @@ class GitHubHandler:
         if not branch:
             branch = self.webapp_pr_branch
 
-        contents = self._get_file_contents(file_path)
-        COMMIT_MESSAGE = f"Webapp: Update {file_path}"
+        if self.check_file_exists(file_path):
+            contents = self._get_file_contents(file_path)
+            COMMIT_MESSAGE = f"Webapp: Update {file_path}"
 
-        self.repo.update_file(
-            contents.path,
-            COMMIT_MESSAGE,
-            file_string,
-            contents.sha,
-            branch=branch,
-        )
+            self.repo.update_file(
+                contents.path,
+                COMMIT_MESSAGE,
+                file_string,
+                contents.sha,
+                branch=branch,
+            )
+        else:
+            self.create_file(file_path, file_string, branch)
 
     def update_config_with_current_rules(self, collection):
         """
@@ -111,16 +114,6 @@ class GitHubHandler:
             contents.sha,
             branch=self.github_branch,
         )
-
-    def create_or_update_file(self, file_path, file_string):
-        """
-        Create or update file contents on GitHub
-        """
-
-        if self.check_file_exists(file_path):
-            self.update_file_contents(file_path, file_string)
-        else:
-            self.create_file(file_path, file_string)
 
     def branch_exists(self, branch_name: str) -> bool:
         try:
