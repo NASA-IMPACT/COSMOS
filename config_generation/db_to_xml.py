@@ -180,11 +180,9 @@ class XmlEditor:
         ]
 
         for field in transfer_fields:
-            print(field, scraper_editor.get_tag_value(field, strict=True))
             self.update_or_add_element_value(field, scraper_editor.get_tag_value(field, strict=True))
 
         for parent, child in double_transfer_fields:
-            print(parent, child, scraper_editor.get_tag_value(f"{parent}/{child}", strict=True))
             self.update_or_add_element_value(
                 f"{parent}/{child}", scraper_editor.get_tag_value(f"{parent}/{child}", strict=True)
             )
