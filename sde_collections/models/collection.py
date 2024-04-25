@@ -77,6 +77,27 @@ class Collection(models.Model):
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
 
+    def add_to_public_query(self):
+        """Add the collection to the public query."""
+        if self.workflow_status != WorkflowStatusChoices.READY_FOR_PUBLIC_PROD:
+            raise ValueError(f"{self.config_folder} is not ready for public prod, you can't add it to the public query")
+
+        gh = GitHubHandler()
+        query_path = "webservices/query-smd-primary.xml"
+        scraper_content = gh._get_file_contents(query_path)
+        scraper_editor = XmlEditor(scraper_content.decoded_content.decode("utf-8"))
+
+        collections = scraper_editor.get_tag_value("CollectionSelection", strict=True)
+        collections = collections.split(";")
+        collections.append(f"/SDE/{self.config_folder}/")
+        collections = list(set(collections))
+        collections.sort()
+        collections = ";".join(collections)
+
+        scraper_editor.update_or_add_element_value("CollectionSelection", collections)
+        scraper_content = scraper_editor.update_config_xml()
+        gh.create_or_update_file(query_path, scraper_content)
+
     @property
     def _scraper_config_path(self) -> str:
         return f"sources/scrapers/{self.config_folder}/default.xml"
