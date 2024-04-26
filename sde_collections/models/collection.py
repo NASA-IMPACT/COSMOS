@@ -494,3 +494,5 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
         elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
             instance.create_scraper_config(overwrite=False)
             instance.create_indexer_config(overwrite=False)
+        elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_PUBLIC_PROD:
+            instance.add_to_public_query()
