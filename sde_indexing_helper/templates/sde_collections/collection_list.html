@@ -4,7 +4,7 @@
 {% block title %}Collections{% endblock %}
 {% block stylesheets %}
     {{ block.super }}
-    <link href="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sl-2.0.1/datatables.min.css" rel="stylesheet">
+    <link href="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/collections_list.css' %}">
 {% endblock stylesheets %}
 {% block content %}
@@ -46,7 +46,7 @@
                              data-match-pattern
                              remove_protocol
                              row
-                             url>
+                             url>                          
                             <button class="btn {{ collection.workflow_status_button_color }} btn-sm dropdown-toggle"
                                     type="button"
                                     id="workflow-status-button-{{ collection.id }}"
@@ -91,6 +91,6 @@
 {% block javascripts %}
     <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <script src="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sl-2.0.1/datatables.min.js"></script>
+    <script src="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.js"></script>
     <script src="{% static 'js/collection_list.js' %}"></script>
 {% endblock javascripts %}
