@@ -5,6 +5,12 @@ var selected_text = "";
 var INDIVIDUAL_URL = 1
 var MULTI_URL_PATTERN = 2
 
+// fix table allignment when changing around tabs
+$('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
+    $($.fn.dataTable.tables(true)).DataTable()
+       .columns.adjust();
+ });
+
 $(document).ready(function () {
     handleAjaxStartAndStop();
     initializeDataTable();

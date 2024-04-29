@@ -93,4 +93,6 @@
 
 .nav-item > .active {
     color: #0066CA;
+    font-weight: 700;
 }
+
