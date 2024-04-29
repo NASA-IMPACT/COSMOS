@@ -22,9 +22,18 @@
                 <th class="text-center">Workflow Status</th>
                 <th class="text-center">Curator</th>
                 <th class="text-center">Connector Type</th>
-                <th class="text-center">Config Folder</th>
+            </tr>
+            <tr>
+                <td ><input type="text" id="nameFilter" placeholder="Name" /></td>
+                <td ><input type="text" id="urlFilter" placeholder="URL" /></td>
+                <td ><input type="text" id="divisionFilter" placeholder="Division" /></td>
+                <td ><input type="number" id="candidateFilter" placeholder="Candidate URLs" /></td>
+                <td >dropdown placeholder</td>
+                <td >dropdown placeholder</td>
+                <td ><input type="text" placeholder="Connector Type" /></td>
             </tr>
         </thead>
+      
         <tbody>
             {% for collection in collections %}
                 <tr>
@@ -83,7 +92,6 @@
                         </div>
                     </td>
                     <td>{{ collection.get_connector_display }}</td>
-                    <td>{{ collection.config_folder }}</td>
                 </tr>
             {% endfor %}
         </tbody>

@@ -1,6 +1,7 @@
 let table = $('#collection_table').DataTable({
     "paging": false,
     "stateSave": true,
+    "orderCellsTop": true,
     "dom": 'BPfritip',
     "buttons": [
         'csv',
@@ -68,6 +69,37 @@ let table = $('#collection_table').DataTable({
         }
     ]
 });
+
+$('#nameFilter').on('keyup', function () {
+    table
+        .columns(0)
+        .search(this.value)
+        .draw();
+});
+
+$('#urlFilter').on('keyup', function () {
+    table
+        .columns(1)
+        .search(this.value)
+        .draw();
+});
+
+$('#divisionFilter').on('keyup', function () {
+    table
+        .columns(2)
+        .search(this.value)
+        .draw();
+});
+
+$('#candidateFilter').on('keyup', function () {
+    table
+        .columns(2)
+        .search(this.value)
+        .draw();
+});
+// nameFilter.addEventListener('input', function () {
+//     table.draw();
+// });
 
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 
