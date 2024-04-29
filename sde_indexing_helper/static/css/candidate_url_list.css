@@ -74,3 +74,23 @@
 .document_type_form_select {
     cursor: pointer
 }
+
+/* nav tab headers, renamed to prevent material dashboard css conflict */
+.tab-nav {
+    color: black;
+    padding-right: 50px;
+    font-weight: 500
+}
+
+.tab-nav:hover {
+    text-decoration: underline;
+    color: #0066CA; 
+}
+
+.nav-tabs {
+    padding-left: 0px;
+}
+
+.nav-item > .active {
+    color: #0066CA;
+}
