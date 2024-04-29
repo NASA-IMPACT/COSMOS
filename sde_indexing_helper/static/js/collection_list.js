@@ -64,7 +64,8 @@ let table = $('#collection_table').DataTable({
                     }
                 ]
             },
-            targets: [3]
+            targets: [3],
+            type: "num-fmt"
         }
     ]
 });
