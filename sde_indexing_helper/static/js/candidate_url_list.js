@@ -24,6 +24,7 @@ function initializeDataTable() {
         "serverSide": true,
         "stateSave": true,
         "searchDelay": 1000,
+        "orderCellsTop": true,
         "pagingType": "input",
         "dom": 'lBfritip',
         "buttons": ['spacer', 'csv', 'spacer', 'createState', 'savedStates', 'spacer', 'selectAll', 'selectNone'],
@@ -64,9 +65,32 @@ function initializeDataTable() {
         }
     });
 
+    $('#candidateUrlFilter').on('keyup', function () {
+        candidate_urls_table
+            .columns(0)
+            .search(this.value)
+            .draw();
+    });
+    
+    $('#candidateScrapedTitleFilter').on('keyup', function () {
+        candidate_urls_table
+            .columns(2)
+            .search(this.value)
+            .draw();
+    });
+    
+    $('#candidateNewTitleFilter').on('keyup', function () {
+        candidate_urls_table
+            .columns(3)
+            .search(this.value)
+            .draw();
+    });
+    
+
     var exclude_patterns_table = $('#exclude_patterns_table').DataTable({
         "scrollY": true,
         "serverSide": true,
+        "orderCellsTop": true,
         "ajax": `/api/exclude-patterns/?format=datatables&collection_id=${collection_id}`,
         "columns": [
             { "data": "match_pattern" },
@@ -85,9 +109,24 @@ function initializeDataTable() {
         ]
     });
 
+    $('#candidateMatchPatternFilter').on('keyup', function () {
+        exclude_patterns_table
+            .columns(0)
+            .search(this.value)
+            .draw();
+    });
+    
+    $('#candidateReasonFilter').on('keyup', function () {
+        exclude_patterns_table
+            .columns(2)
+            .search(this.value)
+            .draw();
+    });
+
     var include_patterns_table = $('#include_patterns_table').DataTable({
         "scrollY": true,
         "serverSide": true,
+        "orderCellsTop": true,
         "ajax": `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
         "columns": [
             { "data": "match_pattern" },
@@ -105,9 +144,18 @@ function initializeDataTable() {
         ]
     });
 
+
+    $('#candidateIncludeMatchPatternFilter').on('keyup', function () {
+        include_patterns_table
+            .columns(0)
+            .search(this.value)
+            .draw();
+    });
+
     var title_patterns_table = $('#title_patterns_table').DataTable({
         "scrollY": true,
         "serverSide": true,
+        "orderCellsTop": true,
         "ajax": `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
         "columns": [
             { "data": "match_pattern" },
@@ -123,12 +171,21 @@ function initializeDataTable() {
                 }
             },
             { "data": "id", "visible": false, "searchable": false },
+
         ]
+    });
+
+    $('#candidateTitleMatchPatternFilter').on('keyup', function () {
+        title_patterns_table
+            .columns(0)
+            .search(this.value)
+            .draw();
     });
 
     var document_type_patterns_table = $('#document_type_patterns_table').DataTable({
         "scrollY": true,
         "serverSide": true,
+        "orderCellsTop": true,
         "ajax": `/api/document-type-patterns/?format=datatables&collection_id=${collection_id}`,
         "columns": [
             { "data": "match_pattern" },
@@ -145,6 +202,13 @@ function initializeDataTable() {
             },
             { "data": "id", "visible": false, "searchable": false },
         ]
+    });
+
+    $('#candidateDocTypeMatchPatternFilter').on('keyup', function () {
+        document_type_patterns_table
+            .columns(0)
+            .search(this.value)
+            .draw();
     });
 }
 
