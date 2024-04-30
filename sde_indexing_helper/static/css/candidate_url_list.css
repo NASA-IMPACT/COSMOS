@@ -74,3 +74,7 @@
 .document_type_form_select {
     cursor: pointer
 }
+
+.table_filter_row_input{
+    width: 100%;
+}
