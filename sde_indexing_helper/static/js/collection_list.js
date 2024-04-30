@@ -91,15 +91,13 @@ $('#divisionFilter').on('keyup', function () {
         .draw();
 });
 
-$('#candidateFilter').on('keyup', function () {
+$('#connectorTypeFilter').on('keyup', function () {
     table
-        .columns(2)
+        .columns(6)
         .search(this.value)
         .draw();
 });
-// nameFilter.addEventListener('input', function () {
-//     table.draw();
-// });
+
 
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 
