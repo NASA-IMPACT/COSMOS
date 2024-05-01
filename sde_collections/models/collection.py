@@ -12,6 +12,11 @@ from slugify import slugify
 from config_generation.db_to_xml import XmlEditor
 
 from ..utils.github_helper import GitHubHandler
+from ..utils.slack_utils import (
+    STATUS_CHANGE_NOTIFICATIONS,
+    format_slack_message,
+    send_slack_message,
+)
 from .collection_choice_fields import (
     ConnectorChoices,
     CurationStatusChoices,
@@ -452,6 +457,16 @@ class Collection(models.Model):
         # Call the function to generate the value for the generated_field based on the original_field
         if not self.config_folder:
             self.config_folder = self._compute_config_folder_name()
+
+        if not self._state.adding:
+            old_status = Collection.objects.get(id=self.id).workflow_status
+            new_status = self.workflow_status
+            if old_status != new_status:
+                transition = (old_status, new_status)
+                if transition in STATUS_CHANGE_NOTIFICATIONS:
+                    details = STATUS_CHANGE_NOTIFICATIONS[transition]
+                    message = format_slack_message(self.name, details, self.id)
+                    send_slack_message(message)
 
         # Call the parent class's save method
         super().save(*args, **kwargs)
