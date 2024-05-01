@@ -294,3 +294,4 @@ Document_Classifier_inference/model.pt
 
 # Database backup
 backup.json
+prod_backup-20240423.json
