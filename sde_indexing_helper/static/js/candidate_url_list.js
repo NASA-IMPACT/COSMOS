@@ -170,55 +170,93 @@ function initializeDataTable() {
     orderCellsTop: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
+initComplete: function(data) {
+   console.log("sadfdsad");
 
 
-    ajax: {url: `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
-  
-    success: function (data) {
-      console.log("sdfad");
-      console.log(data);
 
-      setTimeout(() => {
-
-        $(".testing").each(function (i) {
-          console.log("inside");
-          var table = $("#title_patterns_table").DataTable();
-          console.log(title_patterns_table);
-          var select = $(
-            '<select><option value="' +
-              table.column(i).header().innerText +
-              '">' +
-              table.column(i).header().innerText +
-              "</option></select>"
-          )
-            .appendTo($(this).empty())
-            .on("change", function () {
-              table.column(i).search($(this).val()).draw();
-            });
+   $("#testing1").each(function (i) {
+    console.log(i);
+    // $("#title_patterns_table tfoot th").each( function ( i ) {
+        var table = $("#title_patterns_table").DataTable();
+        // var select = $(
+        //   '<select><option value="' +
+        //     table.column(1).header().innerText +
+        //     '">' +
+        //     table.column(1).header().innerText +
+        //     "</option></select>"
+        // )
+        var select = $('<select><option value=""></option></select>')
+          .appendTo($(this).empty())
+          .on("change", function () {
+            table.column(1).search($(this).val()).draw();
+          });
+    
       
-        
-          // console.log("results", results);
-          table
-            .column(i)
-            .data()
-            .unique()
-            .sort()
-            .each(function (d, j) {
-              console.log("D", d);
-              select.append('<option value="' + d + '">' + d + "</option>");
-            });
+        // console.log("results", results);
+        table
+          .column(1)
+          .data()
+          .unique()
+          .sort()
+          .each(function (d, j) {
+            console.log("D", d);
+            select.append('<option value="' + d + '">' + d + "</option>");
+          });
+      // });
         });
 
 
-      },5000);
+},
+
+    ajax: `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
+  
+  
+    // success: function (data) {
+    //   console.log("sdfad");
+    //   console.log(data);
+
+      // setTimeout(() => {
+
+      //   $(".testing").each(function (i) {
+      //     console.log("inside");
+      //     var table = $("#title_patterns_table").DataTable();
+      //     console.log(title_patterns_table);
+      //     var select = $(
+      //       '<select><option value="' +
+      //         table.column(i).header().innerText +
+      //         '">' +
+      //         table.column(i).header().innerText +
+      //         "</option></select>"
+      //     )
+      //       .appendTo($(this).empty())
+      //       .on("change", function () {
+      //         table.column(i).search($(this).val()).draw();
+      //       });
+      
+        
+      //     // console.log("results", results);
+      //     table
+      //       .column(i)
+      //       .data()
+      //       .unique()
+      //       .sort()
+      //       .each(function (d, j) {
+      //         console.log("D", d);
+      //         select.append('<option value="' + d + '">' + d + "</option>");
+      //       });
+      //   });
+
+
+      // },5000);
       //await or sleep
 
      
 
 
-    }
+ //  }
   
-  },
+ // },
     columns: [
       { data: "match_pattern" },
       {
@@ -908,31 +946,4 @@ $("#filter-checkbox").on("change", function () {
   $("#candidate_urls_table").DataTable().ajax.reload(null, false);
 });
 
-$(document).ready(function () {
-  $(".testing").each(function (i) {
-    var table = $("#title_patterns_table").DataTable();
-    var select = $(
-      '<select><option value="' +
-        table.column(i).header().innerText +
-        '">' +
-        table.column(i).header().innerText +
-        "</option></select>"
-    )
-      .appendTo($(this).empty())
-      .on("change", function () {
-        table.column(i).search($(this).val()).draw();
-      });
 
-  
-    // console.log("results", results);
-    table
-      .column(i)
-      .data()
-      .unique()
-      .sort()
-      .each(function (d, j) {
-        console.log("D", d);
-        select.append('<option value="' + d + '">' + d + "</option>");
-      });
-  });
-});
