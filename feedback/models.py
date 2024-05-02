@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 
+from sde_collections.utils.slack_utils import send_slack_message
+
 
 class Feedback(models.Model):
     name = models.CharField(max_length=150)
@@ -18,6 +20,28 @@ class Feedback(models.Model):
         if not self.id:
             self.created_at = timezone.now()
         super().save(*args, **kwargs)
+        is_new = self._state.adding
+        if is_new:
+            message = self.format_notification_message()
+            try:
+                send_slack_message(message)
+            except Exception as e:
+                print(f"Failed to send slack message: {e}")
+
+    def format_notification_message(self):
+        """
+        Returns a formatted notification message containing details from this Feedback instance.
+        """
+        notification_message = (
+            f"New Feedback Received!\n"
+            f"Name: {self.name}\n"
+            f"Email: {self.email}\n"
+            f"Subject: {self.subject}\n"
+            f"Comments: {self.comments}\n"
+            f"Source: {self.source}\n"
+            f"Received on: {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        return notification_message
 
 
 class ContentCurationRequest(models.Model):
