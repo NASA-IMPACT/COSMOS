@@ -4,6 +4,7 @@ var collection_id = getCollectionId();
 var selected_text = "";
 var INDIVIDUAL_URL = 1;
 var MULTI_URL_PATTERN = 2;
+var matchPatternTypeMap = {"Individual URL Pattern": 1, "Multi-URL Pattern": 2};
 
 $(document).ready(function () {
   handleAjaxStartAndStop();
@@ -170,44 +171,44 @@ function initializeDataTable() {
     orderCellsTop: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
-initComplete: function(data) {
-   console.log("sadfdsad");
+// initComplete: function(data) {
+//    console.log("sadfdsad");
 
 
 
-   $("#testing1").each(function (i) {
-    console.log(i);
-    // $("#title_patterns_table tfoot th").each( function ( i ) {
-        var table = $("#title_patterns_table").DataTable();
-        // var select = $(
-        //   '<select><option value="' +
-        //     table.column(1).header().innerText +
-        //     '">' +
-        //     table.column(1).header().innerText +
-        //     "</option></select>"
-        // )
-        var select = $('<select><option value=""></option></select>')
-          .appendTo($(this).empty())
-          .on("change", function () {
-            table.column(1).search($(this).val()).draw();
-          });
+//    $("#testing2").each(function (i) {
+//     console.log(i);
+//     // $("#title_patterns_table tfoot th").each( function ( i ) {
+//         var table = $("#document_type_patterns_table").DataTable();
+//         // var select = $(
+//         //   '<select><option value="' +
+//         //     table.column(1).header().innerText +
+//         //     '">' +
+//         //     table.column(1).header().innerText +
+//         //     "</option></select>"
+//         // )
+//         var select = $('<select><option value=""></option></select>')
+//           .appendTo($(this).empty())
+//           .on("change", function () {
+//             table.column(1).search($(this).val()).draw();
+//           });
     
       
-        // console.log("results", results);
-        table
-          .column(1)
-          .data()
-          .unique()
-          .sort()
-          .each(function (d, j) {
-            console.log("D", d);
-            select.append('<option value="' + d + '">' + d + "</option>");
-          });
-      // });
-        });
+//         // console.log("results", results);
+//         table
+//           .column(1)
+//           .data()
+//           .unique()
+//           .sort()
+//           .each(function (d, j) {
+//             console.log("D", d);
+//             select.append('<option value="' + d + '">' + d + "</option>");
+//           });
+//       // });
+//         });
 
 
-},
+// },
 
     ajax: `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
   
@@ -291,6 +292,57 @@ initComplete: function(data) {
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
     ajax: `/api/document-type-patterns/?format=datatables&collection_id=${collection_id}`,
+
+
+
+
+
+    initComplete: function(data) {
+      console.log("sadfdsad");
+   
+   
+   
+      $("#testing2").each(function (i) {
+       console.log(i);
+       // $("#title_patterns_table tfoot th").each( function ( i ) {
+           var table = $("#document_type_patterns_table").DataTable();
+           // var select = $(
+           //   '<select><option value="' +
+           //     table.column(1).header().innerText +
+           //     '">' +
+           //     table.column(1).header().innerText +
+           //     "</option></select>"
+           // )
+           var select = $('<select><option value=""></option></select>')
+             .appendTo($(this).empty())
+             .on("change", function () {
+              console.log("here");
+              console.log($(this).val());
+               table.column(6).search(matchPatternTypeMap[$(this).val()]).draw();
+             });
+       
+         
+           // console.log("results", results);
+           table
+             .column(1)
+             .data()
+             .unique()
+             .sort()
+             .each(function (d, j) {
+               console.log("D", d);
+               select.append('<option value="' + d + '">' + d + "</option>");
+             });
+         // });
+           });
+   
+   
+   },
+
+
+
+
+
+
     columns: [
       { data: "match_pattern" },
       {
@@ -309,6 +361,8 @@ initComplete: function(data) {
         },
       },
       { data: "id", visible: false, searchable: false },
+      {data: "match_pattern_type", visible:false}
+
     ],
   });
 
