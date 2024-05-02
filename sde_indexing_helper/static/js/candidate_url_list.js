@@ -80,6 +80,11 @@ function initializeDataTable() {
     },
   });
 
+  $("#excludedFilter").on("change", function () {
+    console.log("working");
+    $("#candidate_urls_table").DataTable().ajax.reload(null, false);
+  });
+
   $("#candidateUrlFilter").on("keyup", function () {
     candidate_urls_table.columns(0).search(this.value).draw();
   });
@@ -309,6 +314,35 @@ function getVisitedColumn(true_icon, false_icon) {
     },
   };
 }
+
+// function getExcludedColumnTest() {
+//   return {
+//     data: "excluded",
+//     class: "col-1 text-center",
+
+//     render: function (data, type, row) {
+//       var dict = {
+//         1: "Yes",
+//         2: "No",
+//       };
+//       button_color = data ? "btn-success" : "btn-secondary";
+//       button_text = data ? dict[data] : "Exclude";
+
+//       return `
+//           <div class="dropdown document_type_dropdown" data-match-pattern=${remove_protocol(
+//             row["url"]
+//           )}>
+//             <button class="btn ${button_color} btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+//               ${button_text}
+//             </button>
+//             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+//               <a class="dropdown-item document_type_select" href="#" value="1">Yes</a>
+//               <a class="dropdown-item document_type_select" href="#" value="2">No</a>
+//             </div>
+//           </div>`;
+//     },
+//   };
+// }
 
 function getDocumentTypeColumn() {
   return {
@@ -824,4 +858,36 @@ $(".document_type_form_select").on("click", function (e) {
 
 $("#filter-checkbox").on("change", function () {
   $("#candidate_urls_table").DataTable().ajax.reload(null, false);
+});
+
+$(document).ready(function () {
+  $(".testing").each(function (i) {
+    var table = $("#title_patterns_table").DataTable();
+    var select = $(
+      '<select><option value="' +
+        table.column(i).header().innerText +
+        '">' +
+        table.column(i).header().innerText +
+        "</option></select>"
+    )
+      .appendTo($(this).empty())
+      .on("change", function () {
+        table.column(i).search($(this).val()).draw();
+      });
+    console.log("table.context[0].aodata", table.context[0].aoData);
+    console.log("table.context[0].aodata", table.context[0].aoData);
+    const results = table.context[0].aoData.map((filter) => {
+      return filter._aData.match_pattern_type_display;
+    });
+    // console.log("results", results);
+    table
+      .column(i)
+      .data()
+      .unique()
+      .sort()
+      .each(function (d, j) {
+        console.log("D", d);
+        select.append('<option value="' + d + '">' + d + "</option>");
+      });
+  });
 });
