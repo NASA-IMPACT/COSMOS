@@ -19,7 +19,6 @@ class Feedback(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             self.created_at = timezone.now()
-        super().save(*args, **kwargs)
         is_new = self._state.adding
         if is_new:
             message = self.format_notification_message()
@@ -27,13 +26,14 @@ class Feedback(models.Model):
                 send_slack_message(message)
             except Exception as e:
                 print(f"Failed to send slack message: {e}")
+        super().save(*args, **kwargs)
 
     def format_notification_message(self):
         """
         Returns a formatted notification message containing details from this Feedback instance.
         """
         notification_message = (
-            f"New Feedback Received!\n"
+            f"<!here> Hey team!! Good news! We've received a new feedback! :rocket: Here are the details : \n"
             f"Name: {self.name}\n"
             f"Email: {self.email}\n"
             f"Subject: {self.subject}\n"
