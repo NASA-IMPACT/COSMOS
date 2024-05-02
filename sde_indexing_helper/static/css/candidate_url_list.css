@@ -75,7 +75,9 @@
     cursor: pointer
 }
 
-/* nav tab headers, renamed to prevent material dashboard css conflict */
+.table_filter_row_input{
+    width: 100%;
+}
 .tab-nav {
     color: black;
     padding-right: 25px;
