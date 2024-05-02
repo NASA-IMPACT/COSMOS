@@ -107,3 +107,9 @@ div > .nav {
     padding-bottom: 30px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
 }
+
+/* badge showing workflow status by header */
+.badge {
+    cursor: default !important;
+    margin-left: 15px;
+}
