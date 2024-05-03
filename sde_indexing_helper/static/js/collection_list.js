@@ -3,6 +3,11 @@ let table = $('#collection_table').DataTable({
     "stateSave": true,
     "orderCellsTop": true,
     "dom": 'BPfritip',
+    // "scrollX": false,
+    // "responsive": false,
+
+    // "autoWidth": true,
+
     "buttons": [
         'csv',
         {
@@ -18,56 +23,57 @@ let table = $('#collection_table').DataTable({
         }
     ],
     "columnDefs": [
-        {
-            searchPanes: {
-                options: [
-                    {
-                        label: '0 URLs',
-                        value: function (rowData, rowIdx) {
-                            return $(rowData[3]).text() == 0;
-                        }
-                    },
-                    {
-                        label: '1 solo URL',
-                        value: function (rowData, rowIdx) {
-                            return $(rowData[3]).text() == 1;
-                        }
-                    },
-                    {
-                        label: '1 to 100 URLs',
-                        value: function (rowData, rowIdx) {
-                            return $(rowData[3]).text() <= 100 && $(rowData[3]).text() > 1;
-                        }
-                    },
-                    {
-                        label: '100 to 1,000 URLs',
-                        value: function (rowData, rowIdx) {
-                            return $(rowData[3]).text() <= 1000 && $(rowData[3]).text() > 100;
-                        }
-                    },
-                    {
-                        label: '1,000 to 10,000 URLs',
-                        value: function (rowData, rowIdx) {
-                            return $(rowData[3]).text() <= 10000 && $(rowData[3]).text() > 1000;
-                        }
-                    },
-                    {
-                        label: '10,000 to 100,000 URLs',
-                        value: function (rowData, rowIdx) {
-                            return $(rowData[3]).text() <= 100000 && $(rowData[3]).text() > 10000;
-                        }
-                    },
-                    {
-                        label: 'Over 100,000 URLs',
-                        value: function (rowData, rowIdx) {
-                            return $(rowData[3]).text() > 100000;
-                        }
-                    }
-                ]
-            },
-            targets: [3],
-            type: "num-fmt"
-        }
+        // {
+        //     searchPanes: {
+        //         options: [
+        //             {
+        //                 label: '0 URLs',
+        //                 value: function (rowData, rowIdx) {
+        //                     return $(rowData[3]).text() == 0;
+        //                 }
+        //             },
+        //             {
+        //                 label: '1 solo URL',
+        //                 value: function (rowData, rowIdx) {
+        //                     return $(rowData[3]).text() == 1;
+        //                 }
+        //             },
+        //             {
+        //                 label: '1 to 100 URLs',
+        //                 value: function (rowData, rowIdx) {
+        //                     return $(rowData[3]).text() <= 100 && $(rowData[3]).text() > 1;
+        //                 }
+        //             },
+        //             {
+        //                 label: '100 to 1,000 URLs',
+        //                 value: function (rowData, rowIdx) {
+        //                     return $(rowData[3]).text() <= 1000 && $(rowData[3]).text() > 100;
+        //                 }
+        //             },
+        //             {
+        //                 label: '1,000 to 10,000 URLs',
+        //                 value: function (rowData, rowIdx) {
+        //                     return $(rowData[3]).text() <= 10000 && $(rowData[3]).text() > 1000;
+        //                 }
+        //             },
+        //             {
+        //                 label: '10,000 to 100,000 URLs',
+        //                 value: function (rowData, rowIdx) {
+        //                     return $(rowData[3]).text() <= 100000 && $(rowData[3]).text() > 10000;
+        //                 }
+        //             },
+        //             {
+        //                 label: 'Over 100,000 URLs',
+        //                 value: function (rowData, rowIdx) {
+        //                     return $(rowData[3]).text() > 100000;
+        //                 }
+        //             }
+        //         ]
+        //     },
+        //     targets: [3],
+        //     type: "num-fmt"
+        // },
+        {width:"20px", targets:[1]}
     ]
 });
 
