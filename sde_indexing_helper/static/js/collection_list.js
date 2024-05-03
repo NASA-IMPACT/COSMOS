@@ -1,6 +1,7 @@
 let table = $('#collection_table').DataTable({
     "paging": false,
     "stateSave": true,
+    "orderCellsTop": true,
     "dom": 'BPfritip',
     "buttons": [
         'csv',
@@ -45,13 +46,13 @@ let table = $('#collection_table').DataTable({
                         }
                     },
                     {
-                        label: '1000 to 10,000 URLs',
+                        label: '1,000 to 10,000 URLs',
                         value: function (rowData, rowIdx) {
                             return $(rowData[3]).text() <= 10000 && $(rowData[3]).text() > 1000;
                         }
                     },
                     {
-                        label: '10000 to 100,000 URLs',
+                        label: '10,000 to 100,000 URLs',
                         value: function (rowData, rowIdx) {
                             return $(rowData[3]).text() <= 100000 && $(rowData[3]).text() > 10000;
                         }
@@ -64,10 +65,40 @@ let table = $('#collection_table').DataTable({
                     }
                 ]
             },
-            targets: [3]
+            targets: [3],
+            type: "num-fmt"
         }
     ]
 });
+
+$('#nameFilter').on('keyup', function () {
+    table
+        .columns(0)
+        .search(this.value)
+        .draw();
+});
+
+$('#urlFilter').on('keyup', function () {
+    table
+        .columns(1)
+        .search(this.value)
+        .draw();
+});
+
+$('#divisionFilter').on('keyup', function () {
+    table
+        .columns(2)
+        .search(this.value)
+        .draw();
+});
+
+$('#connectorTypeFilter').on('keyup', function () {
+    table
+        .columns(6)
+        .search(this.value)
+        .draw();
+});
+
 
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 

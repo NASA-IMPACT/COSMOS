@@ -3,6 +3,7 @@
 {% load i18n %}
 {% block title %}Collections{% endblock %}
 {% block stylesheets %}
+{% load humanize %}
     {{ block.super }}
     <link href="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/collections_list.css' %}">
@@ -21,9 +22,18 @@
                 <th class="text-center">Workflow Status</th>
                 <th class="text-center">Curator</th>
                 <th class="text-center">Connector Type</th>
-                <th class="text-center">Config Folder</th>
+            </tr>
+            <tr>
+                <td ><input class="table_filter_row_input" type="text" id="nameFilter" placeholder="Name" /></td>
+                <td ><input class="table_filter_row_input" type="text" id="urlFilter" placeholder="URL" /></td>
+                <td ><input class="table_filter_row_input" type="text" id="divisionFilter" placeholder="Division" /></td>
+                <td ></td>
+                <td >dropdown placeholder</td>
+                <td >dropdown placeholder</td>
+                <td ><input class="table_filter_row_input" type="text" id="connectorTypeFilter" placeholder="Connector Type" /></td>
             </tr>
         </thead>
+      
         <tbody>
             {% for collection in collections %}
                 <tr>
@@ -39,7 +49,7 @@
                     <td>
                         <a href=" {% if collection.num_candidate_urls > 0 %} {% url 'sde_collections:candidate_urls' collection.pk %} {% endif %} "
                            class="btn btn-sm {% if collection.num_candidate_urls > 0 %}btn-primary {% else %}disabled{% endif %}"
-                           role="button">{{ collection.num_candidate_urls }}</a>
+                           role="button">{{ collection.num_candidate_urls|intcomma }}</a>
                     </td>
                     <td>
                         <div class="dropdown workflow_status_dropdown"
@@ -82,7 +92,6 @@
                         </div>
                     </td>
                     <td>{{ collection.get_connector_display }}</td>
-                    <td>{{ collection.config_folder }}</td>
                 </tr>
             {% endfor %}
         </tbody>
