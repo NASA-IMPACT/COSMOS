@@ -17,6 +17,11 @@ var docTypeFilter = {
   "Training and Education": 6,
 };
 
+// fix table allignment when changing around tabs
+$('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
+  $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+});
+
 $(document).ready(function () {
   handleAjaxStartAndStop();
   initializeDataTable();
@@ -35,6 +40,7 @@ function initializeDataTable() {
     scrollY: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
+    orderCellsTop: true,
     serverSide: true,
     stateSave: true,
     searchDelay: 1000,
@@ -119,11 +125,6 @@ function initializeDataTable() {
     },
   });
 
-  $("#excludedFilter").on("change", function () {
-    console.log("working");
-    $("#candidate_urls_table").DataTable().ajax.reload(null, false);
-  });
-
   $("#candidateUrlFilter").on("keyup", function () {
     candidate_urls_table.columns(0).search(this.value).draw();
   });
@@ -141,6 +142,7 @@ function initializeDataTable() {
     serverSide: true,
     orderCellsTop: true,
     lengthMenu: [25, 50, 100, 500],
+    orderCellsTop: true,
     pageLength: 100,
     ajax: `/api/exclude-patterns/?format=datatables&collection_id=${collection_id}`,
     initComplete: function (data) {
@@ -203,6 +205,8 @@ function initializeDataTable() {
     orderCellsTop: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
+    orderCellsTop: true,
+    serverSide: true,
     ajax: `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
     initComplete: function (data) {
       var table = $("#include_patterns_table").DataTable();
@@ -268,6 +272,7 @@ function initializeDataTable() {
     orderCellsTop: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
+    orderCellsTop: true,
     ajax: `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
 
     columns: [
@@ -302,6 +307,7 @@ function initializeDataTable() {
     serverSide: true,
     orderCellsTop: true,
     lengthMenu: [25, 50, 100, 500],
+    orderCellsTop: true,
     pageLength: 100,
     ajax: `/api/document-type-patterns/?format=datatables&collection_id=${collection_id}`,
     // initComplete: function (data) {
