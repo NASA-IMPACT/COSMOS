@@ -4,7 +4,18 @@ var collection_id = getCollectionId();
 var selected_text = "";
 var INDIVIDUAL_URL = 1;
 var MULTI_URL_PATTERN = 2;
-var matchPatternTypeMap = {"Individual URL Pattern": 1, "Multi-URL Pattern": 2};
+var matchPatternTypeMap = {
+  "Individual URL Pattern": 1,
+  "Multi-URL Pattern": 2,
+};
+var docTypeFilter = {
+  Images: 1,
+  Data: 2,
+  Documentation: 3,
+  "Software and Tools": 4,
+  "Missions and Instruments": 5,
+  "Training and Education": 6,
+};
 
 $(document).ready(function () {
   handleAjaxStartAndStop();
@@ -62,6 +73,32 @@ function initializeDataTable() {
         d.is_excluded = $("#filter-checkbox").is(":checked") ? false : null;
       },
     },
+    initComplete: function (data) {
+      const addDropdownSelect = [1, 4, 5];
+      this.api()
+        .columns()
+        .every(function (index) {
+          let column = this;
+          if (addDropdownSelect.includes(index)) {
+            $("thead tr td select.dropdown-" + index).on("change", function () {
+              var val = $.fn.dataTable.util.escapeRegex($(this).val());
+              column.search(val ? "^" + val + "$" : "", true, false).draw();
+            });
+            console.log("sort", column.data().unique().sort());
+            // Add list of options
+            column
+              .data()
+              .unique()
+              .sort()
+              .each(function (d, j) {
+                $("thead tr td select.dropdown-" + index).append(
+                  '<option value="' + d + '">' + d + "</option>"
+                );
+              });
+          }
+        });
+    },
+
     columns: [
       getURLColumn(),
       getExcludedColumn(true_icon, false_icon),
@@ -73,6 +110,7 @@ function initializeDataTable() {
       { data: "generated_title_id", visible: false, searchable: false },
       { data: "match_pattern_type", visible: false, searchable: false },
       { data: "candidate_urls_count", visible: false, searchable: false },
+      { data: "excluded", visible: false, searchable: false },
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
@@ -105,12 +143,36 @@ function initializeDataTable() {
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
     ajax: `/api/exclude-patterns/?format=datatables&collection_id=${collection_id}`,
+    initComplete: function (data) {
+      var table = $("#exclude_patterns_table").DataTable();
+
+      this.api()
+        .columns()
+        .every(function (index) {
+          let column = this;
+          if (index === 1) {
+            $("#exclude-patterns-dropdown-1").on("change", function () {
+              if ($(this).val() === "") table.columns(6).search("").draw();
+              table.column(6).search(matchPatternTypeMap[$(this).val()]).draw();
+            });
+            column
+              .data()
+              .unique()
+              .sort()
+              .each(function (d, j) {
+                $("#exclude-patterns-dropdown-1").append(
+                  '<option value="' + d + '">' + d + "</option>"
+                );
+              });
+          }
+        });
+    },
     columns: [
       { data: "match_pattern" },
       {
         data: "match_pattern_type_display",
         class: "text-center",
-        sortable: false,
+        sortable: true,
       },
       { data: "reason", class: "text-center", sortable: false },
       { data: "candidate_urls_count", class: "text-center", sortable: false },
@@ -123,6 +185,7 @@ function initializeDataTable() {
         },
       },
       { data: "id", visible: false, searchable: false },
+      { data: "match_pattern_type", visible: false },
     ],
   });
 
@@ -141,6 +204,39 @@ function initializeDataTable() {
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
     ajax: `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
+    initComplete: function (data) {
+      var table = $("#include_patterns_table").DataTable();
+      this.api()
+        .columns()
+        .every(function (index) {
+          let column = this;
+          if (column.data().length === 0) {
+            $("#include-patterns-dropdown-1").append(
+              "<option value='No options available'>No options available</option>"
+            );
+          } else {
+            if (index === 1) {
+              $("#include-patterns-dropdown-1").on("change", function () {
+                if ($(this).val() === "") table.columns(5).search("").draw();
+                table
+                  .column(5)
+                  .search(matchPatternTypeMap[$(this).val()])
+                  .draw();
+              });
+            }
+            column
+              .data()
+              .unique()
+              .sort()
+              .each(function (d, j) {
+                console.log("d", d);
+                $("#include-patterns-dropdown-1").append(
+                  '<option value="' + d + '">' + d + "</option>"
+                );
+              });
+          }
+        });
+    },
     columns: [
       { data: "match_pattern" },
       {
@@ -158,6 +254,7 @@ function initializeDataTable() {
         },
       },
       { data: "id", visible: false, searchable: false },
+      { data: "match_pattern_type", visible: false },
     ],
   });
 
@@ -171,93 +268,8 @@ function initializeDataTable() {
     orderCellsTop: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
-// initComplete: function(data) {
-//    console.log("sadfdsad");
-
-
-
-//    $("#testing2").each(function (i) {
-//     console.log(i);
-//     // $("#title_patterns_table tfoot th").each( function ( i ) {
-//         var table = $("#document_type_patterns_table").DataTable();
-//         // var select = $(
-//         //   '<select><option value="' +
-//         //     table.column(1).header().innerText +
-//         //     '">' +
-//         //     table.column(1).header().innerText +
-//         //     "</option></select>"
-//         // )
-//         var select = $('<select><option value=""></option></select>')
-//           .appendTo($(this).empty())
-//           .on("change", function () {
-//             table.column(1).search($(this).val()).draw();
-//           });
-    
-      
-//         // console.log("results", results);
-//         table
-//           .column(1)
-//           .data()
-//           .unique()
-//           .sort()
-//           .each(function (d, j) {
-//             console.log("D", d);
-//             select.append('<option value="' + d + '">' + d + "</option>");
-//           });
-//       // });
-//         });
-
-
-// },
-
     ajax: `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
-  
-  
-    // success: function (data) {
-    //   console.log("sdfad");
-    //   console.log(data);
 
-      // setTimeout(() => {
-
-      //   $(".testing").each(function (i) {
-      //     console.log("inside");
-      //     var table = $("#title_patterns_table").DataTable();
-      //     console.log(title_patterns_table);
-      //     var select = $(
-      //       '<select><option value="' +
-      //         table.column(i).header().innerText +
-      //         '">' +
-      //         table.column(i).header().innerText +
-      //         "</option></select>"
-      //     )
-      //       .appendTo($(this).empty())
-      //       .on("change", function () {
-      //         table.column(i).search($(this).val()).draw();
-      //       });
-      
-        
-      //     // console.log("results", results);
-      //     table
-      //       .column(i)
-      //       .data()
-      //       .unique()
-      //       .sort()
-      //       .each(function (d, j) {
-      //         console.log("D", d);
-      //         select.append('<option value="' + d + '">' + d + "</option>");
-      //       });
-      //   });
-
-
-      // },5000);
-      //await or sleep
-
-     
-
-
- //  }
-  
- // },
     columns: [
       { data: "match_pattern" },
       {
@@ -292,56 +304,60 @@ function initializeDataTable() {
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
     ajax: `/api/document-type-patterns/?format=datatables&collection_id=${collection_id}`,
+    // initComplete: function (data) {
+    //   var table = $("#document_type_patterns_table").DataTable();
+    //   this.api()
+    //     .columns()
+    //     .every(function (index) {
+    //       let column = this;
 
-
-
-
-
-    initComplete: function(data) {
-      console.log("sadfdsad");
-   
-   
-   
-      $("#testing2").each(function (i) {
-       console.log(i);
-       // $("#title_patterns_table tfoot th").each( function ( i ) {
-           var table = $("#document_type_patterns_table").DataTable();
-           // var select = $(
-           //   '<select><option value="' +
-           //     table.column(1).header().innerText +
-           //     '">' +
-           //     table.column(1).header().innerText +
-           //     "</option></select>"
-           // )
-           var select = $('<select><option value=""></option></select>')
-             .appendTo($(this).empty())
-             .on("change", function () {
-              console.log("here");
-              console.log($(this).val());
-               table.column(6).search(matchPatternTypeMap[$(this).val()]).draw();
-             });
-       
-         
-           // console.log("results", results);
-           table
-             .column(1)
-             .data()
-             .unique()
-             .sort()
-             .each(function (d, j) {
-               console.log("D", d);
-               select.append('<option value="' + d + '">' + d + "</option>");
-             });
-         // });
-           });
-   
-   
-   },
-
-
-
-
-
+    //       if (index === 2) {
+    //         $("#document-type-patterns-dropdown-2").on("change", function () {
+    //           if ($(this).val === "") {
+    //             console.log("val", $(this).val);
+    //             table.columns(2).search("").draw();
+    //           } else {
+    //             console.log("val", $(this).val);
+    //             table.column(2).search($(this).val()).draw();
+    //           }
+    //         });
+    //         column
+    //           .data()
+    //           .unique()
+    //           .sort()
+    //           .each(function (d, j) {
+    //             console.log("d", d);
+    //             $("#document-type-patterns-dropdown-2").append(
+    //               '<option value="' + d + '">' + d + "</option>"
+    //             );
+    //           });
+    //       }
+    //     });
+    // },
+    initComplete: function (data) {
+      this.api()
+        .columns()
+        .every(function (index) {
+          let column = this;
+          if (index === 2) {
+            $("#document-type-patterns-dropdown-2").on("change", function () {
+              var val = $.fn.dataTable.util.escapeRegex($(this).val());
+              column.search(val ? "^" + val + "$" : "", true, false).draw();
+            });
+            console.log("sort", column.data().unique().sort());
+            // Add list of options
+            column
+              .data()
+              .unique()
+              .sort()
+              .each(function (d, j) {
+                $("#document-type-patterns-dropdown-2").append(
+                  '<option value="' + d + '">' + d + "</option>"
+                );
+              });
+          }
+        });
+    },
 
     columns: [
       { data: "match_pattern" },
@@ -361,8 +377,6 @@ function initializeDataTable() {
         },
       },
       { data: "id", visible: false, searchable: false },
-      {data: "match_pattern_type", visible:false}
-
     ],
   });
 
@@ -454,35 +468,6 @@ function getVisitedColumn(true_icon, false_icon) {
     },
   };
 }
-
-// function getExcludedColumnTest() {
-//   return {
-//     data: "excluded",
-//     class: "col-1 text-center",
-
-//     render: function (data, type, row) {
-//       var dict = {
-//         1: "Yes",
-//         2: "No",
-//       };
-//       button_color = data ? "btn-success" : "btn-secondary";
-//       button_text = data ? dict[data] : "Exclude";
-
-//       return `
-//           <div class="dropdown document_type_dropdown" data-match-pattern=${remove_protocol(
-//             row["url"]
-//           )}>
-//             <button class="btn ${button_color} btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-//               ${button_text}
-//             </button>
-//             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-//               <a class="dropdown-item document_type_select" href="#" value="1">Yes</a>
-//               <a class="dropdown-item document_type_select" href="#" value="2">No</a>
-//             </div>
-//           </div>`;
-//     },
-//   };
-// }
 
 function getDocumentTypeColumn() {
   return {
@@ -999,5 +984,3 @@ $(".document_type_form_select").on("click", function (e) {
 $("#filter-checkbox").on("change", function () {
   $("#candidate_urls_table").DataTable().ajax.reload(null, false);
 });
-
-

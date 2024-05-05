@@ -46,13 +46,12 @@
                 <th scope="col" class="text-center col-1">ID</th>
             </tr>
             <tr>
-                <td ><input type="text" class="table_filter_row_input" id="candidateUrlFilter" placeholder="URL" /></td>
-                <td ></td>
-                <td ><input type="text" class="table_filter_row_input" id="candidateScrapedTitleFilter" placeholder="Scraped Title" /></td>
-                <td ><input type="text" class="table_filter_row_input" id="candidateNewTitleFilter" placeholder="New Title" /></td>
-                <td ></td>
-                <td  ></td>
-                <td ></td>
+                <td ><input type="text" class="table_filter_row_input input-0" id="candidateUrlFilter" placeholder="URL" /></td>
+                <td ><select class="dropdown-1 select-dropdown"><option value="">SELECT</option></select></td>
+                <td ><input type="text" class="table_filter_row_input input-2" id="candidateScrapedTitleFilter" placeholder="Scraped Title" /></td>
+                <td ><input type="text" class="table_filter_row_input input-3" id="candidateNewTitleFilter" placeholder="New Title" /></td>
+                <td  ><select class="dropdown-4 select-dropdown"><option value="">SELECT</option></select></td>
+                <td><select class="dropdown-5 select-dropdown"><option value="">SELECT</option></select></td>
             </tr>
         </thead>
     </table>
@@ -87,7 +86,8 @@
             </tr>
             <tr>
                 <td ><input type="text" class="table_filter_row_input" id="candidateMatchPatternFilter" placeholder="Match Pattern" /></td>
-                <td >dropdown placeholder</td>
+                <td > <select id="exclude-patterns-dropdown-1" class="select-dropdown"><option value="">SELECT</option></select>
+                </td>
                 <td ><input type="text" class="table_filter_row_input" id="candidateReasonFilter" placeholder="Reason" /></td>
                 <td ></td>
                 <td ></td>
@@ -123,7 +123,7 @@
             </tr>
             <tr>
                 <td ><input type="text" class="table_filter_row_input" id="candidateIncludeMatchPatternFilter" placeholder="Match Pattern" /></td>
-                <td >dropdown placeholder</td>
+                <td > <select id="include-patterns-dropdown-1" class="select-dropdown"><option value="">SELECT</option></select></td>
                 <td ></td>
                 <td ></td>
                 <td ></td>
@@ -200,8 +200,8 @@
             </tr>
             <tr>
                 <td ><input type="text" class="table_filter_row_input" id="candidateDocTypeMatchPatternFilter" placeholder="Match Pattern" /></td>
-                <td id="testing2" class="testing"></td>
-                <td >dropdown placeholder</td>
+                <td id="DocTypeTableMatchPatternTypeFilter" class="testing"></td>
+                <td ><select id="document-type-patterns-dropdown-2" class="select-dropdown"><option value="">SELECT<div></div></option></select></td>
                 <td ></td>
                 <td ></td>
                 <td ></td>
