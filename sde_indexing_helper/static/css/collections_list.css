@@ -20,6 +20,17 @@ body {
     cursor: pointer !important;
 }
 
-.table_filter_row_input{
+.table_filter_row_input, .dropdown-toggle{
     width: 100%;
+}
+
+/* .dropdown-toggle {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+} */
+
+.workflow_status_dropdown {
+    display: flex;
+    justify-content: center;
 }
