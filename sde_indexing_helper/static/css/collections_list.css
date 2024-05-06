@@ -28,4 +28,27 @@ body {
 .dtsp-nameButton{
     opacity:0.6;
     background-color: transparent;
+    border:none !important;
+    box-shadow: none;
+}
+
+.dtsp-countButton{
+    opacity:0.6;
+    background-color: transparent;
+    border:none !important;
+    box-shadow: none;
+}
+
+.dtsp-collapseButton{
+    opacity:0.6;
+    background-color: transparent;
+    border:none !important;
+    box-shadow: none;
+}
+
+.clearButton{
+    opacity:0.6;
+    background-color: transparent;
+    border:none !important;
+    box-shadow: none;
 }
