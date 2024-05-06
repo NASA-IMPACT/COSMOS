@@ -68,7 +68,6 @@ let table = $('#collection_table').DataTable({
             targets: [3],
             type: "num-fmt"
         },
-        // {width:"20px", targets:[1]}
     ]
 });
 

@@ -52,3 +52,22 @@ body {
     border:none !important;
     box-shadow: none;
 }
+
+.dtsp-searchIcon{
+    opacity:0.6;
+    background-color: transparent;
+    border:none !important;
+    box-shadow: none;
+}
+
+.dtsp-paneInputButton{
+    width: 10vw !important;
+}
+
+.dtsp-caret{
+    color: #3C4858;
+}
+
+.main-panel > .content{
+    padding:0px;
+}
