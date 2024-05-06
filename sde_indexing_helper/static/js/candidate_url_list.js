@@ -152,7 +152,9 @@ function initializeDataTable() {
         .columns()
         .every(function (index) {
           let column = this;
-          if (index === 1) {
+          if (column.data().length === 0) {
+            $("#exclude-patterns-dropdown-1").prop("disabled", true);
+          } else if (index === 1) {
             $("#exclude-patterns-dropdown-1").on("change", function () {
               if ($(this).val() === "") table.columns(6).search("").draw();
               else {
@@ -278,16 +280,23 @@ function initializeDataTable() {
     orderCellsTop: true,
     ajax: `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
     initComplete: function (data) {
-      var table = $("#exclude_patterns_table").DataTable();
+      var table = $("#title_patterns_table").DataTable();
 
       this.api()
         .columns()
         .every(function (index) {
           let column = this;
-          if (index === 1) {
+          if (column.data().length === 0) {
+            $("#title-patterns-dropdown-1").prop("disabled", true);
+          } else if (index === 1) {
             $("#title-patterns-dropdown-1").on("change", function () {
               if ($(this).val() === "") table.columns(6).search("").draw();
-              table.column(6).search(matchPatternTypeMap[$(this).val()]).draw();
+              else {
+                table
+                  .column(6)
+                  .search(matchPatternTypeMap[$(this).val()])
+                  .draw();
+              }
             });
             column
               .data()
@@ -365,15 +374,18 @@ function initializeDataTable() {
           };
 
           let column = this;
-          if (index in addDropdownSelect) {
+          if (column.data().length === 0) {
+            $(`#document-type-patterns-dropdown-${index}`).prop(
+              "disabled",
+              true
+            );
+          } else if (index in addDropdownSelect) {
             $("#document-type-patterns-dropdown-" + index).on(
               "change",
               function () {
                 let col = addDropdownSelect[index].columnToSearch;
                 let searchInput =
                   addDropdownSelect[index].matchPattern[$(this).val()];
-                console.log("col", col);
-                console.log("searchInput", searchInput);
                 if ($(this).val() === "" || $(this).val() === undefined)
                   table.columns(col).search("").draw();
                 else {
