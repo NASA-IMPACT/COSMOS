@@ -5,6 +5,11 @@ var selected_text = "";
 var INDIVIDUAL_URL = 1;
 var MULTI_URL_PATTERN = 2;
 
+// fix table allignment when changing around tabs
+$('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
+  $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+});
+
 $(document).ready(function () {
   handleAjaxStartAndStop();
   initializeDataTable();
@@ -21,21 +26,15 @@ function initializeDataTable() {
 
   var candidate_urls_table = $("#candidate_urls_table").DataTable({
     scrollY: true,
+    lengthMenu: [25, 50, 100, 500],
+    pageLength: 100,
+    orderCellsTop: true,
     serverSide: true,
     stateSave: true,
     searchDelay: 1000,
     pagingType: "input",
     dom: "lBfritip",
-    buttons: [
-      "spacer",
-      "csv",
-      "spacer",
-      "createState",
-      "savedStates",
-      "spacer",
-      "selectAll",
-      "selectNone",
-    ],
+    buttons: ["spacer", "csv"],
     select: {
       style: "os",
       selector: "td:nth-child(5)",
@@ -77,9 +76,24 @@ function initializeDataTable() {
     },
   });
 
+  $("#candidateUrlFilter").on("keyup", function () {
+    candidate_urls_table.columns(0).search(this.value).draw();
+  });
+
+  $("#candidateScrapedTitleFilter").on("keyup", function () {
+    candidate_urls_table.columns(2).search(this.value).draw();
+  });
+
+  $("#candidateNewTitleFilter").on("keyup", function () {
+    candidate_urls_table.columns(3).search(this.value).draw();
+  });
+
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
     scrollY: true,
     serverSide: true,
+    lengthMenu: [25, 50, 100, 500],
+    orderCellsTop: true,
+    pageLength: 100,
     ajax: `/api/exclude-patterns/?format=datatables&collection_id=${collection_id}`,
     columns: [
       { data: "match_pattern" },
@@ -102,8 +116,19 @@ function initializeDataTable() {
     ],
   });
 
+  $("#candidateMatchPatternFilter").on("keyup", function () {
+    exclude_patterns_table.columns(0).search(this.value).draw();
+  });
+
+  $("#candidateReasonFilter").on("keyup", function () {
+    exclude_patterns_table.columns(2).search(this.value).draw();
+  });
+
   var include_patterns_table = $("#include_patterns_table").DataTable({
     scrollY: true,
+    lengthMenu: [25, 50, 100, 500],
+    pageLength: 100,
+    orderCellsTop: true,
     serverSide: true,
     ajax: `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
     columns: [
@@ -126,9 +151,16 @@ function initializeDataTable() {
     ],
   });
 
+  $("#candidateIncludeMatchPatternFilter").on("keyup", function () {
+    include_patterns_table.columns(0).search(this.value).draw();
+  });
+
   var title_patterns_table = $("#title_patterns_table").DataTable({
     scrollY: true,
     serverSide: true,
+    lengthMenu: [25, 50, 100, 500],
+    pageLength: 100,
+    orderCellsTop: true,
     ajax: `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
     columns: [
       { data: "match_pattern" },
@@ -151,11 +183,18 @@ function initializeDataTable() {
     ],
   });
 
+  $("#candidateTitleMatchPatternFilter").on("keyup", function () {
+    title_patterns_table.columns(0).search(this.value).draw();
+  });
+
   var document_type_patterns_table = $(
     "#document_type_patterns_table"
   ).DataTable({
     scrollY: true,
     serverSide: true,
+    lengthMenu: [25, 50, 100, 500],
+    orderCellsTop: true,
+    pageLength: 100,
     ajax: `/api/document-type-patterns/?format=datatables&collection_id=${collection_id}`,
     columns: [
       { data: "match_pattern" },
@@ -176,6 +215,10 @@ function initializeDataTable() {
       },
       { data: "id", visible: false, searchable: false },
     ],
+  });
+
+  $("#candidateDocTypeMatchPatternFilter").on("keyup", function () {
+    document_type_patterns_table.columns(0).search(this.value).draw();
   });
 }
 

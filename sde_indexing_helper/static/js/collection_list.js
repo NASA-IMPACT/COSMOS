@@ -1,6 +1,7 @@
 let table = $("#collection_table").DataTable({
   paging: false,
   stateSave: true,
+  orderCellsTop: true,
   dom: "BPfritip",
   buttons: [
     "csv",
@@ -72,6 +73,22 @@ let table = $("#collection_table").DataTable({
       type: "num-fmt",
     },
   ],
+});
+
+$("#nameFilter").on("keyup", function () {
+  table.columns(0).search(this.value).draw();
+});
+
+$("#urlFilter").on("keyup", function () {
+  table.columns(1).search(this.value).draw();
+});
+
+$("#divisionFilter").on("keyup", function () {
+  table.columns(2).search(this.value).draw();
+});
+
+$("#connectorTypeFilter").on("keyup", function () {
+  table.columns(6).search(this.value).draw();
 });
 
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
