@@ -8,14 +8,6 @@ var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
   "Multi-URL Pattern": 2,
 };
-var docTypeFilter = {
-  Images: 1,
-  Data: 2,
-  Documentation: 3,
-  "Software and Tools": 4,
-  "Missions and Instruments": 5,
-  "Training and Education": 6,
-};
 
 // fix table allignment when changing around tabs
 $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
@@ -81,6 +73,14 @@ function initializeDataTable() {
     },
     initComplete: function (data) {
       const addDropdownSelect = [1, 4, 5];
+      const dict = {
+        1: "Images",
+        2: "Data",
+        3: "Documentation",
+        4: "Software and Tools",
+        5: "Missions and Instruments",
+        6: "Training and Education",
+      };
       this.api()
         .columns()
         .every(function (index) {
@@ -90,15 +90,15 @@ function initializeDataTable() {
               var val = $.fn.dataTable.util.escapeRegex($(this).val());
               column.search(val ? "^" + val + "$" : "", true, false).draw();
             });
-            console.log("sort", column.data().unique().sort());
             // Add list of options
             column
               .data()
               .unique()
               .sort()
               .each(function (d, j) {
+                let val = index === 5 ? dict[d] : d;
                 $("thead tr td select.dropdown-" + index).append(
-                  '<option value="' + d + '">' + d + "</option>"
+                  '<option value="' + d + '">' + val + "</option>"
                 );
               });
           }
@@ -155,7 +155,12 @@ function initializeDataTable() {
           if (index === 1) {
             $("#exclude-patterns-dropdown-1").on("change", function () {
               if ($(this).val() === "") table.columns(6).search("").draw();
-              table.column(6).search(matchPatternTypeMap[$(this).val()]).draw();
+              else {
+                table
+                  .column(6)
+                  .search(matchPatternTypeMap[$(this).val()])
+                  .draw();
+              }
             });
             column
               .data()
@@ -215,9 +220,7 @@ function initializeDataTable() {
         .every(function (index) {
           let column = this;
           if (column.data().length === 0) {
-            $("#include-patterns-dropdown-1").append(
-              "<option value='No options available'>No options available</option>"
-            );
+            $("#include-patterns-dropdown-1").prop("disabled", true);
           } else {
             if (index === 1) {
               $("#include-patterns-dropdown-1").on("change", function () {
@@ -274,7 +277,30 @@ function initializeDataTable() {
     pageLength: 100,
     orderCellsTop: true,
     ajax: `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
+    initComplete: function (data) {
+      var table = $("#exclude_patterns_table").DataTable();
 
+      this.api()
+        .columns()
+        .every(function (index) {
+          let column = this;
+          if (index === 1) {
+            $("#title-patterns-dropdown-1").on("change", function () {
+              if ($(this).val() === "") table.columns(6).search("").draw();
+              table.column(6).search(matchPatternTypeMap[$(this).val()]).draw();
+            });
+            column
+              .data()
+              .unique()
+              .sort()
+              .each(function (d, j) {
+                $("#title-patterns-dropdown-1").append(
+                  '<option value="' + d + '">' + d + "</option>"
+                );
+              });
+          }
+        });
+    },
     columns: [
       { data: "match_pattern" },
       {
@@ -293,6 +319,7 @@ function initializeDataTable() {
         },
       },
       { data: "id", visible: false, searchable: false },
+      { data: "match_pattern_type", visible: false },
     ],
   });
 
@@ -310,54 +337,57 @@ function initializeDataTable() {
     orderCellsTop: true,
     pageLength: 100,
     ajax: `/api/document-type-patterns/?format=datatables&collection_id=${collection_id}`,
-    // initComplete: function (data) {
-    //   var table = $("#document_type_patterns_table").DataTable();
-    //   this.api()
-    //     .columns()
-    //     .every(function (index) {
-    //       let column = this;
-
-    //       if (index === 2) {
-    //         $("#document-type-patterns-dropdown-2").on("change", function () {
-    //           if ($(this).val === "") {
-    //             console.log("val", $(this).val);
-    //             table.columns(2).search("").draw();
-    //           } else {
-    //             console.log("val", $(this).val);
-    //             table.column(2).search($(this).val()).draw();
-    //           }
-    //         });
-    //         column
-    //           .data()
-    //           .unique()
-    //           .sort()
-    //           .each(function (d, j) {
-    //             console.log("d", d);
-    //             $("#document-type-patterns-dropdown-2").append(
-    //               '<option value="' + d + '">' + d + "</option>"
-    //             );
-    //           });
-    //       }
-    //     });
-    // },
     initComplete: function (data) {
       this.api()
         .columns()
         .every(function (index) {
+          var table = $("#document_type_patterns_table").DataTable();
+
+          let addDropdownSelect = {
+            1: {
+              columnToSearch: 6,
+              matchPattern: {
+                "Individual URL Pattern": 1,
+                "Multi-URL Pattern": 2,
+              },
+            },
+            2: {
+              columnToSearch: 7,
+              matchPattern: {
+                Images: 1,
+                Data: 2,
+                Documentation: 3,
+                "Software and Tools": 4,
+                "Missions and Instruments": 5,
+                "Training and Education": 6,
+              },
+            },
+          };
+
           let column = this;
-          if (index === 2) {
-            $("#document-type-patterns-dropdown-2").on("change", function () {
-              var val = $.fn.dataTable.util.escapeRegex($(this).val());
-              column.search(val ? "^" + val + "$" : "", true, false).draw();
-            });
-            console.log("sort", column.data().unique().sort());
+          if (index in addDropdownSelect) {
+            $("#document-type-patterns-dropdown-" + index).on(
+              "change",
+              function () {
+                let col = addDropdownSelect[index].columnToSearch;
+                let searchInput =
+                  addDropdownSelect[index].matchPattern[$(this).val()];
+                console.log("col", col);
+                console.log("searchInput", searchInput);
+                if ($(this).val() === "" || $(this).val() === undefined)
+                  table.columns(col).search("").draw();
+                else {
+                  table.columns(col).search(searchInput).draw();
+                }
+              }
+            );
             // Add list of options
             column
               .data()
               .unique()
               .sort()
               .each(function (d, j) {
-                $("#document-type-patterns-dropdown-2").append(
+                $("#document-type-patterns-dropdown-" + index).append(
                   '<option value="' + d + '">' + d + "</option>"
                 );
               });
@@ -383,6 +413,8 @@ function initializeDataTable() {
         },
       },
       { data: "id", visible: false, searchable: false },
+      { data: "match_pattern_type", visible: false },
+      { data: "document_type", visible: false },
     ],
   });
 
