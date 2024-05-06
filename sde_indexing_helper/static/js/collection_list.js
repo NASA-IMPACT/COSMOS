@@ -73,6 +73,10 @@ let table = $("#collection_table").DataTable({
       type: "num-fmt",
     },
   ],
+            targets: [3],
+            type: "num-fmt"
+        },
+    ]
 });
 
 $("#nameFilter").on("keyup", function () {
