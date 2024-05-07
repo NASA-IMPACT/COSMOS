@@ -38,16 +38,7 @@ function initializeDataTable() {
     orderCellsTop: true,
     pagingType: "input",
     dom: "lBfritip",
-    buttons: [
-      "spacer",
-      "csv",
-      "spacer",
-      "createState",
-      "savedStates",
-      "spacer",
-      "selectAll",
-      "selectNone",
-    ],
+    buttons: ["spacer", "csv"],
     select: {
       style: "os",
       selector: "td:nth-child(5)",
