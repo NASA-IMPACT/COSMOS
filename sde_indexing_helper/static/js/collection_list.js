@@ -69,23 +69,8 @@ let table = $('#collection_table').DataTable({
             type: "num-fmt"
         }
     ],
-    initComplete: function () {
-   
-        this.api().columns(2).data().unique().sort().each(function (d, j) {
-            console.log(d);
-        });
-
-        // let arr = this.api()
-        // .columns(2).data().unique().sort();
-        // console.log(arr);
-        // console.log(new Set(arr));
-        // [...new Set(this.api()
-        // .columns(2).data().unique().sort())].each(function (d, j) {
-        //     console.log(d);
-        // });
-    }
 });
-[...new Set(myArray)];
+
 $('#nameFilter').on('keyup', function () {
     table
         .columns(0)

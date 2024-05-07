@@ -56,8 +56,17 @@
                         <td>{{ collection.config_folder }}</td>
                     </tr>
                     <tr>
-                        <th>Division</th>
-                        <td><select class="select-dropdown"><option value={{collection.get_division_display}}>{{ collection.get_division_display }}</option></select></td>
+                        <th>Division {{collection.get_division_display}}</th>
+                        <td><select class="select-dropdown" value={{collection.get_division}}>
+                            <!-- <option value={{collection.get_division_display}}>{{ collection.get_division_display }}</option> -->
+                            <option value="1">Astrophysics</option>
+                            <option value="2">Biological and Physical Sciences</option>
+                            <option value="3">Earth Science</option>
+                            <option value="4">Heliophysics</option>
+                            <option value="5">Planetary Science</option>
+                            <option value="6">General</option>
+
+                        </select></td>
                         <!-- <td>{{ collection.get_division_display }}</td> -->
                     </tr>
                     <tr>
