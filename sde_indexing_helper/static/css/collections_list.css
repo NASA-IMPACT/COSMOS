@@ -24,12 +24,6 @@ body {
     width: 100%;
 }
 
-/* .dropdown-toggle {
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-} */
-
 .workflow_status_dropdown {
     display: flex;
     justify-content: center;
