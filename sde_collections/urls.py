@@ -7,7 +7,6 @@ from . import views
 
 router = routers.DefaultRouter()
 router.register(r"collections", views.CollectionViewSet)
-router.register(r"workflow-history", views.WorkflowViewSet)
 router.register(r"collections-read", views.CollectionReadViewSet)
 router.register(r"candidate-urls", views.CandidateURLViewSet)
 router.register(r"exclude-patterns", views.ExcludePatternViewSet)

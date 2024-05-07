@@ -2,7 +2,6 @@ from rest_framework import serializers
 
 from .models.candidate_url import CandidateURL
 from .models.collection import Collection
-from .models.workflow_history import WorkflowHistory
 from .models.collection_choice_fields import DocumentTypes
 from .models.pattern import (
     DocumentTypePattern,
@@ -31,11 +30,6 @@ class CollectionSerializer(serializers.ModelSerializer):
         #     "config_folder": {"required": False},
         #     "division": {"required": False},
         # }
-
-class WorkflowHistorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model=WorkflowHistory
-        fields = "__all__"
 
 class CollectionReadSerializer(serializers.ModelSerializer):
     class Meta:

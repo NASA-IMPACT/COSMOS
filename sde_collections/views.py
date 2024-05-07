@@ -20,7 +20,6 @@ from rest_framework.views import APIView
 from .forms import CollectionGithubIssueForm, CommentsForm, RequiredUrlForm
 from .models.candidate_url import CandidateURL
 from .models.collection import Collection, Comments, RequiredUrls
-from .models.workflow_history import WorkflowHistory
 from .models.collection_choice_fields import (
     ConnectorChoices,
     CurationStatusChoices,
@@ -40,7 +39,6 @@ from .serializers import (
     CandidateURLSerializer,
     CollectionReadSerializer,
     CollectionSerializer,
-    WorkflowHistorySerializer,
     DocumentTypePatternSerializer,
     ExcludePatternSerializer,
     IncludePatternSerializer,
@@ -346,10 +344,6 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
-
-class WorkflowViewSet(viewsets.ModelViewSet):
-    queryset = WorkflowHistory.objects.all()
-    serializer_class = WorkflowHistorySerializer
 
 class CollectionReadViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Collection.objects.all()

@@ -169,7 +169,6 @@ function handleWorkflowStatusSelect() {
         $('#collection_table').DataTable().searchPanes.rebuildPane(6);
 
         postWorkflowStatus(collection_id, workflow_status);
-        postWorkflowHistory(collection_id, workflow_status);
     });
 }
 
@@ -219,24 +218,6 @@ function postWorkflowStatus(collection_id, workflow_status) {
         },
         success: function (data) {
             toastr.success('Workflow Status Updated!');
-        },
-    });
-}
-
-function postWorkflowHistory(collection_id, workflow_status) {
-    var url = `/api/workflow-history/${collection_id}/`;
-    $.ajax({
-        url: url,
-        type: "PUT",
-        data: {
-            workflow_status: workflow_status,
-            csrfmiddlewaretoken: csrftoken
-        },
-        headers: {
-            'X-CSRFToken': csrftoken
-        },
-        success: function (data) {
-            toastr.success('Workflow History Updated!');
         },
     });
 }
