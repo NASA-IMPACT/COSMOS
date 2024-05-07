@@ -6,10 +6,9 @@ var INDIVIDUAL_URL = 1;
 var MULTI_URL_PATTERN = 2;
 
 // fix table allignment when changing around tabs
-$('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
-    $($.fn.dataTable.tables(true)).DataTable()
-       .columns.adjust();
- });
+$('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
+  $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+});
 
 $(document).ready(function () {
   handleAjaxStartAndStop();
@@ -35,16 +34,7 @@ function initializeDataTable() {
     searchDelay: 1000,
     pagingType: "input",
     dom: "lBfritip",
-    buttons: [
-      "spacer",
-      "csv",
-      "spacer",
-      "createState",
-      "savedStates",
-      "spacer",
-      "selectAll",
-      "selectNone",
-    ],
+    buttons: ["spacer", "csv"],
     select: {
       style: "os",
       selector: "td:nth-child(5)",
@@ -86,26 +76,17 @@ function initializeDataTable() {
     },
   });
 
-  $('#candidateUrlFilter').on('keyup', function () {
-    candidate_urls_table
-        .columns(0)
-        .search(this.value)
-        .draw();
-});
+  $("#candidateUrlFilter").on("keyup", function () {
+    candidate_urls_table.columns(0).search(this.value).draw();
+  });
 
-$('#candidateScrapedTitleFilter').on('keyup', function () {
-    candidate_urls_table
-        .columns(2)
-        .search(this.value)
-        .draw();
-});
+  $("#candidateScrapedTitleFilter").on("keyup", function () {
+    candidate_urls_table.columns(2).search(this.value).draw();
+  });
 
-$('#candidateNewTitleFilter').on('keyup', function () {
-    candidate_urls_table
-        .columns(3)
-        .search(this.value)
-        .draw();
-});
+  $("#candidateNewTitleFilter").on("keyup", function () {
+    candidate_urls_table.columns(3).search(this.value).draw();
+  });
 
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
     scrollY: true,
@@ -135,19 +116,13 @@ $('#candidateNewTitleFilter').on('keyup', function () {
     ],
   });
 
-  $('#candidateMatchPatternFilter').on('keyup', function () {
-    exclude_patterns_table
-        .columns(0)
-        .search(this.value)
-        .draw();
-});
+  $("#candidateMatchPatternFilter").on("keyup", function () {
+    exclude_patterns_table.columns(0).search(this.value).draw();
+  });
 
-$('#candidateReasonFilter').on('keyup', function () {
-    exclude_patterns_table
-        .columns(2)
-        .search(this.value)
-        .draw();
-});
+  $("#candidateReasonFilter").on("keyup", function () {
+    exclude_patterns_table.columns(2).search(this.value).draw();
+  });
 
   var include_patterns_table = $("#include_patterns_table").DataTable({
     scrollY: true,
@@ -176,12 +151,9 @@ $('#candidateReasonFilter').on('keyup', function () {
     ],
   });
 
-  $('#candidateIncludeMatchPatternFilter').on('keyup', function () {
-    include_patterns_table
-        .columns(0)
-        .search(this.value)
-        .draw();
-});
+  $("#candidateIncludeMatchPatternFilter").on("keyup", function () {
+    include_patterns_table.columns(0).search(this.value).draw();
+  });
 
   var title_patterns_table = $("#title_patterns_table").DataTable({
     scrollY: true,
@@ -211,12 +183,9 @@ $('#candidateReasonFilter').on('keyup', function () {
     ],
   });
 
-  $('#candidateTitleMatchPatternFilter').on('keyup', function () {
-    title_patterns_table
-        .columns(0)
-        .search(this.value)
-        .draw();
-});
+  $("#candidateTitleMatchPatternFilter").on("keyup", function () {
+    title_patterns_table.columns(0).search(this.value).draw();
+  });
 
   var document_type_patterns_table = $(
     "#document_type_patterns_table"
@@ -248,12 +217,10 @@ $('#candidateReasonFilter').on('keyup', function () {
     ],
   });
 
-  $('#candidateDocTypeMatchPatternFilter').on('keyup', function () {
-    document_type_patterns_table
-        .columns(0)
-        .search(this.value)
-        .draw();
-});}
+  $("#candidateDocTypeMatchPatternFilter").on("keyup", function () {
+    document_type_patterns_table.columns(0).search(this.value).draw();
+  });
+}
 
 function setupClickHandlers() {
   handleAddNewPatternClick();

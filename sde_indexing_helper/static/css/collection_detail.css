@@ -69,3 +69,17 @@ div > .nav {
     padding-bottom: 30px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
 }
+
+/* badge container to fix size of div and prevent hugging single line titles */
+.badge-container {
+    height: 1.6rem;
+    margin-left: 15px;
+}
+
+.badge {
+    cursor: default !important;
+}
+
+.titleCol {
+    display: flex;
+}
