@@ -46,7 +46,7 @@
             <a class="tab-nav" data-toggle="tab" href="#Exclude-Patterns">Exclude Patterns</a>
         </li>
         <li class="nav-item">
-            <a class="tab-nav" data-toggle="tab" href="#Include-Patterns">Inlcude Patterns</a>
+            <a class="tab-nav" data-toggle="tab" href="#Include-Patterns">Include Patterns</a>
         </li>
         <li class="nav-item">
             <a class="tab-nav" data-toggle="tab" href="#Title-Patterns">Title Patterns</a>
@@ -55,7 +55,6 @@
             <a class="tab-nav" data-toggle="tab" href="#Document-Type-Patterns">Document Type Patterns</a>
         </li>
     </ul>
-
 
     <!-- Tab panes -->
     <div class="tab-content">
@@ -79,11 +78,11 @@
                     </tr>
                     <tr>
                         <td ><input type="text" class="table_filter_row_input" id="candidateUrlFilter" placeholder="URL" /></td>
-                        <td >dropdown placeholder</td>
+                        <td ><select class="dropdown-1 select-dropdown"><option value="">SELECT</option></select></td>
                         <td ><input type="text" class="table_filter_row_input" id="candidateScrapedTitleFilter" placeholder="Scraped Title" /></td>
                         <td ><input type="text" class="table_filter_row_input" id="candidateNewTitleFilter" placeholder="New Title" /></td>
-                        <td >dropdown placeholder</td>
-                        <td >dropdown placeholder</td>
+                        <td  ><select class="dropdown-4 select-dropdown"><option value="">SELECT</option></select></td>
+                        <td><select class="dropdown-5 select-dropdown"><option value="">SELECT</option></select></td>
                         <td ></td>
                     </tr>
                 </thead>
@@ -109,8 +108,8 @@
                     </tr>
                     <tr>
                         <td ><input type="text" class="table_filter_row_input" id="candidateMatchPatternFilter" placeholder="Match Pattern" /></td>
-                        <td >dropdown placeholder</td>
-                        <td ><input type="text" class="table_filter_row_input" id="candidateReasonFilter" placeholder="Reason" /></td>
+                        <td > <select id="exclude-patterns-dropdown-1" class="select-dropdown"><option value="">SELECT</option></select>
+                            <td ><input type="text" class="table_filter_row_input" id="candidateReasonFilter" placeholder="Reason" /></td>
                         <td ></td>
                         <td ></td>
                         <td ></td>
@@ -148,7 +147,7 @@
                     </tr>
                     <tr>
                         <td ><input type="text" class="table_filter_row_input" id="candidateIncludeMatchPatternFilter" placeholder="Match Pattern" /></td>
-                        <td >dropdown placeholder</td>
+                        <td > <select id="include-patterns-dropdown-1" class="select-dropdown"><option value="">SELECT</option></select></td>
                         <td ></td>
                         <td ></td>
                         <td ></td>
@@ -189,7 +188,7 @@
                     </tr>
                     <tr>
                         <td ><input type="text" class="table_filter_row_input" id="candidateTitleMatchPatternFilter" placeholder="Match Pattern" /></td>
-                        <td >dropdown placeholder</td>
+                        <td > <select id="title-patterns-dropdown-1" class="select-dropdown"><option value="">SELECT</option></select></td>
                         <td ><input type="text" class="table_filter_row_input" id="candidateTitlePatternTypeFilter" placeholder="Title Pattern" /></td>
                         <td ></td>
                         <td ></td>
@@ -230,8 +229,8 @@
                     </tr>
                     <tr>
                         <td ><input type="text" class="table_filter_row_input" id="candidateDocTypeMatchPatternFilter" placeholder="Match Pattern" /></td>
-                        <td >dropdown placeholder</td>
-                        <td >dropdown placeholder</td>
+                        <td ><select id="document-type-patterns-dropdown-1" class="select-dropdown"><option value="">SELECT<div></div></option></select></td>
+                        <td ><select id="document-type-patterns-dropdown-2" class="select-dropdown"><option value="">SELECT<div></div></option></select></td>
                         <td ></td>
                         <td ></td>
                         <td ></td>

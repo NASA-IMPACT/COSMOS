@@ -17,6 +17,9 @@ let table = $("#collection_table").DataTable({
       },
     },
   ],
+  initComplete: function (data) {
+    // logic for dropdown filters here
+  },
   columnDefs: [
     {
       searchPanes: {
