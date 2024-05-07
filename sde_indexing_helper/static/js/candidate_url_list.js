@@ -32,7 +32,6 @@ function initializeDataTable() {
     scrollY: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
-    orderCellsTop: true,
     serverSide: true,
     stateSave: true,
     searchDelay: 1000,
@@ -140,7 +139,6 @@ function initializeDataTable() {
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
     scrollY: true,
     serverSide: true,
-    orderCellsTop: true,
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
     pageLength: 100,
@@ -208,8 +206,6 @@ function initializeDataTable() {
 
   var include_patterns_table = $("#include_patterns_table").DataTable({
     scrollY: true,
-    serverSide: true,
-    orderCellsTop: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
     orderCellsTop: true,
@@ -274,7 +270,6 @@ function initializeDataTable() {
   var title_patterns_table = $("#title_patterns_table").DataTable({
     scrollY: true,
     serverSide: true,
-    orderCellsTop: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
     orderCellsTop: true,
@@ -341,7 +336,6 @@ function initializeDataTable() {
   ).DataTable({
     scrollY: true,
     serverSide: true,
-    orderCellsTop: true,
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
     pageLength: 100,
