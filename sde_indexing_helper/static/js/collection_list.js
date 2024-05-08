@@ -211,7 +211,6 @@ function postCurationStatus(collection_id, curation_status, division, docType) {
 }
 
 function postWorkflowStatus(collection_id, workflow_status, division, docType) {
-    console.log(workflow_status);
     var url = `/api/collections/${collection_id}/`;
     $.ajax({
         url: url,
