@@ -90,7 +90,6 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         collection = self.get_object()
-
         form = RequiredUrlForm(request.POST)
         github_form = CollectionGithubIssueForm(request.POST)
         comments_form = CommentsForm(request.POST)
