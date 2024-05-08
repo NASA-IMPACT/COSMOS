@@ -102,41 +102,43 @@ $('#connectorTypeFilter').on('keyup', function () {
 
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 
-function handleCurationStatusSelect() {
-    $("body").on("click", ".curation_status_select", function () {
-        var collection_id = $(this).data('collection-id');
-        var curation_status = $(this).attr('value');
-        var curation_status_text = $(this).text();
-        var color_choices = {
-            1: "btn-light",
-            2: "btn-danger",
-            3: "btn-warning",
-            4: "btn-info",
-            5: "btn-success",
-            6: "btn-primary",
-            7: "btn-info",
-            8: "btn-secondary",
-        }
+// I don't think this function is being used
+// function handleCurationStatusSelect() {
+//     $("body").on("click", ".curation_status_select", function () {
+//         var collection_id = $(this).data('collection-id');
+//         var curation_status = $(this).attr('value');
+//         var curation_status_text = $(this).text();
+//         var color_choices = {
+//             1: "btn-light",
+//             2: "btn-danger",
+//             3: "btn-warning",
+//             4: "btn-info",
+//             5: "btn-success",
+//             6: "btn-primary",
+//             7: "btn-info",
+//             8: "btn-secondary",
+//         }
 
-        $possible_buttons = $('body').find(`[id="curation-status-button-${collection_id}"]`);
-        if ($possible_buttons.length > 1) {
-            $button = $possible_buttons[1];
-            $button = $($button);
-        } else {
-            $button = $(`#curation-status-button-${collection_id}`);
-        }
-        $button.text(curation_status_text);
-        $button.removeClass('btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary');
-        $button.addClass(color_choices[parseInt(curation_status)]);
-        $('#collection_table').DataTable().searchPanes.rebuildPane(6);
-
-        postCurationStatus(collection_id, curation_status);
-    });
-}
+//         $possible_buttons = $('body').find(`[id="curation-status-button-${collection_id}"]`);
+//         if ($possible_buttons.length > 1) {
+//             $button = $possible_buttons[1];
+//             $button = $($button);
+//         } else {
+//             $button = $(`#curation-status-button-${collection_id}`);
+//         }
+//         $button.text(curation_status_text);
+//         $button.removeClass('btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary');
+//         $button.addClass(color_choices[parseInt(curation_status)]);
+//         $('#collection_table').DataTable().searchPanes.rebuildPane(6);
+//         var collection_division = $(this).data('collection-division');
+//         postCurationStatus(collection_id, curation_status, collection_division);
+//     });
+// }
 
 function handleWorkflowStatusSelect() {
     $("body").on("click", ".workflow_status_select", function () {
         var collection_id = $(this).data('collection-id');
+        var collection_division = $(this).data('collection-division');
         var workflow_status = $(this).attr('value');
         var workflow_status_text = $(this).text();
         var color_choices = {
@@ -167,8 +169,8 @@ function handleWorkflowStatusSelect() {
         $button.removeClass('btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary');
         $button.addClass(color_choices[parseInt(workflow_status)]);
         $('#collection_table').DataTable().searchPanes.rebuildPane(6);
-
-        postWorkflowStatus(collection_id, workflow_status);
+         
+        postWorkflowStatus(collection_id, workflow_status,collection_division );
     });
 }
 
@@ -181,18 +183,20 @@ function handleCuratorSelect() {
         $(`#curator-button-${collection_id}`).text(curator_text);
         $(`#curator-button-${collection_id}`).removeClass('btn-light btn-danger btn-warning btn-info btn-success btn-primary');
         $(`#curator-button-${collection_id}`).addClass('btn-success');
+        var collection_division = $(this).data('collection-division');
 
-        postCurator(collection_id, curator_id);
+        postCurator(collection_id, curator_id, collection_division);
     });
 }
 
-function postCurationStatus(collection_id, curation_status) {
+function postCurationStatus(collection_id, curation_status, division) {
     var url = `/api/collections/${collection_id}/`;
     $.ajax({
         url: url,
         type: "PUT",
         data: {
             curation_status: curation_status,
+            division: division,
             csrfmiddlewaretoken: csrftoken
         },
         headers: {
@@ -204,13 +208,15 @@ function postCurationStatus(collection_id, curation_status) {
     });
 }
 
-function postWorkflowStatus(collection_id, workflow_status) {
+function postWorkflowStatus(collection_id, workflow_status, division) {
+    console.log(workflow_status);
     var url = `/api/collections/${collection_id}/`;
     $.ajax({
         url: url,
         type: "PUT",
         data: {
             workflow_status: workflow_status,
+            division: division,
             csrfmiddlewaretoken: csrftoken
         },
         headers: {
@@ -222,13 +228,14 @@ function postWorkflowStatus(collection_id, workflow_status) {
     });
 }
 
-function postCurator(collection_id, curator_id) {
+function postCurator(collection_id, curator_id, division) {
     var url = `/api/collections/${collection_id}/`;
     $.ajax({
         url: url,
         type: "PUT",
         data: {
             curated_by: curator_id,
+            division: division,
             csrfmiddlewaretoken: csrftoken
         },
         headers: {
@@ -245,7 +252,7 @@ $(document).ready(function () {
 });
 
 function setupClickHandlers() {
-    handleCurationStatusSelect();
+    // handleCurationStatusSelect();
     handleWorkflowStatusSelect();
     handleCuratorSelect();
 }

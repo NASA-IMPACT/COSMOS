@@ -58,7 +58,7 @@
                     <tr>
                         <th>Division</th>
                         <td>
-                            <select value={{collection.division}} id="detailDivisionDropdown"=>
+                            <select value={{collection.division}} id="detailDivisionDropdown" data-collection-id={{ collection.id }}>
                                 <option value="1" {% if collection.division == 1 %} selected="selected" {% endif %}>
                                     Astrophysics</option>
                                 <option value="2" {% if collection.division == 2 %} selected="selected" {% endif %}>

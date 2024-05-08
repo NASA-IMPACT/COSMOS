@@ -24,12 +24,9 @@ class CollectionSerializer(serializers.ModelSerializer):
             "curation_status_display",
             "workflow_status_display",
             "curated_by",
+            "division",
         )
-        # extra_kwargs = {
-        #     "name": {"required": False},
-        #     "config_folder": {"required": False},
-        #     "division": {"required": False},
-        # }
+
 
 
 class CollectionReadSerializer(serializers.ModelSerializer):
