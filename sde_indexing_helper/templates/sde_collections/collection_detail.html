@@ -58,7 +58,7 @@
                     <tr>
                         <th>Division</th>
                         <td>
-                            <select value={{collection.division}} id="detailDivisionDropdown" data-collection-id={{ collection.id }}>
+                            <select  class="divisionDropdown" value="{{collection.division}}" id="detailDivisionDropdown" data-collection-id={{ collection.id }}>
                                 <option value="1" {% if collection.division == 1 %} selected="selected" {% endif %}>
                                     Astrophysics</option>
                                 <option value="2" {% if collection.division == 2 %} selected="selected" {% endif %}>
@@ -80,7 +80,23 @@
                     </tr>
                     <tr>
                         <th>Document Type</th>
-                        <td>{{ collection.get_document_type_display }}</td>
+                        <td>
+                            <select  class="divisionDropdown" value="{{collection.document_type}}" id="detailDocTypeDropdown" data-collection-id={{ collection.id }} data-collection-division={{ collection.division}}>
+                                <option value="1" {% if collection.document_type == 1 %} selected="selected" {% endif %}>
+                                    Images</option>
+                                <option value="2" {% if collection.document_type == 2 %} selected="selected" {% endif %}>
+                                    Data</option>
+                                <option value="3" {% if collection.document_type == 3 %} selected="selected" {% endif %}>Documentation</option>
+                                <option value="4" {% if collection.document_type == 4 %} selected="selected" {% endif %}>
+                                    Software and Tools</option>
+                                <option value="5" {% if collection.document_type == 5 %} selected="selected" {% endif %}>
+                                    Missions and Instruments</option>
+                                <option value="6" {% if collection.document_type == 6 %} selected="selected" {% endif %}>Training and Education
+                                </option>
+                            </select>
+
+                        </td>
+                        <!-- <td>{{ collection.get_document_type_display }}</td> -->
                     </tr>
                     <tr>
                         <th>Tree Root</th>

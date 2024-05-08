@@ -139,6 +139,7 @@ function handleWorkflowStatusSelect() {
     $("body").on("click", ".workflow_status_select", function () {
         var collection_id = $(this).data('collection-id');
         var collection_division = $(this).data('collection-division');
+        var collection_docType = $(this).data('collection-docType');
         var workflow_status = $(this).attr('value');
         var workflow_status_text = $(this).text();
         var color_choices = {
@@ -170,7 +171,7 @@ function handleWorkflowStatusSelect() {
         $button.addClass(color_choices[parseInt(workflow_status)]);
         $('#collection_table').DataTable().searchPanes.rebuildPane(6);
          
-        postWorkflowStatus(collection_id, workflow_status,collection_division );
+        postWorkflowStatus(collection_id, workflow_status,collection_division, collection_docType );
     });
 }
 
@@ -184,12 +185,12 @@ function handleCuratorSelect() {
         $(`#curator-button-${collection_id}`).removeClass('btn-light btn-danger btn-warning btn-info btn-success btn-primary');
         $(`#curator-button-${collection_id}`).addClass('btn-success');
         var collection_division = $(this).data('collection-division');
-
-        postCurator(collection_id, curator_id, collection_division);
+        var collection_documentType = $(this).data('collection-docType');
+        postCurator(collection_id, curator_id, collection_division, collection_documentType);
     });
 }
 
-function postCurationStatus(collection_id, curation_status, division) {
+function postCurationStatus(collection_id, curation_status, division, docType) {
     var url = `/api/collections/${collection_id}/`;
     $.ajax({
         url: url,
@@ -197,6 +198,7 @@ function postCurationStatus(collection_id, curation_status, division) {
         data: {
             curation_status: curation_status,
             division: division,
+            document_type: docType,
             csrfmiddlewaretoken: csrftoken
         },
         headers: {
@@ -208,7 +210,7 @@ function postCurationStatus(collection_id, curation_status, division) {
     });
 }
 
-function postWorkflowStatus(collection_id, workflow_status, division) {
+function postWorkflowStatus(collection_id, workflow_status, division, docType) {
     console.log(workflow_status);
     var url = `/api/collections/${collection_id}/`;
     $.ajax({
@@ -217,6 +219,7 @@ function postWorkflowStatus(collection_id, workflow_status, division) {
         data: {
             workflow_status: workflow_status,
             division: division,
+            document_type: docType,
             csrfmiddlewaretoken: csrftoken
         },
         headers: {
@@ -228,7 +231,7 @@ function postWorkflowStatus(collection_id, workflow_status, division) {
     });
 }
 
-function postCurator(collection_id, curator_id, division) {
+function postCurator(collection_id, curator_id, division, docType) {
     var url = `/api/collections/${collection_id}/`;
     $.ajax({
         url: url,
@@ -236,6 +239,7 @@ function postCurator(collection_id, curator_id, division) {
         data: {
             curated_by: curator_id,
             division: division,
+            document_type: docType,
             csrfmiddlewaretoken: csrftoken
         },
         headers: {

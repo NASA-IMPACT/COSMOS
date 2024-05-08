@@ -83,3 +83,24 @@ div > .nav {
 .titleCol {
     display: flex;
 }
+
+.select_menu{
+    font-size: 12px;
+    outline: none;
+    border: thin #ddd solid;
+    background-color: #F7F7F7;
+  }
+
+  .divisionDropdown:after{
+    content: '';
+    border: 4px solid transparent;
+    border-top: 4px solid white;
+    margin-left: 2px;
+    margin-bottom: 3px;
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+.divisionDropdown {
+    appearance: auto !important;
+  }

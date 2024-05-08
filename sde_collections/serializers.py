@@ -25,9 +25,8 @@ class CollectionSerializer(serializers.ModelSerializer):
             "workflow_status_display",
             "curated_by",
             "division",
+            "document_type",
         )
-
-
 
 class CollectionReadSerializer(serializers.ModelSerializer):
     class Meta:
