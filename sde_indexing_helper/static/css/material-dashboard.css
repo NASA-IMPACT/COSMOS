@@ -3592,6 +3592,22 @@ tbody.collapse.show {
   display: none;
 }
 
+.dtsp-panesContainer .dtsp-searchPanes [class*="workflow_status_dropdown"]{
+  width: fit-content;
+}
+
+.dtsp-panesContainer .dtsp-searchPanes [class*="curator_dropdown"]{
+  width: fit-content;
+}
+
+.dtsp-nameCont {
+  align-items: center !important;
+}
+
+.dtsp-pill {
+  margin-left: 10px !important;
+}
+
 .dropup .dropdown-menu {
   margin-top: 0;
   margin-bottom: 0.125rem;
@@ -19306,6 +19322,15 @@ Copyright (c) 2015 Daniel Eden
   .sidebar .navbar-form {
     display: none !important;
   }
+}
+
+.dropdown-toggle{
+  width: fit-content;
+}
+
+.workflow_status_dropdown {
+  display: flex;
+  justify-content: flex-start;
 }
 
 /*# sourceMappingURL=material-dashboard.css.map */
