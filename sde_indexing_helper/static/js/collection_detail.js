@@ -20,19 +20,19 @@ document.getElementById('cancel-github-link-button').addEventListener('click', f
   $(document).ready(function () {
     $("body").on("change", "#detailDivisionDropdown", function () {
         var collection_id = $(this).data('collection-id');
-       postDivisonChange(collection_id,$(this).val());
+       postDivisionChange(collection_id,$(this).val());
     });
 
     $("body").on("change", "#detailDocTypeDropdown", function () {
         var collection_id = $(this).data('collection-id');
         var collection_division = $(this).data('collection-division');
-        postDocTypeChange(collection_id,$(this).val(), collection_division);
+        postDocTypeChange(collection_id,$(this).val());
     });
 });
 
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 
-function postDivisonChange(collection_id, division) {
+function postDivisionChange(collection_id, division) {
     var url = `/api/collections/${collection_id}/`;
     $.ajax({
         url: url,
