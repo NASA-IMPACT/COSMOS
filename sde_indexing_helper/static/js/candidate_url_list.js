@@ -378,6 +378,7 @@ function initializeDataTable() {
                 }
               }
             );
+            console.log(column.data().unique().sort());
             // Add list of options
             column
               .data()

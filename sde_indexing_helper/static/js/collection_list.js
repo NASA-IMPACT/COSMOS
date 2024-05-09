@@ -18,8 +18,90 @@ let table = $("#collection_table").DataTable({
     },
   ],
   initComplete: function (data) {
-    // logic for dropdown filters here
+    this.api()
+      .columns()
+      .every(function (index) {
+        var table = $("#collection_table").DataTable();
+        let addDropdownSelect = {
+          4: {
+            columnToSearch: 4,
+            matchPattern: {
+              1: "Research in Progress",
+              2: "Ready for Engineering",
+              3: "Engineering in Progress",
+              4: "Ready for Curation",
+              5: "Curation in Progress",
+              6: "Curated",
+              7: "Quality Fixed",
+              8: "Secret Deployment Started",
+              9: "Secret Deployment Failed",
+              10: "Ready for LRM Quality Check",
+              11: "Ready for Quality Check",
+              12: "Quality Check Failed",
+              13: "Ready for Public Production",
+              14: "Perfect and on Production",
+              15: "Low Priority Problems on Production",
+              16: "High Priority Problems on Production, only for old sources",
+            },
+          },
+          5: {
+            columnToSearch: 5,
+            matchPattern: {
+              kbugbee: 2,
+              emily: 3,
+              xli: 4,
+              bishwas: 8,
+              shravan: 11,
+              advait: 14,
+            },
+          },
+        };
+
+        let column = this;
+        console.log("column", column);
+        if (column.data().length === 0) {
+          // console.log("IN HERe 0");
+          $(`#collection-dropdown-${index}`).prop("disabled", true);
+        } else if (index in addDropdownSelect) {
+          // console.log("IN HERe index exists");
+          $(`#collection-dropdown-${index}`).on("change", function () {
+            let col = addDropdownSelect[index].columnToSearch;
+            let searchInput =
+              addDropdownSelect[index].matchPattern[$(this).val()];
+            // console.log("IN HERe col", col);
+            // console.log("IN HERe searchInput", searchInput);
+
+            if ($(this).val() === "" || $(this).val() === undefined)
+              table.columns(col).search("").draw();
+            else {
+              table.columns(col).search(searchInput).draw();
+            }
+          });
+          // Add list of options
+          console.log(column.data().unique().sort());
+          column
+            .data()
+            .unique()
+            .sort()
+            .each(function (d) {
+              $(`#collection-dropdown-${index}`).append(
+                '<option value="' + d + '">' + d + "</option>"
+              );
+            });
+        }
+      });
   },
+
+  columns: [
+    { data: "name", visible: false },
+    { data: "url", visible: false },
+    { data: "division", visible: false },
+    { data: "candidate_urls", visible: false },
+    { data: "workflow_status", visible: false },
+    { data: "curated_by_id", visible: false },
+    { data: "connector", visible: false },
+  ],
+
   columnDefs: [
     {
       searchPanes: {
