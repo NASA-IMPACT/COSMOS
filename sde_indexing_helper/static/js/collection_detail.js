@@ -20,17 +20,14 @@ document.getElementById('cancel-github-link-button').addEventListener('click', f
   $(document).ready(function () {
     $("body").on("change", "#detailDivisionDropdown", function () {
         var collection_id = $(this).data('collection-id');
-        console.log($(this).val());
        postDivisonChange(collection_id,$(this).val());
     });
 
     $("body").on("change", "#detailDocTypeDropdown", function () {
         var collection_id = $(this).data('collection-id');
         var collection_division = $(this).data('collection-division');
-        console.log($(this).val());
         postDocTypeChange(collection_id,$(this).val(), collection_division);
     });
-
 });
 
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
@@ -53,13 +50,12 @@ function postDivisonChange(collection_id, division) {
     });
 }
 
-function postDocTypeChange(collection_id, docType, division) {
+function postDocTypeChange(collection_id, docType) {
     var url = `/api/collections/${collection_id}/`;
     $.ajax({
         url: url,
         type: "PUT",
         data: {
-            division: division,
             document_type: docType,
             csrfmiddlewaretoken: csrftoken
         },

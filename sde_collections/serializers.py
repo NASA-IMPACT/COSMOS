@@ -27,6 +27,8 @@ class CollectionSerializer(serializers.ModelSerializer):
             "division",
             "document_type",
         )
+        extra_kwargs = {"division":{'required': False}, "document_type":{'required': False}}
+
         # extra_kwargs = {
         #     "name": {"required": False},
         #     "config_folder": {"required": False},

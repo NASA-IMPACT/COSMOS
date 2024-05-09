@@ -81,7 +81,7 @@
                     <tr>
                         <th>Document Type</th>
                         <td>
-                            <select  class="divisionDropdown" value="{{collection.document_type}}" id="detailDocTypeDropdown" data-collection-id={{ collection.id }} data-collection-division={{ collection.division}}>
+                            <select  class="divisionDropdown" value="{{collection.document_type}}" id="detailDocTypeDropdown" data-collection-id={{ collection.id }} >
                                 <option value="1" {% if collection.document_type == 1 %} selected="selected" {% endif %}>
                                     Images</option>
                                 <option value="2" {% if collection.document_type == 2 %} selected="selected" {% endif %}>
