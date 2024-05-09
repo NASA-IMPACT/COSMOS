@@ -4,7 +4,7 @@ from django.contrib import admin, messages
 from django.http import HttpResponse
 
 from .models.candidate_url import CandidateURL
-from .models.collection import Collection
+from .models.collection import Collection, WorkflowHistory
 from .models.pattern import IncludePattern, TitlePattern
 from .tasks import import_candidate_urls_from_api
 
@@ -290,3 +290,4 @@ class TitlePatternAdmin(admin.ModelAdmin):
 admin.site.register(CandidateURL, CandidateURLAdmin)
 admin.site.register(TitlePattern, TitlePatternAdmin)
 admin.site.register(IncludePattern)
+admin.site.register(WorkflowHistory)

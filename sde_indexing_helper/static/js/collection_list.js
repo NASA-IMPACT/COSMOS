@@ -1,104 +1,98 @@
-let table = $('#collection_table').DataTable({
-    "paging": false,
-    "stateSave": true,
-    "orderCellsTop": true,
-    "dom": 'BPfritip',
-    "buttons": [
-        'csv',
-        {
-            text: 'JSON',
-            action: function (e, dt, button, config) {
-                var data = dt.buttons.exportData();
+let table = $("#collection_table").DataTable({
+  paging: false,
+  stateSave: true,
+  orderCellsTop: true,
+  dom: "BPfritip",
+  buttons: [
+    "csv",
+    {
+      text: "JSON",
+      action: function (e, dt, button, config) {
+        var data = dt.buttons.exportData();
 
-                $.fn.dataTable.fileSave(
-                    new Blob([JSON.stringify(data)]),
-                    'collections.json'
-                );
-            }
-        }
-    ],
-    "columnDefs": [
-        {
-            searchPanes: {
-                options: [
-                    {
-                        label: '0 URLs',
-                        value: function (rowData, rowIdx) {
-                            return $(rowData[3]).text() == 0;
-                        }
-                    },
-                    {
-                        label: '1 solo URL',
-                        value: function (rowData, rowIdx) {
-                            return $(rowData[3]).text() == 1;
-                        }
-                    },
-                    {
-                        label: '1 to 100 URLs',
-                        value: function (rowData, rowIdx) {
-                            return $(rowData[3]).text() <= 100 && $(rowData[3]).text() > 1;
-                        }
-                    },
-                    {
-                        label: '100 to 1,000 URLs',
-                        value: function (rowData, rowIdx) {
-                            return $(rowData[3]).text() <= 1000 && $(rowData[3]).text() > 100;
-                        }
-                    },
-                    {
-                        label: '1,000 to 10,000 URLs',
-                        value: function (rowData, rowIdx) {
-                            return $(rowData[3]).text() <= 10000 && $(rowData[3]).text() > 1000;
-                        }
-                    },
-                    {
-                        label: '10,000 to 100,000 URLs',
-                        value: function (rowData, rowIdx) {
-                            return $(rowData[3]).text() <= 100000 && $(rowData[3]).text() > 10000;
-                        }
-                    },
-                    {
-                        label: 'Over 100,000 URLs',
-                        value: function (rowData, rowIdx) {
-                            return $(rowData[3]).text() > 100000;
-                        }
-                    }
-                ]
+        $.fn.dataTable.fileSave(
+          new Blob([JSON.stringify(data)]),
+          "collections.json"
+        );
+      },
+    },
+  ],
+  initComplete: function (data) {
+    // logic for dropdown filters here
+  },
+  columnDefs: [
+    {
+      searchPanes: {
+        options: [
+          {
+            label: "0 URLs",
+            value: function (rowData, rowIdx) {
+              return $(rowData[3]).text() == 0;
             },
-            targets: [3],
-            type: "num-fmt"
-        }
-    ],
+          },
+          {
+            label: "1 solo URL",
+            value: function (rowData, rowIdx) {
+              return $(rowData[3]).text() == 1;
+            },
+          },
+          {
+            label: "1 to 100 URLs",
+            value: function (rowData, rowIdx) {
+              return $(rowData[3]).text() <= 100 && $(rowData[3]).text() > 1;
+            },
+          },
+          {
+            label: "100 to 1,000 URLs",
+            value: function (rowData, rowIdx) {
+              return $(rowData[3]).text() <= 1000 && $(rowData[3]).text() > 100;
+            },
+          },
+          {
+            label: "1,000 to 10,000 URLs",
+            value: function (rowData, rowIdx) {
+              return (
+                $(rowData[3]).text() <= 10000 && $(rowData[3]).text() > 1000
+              );
+            },
+          },
+          {
+            label: "10,000 to 100,000 URLs",
+            value: function (rowData, rowIdx) {
+              return (
+                $(rowData[3]).text() <= 100000 && $(rowData[3]).text() > 10000
+              );
+            },
+          },
+          {
+            label: "Over 100,000 URLs",
+            value: function (rowData, rowIdx) {
+              return $(rowData[3]).text() > 100000;
+            },
+          },
+        ],
+      },
+      targets: [3],
+      type: "num-fmt",
+    },
+  ],
 });
 
-$('#nameFilter').on('keyup', function () {
-    table
-        .columns(0)
-        .search(this.value)
-        .draw();
+$("#nameFilter").on("keyup", function () {
+  table.columns(0).search(this.value).draw();
 });
 
-$('#urlFilter').on('keyup', function () {
-    table
-        .columns(1)
-        .search(this.value)
-        .draw();
+$("#urlFilter").on("keyup", function () {
+  table.columns(1).search(this.value).draw();
 });
 
-$('#divisionFilter').on('keyup', function () {
-    table
-        .columns(2)
-        .search(this.value)
-        .draw();
+$("#divisionFilter").on("keyup", function () {
+  table.columns(2).search(this.value).draw();
 });
 
-$('#connectorTypeFilter').on('keyup', function () {
-    table
-        .columns(6)
-        .search(this.value)
-        .draw();
+$("#connectorTypeFilter").on("keyup", function () {
+  table.columns(6).search(this.value).draw();
 });
-
 
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 
@@ -173,21 +167,21 @@ function handleWorkflowStatusSelect() {
          
         postWorkflowStatus(collection_id, workflow_status,collection_division, collection_docType );
     });
+
 }
 
 function handleCuratorSelect() {
-    $("body").on("click", ".curator_select", function () {
-        var collection_id = $(this).data('collection-id');
-        var curator_id = $(this).attr('value');
-        var curator_text = $(this).text();
-
-        $(`#curator-button-${collection_id}`).text(curator_text);
-        $(`#curator-button-${collection_id}`).removeClass('btn-light btn-danger btn-warning btn-info btn-success btn-primary');
-        $(`#curator-button-${collection_id}`).addClass('btn-success');
-        var collection_division = $(this).data('collection-division');
-        var collection_documentType = $(this).data('collection-docType');
-        postCurator(collection_id, curator_id, collection_division, collection_documentType);
-    });
+  $("body").on("click", ".curator_select", function () {
+    var collection_id = $(this).data("collection-id");
+    var curator_id = $(this).attr("value");
+    var curator_text = $(this).text();
+    $(`#curator-button-${collection_id}`).text(curator_text);
+    $(`#curator-button-${collection_id}`).removeClass('btn-light btn-danger btn-warning btn-info btn-success btn-primary');
+    $(`#curator-button-${collection_id}`).addClass('btn-success');
+    var collection_division = $(this).data('collection-division');
+    var collection_documentType = $(this).data('collection-docType');
+    postCurator(collection_id, curator_id, collection_division, collection_documentType);
+  });
 }
 
 function postCurationStatus(collection_id, curation_status, division, docType) {
@@ -251,7 +245,7 @@ function postCurator(collection_id, curator_id, division, docType) {
 }
 
 $(document).ready(function () {
-    setupClickHandlers();
+  setupClickHandlers();
 });
 
 function setupClickHandlers() {

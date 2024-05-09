@@ -27,6 +27,11 @@ class CollectionSerializer(serializers.ModelSerializer):
             "division",
             "document_type",
         )
+        # extra_kwargs = {
+        #     "name": {"required": False},
+        #     "config_folder": {"required": False},
+        #     "division": {"required": False},
+        # }
 
 class CollectionReadSerializer(serializers.ModelSerializer):
     class Meta:

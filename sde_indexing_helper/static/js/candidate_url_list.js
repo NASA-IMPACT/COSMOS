@@ -4,12 +4,15 @@ var collection_id = getCollectionId();
 var selected_text = "";
 var INDIVIDUAL_URL = 1;
 var MULTI_URL_PATTERN = 2;
+var matchPatternTypeMap = {
+  "Individual URL Pattern": 1,
+  "Multi-URL Pattern": 2,
+};
 
-// fix table allignment when changing around tabs
-$('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
-    $($.fn.dataTable.tables(true)).DataTable()
-       .columns.adjust();
- });
+//fix table allignment when changing around tabs
+$('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
+  $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+});
 
 $(document).ready(function () {
   handleAjaxStartAndStop();
@@ -26,25 +29,16 @@ function initializeDataTable() {
   var false_icon = '<i class="material-icons" style="color: red">close</i>';
 
   var candidate_urls_table = $("#candidate_urls_table").DataTable({
-    scrollY: true,
+    // scrollY: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
-    orderCellsTop: true,
     serverSide: true,
     stateSave: true,
     searchDelay: 1000,
+    orderCellsTop: true,
     pagingType: "input",
     dom: "lBfritip",
-    buttons: [
-      "spacer",
-      "csv",
-      "spacer",
-      "createState",
-      "savedStates",
-      "spacer",
-      "selectAll",
-      "selectNone",
-    ],
+    buttons: ["spacer", "csv"],
     select: {
       style: "os",
       selector: "td:nth-child(5)",
@@ -67,6 +61,40 @@ function initializeDataTable() {
         d.is_excluded = $("#filter-checkbox").is(":checked") ? false : null;
       },
     },
+    initComplete: function (data) {
+      const addDropdownSelect = [1, 4, 5];
+      const dict = {
+        1: "Images",
+        2: "Data",
+        3: "Documentation",
+        4: "Software and Tools",
+        5: "Missions and Instruments",
+        6: "Training and Education",
+      };
+      this.api()
+        .columns()
+        .every(function (index) {
+          let column = this;
+          if (addDropdownSelect.includes(index)) {
+            $("thead tr td select.dropdown-" + index).on("change", function () {
+              var val = $.fn.dataTable.util.escapeRegex($(this).val());
+              column.search(val ? "^" + val + "$" : "", true, false).draw();
+            });
+            // Add list of options
+            column
+              .data()
+              .unique()
+              .sort()
+              .each(function (d, j) {
+                let val = index === 5 ? dict[d] : d;
+                $("thead tr td select.dropdown-" + index).append(
+                  '<option value="' + d + '">' + val + "</option>"
+                );
+              });
+          }
+        });
+    },
+
     columns: [
       getURLColumn(),
       getExcludedColumn(true_icon, false_icon),
@@ -78,6 +106,7 @@ function initializeDataTable() {
       { data: "generated_title_id", visible: false, searchable: false },
       { data: "match_pattern_type", visible: false, searchable: false },
       { data: "candidate_urls_count", visible: false, searchable: false },
+      { data: "excluded", visible: false, searchable: false },
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
@@ -86,40 +115,62 @@ function initializeDataTable() {
     },
   });
 
-  $('#candidateUrlFilter').on('keyup', function () {
-    candidate_urls_table
-        .columns(0)
-        .search(this.value)
-        .draw();
-});
+  $("#candidateUrlFilter").on("keyup", function () {
+    candidate_urls_table.columns(0).search(this.value).draw();
+  });
 
-$('#candidateScrapedTitleFilter').on('keyup', function () {
-    candidate_urls_table
-        .columns(2)
-        .search(this.value)
-        .draw();
-});
+  $("#candidateScrapedTitleFilter").on("keyup", function () {
+    candidate_urls_table.columns(2).search(this.value).draw();
+  });
 
-$('#candidateNewTitleFilter').on('keyup', function () {
-    candidate_urls_table
-        .columns(3)
-        .search(this.value)
-        .draw();
-});
+  $("#candidateNewTitleFilter").on("keyup", function () {
+    candidate_urls_table.columns(3).search(this.value).draw();
+  });
 
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
-    scrollY: true,
+    // scrollY: true,
     serverSide: true,
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
     pageLength: 100,
     ajax: `/api/exclude-patterns/?format=datatables&collection_id=${collection_id}`,
+    initComplete: function (data) {
+      var table = $("#exclude_patterns_table").DataTable();
+
+      this.api()
+        .columns()
+        .every(function (index) {
+          let column = this;
+          if (column.data().length === 0) {
+            $("#exclude-patterns-dropdown-1").prop("disabled", true);
+          } else if (index === 1) {
+            $("#exclude-patterns-dropdown-1").on("change", function () {
+              if ($(this).val() === "") table.columns(6).search("").draw();
+              else {
+                table
+                  .column(6)
+                  .search(matchPatternTypeMap[$(this).val()])
+                  .draw();
+              }
+            });
+            column
+              .data()
+              .unique()
+              .sort()
+              .each(function (d, j) {
+                $("#exclude-patterns-dropdown-1").append(
+                  '<option value="' + d + '">' + d + "</option>"
+                );
+              });
+          }
+        });
+    },
     columns: [
       { data: "match_pattern" },
       {
         data: "match_pattern_type_display",
         class: "text-center",
-        sortable: false,
+        sortable: true,
       },
       { data: "reason", class: "text-center", sortable: false },
       { data: "candidate_urls_count", class: "text-center", sortable: false },
@@ -132,30 +183,56 @@ $('#candidateNewTitleFilter').on('keyup', function () {
         },
       },
       { data: "id", visible: false, searchable: false },
+      { data: "match_pattern_type", visible: false },
     ],
   });
 
-  $('#candidateMatchPatternFilter').on('keyup', function () {
-    exclude_patterns_table
-        .columns(0)
-        .search(this.value)
-        .draw();
-});
+  $("#candidateMatchPatternFilter").on("keyup", function () {
+    exclude_patterns_table.columns(0).search(this.value).draw();
+  });
 
-$('#candidateReasonFilter').on('keyup', function () {
-    exclude_patterns_table
-        .columns(2)
-        .search(this.value)
-        .draw();
-});
+  $("#candidateReasonFilter").on("keyup", function () {
+    exclude_patterns_table.columns(2).search(this.value).draw();
+  });
 
   var include_patterns_table = $("#include_patterns_table").DataTable({
-    scrollY: true,
+    // scrollY: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
     orderCellsTop: true,
     serverSide: true,
     ajax: `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
+    initComplete: function (data) {
+      var table = $("#include_patterns_table").DataTable();
+      this.api()
+        .columns()
+        .every(function (index) {
+          let column = this;
+          if (column.data().length === 0) {
+            $("#include-patterns-dropdown-1").prop("disabled", true);
+          } else {
+            if (index === 1) {
+              $("#include-patterns-dropdown-1").on("change", function () {
+                if ($(this).val() === "") table.columns(5).search("").draw();
+                table
+                  .column(5)
+                  .search(matchPatternTypeMap[$(this).val()])
+                  .draw();
+              });
+            }
+            column
+              .data()
+              .unique()
+              .sort()
+              .each(function (d, j) {
+                console.log("d", d);
+                $("#include-patterns-dropdown-1").append(
+                  '<option value="' + d + '">' + d + "</option>"
+                );
+              });
+          }
+        });
+    },
     columns: [
       { data: "match_pattern" },
       {
@@ -173,23 +250,52 @@ $('#candidateReasonFilter').on('keyup', function () {
         },
       },
       { data: "id", visible: false, searchable: false },
+      { data: "match_pattern_type", visible: false },
     ],
   });
 
-  $('#candidateIncludeMatchPatternFilter').on('keyup', function () {
-    include_patterns_table
-        .columns(0)
-        .search(this.value)
-        .draw();
-});
+  $("#candidateIncludeMatchPatternFilter").on("keyup", function () {
+    include_patterns_table.columns(0).search(this.value).draw();
+  });
 
   var title_patterns_table = $("#title_patterns_table").DataTable({
-    scrollY: true,
+    // scrollY: true,
     serverSide: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
     orderCellsTop: true,
     ajax: `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
+    initComplete: function (data) {
+      var table = $("#title_patterns_table").DataTable();
+
+      this.api()
+        .columns()
+        .every(function (index) {
+          let column = this;
+          if (column.data().length === 0) {
+            $("#title-patterns-dropdown-1").prop("disabled", true);
+          } else if (index === 1) {
+            $("#title-patterns-dropdown-1").on("change", function () {
+              if ($(this).val() === "") table.columns(6).search("").draw();
+              else {
+                table
+                  .column(6)
+                  .search(matchPatternTypeMap[$(this).val()])
+                  .draw();
+              }
+            });
+            column
+              .data()
+              .unique()
+              .sort()
+              .each(function (d, j) {
+                $("#title-patterns-dropdown-1").append(
+                  '<option value="' + d + '">' + d + "</option>"
+                );
+              });
+          }
+        });
+    },
     columns: [
       { data: "match_pattern" },
       {
@@ -208,25 +314,84 @@ $('#candidateReasonFilter').on('keyup', function () {
         },
       },
       { data: "id", visible: false, searchable: false },
+      { data: "match_pattern_type", visible: false },
     ],
   });
 
-  $('#candidateTitleMatchPatternFilter').on('keyup', function () {
-    title_patterns_table
-        .columns(0)
-        .search(this.value)
-        .draw();
-});
+  $("#candidateTitleMatchPatternFilter").on("keyup", function () {
+    title_patterns_table.columns(0).search(this.value).draw();
+  });
 
   var document_type_patterns_table = $(
     "#document_type_patterns_table"
   ).DataTable({
-    scrollY: true,
+    // scrollY: true,
     serverSide: true,
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
     pageLength: 100,
     ajax: `/api/document-type-patterns/?format=datatables&collection_id=${collection_id}`,
+    initComplete: function (data) {
+      this.api()
+        .columns()
+        .every(function (index) {
+          var table = $("#document_type_patterns_table").DataTable();
+
+          let addDropdownSelect = {
+            1: {
+              columnToSearch: 6,
+              matchPattern: {
+                "Individual URL Pattern": 1,
+                "Multi-URL Pattern": 2,
+              },
+            },
+            2: {
+              columnToSearch: 7,
+              matchPattern: {
+                Images: 1,
+                Data: 2,
+                Documentation: 3,
+                "Software and Tools": 4,
+                "Missions and Instruments": 5,
+                "Training and Education": 6,
+              },
+            },
+          };
+
+          let column = this;
+          if (column.data().length === 0) {
+            $(`#document-type-patterns-dropdown-${index}`).prop(
+              "disabled",
+              true
+            );
+          } else if (index in addDropdownSelect) {
+            $("#document-type-patterns-dropdown-" + index).on(
+              "change",
+              function () {
+                let col = addDropdownSelect[index].columnToSearch;
+                let searchInput =
+                  addDropdownSelect[index].matchPattern[$(this).val()];
+                if ($(this).val() === "" || $(this).val() === undefined)
+                  table.columns(col).search("").draw();
+                else {
+                  table.columns(col).search(searchInput).draw();
+                }
+              }
+            );
+            // Add list of options
+            column
+              .data()
+              .unique()
+              .sort()
+              .each(function (d, j) {
+                $("#document-type-patterns-dropdown-" + index).append(
+                  '<option value="' + d + '">' + d + "</option>"
+                );
+              });
+          }
+        });
+    },
+
     columns: [
       { data: "match_pattern" },
       {
@@ -245,15 +410,15 @@ $('#candidateReasonFilter').on('keyup', function () {
         },
       },
       { data: "id", visible: false, searchable: false },
+      { data: "match_pattern_type", visible: false },
+      { data: "document_type", visible: false },
     ],
   });
 
-  $('#candidateDocTypeMatchPatternFilter').on('keyup', function () {
-    document_type_patterns_table
-        .columns(0)
-        .search(this.value)
-        .draw();
-});}
+  $("#candidateDocTypeMatchPatternFilter").on("keyup", function () {
+    document_type_patterns_table.columns(0).search(this.value).draw();
+  });
+}
 
 function setupClickHandlers() {
   handleAddNewPatternClick();
