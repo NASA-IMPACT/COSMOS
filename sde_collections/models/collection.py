@@ -131,7 +131,7 @@ class Collection(models.Model):
             },
         }
         encoded_payload = urllib.parse.quote(json.dumps(payload))
-        return f"{base_url}/app/nasa-sba-sde/#/search?query={encoded_payload}"
+        return f"{base_url}/app/secret-prod/#/search?query={encoded_payload}"
 
     @property
     def server_url_prod(self) -> str:
