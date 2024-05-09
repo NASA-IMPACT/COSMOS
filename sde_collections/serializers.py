@@ -31,7 +31,6 @@ class CollectionSerializer(serializers.ModelSerializer):
         #     "division": {"required": False},
         # }
 
-
 class CollectionReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection

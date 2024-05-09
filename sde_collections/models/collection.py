@@ -456,6 +456,11 @@ class Collection(models.Model):
         # Call the parent class's save method
         super().save(*args, **kwargs)
 
+    def __init__(self, *args, **kwargs):
+        # Create a cached version of the last workflow_status to compare against
+        super().__init__(*args, **kwargs)
+        self.old_workflow_status = self.workflow_status
+
 
 class RequiredUrls(models.Model):
     """
@@ -481,10 +486,33 @@ class Comments(models.Model):
     def __str__(self):
         return self.text
 
+class WorkflowHistory(models.Model):
+    collection = models.ForeignKey(
+        Collection, on_delete=models.CASCADE, related_name="workflow_history", null=True
+    )    
+    workflow_status = models.IntegerField(
+        choices=WorkflowStatusChoices.choices,
+        default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
+    )
+    curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return (self.collection_name + self.workflow_status)
+
+@receiver(post_save, sender=Collection)
+def log_workflow_history(sender, instance, created, **kwargs):
+    if instance.workflow_status != instance.old_workflow_status:
+        WorkflowHistory.objects.create(
+            collection=instance,
+            workflow_status=instance.workflow_status,
+            curated_by=instance.curated_by
+        )
+
 
 @receiver(post_save, sender=Collection)
 def create_configs_on_status_change(sender, instance, created, **kwargs):
-    """
+    """ 
     Creates various config files on certain workflow status changes
     """
 
