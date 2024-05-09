@@ -34,7 +34,7 @@ function initializeDataTable() {
     pageLength: 100,
     serverSide: true,
     stateSave: true,
-    searchDelay: 1000,
+    searchDelay: 5000,
     orderCellsTop: true,
     pagingType: "input",
     dom: "lBfritip",
@@ -115,9 +115,16 @@ function initializeDataTable() {
     },
   });
 
-  $("#candidateUrlFilter").on("keyup", function () {
-    candidate_urls_table.columns(0).search(this.value).draw();
-  });
+  var search = DataTable.util.debounce(function (input) {
+    input;
+  }, 1000);
+
+  $("#candidateUrlFilter").on(
+    "keyup",
+    DataTable.util.debounce(function (val) {
+      candidate_urls_table.columns(0).search(this.value).draw();
+    }, 1000)
+  );
 
   $("#candidateScrapedTitleFilter").on("keyup", function () {
     candidate_urls_table.columns(2).search(this.value).draw();
@@ -129,6 +136,7 @@ function initializeDataTable() {
 
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
     scrollY: true,
+    searchDelay: 5000,
     serverSide: true,
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
