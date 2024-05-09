@@ -29,8 +29,18 @@
                 <td ><input class="table_filter_row_input" type="text" id="urlFilter" placeholder="URL" /></td>
                 <td ><input class="table_filter_row_input" type="text" id="divisionFilter" placeholder="Division" /></td>
                 <td ></td>
-                <td ><select class="collection-dropdown-4 select-dropdown"><option value="">SELECT</option></select></td>
-                <td ><select class="collection-dropdown-5 select-dropdown"><option value="">SELECT</option></select></td>
+                <td ><select id="collection-dropdown-4" class="select-dropdown">
+                    <option value="">SELECT</option>
+                   {% for choice in workflow_status_choices %}
+                       <option value="{{ choice }}" data-collection-id={{ collection.id }}>{{ choice.label }}</option>
+                   {% endfor %}
+                </select></td>
+                <td ><select id="collection-dropdown-5" class="select-dropdown">
+                    <option value="">SELECT</option>
+                    {% for curator in curators %}
+                    <option  value="{{ curator.pk }}" data-collection-id={{ collection.id }}>{{ curator.username }}</option>
+                {% endfor %}
+                </select></td>
                 <td ><input class="table_filter_row_input" type="text" id="connectorTypeFilter" placeholder="Connector Type" /></td>
             </tr>
         </thead>
