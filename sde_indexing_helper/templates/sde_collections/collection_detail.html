@@ -123,6 +123,9 @@
                                 <strong>{{ comment.user.username }}</strong>
                                 <span>{{ comment.created_at|date:"M. d, Y, P" }}</span>
                                 <p>{{ comment.text }}</p>
+                                {% if user.is_authenticated and user == comment.user %}
+                                    <button data-comment-id="{{ comment.id }}" onclick="deleteComment(this)" class="delete-button">Delete</button>
+                                {% endif %}
                             </div>
                         {% empty %}
                             <p>No comments yet</p>
@@ -150,5 +153,8 @@
     </table>
 {% endblock content %}
 {% block javascripts %}
+    <script type="text/javascript">
+        var csrftoken = '{{ csrf_token }}';
+    </script>
     <script src="{% static 'js/collection_detail.js' %}"></script>
 {% endblock javascripts %}

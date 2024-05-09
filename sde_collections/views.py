@@ -11,7 +11,7 @@ from django.views.generic import TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
@@ -39,6 +39,7 @@ from .serializers import (
     CandidateURLSerializer,
     CollectionReadSerializer,
     CollectionSerializer,
+    CommentsSerializer,
     DocumentTypePatternSerializer,
     ExcludePatternSerializer,
     IncludePatternSerializer,
@@ -462,3 +463,21 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
         context["differences"] = self.data
 
         return context
+
+
+class CommentsViewSet(viewsets.ModelViewSet):
+    queryset = Comments.objects.all()
+    serializer_class = CommentsSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action == "destroy":
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
+
+    def destroy(self, request, *args, **kwargs):
+        comment = self.get_object()
+        if request.user == comment.user:
+            return super().destroy(request, *args, **kwargs)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)

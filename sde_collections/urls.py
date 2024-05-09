@@ -14,6 +14,7 @@ router.register(r"include-patterns", views.IncludePatternViewSet)
 router.register(r"title-patterns", views.TitlePatternViewSet)
 router.register(r"document-type-patterns", views.DocumentTypePatternViewSet)
 router.register(r"environmental-justice", EnvironmentalJusticeRowViewSet)
+router.register(r"comments", views.CommentsViewSet)
 
 app_name = "sde_collections"
 

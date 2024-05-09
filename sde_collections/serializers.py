@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models.candidate_url import CandidateURL
-from .models.collection import Collection
+from .models.collection import Collection, Comments
 from .models.collection_choice_fields import DocumentTypes
 from .models.pattern import (
     DocumentTypePattern,
@@ -197,3 +197,14 @@ class DocumentTypePatternSerializer(BasePatternSerializer, serializers.ModelSeri
         except DocumentTypePattern.DoesNotExist:
             pass
         return value
+
+
+class CommentsSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+
+    def get_username(self, obj):
+        return obj.user.username
+
+    class Meta:
+        model = Comments
+        fields = ["id", "collection", "username", "text", "created_at"]
