@@ -123,7 +123,7 @@ class Collection(models.Model):
     def server_url_secret_prod(self) -> str:
         base_url = "https://sciencediscoveryengine.nasa.gov"
         payload = {
-            "name": "query-sde-primary",
+            "name": "secret-prod",
             "scope": "All",
             "text": "",
             "advanced": {
