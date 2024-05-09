@@ -87,9 +87,12 @@ let table = $("#collection_table").DataTable({
     },
 
     {
+        searchPanes: {
+
+        options: [],
          visible:false,
-         searchable: false,
-        targets: 7,
+        },
+        targets: [7],
       },
 
   ],
