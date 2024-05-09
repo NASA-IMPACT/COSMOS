@@ -456,6 +456,11 @@ class Collection(models.Model):
         # Call the parent class's save method
         super().save(*args, **kwargs)
 
+    def __init__(self, *args, **kwargs):
+        # Create a cached version of the last workflow_status to compare against
+        super().__init__(*args, **kwargs)
+        self.old_workflow_status = self.workflow_status
+
 
 class RequiredUrls(models.Model):
     """
@@ -497,16 +502,17 @@ class WorkflowHistory(models.Model):
 
 @receiver(post_save, sender=Collection)
 def log_workflow_history(sender, instance, created, **kwargs):
-    WorkflowHistory.objects.create(
-        collection=instance,
-        workflow_status=instance.workflow_status,
-        curated_by=instance.curated_by
-    )
+    if instance.workflow_status != instance.old_workflow_status:
+        WorkflowHistory.objects.create(
+            collection=instance,
+            workflow_status=instance.workflow_status,
+            curated_by=instance.curated_by
+        )
 
 
 @receiver(post_save, sender=Collection)
 def create_configs_on_status_change(sender, instance, created, **kwargs):
-    """
+    """ 
     Creates various config files on certain workflow status changes
     """
 
