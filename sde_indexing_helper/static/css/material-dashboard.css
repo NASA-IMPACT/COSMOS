@@ -191,10 +191,6 @@ textarea {
   font-size: inherit;
   line-height: inherit; }
 
-.header-title{
-  padding-right: 25px;
-}
-
 button,
 input {
   overflow: visible; }
