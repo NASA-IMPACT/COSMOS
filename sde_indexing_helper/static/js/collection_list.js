@@ -18,15 +18,17 @@ let table = $("#collection_table").DataTable({
     },
   ],
 
-  columns: [
-    { data: "name", visible: false },
-    { data: "url", visible: false },
-    { data: "division", visible: false },
-    { data: "candidate_urls", visible: false },
-    { data: "workflow_status", visible: false },
-    { data: "curated_by_id", visible: false },
-    { data: "connector", visible: false },
-  ],
+//   columns: [
+//     { data: "name", visible: false },
+//     { data: "url", visible: false },
+//     { data: "division", visible: false },
+//     { data: "candidate_urls", visible: false },
+//     { data: "workflow_status", visible: false },
+//     { data: "curated_by_id", visible: false },
+//     { data: "connector", visible: false },
+//     { data: "workflow_status", visible: false }
+
+//   ],
 
   columnDefs: [
     {
@@ -83,17 +85,37 @@ let table = $("#collection_table").DataTable({
       targets: [3],
       type: "num-fmt",
     },
+
+    {
+         visible:false,
+         searchable: false,
+        targets: 7,
+      },
+
   ],
 });
 
 $("#collection-dropdown-4").on("change", function () {
-  console.log("this val", this.value);
-  table.columns(4).search(this.value).draw();
+//   console.log("this val", this.value);
+
+// console.log( table.columns(7)
+//     .data()
+//     .unique()
+//     .sort());
+//     console.log(typeof this.value);
+//     console.log(typeof table.columns(7)
+//     .data()
+//     .unique()
+//     .sort()[0][0]);
+
+//   table.columns(7).search(this.value,{exact: true}).draw();
+table.columns(7).search(this.value ? "^" + this.value + "$" : "", true, false).draw();
+
 });
 
 $("#collection-dropdown-5").on("change", function () {
   console.log("this", this.value);
-  table.columns(5).search(this.value).draw();
+  table.columns(4).search(this.value).draw();
 });
 
 $("#nameFilter").on("keyup", function () {

@@ -78,6 +78,11 @@ function initializeDataTable() {
           if (addDropdownSelect.includes(index)) {
             $("thead tr td select.dropdown-" + index).on("change", function () {
               var val = $.fn.dataTable.util.escapeRegex($(this).val());
+              console.log(val);
+              console.log( column
+                .data()
+                .unique()
+                .sort());
               column.search(val ? "^" + val + "$" : "", true, false).draw();
             });
             // Add list of options
