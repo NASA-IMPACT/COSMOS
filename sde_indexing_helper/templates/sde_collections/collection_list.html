@@ -22,8 +22,8 @@
                 <th class="text-center" style="padding-right:25px !important">Workflow Status</th>
                 <th class="text-center" style="padding-right:25px !important">Curator</th>
                 <th class="text-center" style="padding-right:25px !important">Connector Type</th>
-                <th>Test</th>
-                <th>Test</th>
+                <th></th>
+                <th></th>
             </tr>
             <tr>
                 <td ><input class="table_filter_row_input" type="text" id="nameFilter" placeholder="Name" /></td>
@@ -45,7 +45,6 @@
                 <td ><input class="table_filter_row_input" type="text" id="connectorTypeFilter" placeholder="Connector Type" /></td>
                 <td ></td>
                 <td ></td>
-
             </tr>
         </thead>
       
@@ -108,7 +107,7 @@
                     </td>
                     <td>{{ collection.get_connector_display }}</td>
                     <td>{{ collection.workflow_status }}</td>
-                    <td>{{ collection.curated_by }}</td>
+                    <td>{{ collection.curated_by_id }}</td>
                 </tr>
             {% endfor %}
         </tbody>
