@@ -9,7 +9,7 @@ var matchPatternTypeMap = {
   "Multi-URL Pattern": 2,
 };
 
-// fix table allignment when changing around tabs
+//fix table allignment when changing around tabs
 $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
   $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
 });
@@ -29,7 +29,7 @@ function initializeDataTable() {
   var false_icon = '<i class="material-icons" style="color: red">close</i>';
 
   var candidate_urls_table = $("#candidate_urls_table").DataTable({
-    scrollY: true,
+    // scrollY: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
     serverSide: true,
@@ -135,8 +135,7 @@ function initializeDataTable() {
   });
 
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
-    scrollY: true,
-    searchDelay: 5000,
+    // scrollY: true,
     serverSide: true,
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
@@ -204,7 +203,7 @@ function initializeDataTable() {
   });
 
   var include_patterns_table = $("#include_patterns_table").DataTable({
-    scrollY: true,
+    // scrollY: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
     orderCellsTop: true,
@@ -267,7 +266,7 @@ function initializeDataTable() {
   });
 
   var title_patterns_table = $("#title_patterns_table").DataTable({
-    scrollY: true,
+    // scrollY: true,
     serverSide: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
@@ -333,7 +332,7 @@ function initializeDataTable() {
   var document_type_patterns_table = $(
     "#document_type_patterns_table"
   ).DataTable({
-    scrollY: true,
+    // scrollY: true,
     serverSide: true,
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
