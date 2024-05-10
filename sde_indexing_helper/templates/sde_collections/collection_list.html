@@ -66,7 +66,7 @@
                             <div class="dropdown-menu"
                                  aria-labelledby="workflow-status-button-{{ collection.id }}">
                                 {% for choice in workflow_status_choices %}
-                                    <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }}>{{ choice.label }}</a>
+                                    <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
                                 {% endfor %}
                             </div>
                         </div>
@@ -86,7 +86,7 @@
                             <div class="dropdown-menu"
                                  aria-labelledby="curator-button-{{ collection.id }}">
                                 {% for curator in curators %}
-                                    <a class="dropdown-item curator_select" value="{{ curator.pk }}" data-collection-id={{ collection.id }}>{{ curator.username }}</a>
+                                    <a class="dropdown-item curator_select" value="{{ curator.pk }}"  data-collection-id={{ collection.id }} >{{ curator.username }}</a>
                                 {% endfor %}
                             </div>
                         </div>

@@ -83,3 +83,7 @@ div > .nav {
 .titleCol {
     display: flex;
 }
+
+.divisionDropdown {
+    appearance: auto !important;
+  }
