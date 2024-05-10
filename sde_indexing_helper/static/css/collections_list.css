@@ -24,6 +24,48 @@ body {
     width: 100%;
 }
 
+.dtsp-nameButton{
+    opacity:0.6;
+    background-color: transparent;
+    border:none !important;
+    box-shadow: none;
+}
+
+.dtsp-countButton{
+    opacity:0.6;
+    background-color: transparent;
+    border:none !important;
+    box-shadow: none;
+}
+
+.dtsp-collapseButton{
+    opacity:0.6;
+    background-color: transparent;
+    border:none !important;
+    box-shadow: none;
+}
+
+.clearButton{
+    opacity:0.6;
+    background-color: transparent;
+    border:none !important;
+    box-shadow: none;
+}
+
+.dtsp-searchIcon{
+    opacity:0.6;
+    background-color: transparent;
+    border:none !important;
+    box-shadow: none;
+}
+
+.dtsp-caret{
+    color: #3C4858;
+}
+
+.main-panel > .content{
+    padding:0px;
+}
 .workflow_status_dropdown {
     display: flex;
     justify-content: center;
