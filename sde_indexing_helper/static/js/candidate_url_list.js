@@ -319,6 +319,10 @@ function initializeDataTable() {
     title_patterns_table.columns(0).search(this.value).draw();
   });
 
+  $("#candidateTitlePatternTypeFilter").on("keyup", function () {
+    title_patterns_table.columns(2).search(this.value).draw();
+  });
+
   var document_type_patterns_table = $(
     "#document_type_patterns_table"
   ).DataTable({
