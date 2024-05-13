@@ -73,11 +73,14 @@ let table = $("#collection_table").DataTable({
       targets: [3],
       type: "num-fmt",
     },
+    {
+      searchPanes: {
+          show: false
+      },
+      targets: [7,8]
+  }
   ],
 });
-
-$(".dtsp-panesContainer .dtsp-searchPane").slice(-2).hide();
-$(".dtsp-panesContainer .dtsp-searchPane").slice(-1).hide();
 
 $("#collection-dropdown-4").on("change", function () {
   console.log("this.value workng", this.value);
