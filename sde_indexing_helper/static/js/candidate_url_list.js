@@ -32,7 +32,6 @@ function initializeDataTable() {
     // scrollY: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
-    serverSide: true,
     stateSave: true,
     orderCellsTop: true,
     pagingType: "input",
@@ -114,15 +113,13 @@ function initializeDataTable() {
     },
   });
 
-  $("#candidateUrlFilter").on(
-    "keyup",
-    candidate_urls_table.columns(0).search(this.value).draw()
-  );
+  $("#candidateUrlFilter").on("keyup", function () {
+    candidate_urls_table.columns(0).search(this.value).draw();
+  });
 
-  $("#candidateScrapedTitleFilter").on(
-    "keyup",
-    candidate_urls_table.columns(2).search(this.value).draw()
-  );
+  $("#candidateScrapedTitleFilter").on("keyup", function () {
+    candidate_urls_table.columns(2).search(this.value).draw();
+  });
 
   $("#candidateNewTitleFilter").on("keyup", function () {
     candidate_urls_table.columns(3).search(this.value).draw();
