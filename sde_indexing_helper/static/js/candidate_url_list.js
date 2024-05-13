@@ -227,7 +227,6 @@ function initializeDataTable() {
               .unique()
               .sort()
               .each(function (d, j) {
-                console.log("d", d);
                 $("#include-patterns-dropdown-1").append(
                   '<option value="' + d + '">' + d + "</option>"
                 );
