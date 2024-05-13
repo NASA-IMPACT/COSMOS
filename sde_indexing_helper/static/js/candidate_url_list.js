@@ -80,17 +80,6 @@ function initializeDataTable() {
               var val = $.fn.dataTable.util.escapeRegex($(this).val());
               column.search(val ? "^" + val + "$" : "", true, false).draw();
             });
-            // Add list of options
-            // column
-            //   .data()
-            //   .unique()
-            //   .sort()
-            //   .each(function (d, j) {
-            //     let val = index === 5 ? dict[d] : d;
-            //     $("thead tr td select.dropdown-" + index).append(
-            //       '<option value="' + d + '">' + val + "</option>"
-            //     );
-            //   });
           }
         });
     },
