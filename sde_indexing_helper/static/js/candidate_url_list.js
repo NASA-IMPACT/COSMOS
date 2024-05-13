@@ -416,11 +416,7 @@ function initializeDataTable() {
   });
 
   $("#candidateDocTypeMatchPatternFilter").on("keyup", function () {
-    console.log("in here");
-    DataTable.util.debounce(function () {
-      console.log("in here");
-      document_type_patterns_table.columns(0).search(this.value).draw();
-    }, 500);
+    document_type_patterns_table.columns(0).search(this.value).draw();
   });
 }
 
