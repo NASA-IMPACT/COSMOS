@@ -83,7 +83,6 @@ let table = $("#collection_table").DataTable({
 });
 
 $("#collection-dropdown-4").on("change", function () {
-  console.log("this.value workng", this.value);
   table
     .columns(7)
     .search(this.value ? "^" + this.value + "$" : "", true, false)
@@ -91,7 +90,6 @@ $("#collection-dropdown-4").on("change", function () {
 });
 
 $("#collection-dropdown-5").on("change", function () {
-  console.log("this.value", this.value);
   table
     .columns(8)
     .search(this.value ? "^" + this.value + "$" : "", true, false)
