@@ -2,7 +2,7 @@ let table = $("#collection_table").DataTable({
   paging: false,
   stateSave: true,
   orderCellsTop: true,
-  dom: "BPfritip",
+  dom: "BPlrtip",
   buttons: [
     "csv",
     {
@@ -75,10 +75,10 @@ let table = $("#collection_table").DataTable({
     },
     {
       searchPanes: {
-          show: false
+        show: false,
       },
-      targets: [7,8]
-  }
+      targets: [7, 8],
+    },
   ],
 });
 
