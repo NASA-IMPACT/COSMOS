@@ -173,8 +173,8 @@
             </table>
         
         </div>
-        <div class="tab-pane fade" id="statustimeline">PLACEHOLDER 2
-            <table class="table-striped">
+        <div class="tab-pane fade" id="statustimeline">
+            <table class="table table-striped">
                 <thead>
                     <tr>
                         <th>Workflow Status</th>
@@ -190,7 +190,11 @@
                             id="workflow-status-badge-{{ entry.id }}"
                             aria-expanded="false">{{ entry.get_workflow_status_display }}</button>
                         </td>
-                        <td>{{entry.curated_by}}</td>
+                        <td>                            
+                            <button class="btn {% if entry.curated_by %} btn-success {% else %} btn-dark {% endif %} btn-sm"
+                            type="button"
+                            id="curator-button-{{ entry.id }}"
+                            aria-expanded="false">{{ entry.curated_by }}</button></td>
                         <td>{{entry.created_at|timesince}}</td>
                     </tr>
                     {% endfor %}

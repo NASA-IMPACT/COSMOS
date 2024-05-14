@@ -83,3 +83,7 @@ div > .nav {
 .titleCol {
     display: flex;
 }
+
+.table > thead > tr > th {
+    font-weight: 700;
+}

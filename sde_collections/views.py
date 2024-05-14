@@ -145,7 +145,7 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
         context["required_urls"] = RequiredUrls.objects.filter(collection=self.get_object())
         context["segment"] = "collection-detail"
         context["comments"] = Comments.objects.filter(collection=self.get_object()).order_by("-created_at")
-        context["workflow_history"] = WorkflowHistory.objects.filter(collection=self.get_object())
+        context["workflow_history"] = WorkflowHistory.objects.filter(collection=self.get_object()).order_by('-created_at')
         return context
 
 class RequiredUrlsDeleteView(LoginRequiredMixin, DeleteView):
