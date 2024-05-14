@@ -127,6 +127,7 @@ function initializeDataTable() {
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
     // scrollY: true,
     dom: "lrtip",
+    serverSide: true,
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
     pageLength: 100,
@@ -195,6 +196,7 @@ function initializeDataTable() {
     dom: "lrtip",
     pageLength: 100,
     orderCellsTop: true,
+    serverSide: true,
     ajax: `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
     initComplete: function (data) {
       var table = $("#include_patterns_table").DataTable();
@@ -247,6 +249,7 @@ function initializeDataTable() {
 
   var title_patterns_table = $("#title_patterns_table").DataTable({
     // scrollY: true,
+    serverSide: true,
     dom: "lrtip",
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
@@ -315,6 +318,7 @@ function initializeDataTable() {
   ).DataTable({
     // scrollY: true,
     dom: "lrtip",
+    serverSide: true,
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
     pageLength: 100,
