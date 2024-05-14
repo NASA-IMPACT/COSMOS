@@ -194,11 +194,24 @@ function handleCuratorSelect() {
     var collection_id = $(this).data("collection-id");
     var curator_id = $(this).attr("value");
     var curator_text = $(this).text();
-    $(`#curator-button-${collection_id}`).text(curator_text);
-    $(`#curator-button-${collection_id}`).removeClass(
+    $possible_buttons = $("body").find(
+      `[id="curator-button-${collection_id}"]`
+    );
+    if ($possible_buttons.length > 1) {
+      $button = $possible_buttons[1];
+      $button = $($button);
+    } else {
+      $button = $(`#curator-button-${collection_id}`);
+    }
+
+    console.log(curator_text);
+     $button.text(curator_text );
+    $button.removeClass(
       "btn-light btn-danger btn-warning btn-info btn-success btn-primary"
     );
-    $(`#curator-button-${collection_id}`).addClass("btn-success");
+    $button.addClass("btn-success");
+    $("#collection_table").DataTable().searchPanes.rebuildPane(7);
+
     postCurator(collection_id, curator_id);
   });
 }
