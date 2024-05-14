@@ -2,7 +2,7 @@ let table = $("#collection_table").DataTable({
   paging: false,
   stateSave: true,
   orderCellsTop: true,
-  dom: "BPfritip",
+  dom: "BPlrtip",
   buttons: [
     "csv",
     {
