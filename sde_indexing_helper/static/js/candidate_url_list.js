@@ -79,17 +79,6 @@ function initializeDataTable() {
               var val = $.fn.dataTable.util.escapeRegex($(this).val());
               column.search(val ? "^" + val + "$" : "", true, false).draw();
             });
-            // Add list of options
-            column
-              .data()
-              .unique()
-              .sort()
-              .each(function (d, j) {
-                let val = index === 5 ? dict[d] : d;
-                $("thead tr td select.dropdown-" + index).append(
-                  '<option value="' + d + '">' + val + "</option>"
-                );
-              });
           }
         });
     },
@@ -161,15 +150,6 @@ function initializeDataTable() {
                   .draw();
               }
             });
-            column
-              .data()
-              .unique()
-              .sort()
-              .each(function (d, j) {
-                $("#exclude-patterns-dropdown-1").append(
-                  '<option value="' + d + '">' + d + "</option>"
-                );
-              });
           }
         });
     },
@@ -234,15 +214,6 @@ function initializeDataTable() {
                   .draw();
               });
             }
-            column
-              .data()
-              .unique()
-              .sort()
-              .each(function (d, j) {
-                $("#include-patterns-dropdown-1").append(
-                  '<option value="' + d + '">' + d + "</option>"
-                );
-              });
           }
         });
     },
@@ -300,15 +271,6 @@ function initializeDataTable() {
                   .draw();
               }
             });
-            column
-              .data()
-              .unique()
-              .sort()
-              .each(function (d, j) {
-                $("#title-patterns-dropdown-1").append(
-                  '<option value="' + d + '">' + d + "</option>"
-                );
-              });
           }
         });
     },
@@ -404,16 +366,6 @@ function initializeDataTable() {
                 }
               }
             );
-            // Add list of options
-            column
-              .data()
-              .unique()
-              .sort()
-              .each(function (d, j) {
-                $("#document-type-patterns-dropdown-" + index).append(
-                  '<option value="' + d + '">' + d + "</option>"
-                );
-              });
           }
         });
     },
