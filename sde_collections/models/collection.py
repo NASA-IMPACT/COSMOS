@@ -467,7 +467,13 @@ class Collection(models.Model):
                     details = STATUS_CHANGE_NOTIFICATIONS[transition]
                     message = format_slack_message(self.name, details, self.id)
                     send_slack_message(message)
-
+                if "workflow_status" in self.tracker.changed():
+                    WorkflowStatusHistory.objects.create(
+                        collection=self,
+                        old_status=self.tracker.previous("workflow_status"),
+                        new_status=self.workflow_status,
+                        changed_by=self.curated_by,
+                    )
         # Call the parent class's save method
         super().save(*args, **kwargs)
 
@@ -511,3 +517,18 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
             instance.create_indexer_config(overwrite=False)
         elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_PUBLIC_PROD:
             instance.add_to_public_query()
+
+
+class WorkflowStatusHistory(models.Model):
+    collection = models.ForeignKey("Collection", on_delete=models.CASCADE, related_name="workflow_status_history")
+    old_status = models.IntegerField(choices=WorkflowStatusChoices.choices)
+    new_status = models.IntegerField(choices=WorkflowStatusChoices.choices)
+    changed_by = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Workflow Status History"
+        verbose_name_plural = "Workflow Status Histories"
+
+    def __str__(self):
+        return f"{self.collection.name} - {self.get_old_status_display()} to {self.get_new_status_display()}"
