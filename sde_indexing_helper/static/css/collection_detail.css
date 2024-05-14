@@ -84,6 +84,9 @@ div > .nav {
     display: flex;
 }
 
+.table > thead > tr > th {
+    font-weight: 700;
+}
 .divisionDropdown {
     appearance: auto !important;
   }
