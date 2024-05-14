@@ -142,3 +142,13 @@ div > .nav {
 .table_filter_row_input, .dropdown-toggle{
     width: 100%;
 }
+
+#hideShowColumnsModal {
+    position: fixed;
+    top: 0;
+    right: 0 !important;
+    left: unset !important;
+    background: pink;
+    width: 30vw;
+    z-index: 2000;
+}

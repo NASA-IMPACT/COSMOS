@@ -38,7 +38,35 @@ function initializeDataTable() {
     orderCellsTop: true,
     pagingType: "input",
     dom: "lBritip",
-    buttons: ["spacer", "csv"],
+    buttons: [
+      "spacer",
+      "csv",
+      "spacer",
+      {
+        text: "Customize Columns",
+        action: function (e, dt, node, config) {
+          $modal = $("#hideShowColumnsModal").modal();
+          var table = $("#candidate_urls_table").DataTable();
+          table.columns().every(function () {
+            var column = this;
+            // console.log(column.header().textContent);
+            var columnName = column.header().textContent.trim();
+            var $checkbox = $('<input type="checkbox">').attr({
+              id: "checkbox_" + columnName.replace(/\s+/g, "_"), // Generate a unique ID for each checkbox
+              name: columnName.replace(/\s+/g, "_"), // Set name attribute for each checkbox
+            });
+            var $label = $("<label>")
+              .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
+              .text(columnName);
+            var $checkboxContainer = $("<div>")
+              .append($checkbox)
+              .append($label);
+
+            $("#modalBody").append($checkboxContainer);
+          });
+        },
+      },
+    ],
     select: {
       style: "os",
       selector: "td:nth-child(5)",
@@ -493,6 +521,7 @@ function getDocumentTypeColumn() {
     },
   };
 }
+
 function handleCreateDocumentTypePatternButton() {
   $("body").on("click", ".create_document_type_pattern_button", function () {
     $modal = $("#documentTypePatternModal").modal();
