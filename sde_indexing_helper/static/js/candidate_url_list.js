@@ -37,7 +37,7 @@ function initializeDataTable() {
     searchDelay: 1000,
     orderCellsTop: true,
     pagingType: "input",
-    dom: "lBfritip",
+    dom: "lBritip",
     buttons: ["spacer", "csv"],
     select: {
       style: "os",
@@ -80,17 +80,6 @@ function initializeDataTable() {
               var val = $.fn.dataTable.util.escapeRegex($(this).val());
               column.search(val ? "^" + val + "$" : "", true, false).draw();
             });
-            // Add list of options
-            column
-              .data()
-              .unique()
-              .sort()
-              .each(function (d, j) {
-                let val = index === 5 ? dict[d] : d;
-                $("thead tr td select.dropdown-" + index).append(
-                  '<option value="' + d + '">' + val + "</option>"
-                );
-              });
           }
         });
     },
@@ -130,6 +119,7 @@ function initializeDataTable() {
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
     // scrollY: true,
     serverSide: true,
+    dom: "lrtip",
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
     pageLength: 100,
@@ -153,15 +143,6 @@ function initializeDataTable() {
                   .draw();
               }
             });
-            column
-              .data()
-              .unique()
-              .sort()
-              .each(function (d, j) {
-                $("#exclude-patterns-dropdown-1").append(
-                  '<option value="' + d + '">' + d + "</option>"
-                );
-              });
           }
         });
     },
@@ -198,6 +179,7 @@ function initializeDataTable() {
   var include_patterns_table = $("#include_patterns_table").DataTable({
     // scrollY: true,
     lengthMenu: [25, 50, 100, 500],
+    dom: "lrtip",
     pageLength: 100,
     orderCellsTop: true,
     serverSide: true,
@@ -220,16 +202,6 @@ function initializeDataTable() {
                   .draw();
               });
             }
-            column
-              .data()
-              .unique()
-              .sort()
-              .each(function (d, j) {
-                console.log("d", d);
-                $("#include-patterns-dropdown-1").append(
-                  '<option value="' + d + '">' + d + "</option>"
-                );
-              });
           }
         });
     },
@@ -261,6 +233,7 @@ function initializeDataTable() {
   var title_patterns_table = $("#title_patterns_table").DataTable({
     // scrollY: true,
     serverSide: true,
+    dom: "lrtip",
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
     orderCellsTop: true,
@@ -284,15 +257,6 @@ function initializeDataTable() {
                   .draw();
               }
             });
-            column
-              .data()
-              .unique()
-              .sort()
-              .each(function (d, j) {
-                $("#title-patterns-dropdown-1").append(
-                  '<option value="' + d + '">' + d + "</option>"
-                );
-              });
           }
         });
     },
@@ -326,6 +290,7 @@ function initializeDataTable() {
     "#document_type_patterns_table"
   ).DataTable({
     // scrollY: true,
+    dom: "lrtip",
     serverSide: true,
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
@@ -378,16 +343,6 @@ function initializeDataTable() {
                 }
               }
             );
-            // Add list of options
-            column
-              .data()
-              .unique()
-              .sort()
-              .each(function (d, j) {
-                $("#document-type-patterns-dropdown-" + index).append(
-                  '<option value="' + d + '">' + d + "</option>"
-                );
-              });
           }
         });
     },
