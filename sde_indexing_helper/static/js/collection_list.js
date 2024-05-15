@@ -1,8 +1,7 @@
 let table = $("#collection_table").DataTable({
   paging: false,
-  // stateSave: true,
+  stateSave: true,
   orderCellsTop: true,
-  // dom: "BPlrtip",
   layout: {
     topStart: 'searchPanes'
 },
@@ -191,7 +190,6 @@ function handleWorkflowStatusSelect() {
     var $html = $('<div />',{html:table.data()[index][4]});
     $html.find('button').html(workflow_status_text);
     table.data()[index][4] = $html.html();
-
     $("#collection_table").DataTable().searchPanes.rebuildPane(4);
 
     postWorkflowStatus(collection_id, workflow_status);
