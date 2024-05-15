@@ -207,18 +207,24 @@ function handleCuratorSelect() {
       $button = $(`#curator-button-${collection_id}`);
     }
 
-    console.log(curator_text);
+    // console.log(curator_text);
      $button.text(curator_text );
-    // $button.removeClass(
-    //   "btn-light btn-danger btn-warning btn-info btn-success btn-primary"
-    // );
-    // $button.addClass("btn-success");
+
+    $button.removeClass(
+      "btn-light btn-danger btn-warning btn-info btn-success btn-primary"
+    );
+    $button.addClass("btn-success");
     // $("#collection_table").DataTable().searchPanes.rebuildPane(7,true);
      console.log(table.data()[0][5]);
-     var $html = $('<div />',{html:table.data()[0][5]});
+     var row = table.row("#" + collection_id);
+     let index = row.index();
+     console.log(index);
+     console.log(row);
+     console.log(row.data()[5]);
+     var $html = $('<div />',{html:table.data()[index][5]});
      console.log($html.html());
      $html.find('button').html(curator_text);
-     table.data()[0][5] = $html.html();
+     table.data()[index][5] = $html.html();
     // table.data()[0][5] = curator_id;
     // $("#collection_table").DataTable().searchPanes.rebuildPane();
     // table.searchPanes.rebuildPane(0);
@@ -232,26 +238,7 @@ function handleCuratorSelect() {
 
     table.searchPanes.rebuildPane(5);
 
-    // table.searchPanes.rebuildPane(6);
 
-    // table.searchPanes.rebuildPane(7);
-
-    // table.searchPanes.rebuildPane(8);
-
-    // table.draw();
-
-    // // var table = $('#collection_table').DataTable();
-    // console.log(table.row(0));
-    // table.row(0).remove();
-    // var temp = table.row(0).data();
-    // console.log(temp);
-    // $("#collection_table").DataTable().searchPanes.rebuildPane(7,true);
-    // table.columns.adjust().draw(); // Redraw the DataTable
-
-    // temp[6] = curator_text.toUpperCase();
-    // $('#collection_table').DataTable().fnUpdate(temp,0,undefined,false);
-    // table.row(0).data(temp).draw();
-    // table.row(0).data(temp).invalidate();
 
 
 
