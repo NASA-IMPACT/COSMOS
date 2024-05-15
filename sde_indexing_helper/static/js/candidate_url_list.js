@@ -4,6 +4,10 @@ var collection_id = getCollectionId();
 var selected_text = "";
 var INDIVIDUAL_URL = 1;
 var MULTI_URL_PATTERN = 2;
+var newIncludePatternsCount = 0;
+var newExcludePatternsCount = 0;
+var newTitlePatternsCount = 0;
+var newDocumentTypePatternsCount = 0;
 var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
   "Multi-URL Pattern": 2,
@@ -375,6 +379,13 @@ function initializeDataTable() {
   });
 }
 
+function handleTabsClick() {
+  $("#includePatternsTab").on("click", function () {
+    newIncludePatternsCount = 0;
+    $("#includePatternsTab").html(`Include Patterns`);
+  })
+}
+
 function setupClickHandlers() {
   handleAddNewPatternClick();
 
@@ -393,6 +404,7 @@ function setupClickHandlers() {
   handleNewTitleChange();
 
   handleUrlLinkClick();
+  handleTabsClick();
 }
 
 function getURLColumn() {
@@ -704,6 +716,8 @@ function postIncludePatterns(match_pattern, match_pattern_type = 0) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#include_patterns_table").DataTable().ajax.reload(null, false);
+      newIncludePatternsCount = newIncludePatternsCount + 1;
+      $("#includePatternsTab").html(`Include Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +newIncludePatternsCount +   `</span>`);
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -891,6 +905,9 @@ $(".custom-menu li").click(function () {
       break;
     case "document-type-pattern":
       document_type_pattern_form(selected_text.trim());
+      break;
+    case "include-pattern":
+      postIncludePatterns(selected_text.trim(), (match_pattern_type = 2));
       break;
   }
 
