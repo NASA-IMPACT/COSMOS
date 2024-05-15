@@ -234,8 +234,6 @@ function handleCuratorSelect() {
 }
 
 function postCurationStatus(collection_id, curation_status) {
-
-
   var url = `/api/collections/${collection_id}/`;
   $.ajax({
     url: url,
