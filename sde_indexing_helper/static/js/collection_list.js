@@ -186,7 +186,13 @@ function handleWorkflowStatusSelect() {
       "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
     );
     $button.addClass(color_choices[parseInt(workflow_status)]);
-    $("#collection_table").DataTable().searchPanes.rebuildPane(6);
+    var row = table.row("#" + collection_id);
+    let index = row.index();
+    var $html = $('<div />',{html:table.data()[index][4]});
+    $html.find('button').html(workflow_status_text);
+    table.data()[index][4] = $html.html();
+
+    $("#collection_table").DataTable().searchPanes.rebuildPane(4);
 
     postWorkflowStatus(collection_id, workflow_status);
   });
@@ -207,41 +213,18 @@ function handleCuratorSelect() {
       $button = $(`#curator-button-${collection_id}`);
     }
 
-    // console.log(curator_text);
-     $button.text(curator_text );
+    $button.text(curator_text );
 
     $button.removeClass(
       "btn-light btn-danger btn-warning btn-info btn-success btn-primary"
     );
     $button.addClass("btn-success");
-    // $("#collection_table").DataTable().searchPanes.rebuildPane(7,true);
-     console.log(table.data()[0][5]);
-     var row = table.row("#" + collection_id);
-     let index = row.index();
-     console.log(index);
-     console.log(row);
-     console.log(row.data()[5]);
-     var $html = $('<div />',{html:table.data()[index][5]});
-     console.log($html.html());
-     $html.find('button').html(curator_text);
-     table.data()[index][5] = $html.html();
-    // table.data()[0][5] = curator_id;
-    // $("#collection_table").DataTable().searchPanes.rebuildPane();
-    // table.searchPanes.rebuildPane(0);
-    // table.searchPanes.rebuildPane(1);
-
-    // table.searchPanes.rebuildPane(2);
-
-    // table.searchPanes.rebuildPane(3);
-
-    // table.searchPanes.rebuildPane(4);
-
+    var row = table.row("#" + collection_id);
+    let index = row.index();
+    var $html = $('<div />',{html:table.data()[index][5]});
+    $html.find('button').html(curator_text);
+    table.data()[index][5] = $html.html();
     table.searchPanes.rebuildPane(5);
-
-
-
-
-
     postCurator(collection_id, curator_id);
   });
 }
