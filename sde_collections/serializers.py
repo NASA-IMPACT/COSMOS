@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models.candidate_url import CandidateURL
-from .models.collection import Collection
+from .models.collection import Collection, WorkflowHistory
 from .models.collection_choice_fields import DocumentTypes
 from .models.pattern import (
     DocumentTypePattern,
@@ -40,6 +40,10 @@ class CollectionReadSerializer(serializers.ModelSerializer):
         model = Collection
         fields = "__all__"
 
+class WorkflowHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkflowHistory
+        fields = "__all__"
 
 class CandidateURLSerializer(serializers.ModelSerializer):
     excluded = serializers.BooleanField(required=False)
