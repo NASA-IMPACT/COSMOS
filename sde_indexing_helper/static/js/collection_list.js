@@ -191,6 +191,10 @@ function handleWorkflowStatusSelect() {
     let index = row.index();
     var $html = $('<div />',{html:table.data()[index][4]});
     $html.find('button').html(workflow_status_text);
+    $html.find('button').removeClass(
+      "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+    );
+    $html.find('button').addClass(color_choices[parseInt(workflow_status)]);
     table.data()[index][4] = $html.html();
     $("#collection_table").DataTable().searchPanes.rebuildPane(4);
 
