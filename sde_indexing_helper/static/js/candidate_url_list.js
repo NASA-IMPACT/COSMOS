@@ -383,7 +383,19 @@ function handleTabsClick() {
   $("#includePatternsTab").on("click", function () {
     newIncludePatternsCount = 0;
     $("#includePatternsTab").html(`Include Patterns`);
-  })
+  });
+  $("#excludePatternsTab").on("click", function () {
+    newExcludePatternsCount = 0;
+    $("#excludePatternsTab").html(`Exclude Patterns`);
+  });
+  $("#titlePatternsTab").on("click", function () {
+    newTitlePatternsCount = 0;
+    $("#titlePatternsTab").html(`Title Patterns`);
+  });
+  $("#documentTypePatternsTab").on("click", function () {
+    newDocumentTypePatternsCount = 0;
+    $("#documentTypePatternsTab").html(`Document Type Patterns`);
+  });
 }
 
 function setupClickHandlers() {
@@ -664,6 +676,9 @@ function postDocumentTypePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
+      newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
+      $("#documentTypePatternsTab").html(`Document Type Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` + newDocumentTypePatternsCount + `</span>`);
+   
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -690,6 +705,8 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+      newExcludePatternsCount = newExcludePatternsCount + 1;
+      $("#excludePatternsTab").html(`Exclude Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` + newExcludePatternsCount + `</span>`);
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -749,6 +766,9 @@ function postTitlePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#title_patterns_table").DataTable().ajax.reload(null, false);
+      newTitlePatternsCount = newTitlePatternsCount + 1;
+      $("#titlePatternsTab").html(`Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` + newTitlePatternsCount + `</span>`);
+   
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
