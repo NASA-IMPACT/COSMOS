@@ -16,3 +16,13 @@
   max-width: 90% !important;
   /*Set your own width %; */
 }
+
+.main-panel{
+  background-image:url(../images/SDEBackground.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+body {
+  background-color: #050E19;
+}
