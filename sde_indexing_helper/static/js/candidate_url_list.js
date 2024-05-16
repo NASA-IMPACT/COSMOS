@@ -8,6 +8,7 @@ var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
   "Multi-URL Pattern": 2,
 };
+var uniqueId;
 
 //fix table allignment when changing around tabs
 $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
@@ -22,6 +23,56 @@ $(document).ready(function () {
 
 function handleAjaxStartAndStop() {
   $(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
+}
+
+function modalContents(tableName) {
+  var checkboxCount = $("#modalBody input[type='checkbox']").length;
+  // var uniqueId = $("#hideShowColumnsModal").data("unique-id");
+
+  if (checkboxCount > 0 && tableName === uniqueId) {
+    $modal = $("#hideShowColumnsModal").modal();
+    return;
+  }
+
+  $modal = $("#hideShowColumnsModal").modal();
+  var table = $(tableName).DataTable();
+  if (tableName !== uniqueId) {
+    $("#modalBody").html("");
+  }
+  uniqueId = tableName;
+
+  table.columns().every(function (idx) {
+    var column = this;
+    var columnName = column.header().textContent.trim();
+    var $checkbox = $('<input type="checkbox">')
+      .attr({
+        id: "checkbox_" + columnName.replace(/\s+/g, "_"), // Generate a unique ID for each checkbox
+        name: columnName.replace(/\s+/g, "_"), // Set name attribute for each checkbox
+        value: idx,
+      })
+      .prop("checked", true);
+    var $label = $("<label>")
+      .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
+      .text(columnName);
+
+    var $caption = $("<p>")
+      .text(
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."
+      )
+      .attr({
+        id: "caption",
+      });
+
+    var $captionContainer = $("<div>").append($caption);
+
+    var $checkboxContainer = $("<div>")
+      .append($checkbox)
+      .append($label)
+      .addClass("checkbox-wrapper");
+
+    $("#modalBody").append($checkboxContainer);
+    $("#modalBody").append($captionContainer);
+  });
 }
 
 function initializeDataTable() {
@@ -44,26 +95,8 @@ function initializeDataTable() {
       "spacer",
       {
         text: "Customize Columns",
-        action: function (e, dt, node, config) {
-          $modal = $("#hideShowColumnsModal").modal();
-          var table = $("#candidate_urls_table").DataTable();
-          table.columns().every(function () {
-            var column = this;
-            // console.log(column.header().textContent);
-            var columnName = column.header().textContent.trim();
-            var $checkbox = $('<input type="checkbox">').attr({
-              id: "checkbox_" + columnName.replace(/\s+/g, "_"), // Generate a unique ID for each checkbox
-              name: columnName.replace(/\s+/g, "_"), // Set name attribute for each checkbox
-            });
-            var $label = $("<label>")
-              .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
-              .text(columnName);
-            var $checkboxContainer = $("<div>")
-              .append($checkbox)
-              .append($label);
-
-            $("#modalBody").append($checkboxContainer);
-          });
+        action: function () {
+          modalContents("#candidate_urls_table");
         },
       },
     ],
@@ -147,7 +180,15 @@ function initializeDataTable() {
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
     // scrollY: true,
     serverSide: true,
-    dom: "lrtip",
+    dom: "lBrtip",
+    buttons: [
+      {
+        text: "Customize Columns",
+        action: function () {
+          modalContents("#exclude_patterns_table");
+        },
+      },
+    ],
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
     pageLength: 100,
@@ -207,7 +248,15 @@ function initializeDataTable() {
   var include_patterns_table = $("#include_patterns_table").DataTable({
     // scrollY: true,
     lengthMenu: [25, 50, 100, 500],
-    dom: "lrtip",
+    dom: "lBrtip",
+    buttons: [
+      {
+        text: "Customize Columns",
+        action: function () {
+          modalContents("#include_patterns_table");
+        },
+      },
+    ],
     pageLength: 100,
     orderCellsTop: true,
     serverSide: true,
@@ -261,7 +310,15 @@ function initializeDataTable() {
   var title_patterns_table = $("#title_patterns_table").DataTable({
     // scrollY: true,
     serverSide: true,
-    dom: "lrtip",
+    dom: "lBrtip",
+    buttons: [
+      {
+        text: "Customize Columns",
+        action: function () {
+          modalContents("#title_patterns_table");
+        },
+      },
+    ],
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
     orderCellsTop: true,
@@ -318,7 +375,15 @@ function initializeDataTable() {
     "#document_type_patterns_table"
   ).DataTable({
     // scrollY: true,
-    dom: "lrtip",
+    dom: "lBrtip",
+    buttons: [
+      {
+        text: "Customize Columns",
+        action: function () {
+          modalContents("#document_type_patterns_table");
+        },
+      },
+    ],
     serverSide: true,
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
@@ -404,6 +469,7 @@ function initializeDataTable() {
 }
 
 function setupClickHandlers() {
+  handleHideorShowSubmitButton();
   handleAddNewPatternClick();
 
   handleCreateDocumentTypePatternButton();
@@ -520,6 +586,21 @@ function getDocumentTypeColumn() {
             </div>`;
     },
   };
+}
+
+function handleHideorShowSubmitButton() {
+  $("body").on("click", "#hideShowSubmitButton", function () {
+    var table = $(uniqueId).DataTable();
+    $("[id^='checkbox_']").each(function () {
+      var checkboxValue = $(this).val();
+      let column = table.column(checkboxValue);
+      var isChecked = $(this).is(":checked");
+      if (column.visible() === false && isChecked) column.visible(true);
+      else if (column.visible() === true && !isChecked) column.visible(false);
+    });
+
+    $("#hideShowColumnsModal").modal("hide");
+  });
 }
 
 function handleCreateDocumentTypePatternButton() {

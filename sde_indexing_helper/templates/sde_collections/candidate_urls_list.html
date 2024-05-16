@@ -8,6 +8,7 @@
     {{ block.super }}
     <link href="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/candidate_url_list.css' %}" />
+    <link href="{% static 'css/project.css' %}" rel="stylesheet">
 {% endblock stylesheets %}
 {% block javascripts %}
     {{ block.super }}
@@ -403,42 +404,18 @@
     </div>
 </div>
 
-<div id="hideShowColumnsModal" class="modal fade">
+<div id="hideShowColumnsModal" class="modal pr-4 pl-4 pt-4">
     <div class="modalDialog">
         <div class="modalContent">
-            <div class="modalHeader">
+            <div class="modalHeader ">
                 <h5 class="modalTitle" id="hideShowColumnsModalTitle">Customize Columns</h5>
-                <p>Attributes marked with a checkbox will be displayed in the table. Click and drag to change column order.</p>
+                <p id="subTitle">Attributes marked with a checkbox will be displayed in the table. Click and drag to change column order.</p>
             </div>
             <form id="hide_show_columns_form">
                 <div class="modalBody" id="modalBody">
-                    <!-- <div class="form-group">
-                        <label for="match_pattern_input">Match Pattern*</label>
-                        <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
-                    </div>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <input type="hidden" name="document_type_pattern" class="form-control"
-                                aria-label="Document Type" id="doc_type_input_field">
-                            <div class="input-group-append">
-                                <button class="btn btn-secondary btn-block dropdown-toggle" type="button"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Document
-                                    Type</button>
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item document_type_form_select" value="1">Images</a>
-                                    <a class="dropdown-item document_type_form_select" value="2">Data</a>
-                                    <a class="dropdown-item document_type_form_select" value="3">Documentation</a>
-                                    <a class="dropdown-item document_type_form_select" value="4">Software and Tools</a>
-                                    <a class="dropdown-item document_type_form_select" value="5">Missions and
-                                        Instruments</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div> -->
-                    <!--CONTENT HERE-->
                 </div>
                 <div class="modalFooter">
-                    <button type="submit" class="btn btn-primary">Confirm</button>
+                    <div type="submit" class="btn-prime hideShowSubmitButton" id="hideShowSubmitButton">Confirm</div>
                 </div>
             </form>
         </div>
