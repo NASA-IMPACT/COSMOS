@@ -142,3 +142,9 @@ div > .nav {
 .table_filter_row_input, .dropdown-toggle{
     width: 100%;
 }
+
+.body-content {
+    background: var(--NASA-White, rgba(255, 255, 255, 1));
+    padding: 40px 30px;
+    border-radius: 15px;
+  }

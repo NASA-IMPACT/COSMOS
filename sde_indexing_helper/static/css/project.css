@@ -16,3 +16,45 @@
   max-width: 90% !important;
   /*Set your own width %; */
 }
+
+.dtsp-searchPane {
+  background: rgba(255, 255, 255, 1);
+  border-radius: 10px;
+    padding: 15px;
+    width: 18vw;
+}
+
+.wrapper {
+  background-image: url("../images/SDE-Index-Hero.png") !important;
+  background-repeat: no-repeat; 
+    background-position: top center; 
+    background-size: cover; 
+    height: 337px;
+}
+
+
+.dtsp-clearAll, .dtsp-showAll, .dtsp-collapseAll  {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--NASA-Light-Grey, rgba(134, 151, 168, 1));
+font-size: 14px;
+font-weight: 500;
+line-height: 16.41px;
+box-shadow: none;
+border-radius: 10px;
+    padding-left: 18px;
+    padding-right: 18px;
+    margin-left: 10px !important;
+    text-transform: capitalize;
+}
+
+.dtsp-clearAll.disabled, .dtsp-showAll.disabled, .dtsp-collapseAll.disabled, .dtsp-clearAll:hover, .dtsp-showAll:hover, .dtsp-collapseAll:hover, .dtsp-clearAll:active, .dtsp-showAll:active, .dtsp-collapseAll:active, .dtsp-clearAll:focus, .dtsp-showAll:focus, .dtsp-collapseAll:focus {
+  color: rgba(255, 255, 255, 1) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+} 
+
+.dtsp-title {
+  display: none;
+}
+
+
+
