@@ -19,6 +19,7 @@ let table = $("#collection_table").DataTable({
   ],
 
   columnDefs: [
+    {width: "200px", targets: 1},
     {
       searchPanes: {
         options: [

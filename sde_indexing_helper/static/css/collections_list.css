@@ -93,3 +93,36 @@ body {
   .hideDisplay{
     display:none;
   }
+
+  .url-td {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 400px;
+    width: 400px;
+  }
+  
+ .url-cell {
+    display:flex;
+    align-items: center;
+ }
+
+ .url {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 30px);
+    display: inline-block;
+    max-width: 400px;
+    width: 400px;   
+ }
+
+ .url-link {
+    flex-shrink: 0;
+ }
+
+ td:hover .url {
+    overflow: visible;
+    white-space: normal;
+    z-index: 1;
+ }
