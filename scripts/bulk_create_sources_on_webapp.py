@@ -7,7 +7,7 @@ DIVISION_MAPPING = {
     "PDS": Divisions.PLANETARY,
     "Earth": Divisions.EARTH_SCIENCE,
     "BPS": Divisions.BIOLOGY,
-    "General": Divisions.GENERAL,
+    "Multiple": Divisions.GENERAL,
 }
 
 sources = [
