@@ -498,7 +498,29 @@ class WorkflowHistory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return (self.collection_name + self.workflow_status)
+        return (str(self.collection) + str(self.workflow_status))
+        
+    @property
+    def workflow_status_button_color(self) -> str:
+        color_choices = {
+            1: "btn-light",
+            2: "btn-danger",
+            3: "btn-warning",
+            4: "btn-info",
+            5: "btn-success",
+            6: "btn-primary",
+            7: "btn-info",
+            8: "btn-secondary",
+            9: "btn-light",
+            10: "btn-danger",
+            11: "btn-warning",
+            12: "btn-info",
+            13: "btn-success",
+            14: "btn-primary",
+            15: "btn-info",
+            16: "btn-secondary",
+        }
+        return color_choices[self.workflow_status]
 
 @receiver(post_save, sender=Collection)
 def log_workflow_history(sender, instance, created, **kwargs):

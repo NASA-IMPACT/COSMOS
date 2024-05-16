@@ -50,7 +50,7 @@
       
         <tbody>
             {% for collection in collections %}
-                <tr>
+                <tr id={{ collection.id }}>
                     <td>
                         <a href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }} <i class="material-icons">chevron_right</i></a>
                     </td>
@@ -100,7 +100,8 @@
                             <div class="dropdown-menu"
                                  aria-labelledby="curator-button-{{ collection.id }}">
                                 {% for curator in curators %}
-                                    <a class="dropdown-item curator_select" value="{{ curator.pk }}"  data-collection-id={{ collection.id }} >{{ curator.username }}</a>
+                                    <a  key="{{ curator.pk }}" class="dropdown-item curator_select" value="{{ curator.pk }}"  data-collection-id={{ collection.id }}
+                                     >{{ curator.username }}</a>
                                 {% endfor %}
                             </div>
                         </div>
