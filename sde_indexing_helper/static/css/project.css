@@ -56,6 +56,9 @@ border-radius: 10px;
   display: none;
 }
 
+.navbar {
+  padding-top: 32px !important;
+}
 
 body {
   background-color: #050E19;

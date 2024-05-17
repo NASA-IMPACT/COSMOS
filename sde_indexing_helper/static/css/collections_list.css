@@ -95,9 +95,9 @@ body {
   }
 
   .title {
-font-size: 56px;
+font-size: 24px;
 font-weight: 400;
-line-height: 84px;
+line-height: 36px;
 letter-spacing: -0.03em;
 text-align: left;
 color: rgba(255, 255, 255, 1);
