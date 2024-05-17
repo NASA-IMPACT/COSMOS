@@ -148,3 +148,10 @@ div > .nav {
     padding: 40px 30px;
     border-radius: 15px;
   }
+.badge{
+    background-color: #FF3D57;
+}
+
+.notifyBadge{
+    margin-left:5px !important;
+}
