@@ -8,7 +8,7 @@ var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
   "Multi-URL Pattern": 2,
 };
-var uniqueId;
+var uniqueId; //used for logic related to contents on column customization modal
 
 //fix table allignment when changing around tabs
 $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
@@ -27,7 +27,6 @@ function handleAjaxStartAndStop() {
 
 function modalContents(tableName) {
   var checkboxCount = $("#modalBody input[type='checkbox']").length;
-  // var uniqueId = $("#hideShowColumnsModal").data("unique-id");
 
   if (checkboxCount > 0 && tableName === uniqueId) {
     $modal = $("#hideShowColumnsModal").modal();
@@ -43,6 +42,7 @@ function modalContents(tableName) {
 
   table.columns().every(function (idx) {
     var column = this;
+    if (column.visible() === false) return;
     var columnName = column.header().textContent.trim();
     var $checkbox = $('<input type="checkbox">')
       .attr({
