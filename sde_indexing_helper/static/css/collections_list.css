@@ -113,8 +113,8 @@ body {
     text-overflow: ellipsis;
     max-width: calc(100% - 30px);
     display: inline-block;
-    max-width: 400px;
     width: 400px;   
+    padding-right: 10px;
  }
 
  .url-link {
@@ -124,5 +124,6 @@ body {
  td:hover .url {
     overflow: visible;
     white-space: normal;
+    word-wrap: break-word;
     z-index: 1;
  }
