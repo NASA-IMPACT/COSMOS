@@ -23,6 +23,21 @@
     padding: 15px;
     width: 18vw;
 }
+/* 
+.dtsp-subRowsContainer {
+  display: flex;
+  flex-direction: column-reverse !important;
+}
+
+.dtsp-subRow1, .bmd-form-group {
+  width: 100%;
+}
+
+.dtsp-subRow2 {
+  display: flex;
+  justify-content: end;
+  width: 100%;
+} */
 
 .wrapper {
   background-image: url("../images/SDE-Index-Hero.png") !important;
