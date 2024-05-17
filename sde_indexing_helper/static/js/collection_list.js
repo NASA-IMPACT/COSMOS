@@ -19,34 +19,6 @@ let table = $("#collection_table").DataTable({
       },
     },
   ],
-  // layout: {
-  //   top1: {
-  //     searchPanes: {
-  //       dtOpts: {
-  //         layout: {
-  //           bottom: {
-  //             paging: {
-  //               type: "numbers",
-  //             },
-  //           },
-  //         },
-  //         paging: true,
-  //         searching: false,
-  //       },
-  //     },
-  //   },
-  // },
-  searchPanes: {
-    dtOpts: {
-      dom: "Pfrtip", // Ensure that each pane has a search bar
-      layout: "columns-3", // Example layout option
-    },
-    header: true, // Display header
-    panes: [
-      // Define specific panes if needed
-    ],
-  },
-
   columnDefs: [
     {
       searchPanes: {
@@ -107,12 +79,6 @@ let table = $("#collection_table").DataTable({
         show: false,
       },
       targets: [7, 8],
-    },
-    {
-      searchPanes: {
-        header: "Length of Life",
-      },
-      targets: [0],
     },
   ],
 });
