@@ -193,3 +193,10 @@ letter-spacing: -0.02em;
     padding: 10px 0;
     background: #FFFFFF;
   }
+.badge{
+    background-color: #FF3D57;
+}
+
+.notifyBadge{
+    margin-left:5px !important;
+}

@@ -2,7 +2,9 @@ let table = $("#collection_table").DataTable({
   paging: false,
   stateSave: true,
   orderCellsTop: true,
-  dom: "BPlrtip",
+  layout: {
+    topStart: 'searchPanes'
+},
   buttons: [
     "csv",
     {
@@ -185,7 +187,16 @@ function handleWorkflowStatusSelect() {
       "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
     );
     $button.addClass(color_choices[parseInt(workflow_status)]);
-    $("#collection_table").DataTable().searchPanes.rebuildPane(6);
+    var row = table.row("#" + collection_id);
+    let index = row.index();
+    var $html = $('<div />',{html:table.data()[index][4]});
+    $html.find('button').html(workflow_status_text);
+    $html.find('button').removeClass(
+      "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+    );
+    $html.find('button').addClass(color_choices[parseInt(workflow_status)]);
+    table.data()[index][4] = $html.html();
+    $("#collection_table").DataTable().searchPanes.rebuildPane(4);
 
     postWorkflowStatus(collection_id, workflow_status);
   });
@@ -196,11 +207,28 @@ function handleCuratorSelect() {
     var collection_id = $(this).data("collection-id");
     var curator_id = $(this).attr("value");
     var curator_text = $(this).text();
-    $(`#curator-button-${collection_id}`).text(curator_text);
-    $(`#curator-button-${collection_id}`).removeClass(
+    $possible_buttons = $("body").find(
+      `[id="curator-button-${collection_id}"]`
+    );
+    if ($possible_buttons.length > 1) {
+      $button = $possible_buttons[1];
+      $button = $($button);
+    } else {
+      $button = $(`#curator-button-${collection_id}`);
+    }
+
+    $button.text(curator_text );
+
+    $button.removeClass(
       "btn-light btn-danger btn-warning btn-info btn-success btn-primary"
     );
-    $(`#curator-button-${collection_id}`).addClass("btn-success");
+    $button.addClass("btn-success");
+    var row = table.row("#" + collection_id);
+    let index = row.index();
+    var $html = $('<div />',{html:table.data()[index][5]});
+    $html.find('button').html(curator_text);
+    table.data()[index][5] = $html.html();
+    table.searchPanes.rebuildPane(5);
     postCurator(collection_id, curator_id);
   });
 }

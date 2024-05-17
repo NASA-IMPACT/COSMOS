@@ -4,6 +4,10 @@ var collection_id = getCollectionId();
 var selected_text = "";
 var INDIVIDUAL_URL = 1;
 var MULTI_URL_PATTERN = 2;
+var newIncludePatternsCount = 0;
+var newExcludePatternsCount = 0;
+var newTitlePatternsCount = 0;
+var newDocumentTypePatternsCount = 0;
 var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
   "Multi-URL Pattern": 2,
@@ -83,9 +87,8 @@ function initializeDataTable() {
     // scrollY: true,
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
-    serverSide: true,
     stateSave: true,
-    searchDelay: 1000,
+    serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
     dom: "lBritip",
@@ -165,17 +168,26 @@ function initializeDataTable() {
     },
   });
 
-  $("#candidateUrlFilter").on("keyup", function () {
-    candidate_urls_table.columns(0).search(this.value).draw();
-  });
+  $("#candidateUrlFilter").on(
+    "keyup",
+    DataTable.util.debounce(function (val) {
+      candidate_urls_table.columns(0).search(this.value).draw();
+    }, 1000)
+  );
 
-  $("#candidateScrapedTitleFilter").on("keyup", function () {
-    candidate_urls_table.columns(2).search(this.value).draw();
-  });
+  $("#candidateScrapedTitleFilter").on(
+    "keyup",
+    DataTable.util.debounce(function (val) {
+      candidate_urls_table.columns(2).search(this.value).draw();
+    }, 1000)
+  );
 
-  $("#candidateNewTitleFilter").on("keyup", function () {
-    candidate_urls_table.columns(3).search(this.value).draw();
-  });
+  $("#candidateNewTitleFilter").on(
+    "keyup",
+    DataTable.util.debounce(function (val) {
+      candidate_urls_table.columns(3).search(this.value).draw();
+    }, 1000)
+  );
 
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
     // scrollY: true,
@@ -237,13 +249,19 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateMatchPatternFilter").on("keyup", function () {
-    exclude_patterns_table.columns(0).search(this.value).draw();
-  });
+  $("#candidateMatchPatternFilter").on(
+    "keyup",
+    DataTable.util.debounce(function (val) {
+      exclude_patterns_table.columns(0).search(this.value).draw();
+    }, 1000)
+  );
 
-  $("#candidateReasonFilter").on("keyup", function () {
-    exclude_patterns_table.columns(2).search(this.value).draw();
-  });
+  $("#candidateReasonFilter").on(
+    "keyup",
+    DataTable.util.debounce(function (val) {
+      exclude_patterns_table.columns(2).search(this.value).draw();
+    }, 1000)
+  );
 
   var include_patterns_table = $("#include_patterns_table").DataTable({
     // scrollY: true,
@@ -303,9 +321,12 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateIncludeMatchPatternFilter").on("keyup", function () {
-    include_patterns_table.columns(0).search(this.value).draw();
-  });
+  $("#candidateIncludeMatchPatternFilter").on(
+    "keyup",
+    DataTable.util.debounce(function (val) {
+      include_patterns_table.columns(0).search(this.value).draw();
+    }, 1000)
+  );
 
   var title_patterns_table = $("#title_patterns_table").DataTable({
     // scrollY: true,
@@ -367,9 +388,19 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateTitleMatchPatternFilter").on("keyup", function () {
-    title_patterns_table.columns(0).search(this.value).draw();
-  });
+  $("#candidateTitleMatchPatternFilter").on(
+    "keyup",
+    DataTable.util.debounce(function (val) {
+      title_patterns_table.columns(0).search(this.value).draw();
+    }, 1000)
+  );
+
+  $("#candidateTitlePatternTypeFilter").on(
+    "keyup",
+    DataTable.util.debounce(function (val) {
+      title_patterns_table.columns(2).search(this.value).draw();
+    }, 1000)
+  );
 
   var document_type_patterns_table = $(
     "#document_type_patterns_table"
@@ -463,8 +494,30 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateDocTypeMatchPatternFilter").on("keyup", function () {
-    document_type_patterns_table.columns(0).search(this.value).draw();
+  $("#candidateDocTypeMatchPatternFilter").on(
+    "keyup",
+    DataTable.util.debounce(function (val) {
+      document_type_patterns_table.columns(0).search(this.value).draw();
+    }, 1000)
+  );
+}
+
+function handleTabsClick() {
+  $("#includePatternsTab").on("click", function () {
+    newIncludePatternsCount = 0;
+    $("#includePatternsTab").html(`Include Patterns`);
+  });
+  $("#excludePatternsTab").on("click", function () {
+    newExcludePatternsCount = 0;
+    $("#excludePatternsTab").html(`Exclude Patterns`);
+  });
+  $("#titlePatternsTab").on("click", function () {
+    newTitlePatternsCount = 0;
+    $("#titlePatternsTab").html(`Title Patterns`);
+  });
+  $("#documentTypePatternsTab").on("click", function () {
+    newDocumentTypePatternsCount = 0;
+    $("#documentTypePatternsTab").html(`Document Type Patterns`);
   });
 }
 
@@ -487,6 +540,7 @@ function setupClickHandlers() {
   handleNewTitleChange();
 
   handleUrlLinkClick();
+  handleTabsClick();
 }
 
 function getURLColumn() {
@@ -762,6 +816,12 @@ function postDocumentTypePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
+      newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
+      $("#documentTypePatternsTab").html(
+        `Document Type Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+          newDocumentTypePatternsCount +
+          `</span>`
+      );
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -788,6 +848,12 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+      newExcludePatternsCount = newExcludePatternsCount + 1;
+      $("#excludePatternsTab").html(
+        `Exclude Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+          newExcludePatternsCount +
+          `</span>`
+      );
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -814,6 +880,12 @@ function postIncludePatterns(match_pattern, match_pattern_type = 0) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#include_patterns_table").DataTable().ajax.reload(null, false);
+      newIncludePatternsCount = newIncludePatternsCount + 1;
+      $("#includePatternsTab").html(
+        `Include Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+          newIncludePatternsCount +
+          `</span>`
+      );
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -845,6 +917,12 @@ function postTitlePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#title_patterns_table").DataTable().ajax.reload(null, false);
+      newTitlePatternsCount = newTitlePatternsCount + 1;
+      $("#titlePatternsTab").html(
+        `Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+          newTitlePatternsCount +
+          `</span>`
+      );
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -1001,6 +1079,9 @@ $(".custom-menu li").click(function () {
       break;
     case "document-type-pattern":
       document_type_pattern_form(selected_text.trim());
+      break;
+    case "include-pattern":
+      postIncludePatterns(selected_text.trim(), (match_pattern_type = 2));
       break;
   }
 
