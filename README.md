@@ -25,7 +25,7 @@ Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings
 
 - To create a **superuser account**, use this command:
     ```bash
-    $ docker-compose -f local.yml run -rm django python manage.py createsuperuser
+    $ docker-compose -f local.yml run --rm django python manage.py createsuperuser
     ```
 
 - To create further users, go to the admin (/admin) and create them from the "Users" section.
