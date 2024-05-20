@@ -20,8 +20,9 @@
 .dtsp-searchPane {
   background: rgba(255, 255, 255, 1);
   border-radius: 10px;
-    padding: 15px;
-    width: 18vw;
+    /* padding: 15px; */
+    padding-left:3px;
+    /* width: 18vw;  */
 }
 /* 
 .dtsp-subRowsContainer {
@@ -38,6 +39,15 @@
   justify-content: end;
   width: 100%;
 } */
+
+
+div.dtsp-panesContainer div.dtsp-searchPane div.dt-container, div.dtsp-panesContainer div.dtsp-searchPane div.dataTables_wrapper {
+ border:none;
+}
+
+div.dtsp-panesContainer div.dtsp-searchPane div.dt-container:hover,div.dtsp-panesContainer div.dtsp-searchPane div.dataTables_wrapper:hover {
+  border: none!important
+}
 
 .wrapper {
   background-image: url("../images/SDE-Index-Hero.png") !important;
