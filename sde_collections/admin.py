@@ -286,8 +286,12 @@ class TitlePatternAdmin(admin.ModelAdmin):
         "collection",
     )
 
+class WorkflowHistoryAdmin(admin.ModelAdmin):
+    list_display = ("collection", "old_status", "workflow_status", "created_at")
+    search_fields = ["collection__name"]
+    list_filter = ["workflow_status", "old_status"]
 
+admin.site.register(WorkflowHistory, WorkflowHistoryAdmin)
 admin.site.register(CandidateURL, CandidateURLAdmin)
 admin.site.register(TitlePattern, TitlePatternAdmin)
 admin.site.register(IncludePattern)
-admin.site.register(WorkflowHistory)

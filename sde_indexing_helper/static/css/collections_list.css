@@ -102,3 +102,47 @@ body {
   .hideDisplay{
     display:none;
   }
+
+  .url-td {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 400px;
+    width: 400px;
+  }
+  
+ .url-cell {
+    display:flex;
+    align-items: center;
+ }
+
+ .url {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 30px);
+    display: inline-block;
+    width: 400px;   
+    padding-right: 10px;
+ }
+
+ .url-link {
+    flex-shrink: 0;
+ }
+
+ td:hover .url {
+    overflow: visible;
+    white-space: normal;
+    word-wrap: break-word;
+    z-index: 1;
+ }
+
+  .title {
+font-size: 24px;
+font-weight: 400;
+line-height: 36px;
+letter-spacing: -0.03em;
+text-align: left;
+color: rgba(255, 255, 255, 1);
+margin-bottom: 0 !important;
+  }
