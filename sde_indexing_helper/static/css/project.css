@@ -1,5 +1,9 @@
 /* These styles are generated from project.scss. */
 
+/* :root {
+  -primary-blue: #0066CA;
+} */
+
 .alert-debug {
   color: black;
   background-color: white;
@@ -88,3 +92,15 @@ border-radius: 10px;
 body {
   background-color: #050E19;
 }
+.btn-prime {
+  color: #FFFFFF;
+  background-color: #0066CA;
+  box-shadow: 0px 14px 84px 0px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  text-align: center;
+  padding: 11px 0;
+  cursor: pointer;
+  font-weight: 500;
+} 
+
+
