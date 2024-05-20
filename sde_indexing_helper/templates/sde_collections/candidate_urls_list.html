@@ -27,6 +27,7 @@
     {{ candidate_urls.count|intcomma }} Candidate URLs for <a
         href="{% url 'sde_collections:detail' collection.pk %}"><strong>{{ collection.name }}</strong></a>
         <div class="btn badge {{ collection.workflow_status_button_color }} btn-sm"
+        type="button"
         id="workflow-status-badge-{{ collection.id }}"
         aria-expanded="false">{{ collection.get_workflow_status_display }}</div>
     <br>

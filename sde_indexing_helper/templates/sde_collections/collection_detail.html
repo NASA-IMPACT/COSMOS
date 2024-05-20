@@ -15,8 +15,24 @@
 
         <h1>{{ collection.name }}</h1>
         <div class="badge-container">
-            <button class="btn badge {{ collection.workflow_status_button_color }} btn-sm"
-                id="workflow-status-badge-{{ collection.id }}" aria-expanded="false">{{collection.get_workflow_status_display }}</button>
+            <div class="dropdown workflow_status_dropdown"
+            data-match-pattern
+            remove_protocol
+            row
+            url>                          
+           <button class="btn {{ collection.workflow_status_button_color }} btn-sm dropdown-toggle"
+                   type="button"
+                   id="workflow-status-button-{{ collection.id }}"
+                   data-toggle="dropdown"
+                   aria-haspopup="true"
+                   aria-expanded="false">{{ collection.get_workflow_status_display }}</button>
+           <div class="dropdown-menu"
+                aria-labelledby="workflow-status-button-{{ collection.id }}">
+               {% for choice in workflow_status_choices %}
+                   <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
+               {% endfor %}
+           </div>
+       </div>
         </div>
 
     </div>
@@ -211,9 +227,10 @@
                     {% for entry in workflow_history %}
                     <tr>
                         <td>
-                            <button class="btn badge {{ entry.workflow_status_button_color }} btn-sm"
-                            id="workflow-status-badge-{{ entry.id }}"
-                            aria-expanded="false">{{ entry.get_workflow_status_display }}</button>
+                            <button class="btn {{ entry.workflow_status_button_color }} btn-sm"
+                                    type="button"
+                                    id="workflow-history-button-{{ collection.id }}"
+                                    aria-expanded="false">{{ entry.get_workflow_status_display }}</button>
                         </td>
                         <td>                            
                             <button class="btn {% if entry.curated_by %} btn-success {% else %} btn-dark {% endif %} btn-sm"
