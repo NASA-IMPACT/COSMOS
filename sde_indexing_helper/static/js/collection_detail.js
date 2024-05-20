@@ -1,5 +1,5 @@
 var collection_id;
-var divisionVal;
+var newDivisionVal;
 var currentDivisionVal;
 var currentDivisonText;
 
@@ -38,11 +38,10 @@ $(document).ready(function () {
     $modal = $("#areYouSureModal").modal();
     var selectedText = $("#detailDivisionDropdown option:selected").text();
     $("#caption").text(
-      `Divison will be changes from ${currentDivisonText} to ${selectedText}?`
+      `Divison will be changed from ${currentDivisonText} to ${selectedText}.`
     );
-    console.log("caption", $("#caption").text());
     collection_id = $(this).data("collection-id");
-    divisionVal = $(this).val();
+    newDivisionVal = $(this).val();
   });
 
   $("body").on("change", "#detailDocTypeDropdown", function () {
@@ -58,7 +57,7 @@ $(document).ready(function () {
 
     var buttonId = $(this).attr("id");
     if (buttonId === "makeChangeButton") {
-      postDivisionChange(collection_id, divisionVal);
+      postDivisionChange(collection_id, newDivisionVal);
     } else if (buttonId === "dontMakeChangeButton") {
       $("#detailDivisionDropdown").val(currentDivisionVal);
       $modal = $("#areYouSureModal").modal("hide");
