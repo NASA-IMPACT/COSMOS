@@ -163,7 +163,7 @@ function initializeDataTable() {
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
-        $(row).addClass("table-danger");
+        $(row).attr('style', 'background-color: #ab387d !important'); 
       }
     },
   });
