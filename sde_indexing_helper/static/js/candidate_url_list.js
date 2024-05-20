@@ -4,10 +4,15 @@ var collection_id = getCollectionId();
 var selected_text = "";
 var INDIVIDUAL_URL = 1;
 var MULTI_URL_PATTERN = 2;
+var newIncludePatternsCount = 0;
+var newExcludePatternsCount = 0;
+var newTitlePatternsCount = 0;
+var newDocumentTypePatternsCount = 0;
 var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
   "Multi-URL Pattern": 2,
 };
+var uniqueId; //used for logic related to contents on column customization modal
 
 //fix table allignment when changing around tabs
 $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
@@ -24,6 +29,56 @@ function handleAjaxStartAndStop() {
   $(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
 }
 
+function modalContents(tableName) {
+  var checkboxCount = $("#modalBody input[type='checkbox']").length;
+
+  if (checkboxCount > 0 && tableName === uniqueId) {
+    $modal = $("#hideShowColumnsModal").modal();
+    return;
+  }
+
+  $modal = $("#hideShowColumnsModal").modal();
+  var table = $(tableName).DataTable();
+  if (tableName !== uniqueId) {
+    $("#modalBody").html("");
+  }
+  uniqueId = tableName;
+
+  table.columns().every(function (idx) {
+    var column = this;
+    if (column.visible() === false) return;
+    var columnName = column.header().textContent.trim();
+    var $checkbox = $('<input type="checkbox">')
+      .attr({
+        id: "checkbox_" + columnName.replace(/\s+/g, "_"), // Generate a unique ID for each checkbox
+        name: columnName.replace(/\s+/g, "_"), // Set name attribute for each checkbox
+        value: idx,
+      })
+      .prop("checked", true);
+    var $label = $("<label>")
+      .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
+      .text(columnName);
+
+    var $caption = $("<p>")
+      .text(
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."
+      )
+      .attr({
+        id: "caption",
+      });
+
+    var $captionContainer = $("<div>").append($caption);
+
+    var $checkboxContainer = $("<div>")
+      .append($checkbox)
+      .append($label)
+      .addClass("checkbox-wrapper");
+
+    $("#modalBody").append($checkboxContainer);
+    $("#modalBody").append($captionContainer);
+  });
+}
+
 function initializeDataTable() {
   var true_icon = '<i class="material-icons" style="color: green">check</i>';
   var false_icon = '<i class="material-icons" style="color: red">close</i>';
@@ -37,7 +92,17 @@ function initializeDataTable() {
     orderCellsTop: true,
     pagingType: "input",
     dom: "lBritip",
-    buttons: ["spacer", "csv"],
+    buttons: [
+      "spacer",
+      "csv",
+      "spacer",
+      {
+        text: "Customize Columns",
+        action: function () {
+          modalContents("#candidate_urls_table");
+        },
+      },
+    ],
     select: {
       style: "os",
       selector: "td:nth-child(5)",
@@ -126,8 +191,16 @@ function initializeDataTable() {
 
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
     // scrollY: true,
-    dom: "lrtip",
     serverSide: true,
+    dom: "lBrtip",
+    buttons: [
+      {
+        text: "Customize Columns",
+        action: function () {
+          modalContents("#exclude_patterns_table");
+        },
+      },
+    ],
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
     pageLength: 100,
@@ -193,7 +266,15 @@ function initializeDataTable() {
   var include_patterns_table = $("#include_patterns_table").DataTable({
     // scrollY: true,
     lengthMenu: [25, 50, 100, 500],
-    dom: "lrtip",
+    dom: "lBrtip",
+    buttons: [
+      {
+        text: "Customize Columns",
+        action: function () {
+          modalContents("#include_patterns_table");
+        },
+      },
+    ],
     pageLength: 100,
     orderCellsTop: true,
     serverSide: true,
@@ -250,7 +331,15 @@ function initializeDataTable() {
   var title_patterns_table = $("#title_patterns_table").DataTable({
     // scrollY: true,
     serverSide: true,
-    dom: "lrtip",
+    dom: "lBrtip",
+    buttons: [
+      {
+        text: "Customize Columns",
+        action: function () {
+          modalContents("#title_patterns_table");
+        },
+      },
+    ],
     lengthMenu: [25, 50, 100, 500],
     pageLength: 100,
     orderCellsTop: true,
@@ -317,7 +406,15 @@ function initializeDataTable() {
     "#document_type_patterns_table"
   ).DataTable({
     // scrollY: true,
-    dom: "lrtip",
+    dom: "lBrtip",
+    buttons: [
+      {
+        text: "Customize Columns",
+        action: function () {
+          modalContents("#document_type_patterns_table");
+        },
+      },
+    ],
     serverSide: true,
     lengthMenu: [25, 50, 100, 500],
     orderCellsTop: true,
@@ -405,7 +502,27 @@ function initializeDataTable() {
   );
 }
 
+function handleTabsClick() {
+  $("#includePatternsTab").on("click", function () {
+    newIncludePatternsCount = 0;
+    $("#includePatternsTab").html(`Include Patterns`);
+  });
+  $("#excludePatternsTab").on("click", function () {
+    newExcludePatternsCount = 0;
+    $("#excludePatternsTab").html(`Exclude Patterns`);
+  });
+  $("#titlePatternsTab").on("click", function () {
+    newTitlePatternsCount = 0;
+    $("#titlePatternsTab").html(`Title Patterns`);
+  });
+  $("#documentTypePatternsTab").on("click", function () {
+    newDocumentTypePatternsCount = 0;
+    $("#documentTypePatternsTab").html(`Document Type Patterns`);
+  });
+}
+
 function setupClickHandlers() {
+  handleHideorShowSubmitButton();
   handleAddNewPatternClick();
 
   handleCreateDocumentTypePatternButton();
@@ -423,6 +540,7 @@ function setupClickHandlers() {
   handleNewTitleChange();
 
   handleUrlLinkClick();
+  handleTabsClick();
 }
 
 function getURLColumn() {
@@ -526,6 +644,22 @@ function getDocumentTypeColumn() {
     },
   };
 }
+
+function handleHideorShowSubmitButton() {
+  $("body").on("click", "#hideShowSubmitButton", function () {
+    var table = $(uniqueId).DataTable();
+    $("[id^='checkbox_']").each(function () {
+      var checkboxValue = $(this).val();
+      let column = table.column(checkboxValue);
+      var isChecked = $(this).is(":checked");
+      if (column.visible() === false && isChecked) column.visible(true);
+      else if (column.visible() === true && !isChecked) column.visible(false);
+    });
+
+    $("#hideShowColumnsModal").modal("hide");
+  });
+}
+
 function handleCreateDocumentTypePatternButton() {
   $("body").on("click", ".create_document_type_pattern_button", function () {
     $modal = $("#documentTypePatternModal").modal();
@@ -685,6 +819,12 @@ function postDocumentTypePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
+      newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
+      $("#documentTypePatternsTab").html(
+        `Document Type Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+          newDocumentTypePatternsCount +
+          `</span>`
+      );
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -711,6 +851,12 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+      newExcludePatternsCount = newExcludePatternsCount + 1;
+      $("#excludePatternsTab").html(
+        `Exclude Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+          newExcludePatternsCount +
+          `</span>`
+      );
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -737,6 +883,12 @@ function postIncludePatterns(match_pattern, match_pattern_type = 0) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#include_patterns_table").DataTable().ajax.reload(null, false);
+      newIncludePatternsCount = newIncludePatternsCount + 1;
+      $("#includePatternsTab").html(
+        `Include Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+          newIncludePatternsCount +
+          `</span>`
+      );
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -768,6 +920,12 @@ function postTitlePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#title_patterns_table").DataTable().ajax.reload(null, false);
+      newTitlePatternsCount = newTitlePatternsCount + 1;
+      $("#titlePatternsTab").html(
+        `Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+          newTitlePatternsCount +
+          `</span>`
+      );
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -924,6 +1082,9 @@ $(".custom-menu li").click(function () {
       break;
     case "document-type-pattern":
       document_type_pattern_form(selected_text.trim());
+      break;
+    case "include-pattern":
+      postIncludePatterns(selected_text.trim(), (match_pattern_type = 2));
       break;
   }
 

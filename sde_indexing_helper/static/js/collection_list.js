@@ -3,8 +3,8 @@ let table = $("#collection_table").DataTable({
   stateSave: true,
   orderCellsTop: true,
   layout: {
-    topStart: 'searchPanes'
-},
+    topStart: "searchPanes",
+  },
   buttons: [
     "csv",
     {
@@ -19,8 +19,8 @@ let table = $("#collection_table").DataTable({
       },
     },
   ],
-
   columnDefs: [
+    {width: "200px", targets: 1},
     {
       searchPanes: {
         options: [
@@ -189,12 +189,14 @@ function handleWorkflowStatusSelect() {
     $button.addClass(color_choices[parseInt(workflow_status)]);
     var row = table.row("#" + collection_id);
     let index = row.index();
-    var $html = $('<div />',{html:table.data()[index][4]});
-    $html.find('button').html(workflow_status_text);
-    $html.find('button').removeClass(
-      "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
-    );
-    $html.find('button').addClass(color_choices[parseInt(workflow_status)]);
+    var $html = $("<div />", { html: table.data()[index][4] });
+    $html.find("button").html(workflow_status_text);
+    $html
+      .find("button")
+      .removeClass(
+        "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+      );
+    $html.find("button").addClass(color_choices[parseInt(workflow_status)]);
     table.data()[index][4] = $html.html();
     $("#collection_table").DataTable().searchPanes.rebuildPane(4);
 
@@ -217,7 +219,7 @@ function handleCuratorSelect() {
       $button = $(`#curator-button-${collection_id}`);
     }
 
-    $button.text(curator_text );
+    $button.text(curator_text);
 
     $button.removeClass(
       "btn-light btn-danger btn-warning btn-info btn-success btn-primary"
@@ -225,8 +227,8 @@ function handleCuratorSelect() {
     $button.addClass("btn-success");
     var row = table.row("#" + collection_id);
     let index = row.index();
-    var $html = $('<div />',{html:table.data()[index][5]});
-    $html.find('button').html(curator_text);
+    var $html = $("<div />", { html: table.data()[index][5] });
+    $html.find("button").html(curator_text);
     table.data()[index][5] = $html.html();
     table.searchPanes.rebuildPane(5);
     postCurator(collection_id, curator_id);
