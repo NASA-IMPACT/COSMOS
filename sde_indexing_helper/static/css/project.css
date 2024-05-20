@@ -100,3 +100,17 @@ body {
  .filterRowBottom{
   border-bottom:1px solid;
  }
+
+ .urlIcon{
+  color: #65B1EF;
+}
+
+.dt-empty{
+  color:white;
+}
+
+.nameStyling{
+  color: #65B1EF;
+  font-size:14px;
+  font-weight:400;
+}
