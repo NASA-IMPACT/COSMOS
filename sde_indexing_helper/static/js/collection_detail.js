@@ -1,6 +1,7 @@
 var collection_id;
 var divisionVal;
 var currentDivisionVal;
+var currentDivisonText;
 
 let originalValue = document.getElementById("github-link-display").textContent;
 document.getElementById("github-link-form").style.display = "none";
@@ -29,6 +30,7 @@ document
 // store current division option
 $(document).ready(function () {
   currentDivisionVal = $("#detailDivisionDropdown").val();
+  currentDivisonText = $("#detailDivisionDropdown option:selected").text();
 });
 
 $(document).ready(function () {
@@ -36,8 +38,9 @@ $(document).ready(function () {
     $modal = $("#areYouSureModal").modal();
     var selectedText = $("#detailDivisionDropdown option:selected").text();
     $("#caption").text(
-      `Are you sure you want to change the divison to ${selectedText}?`
+      `Divison will be changes from ${currentDivisonText} to ${selectedText}?`
     );
+    console.log("caption", $("#caption").text());
     collection_id = $(this).data("collection-id");
     divisionVal = $(this).val();
   });
