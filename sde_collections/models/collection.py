@@ -494,8 +494,12 @@ class WorkflowHistory(models.Model):
         choices=WorkflowStatusChoices.choices,
         default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
     )
+    old_status = models.IntegerField(
+        choices=WorkflowStatusChoices.choices, null=True
+    )
     curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return (str(self.collection) + str(self.workflow_status))
@@ -528,7 +532,8 @@ def log_workflow_history(sender, instance, created, **kwargs):
         WorkflowHistory.objects.create(
             collection=instance,
             workflow_status=instance.workflow_status,
-            curated_by=instance.curated_by
+            curated_by=instance.curated_by,
+            old_status=instance.old_workflow_status
         )
 
 
