@@ -103,3 +103,27 @@ text-align: left;
 color: rgba(255, 255, 255, 1);
 margin-bottom: 0 !important;
   }
+
+  .tableHeader{
+    background-color:#15232E !important;
+  }
+
+  .dt-column-title{
+    font-weight:600;
+    font-size:16px;
+  }
+
+  .nameStyling{
+    color: #65B1EF;
+    font-size:14px;
+    font-weight:400;
+  }
+  .urlIcon{
+    color: #65B1EF;
+
+  }
+
+  .candidateCount{
+    background-color:#A7BACD !important;
+    color:#1F2935 !important;
+  }

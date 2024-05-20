@@ -60,3 +60,43 @@ border-radius: 10px;
 body {
   background-color: #050E19;
 }
+
+.tableHeader{
+  background-color: #050E19;
+  color:white;
+  font-family: Roboto, sans-serif;
+  font-weight: 600 !important;
+}
+
+.textBoxStyling{
+ background-color: #15232E;
+ color:white;
+ border: 1px solid #3F4A58;
+}
+
+.selectStyling{
+  background-color:#A7BACD !important;
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: #050E19 !important;
+ }
+
+ .table tbody tr:nth-child(even) {
+  background-color: #3F4A58 !important;
+ }
+ 
+ .whiteText{
+  color:white;
+ }
+ .dt-info{
+  color:white;
+ }
+
+ .noBorder{
+  border:none !important;
+ }
+
+ .filterRowBottom{
+  border-bottom:1px solid;
+ }

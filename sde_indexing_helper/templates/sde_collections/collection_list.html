@@ -13,36 +13,36 @@
     <br>
     <h2 class="title">SDE Collections</h2>
     <table id="collection_table" class="table table-striped" style="width:100%" >
-        <thead>
+        <thead class="tableHeader">
             <tr>
-                <th class="text-center" style="padding-right:25px !important">Name</th>
-                <th class="text-center" style="padding-right:25px !important">URL</th>
-                <th class="text-center" style="padding-right:25px !important">Division</th>
-                <th class="text-center" style="padding-right:25px !important">Candidate URLs</th>
-                <th class="text-center" style="padding-right:25px !important">Workflow Status</th>
-                <th class="text-center" style="padding-right:25px !important">Curator</th>
-                <th class="text-center" style="padding-right:25px !important">Connector Type</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Name</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">URL</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Division</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Candidate URLs</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Workflow Status</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Curator</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Connector Type</th>
                 <th class="hideDisplay"></th>
                 <th class="hideDisplay"></th>
             </tr>
             <tr>
-                <td ><input class="table_filter_row_input" type="text" id="nameFilter" placeholder="Name" /></td>
-                <td ><input class="table_filter_row_input" type="text" id="urlFilter" placeholder="URL" /></td>
-                <td ><input class="table_filter_row_input" type="text" id="divisionFilter" placeholder="Division" /></td>
-                <td ></td>
-                <td ><select id="collection-dropdown-4" class="select-dropdown">
+                <td class="filterRowBottom" ><input class="table_filter_row_input textBoxStyling" type="text" id="nameFilter" placeholder="Name" /></td>
+                <td class="filterRowBottom"><input class="table_filter_row_input textBoxStyling" type="text" id="urlFilter" placeholder="URL" /></td>
+                <td class="filterRowBottom"><input class="table_filter_row_input textBoxStyling" type="text" id="divisionFilter" placeholder="Division" /></td>
+                <td class="filterRowBottom"></td>
+                <td class="filterRowBottom"><select id="collection-dropdown-4" class="select-dropdown selectStyling">
                     <option value="">SELECT</option>
                    {% for choice in workflow_status_choices %}
                        <option value="{{ choice }}" data-collection-id={{ collection.id }}>{{ choice.label }}</option>
                    {% endfor %}
                 </select></td>
-                <td ><select id="collection-dropdown-5" class="select-dropdown">
+                <td class="filterRowBottom"><select id="collection-dropdown-5" class="select-dropdown selectStyling">
                     <option value="">SELECT</option>
                     {% for curator in curators %}
                     <option  value="{{ curator.pk }}" data-collection-id={{ collection.id }}>{{ curator.username }}</option>
                 {% endfor %}
                 </select></td>
-                <td ><input class="table_filter_row_input" type="text" id="connectorTypeFilter" placeholder="Connector Type" /></td>
+                <td class="filterRowBottom"><input class="table_filter_row_input textBoxStyling" type="text" id="connectorTypeFilter" placeholder="Connector Type" /></td>
                 <td class="hideDisplay"></td>
                 <td class="hideDisplay"></td>
             </tr>
@@ -51,21 +51,21 @@
         <tbody>
             {% for collection in collections %}
                 <tr id={{ collection.id }}>
-                    <td>
-                        <a href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }} <i class="material-icons">chevron_right</i></a>
+                    <td class="noBorder">
+                        <a class="nameStyling" href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }} <i class="material-icons">chevron_right</i></a>
                     </td>
-                    <td>
+                    <td class="whiteText noBorder">
                         {% if collection.url %}
-                            {{ collection.url }}<a target="_blank" href=" {{ collection.url }} "> <i class="material-icons">open_in_new</i></a>
+                            {{ collection.url }}<a target="_blank"  href=" {{ collection.url }} "> <i class="material-icons urlIcon">open_in_new</i></a>
                         {% endif %}
                     </td>
-                    <td>{{ collection.get_division_display }}</td>
-                    <td>
+                    <td class="whiteText noBorder">{{ collection.get_division_display }}</td>
+                    <td class="noBorder">
                         <a href=" {% if collection.num_candidate_urls > 0 %} {% url 'sde_collections:candidate_urls' collection.pk %} {% endif %} "
-                           class="btn btn-sm {% if collection.num_candidate_urls > 0 %}btn-primary {% else %}disabled{% endif %}"
+                           class="btn btn-sm {% if collection.num_candidate_urls > 0 %}btn-primary {% else %}disabled{% endif %}candidateCount"
                            role="button">{{ collection.num_candidate_urls|intcomma }}</a>
                     </td>
-                    <td>
+                    <td class="noBorder">
                         <div class="dropdown workflow_status_dropdown"
                              data-match-pattern
                              remove_protocol
@@ -85,7 +85,7 @@
                             </div>
                         </div>
                     </td>
-                    <td>
+                    <td class="noBorder">
                         <div class="dropdown curator_dropdown"
                              data-match-pattern
                              remove_protocol
@@ -106,7 +106,7 @@
                             </div>
                         </div>
                     </td>
-                    <td>{{ collection.get_connector_display }}</td>
+                    <td class="whiteText noBorder">{{ collection.get_connector_display }}</td>
                     <td class="hideDisplay">{{ collection.workflow_status }}</td>
                     <td class="hideDisplay">{{ collection.curated_by_id }}</td>
                 </tr>
