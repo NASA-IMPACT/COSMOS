@@ -139,7 +139,7 @@ div > .nav {
 }
 
 
-.table_filter_row_input, .dropdown-toggle{
+.table_filter_row_input, .doc-dropdown{
     width: 100%;
 }
 
@@ -204,4 +204,8 @@ letter-spacing: -0.02em;
 
 .notifyBadge{
     margin-left:5px !important;
+}
+
+.title-dropdown {
+    width: fit-content !important;
 }

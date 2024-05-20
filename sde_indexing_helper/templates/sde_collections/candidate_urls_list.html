@@ -26,10 +26,18 @@
 <h3>
     {{ candidate_urls.count|intcomma }} Candidate URLs for <a
         href="{% url 'sde_collections:detail' collection.pk %}"><strong>{{ collection.name }}</strong></a>
-        <div class="btn badge {{ collection.workflow_status_button_color }} btn-sm"
+        <button class="btn badge {{ collection.workflow_status_button_color }} dropdown-toggle title-dropdown btn-sm"
         type="button"
+        data-toggle="dropdown"
+        aria-haspopup="true"
         id="workflow-status-badge-{{ collection.id }}"
-        aria-expanded="false">{{ collection.get_workflow_status_display }}</div>
+        aria-expanded="false">{{ collection.get_workflow_status_display }}</button>
+        <div class="dropdown-menu"
+        aria-labelledby="workflow-status-button-{{ collection.id }}">
+        {% for choice in workflow_status_choices %}
+        <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
+        {% endfor %}
+    </div>
     <br>
     <!-- <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small> -->
 </h3>
@@ -385,7 +393,7 @@
                             <input type="hidden" name="document_type_pattern" class="form-control"
                                 aria-label="Document Type" id="doc_type_input_field">
                             <div class="input-group-append">
-                                <button class="btn btn-secondary btn-block dropdown-toggle" type="button"
+                                <button class="btn btn-secondary btn-block dropdown-toggle doc-dropdown" type="button"
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Document
                                     Type</button>
                                 <div class="dropdown-menu">
