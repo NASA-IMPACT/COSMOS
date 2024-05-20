@@ -16,7 +16,7 @@
         <thead>
             <tr>
                 <th class="text-center" style="padding-right:25px !important">Name</th>
-                <th class="text-center" style="padding-right:25px !important">URL</th>
+                <th class="text-center url-th" style="padding-right:25px !important">URL</th>
                 <th class="text-center" style="padding-right:25px !important">Division</th>
                 <th class="text-center" style="padding-right:25px !important">Candidate URLs</th>
                 <th class="text-center" style="padding-right:25px !important">Workflow Status</th>
@@ -27,7 +27,7 @@
             </tr>
             <tr>
                 <td ><input class="table_filter_row_input" type="text" id="nameFilter" placeholder="Name" /></td>
-                <td ><input class="table_filter_row_input" type="text" id="urlFilter" placeholder="URL" /></td>
+                <td class="url-td"><input class="table_filter_row_input" type="text" id="urlFilter" placeholder="URL" /></td>
                 <td ><input class="table_filter_row_input" type="text" id="divisionFilter" placeholder="Division" /></td>
                 <td ></td>
                 <td ><select id="collection-dropdown-4" class="select-dropdown">
@@ -54,9 +54,11 @@
                     <td>
                         <a href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }} <i class="material-icons">chevron_right</i></a>
                     </td>
-                    <td>
+                    <td class="url-td">
                         {% if collection.url %}
-                            {{ collection.url }}<a target="_blank" href=" {{ collection.url }} "> <i class="material-icons">open_in_new</i></a>
+                            <div class="url-cell">
+                                <span class="url" title="{{collection.url}}">{{ collection.url }}</span>
+                                <a class="url-link" target="_blank" href=" {{ collection.url }} "> <i class="material-icons">open_in_new</i></a></div>
                         {% endif %}
                     </td>
                     <td>{{ collection.get_division_display }}</td>
