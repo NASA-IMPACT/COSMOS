@@ -8,6 +8,7 @@ from django.core import management
 from django.core.management.commands import loaddata
 
 from config import celery_app
+from sde_collections.models.pattern import TitlePattern
 
 from .models.collection import Collection
 from .sinequa_api import Api
@@ -129,3 +130,9 @@ def pull_latest_collection_metadata_from_github():
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
     )
     s3_client.upload_file(FILENAME, s3_bucket_name, s3_key)
+
+
+@celery_app.task()
+def resolve_title_pattern(title_pattern_id):
+    title_pattern = TitlePattern.objects.get(id=title_pattern_id)
+    title_pattern.resolve()
