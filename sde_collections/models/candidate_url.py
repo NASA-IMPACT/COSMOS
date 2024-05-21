@@ -3,19 +3,18 @@ import os
 from urllib.parse import urlparse
 
 from django.db import models
+from django.utils import timezone
 
 from .collection import Collection
 from .collection_choice_fields import DocumentTypes
-from .pattern import ExcludePattern
+from .pattern import ExcludePattern, TitlePattern
 
 
 class CandidateURLQuerySet(models.QuerySet):
     def with_exclusion_status(self):
         return self.annotate(
             excluded=models.Exists(
-                ExcludePattern.candidate_urls.through.objects.filter(
-                    candidateurl=models.OuterRef("pk")
-                )
+                ExcludePattern.candidate_urls.through.objects.filter(candidateurl=models.OuterRef("pk"))
             )
         )
 
@@ -28,9 +27,7 @@ class CandidateURLManager(models.Manager):
 class CandidateURL(models.Model):
     """A candidate URL scraped for a given collection."""
 
-    collection = models.ForeignKey(
-        Collection, on_delete=models.CASCADE, related_name="candidate_urls"
-    )
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name="candidate_urls")
     url = models.CharField("URL")
     hash = models.CharField("Hash", max_length=32, blank=True, default="1")
     scraped_title = models.CharField(
@@ -57,9 +54,7 @@ class CandidateURL(models.Model):
         blank=True,
         help_text="This is the title present on Production Server",
     )
-    level = models.IntegerField(
-        "Level", default=0, blank=True, help_text="Level in the tree. Based on /."
-    )
+    level = models.IntegerField("Level", default=0, blank=True, help_text="Level in the tree. Based on /.")
     visited = models.BooleanField(default=False)
     objects = CandidateURLManager()
     document_type = models.IntegerField(choices=DocumentTypes.choices, null=True)
@@ -83,6 +78,14 @@ class CandidateURL(models.Model):
         "URL Present In Production?",
         default=False,
         help_text="Helps keep track if the Current URL is present in production or not",
+    )
+    resolved_title = models.ForeignKey(
+        "ResolvedTitle",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="candidate_urls",
+        help_text="Link to the resolved title data",
     )
 
     class Meta:
@@ -143,3 +146,21 @@ class CandidateURL(models.Model):
         self.hash = hash_value
 
         super().save(*args, **kwargs)
+
+
+class ResolvedTitle(models.Model):
+    title_pattern = models.ForeignKey(TitlePattern, on_delete=models.CASCADE, related_name="resolved_titles")
+    candidate_url = models.ForeignKey(CandidateURL, on_delete=models.CASCADE, related_name="resolved_titles")
+    resolution_status = models.BooleanField(default=False, help_text="True if resolved, False if unresolved")
+    resolution_date_time = models.DateTimeField(default=timezone.now)
+    resolved_title = models.CharField(max_length=1024, blank=True)
+    error_string = models.TextField(blank=True)
+    http_status_code = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+        status = "Resolved" if self.resolution_status else "Unresolved"
+        return f"{self.resolved_title} - {status}"
+
+    class Meta:
+        verbose_name = "Resolved Title"
+        verbose_name_plural = "Resolved Titles"
