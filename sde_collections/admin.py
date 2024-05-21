@@ -4,7 +4,7 @@ from django.contrib import admin, messages
 from django.http import HttpResponse
 
 from .models.candidate_url import CandidateURL
-from .models.collection import Collection, WorkflowStatusHistory
+from .models.collection import Collection
 from .models.pattern import IncludePattern, TitlePattern
 from .tasks import import_candidate_urls_from_api
 
@@ -276,13 +276,6 @@ class TitlePatternAdmin(admin.ModelAdmin):
     )
 
 
-class WorkflowStatusHistoryAdmin(admin.ModelAdmin):
-    list_display = ("collection", "old_status", "new_status", "changed_at")
-    search_fields = ["collection__name"]
-    list_filter = ["new_status", "old_status"]
-
-
-admin.site.register(WorkflowStatusHistory, WorkflowStatusHistoryAdmin)
 admin.site.register(CandidateURL, CandidateURLAdmin)
 admin.site.register(TitlePattern, TitlePatternAdmin)
 admin.site.register(IncludePattern)
