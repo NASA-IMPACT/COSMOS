@@ -144,7 +144,7 @@ class ResolvedTitle(models.Model):
     candidate_url = models.OneToOneField(CandidateURL, on_delete=models.CASCADE, related_name="resolved_titles")
     resolution_status = models.BooleanField(default=False, help_text="True if resolved, False if unresolved")
     resolution_date_time = models.DateTimeField(auto_now_add=True)
-    resolved_title = models.CharField(max_length=1024, blank=True)
+    resolved_title = models.CharField(blank=True)
     error_string = models.TextField(blank=True)
     http_status_code = models.IntegerField(null=True, blank=True)
 
