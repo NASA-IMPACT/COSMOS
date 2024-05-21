@@ -442,7 +442,10 @@ function postTitlePatterns(match_pattern, title_pattern, match_pattern_type = 1)
         },
         error: function (xhr, status, error) {
             var errorMessage = xhr.responseText;
-            toastr.error(errorMessage);
+            var errorMessages = JSON.parse(errorMessage);
+            Object.entries(errorMessages.error).forEach(([key, value]) => {
+                toastr.error(value, key);
+            });
         }
     });
 }
