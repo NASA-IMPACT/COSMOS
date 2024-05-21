@@ -1,3 +1,5 @@
+import re
+
 import requests
 from lxml import etree, html
 
@@ -32,6 +34,58 @@ def get_value_from_xpath(url, xpath):
             raise ValueError(f"No element found for the xpath, {xpath}")
     else:
         raise ValueError(f"Failed to retrieve the {url}. Status code: {response.status_code}")
+
+
+def parse_string(input_string):
+    # Define regex patterns for each type
+    brace_pattern = re.compile(r"\{([^\}]+)\}")
+    xpath_pattern = re.compile(r"xpath:(//[^\s]+)")
+
+    # Initialize the result list
+    result = []
+
+    # Define the current index
+    current_index = 0
+
+    while current_index < len(input_string):
+        # Try to match brace pattern
+        brace_match = brace_pattern.match(input_string, current_index)
+        if brace_match:
+            result.append(("brace", brace_match.group(1)))
+            current_index = brace_match.end()
+            continue
+
+        # Try to match xpath pattern
+        xpath_match = xpath_pattern.match(input_string, current_index)
+        if xpath_match:
+            result.append(("xpath", xpath_match.group(1)))
+            current_index = xpath_match.end()
+            continue
+
+        # Otherwise, accumulate as a normal string until the next special pattern
+        next_special_index = min(
+            (
+                brace_pattern.search(input_string, current_index).start()
+                if brace_pattern.search(input_string, current_index)
+                else len(input_string)
+            ),
+            (
+                xpath_pattern.search(input_string, current_index).start()
+                if xpath_pattern.search(input_string, current_index)
+                else len(input_string)
+            ),
+        )
+
+        result.append(("str", input_string[current_index:next_special_index]))
+        current_index = next_special_index
+
+    return result
+
+
+# Example usage
+input_string = 'content: {title} xpath://*[@id="centeredcontent2"] overview'
+parsed_list = parse_string(input_string)
+print(parsed_list)
 
 
 xpath = '//*[@id="centeredcontent2"]/table[4]/tbody/tr/td/table/tbody/tr/td/table/tbody/tr[2]/td/div/p[1]/text()[1]'
