@@ -2,13 +2,14 @@ import _ast
 import ast
 import html as html_lib
 import re
+from typing import Any
 
 import requests
 from lxml import etree, html
 from unidecode import unidecode
 
 
-def is_valid_xpath(xpath):
+def is_valid_xpath(xpath: str) -> bool:
     try:
         etree.XPath(xpath)
         return True
@@ -16,7 +17,7 @@ def is_valid_xpath(xpath):
         return False
 
 
-def clean_text(text):
+def clean_text(text: str) -> str:
     text_content = unidecode(text)
     text_content = html_lib.unescape(text_content)
     # remove tabs and newlines, replace them with a single space
@@ -28,7 +29,7 @@ def clean_text(text):
     return text_content
 
 
-def resolve_brace(pattern, context):
+def resolve_brace(pattern: str, context: dict[str, Any]) -> str:
     """Safely interpolates the variables in an f-string pattern using the provided context."""
     context = {"url": "www.google.com", "title": "Original Title"}
     parsed = ast.parse(f"f'''{pattern}'''", mode="eval")
@@ -42,10 +43,10 @@ def resolve_brace(pattern, context):
                 raise ValueError(f"Variable {node.value.id} not allowed in f-string pattern.")
 
     compiled = compile(parsed, "<string>", "eval")
-    return eval(compiled, {}, context)
+    return str(eval(compiled, {}, context))
 
 
-def resolve_xpath(xpath, url):
+def resolve_xpath(xpath: str, url: str) -> str:
     print("url is", url)
     if not is_valid_xpath(xpath):
         raise ValueError(f"The xpath, {xpath}, is not valid.")
@@ -71,7 +72,7 @@ def resolve_xpath(xpath, url):
         raise ValueError(f"Failed to retrieve the {url}. Status code: {response.status_code}")
 
 
-def parse_title(input_string):
+def parse_title(input_string: str) -> list[tuple[str, str]]:
     brace_pattern = re.compile(r"\{([^\}]+)\}")
     xpath_pattern = re.compile(r"xpath:(//[^\s]+)")
 
@@ -113,7 +114,7 @@ def parse_title(input_string):
     return result
 
 
-def resolve_title(raw_title, context):
+def resolve_title(raw_title: str, context: dict[str, Any]) -> str:
     parsed_title = parse_title(raw_title)
     final_string = ""
 
