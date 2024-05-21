@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .forms import CollectionGithubIssueForm, CommentsForm, RequiredUrlForm
-from .models.candidate_url import CandidateURL
+from .models.candidate_url import CandidateURL, ResolvedTitle
 from .models.collection import Collection, Comments, RequiredUrls
 from .models.collection_choice_fields import (
     ConnectorChoices,
@@ -462,3 +462,12 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
         context["differences"] = self.data
 
         return context
+
+
+class ResolvedTitleListView(ListView):
+    model = ResolvedTitle
+    template_name = "sde_collections/resolved_titles_list.html"
+    context_object_name = "resolved_titles"
+
+    def get_queryset(self):
+        return super().get_queryset().order_by("-resolution_date_time")
