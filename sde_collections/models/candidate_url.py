@@ -79,14 +79,6 @@ class CandidateURL(models.Model):
         default=False,
         help_text="Helps keep track if the Current URL is present in production or not",
     )
-    resolved_title = models.ForeignKey(
-        "ResolvedTitle",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="candidate_urls",
-        help_text="Link to the resolved title data",
-    )
 
     class Meta:
         """Meta definition for Candidate URL."""
