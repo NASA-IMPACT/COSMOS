@@ -51,10 +51,7 @@ body {
 }
 
 .dtsp-collapseButton{
-    opacity:0.6;
-    background-color: transparent;
-    border:none !important;
-    box-shadow: none;
+    display:none;
 }
 
 .clearButton{
@@ -177,4 +174,29 @@ margin-bottom: 0 !important;
     display:none;
    }
 
-  
+   div.dtsp-topRow div.dtsp-subRow1 button.dtsp-searchIcon span{
+    background-image:url("../images/Search.png") !important;
+    background-size:18px !important;
+   }
+
+   div.dtsp-topRow div.dtsp-subRow1 input{
+    background-color: #3F4A58;
+   }
+
+   .form-control, .is-focused .form-control{
+    background-image:none;
+   }
+
+   .dtsp-paneInputButton{
+    color:white;
+    padding-left:10px;
+    margin-top:7px;
+   }
+
+   .form-control:focus{
+    color:white;
+   }
+
+   .dtsp-searchIcon{
+    margin-top:10px;
+   }
