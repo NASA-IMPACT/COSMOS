@@ -1,7 +1,9 @@
+import html as html_lib
 import re
 
 import requests
 from lxml import etree, html
+from unidecode import unidecode
 
 
 def is_valid_xpath(xpath):
@@ -12,7 +14,23 @@ def is_valid_xpath(xpath):
         return False
 
 
-def get_value_from_xpath(url, xpath):
+def clean_text(text):
+    text_content = unidecode(text)
+    text_content = html_lib.unescape(text_content)
+    # remove tabs and newlines, replace them with a single space
+    text_content = re.sub(r"[\t\n\r]+", " ", text_content)
+    # remove multiple spaces
+    text_content = re.sub(r"\s+", " ", text_content)
+    # strip leading and trailing whitespace
+    text_content = text_content.strip()
+    return text_content
+
+
+def resolve_brace(brace_content):
+    return brace_content
+
+
+def resolve_xpath(xpath, url):
     if not is_valid_xpath(xpath):
         raise ValueError(f"The xpath, {xpath}, is not valid.")
 
@@ -25,6 +43,7 @@ def get_value_from_xpath(url, xpath):
         if len(values) == 1:
             text_content = values[0].text
             if text_content:
+                text_content = clean_text(text_content)
                 return text_content
             else:
                 raise ValueError(f"The element at the xpath, {xpath}, does not contain any text content.")
@@ -36,15 +55,11 @@ def get_value_from_xpath(url, xpath):
         raise ValueError(f"Failed to retrieve the {url}. Status code: {response.status_code}")
 
 
-def parse_string(input_string):
-    # Define regex patterns for each type
+def parse_title(input_string):
     brace_pattern = re.compile(r"\{([^\}]+)\}")
     xpath_pattern = re.compile(r"xpath:(//[^\s]+)")
 
-    # Initialize the result list
     result = []
-
-    # Define the current index
     current_index = 0
 
     while current_index < len(input_string):
@@ -82,10 +97,21 @@ def parse_string(input_string):
     return result
 
 
-# Example usage
-input_string = 'content: {title} xpath://*[@id="centeredcontent2"] overview'
-parsed_list = parse_string(input_string)
-print(parsed_list)
+def resolve_title(raw_title, url):
+    parsed_title = parse_title(raw_title)
+    final_string = ""
+
+    for element in parsed_title:
+        element_type, element_value = element
+
+        if element_type == "xpath":
+            final_string += resolve_xpath(element_value, url)
+        elif element_type == "brace":
+            final_string += resolve_brace(element_value)
+        elif element_type == "str":
+            final_string += element_value
+
+    return final_string
 
 
 xpath = '//*[@id="centeredcontent2"]/table[4]/tbody/tr/td/table/tbody/tr/td/table/tbody/tr[2]/td/div/p[1]/text()[1]'
@@ -118,5 +144,5 @@ candidate_urls = [
 ]
 
 for candidate_url in candidate_urls:
-    value = get_value_from_xpath(candidate_url, xpath)
+    value = resolve_xpath(xpath, candidate_url)
     print(f"The value at the specified XPath is: {value}")
