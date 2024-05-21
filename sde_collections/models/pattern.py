@@ -3,7 +3,7 @@ import re
 from django.apps import apps
 from django.db import models
 
-from ..pattern_interpreter import safe_f_string_evaluation
+from ..utils.title_resolver import resolve_title
 from .collection_choice_fields import DocumentTypes
 
 
@@ -142,10 +142,14 @@ class TitlePattern(BaseMatchPattern):
         updated_urls = []
 
         for candidate_url in matched_urls:
-            context = {"url": candidate_url.url, "title": candidate_url.scraped_title}
+            context = {
+                "url": candidate_url.url,
+                "title": candidate_url.scraped_title,
+                "collection": self.collection.name,
+            }
 
             try:
-                generated_title = safe_f_string_evaluation(self.title_pattern, context)
+                generated_title = resolve_title(self.title_pattern, context)
                 candidate_url.generated_title = generated_title
                 updated_urls.append(candidate_url)
             except ValueError as e:
