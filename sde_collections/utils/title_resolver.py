@@ -2,7 +2,6 @@ import _ast
 import ast
 import html as html_lib
 import re
-from dataclasses import dataclass
 
 import requests
 from lxml import etree, html
@@ -129,42 +128,3 @@ def resolve_title(raw_title, context):
             final_string += element_value
 
     return final_string
-
-
-@dataclass
-class CandidateURL:
-    url: str
-    scraped_title: str
-    collection: str
-    title_pattern: str
-
-
-xpath = '//*[@id="main_content_wrapper"]/h4'
-pattern = '{collection} Overview: xpath://*[@id="main_content_wrapper"]/h4'
-urls = [
-    "https://curator.jsc.nasa.gov/antmet/sample_preparation.cfm?section=cabinet",
-    "https://curator.jsc.nasa.gov/antmet/sample_preparation.cfm?section=flowbench",
-    "https://curator.jsc.nasa.gov/antmet/sample_preparation.cfm?section=materials",
-    "https://curator.jsc.nasa.gov/antmet/sample_preparation.cfm?section=SIprep",
-    "https://curator.jsc.nasa.gov/antmet/sample_preparation.cfm?section=thinandthick",
-]
-
-candidate_urls = [
-    CandidateURL(url=url, scraped_title="Scraped Title", collection="Collection Name", title_pattern=pattern)
-    for url in urls
-]
-
-
-for candidate_url in candidate_urls:
-    context = {
-        "url": candidate_url.url,
-        "title": candidate_url.scraped_title,
-        "collection": candidate_url.collection,
-    }
-
-    title = resolve_title(candidate_url.title_pattern, context)
-    print(title)
-    print()
-    # value = resolve_xpath(xpath, candidate_url)
-
-    # print(f"The value at the specified XPath is: {value}")
