@@ -17,6 +17,26 @@ def is_valid_xpath(xpath: str) -> bool:
         return False
 
 
+def is_valid_fstring(pattern: str) -> bool:
+    context = {
+        "url": "",
+        "title": "",
+        "collection": "",
+    }
+    parsed = ast.parse(f"f'''{pattern}'''", mode="eval")
+    # Walk through the AST to ensure it only contains safe expressions
+    for node in ast.walk(parsed):
+        if isinstance(node, _ast.FormattedValue):
+            if not isinstance(node.value, _ast.Name):
+                raise ValueError("Unsupported expression in f-string pattern.")
+            if node.value.id not in context:
+                variables_allowed = ", ".join([key for key in context.keys()])
+                raise ValueError(
+                    f"Variable '{node.value.id}' not allowed in f-string pattern."
+                    f" Allowed variables are: {variables_allowed}"
+                )
+
+
 def clean_text(text: str) -> str:
     text_content = unidecode(text)
     text_content = html_lib.unescape(text_content)
@@ -33,15 +53,7 @@ def resolve_brace(pattern: str, context: dict[str, Any]) -> str:
     """Safely interpolates the variables in an f-string pattern using the provided context."""
     parsed = ast.parse(f"f'''{pattern}'''", mode="eval")
 
-    # Walk through the AST to ensure it only contains safe expressions
-    for node in ast.walk(parsed):
-        if isinstance(node, _ast.FormattedValue):
-            if not isinstance(node.value, _ast.Name):
-                raise ValueError("Unsupported expression in f-string pattern.")
-            if node.value.id not in context:
-                raise ValueError(
-                    f"Variable {node.value.id} not allowed in f-string pattern. Allowed variables are: {context.keys()}"
-                )
+    is_valid_fstring(pattern)  # Refactor this
 
     compiled = compile(parsed, "<string>", "eval")
     return str(eval(compiled, {}, context))
@@ -83,7 +95,7 @@ def parse_title(input_string: str) -> list[tuple[str, str]]:
         # Try to match brace pattern
         brace_match = brace_pattern.match(input_string, current_index)
         if brace_match:
-            result.append(("brace", brace_match.group(1)))
+            result.append(("brace", "{" + brace_match.group(1) + "}"))
             current_index = brace_match.end()
             continue
 
