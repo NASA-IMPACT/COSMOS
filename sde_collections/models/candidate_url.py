@@ -142,7 +142,7 @@ class CandidateURL(models.Model):
 
 class ResolvedTitle(models.Model):
     title_pattern = models.ForeignKey(TitlePattern, on_delete=models.CASCADE, related_name="resolved_titles")
-    candidate_url = models.ForeignKey(CandidateURL, on_delete=models.CASCADE, related_name="resolved_titles")
+    candidate_url = models.OneToOneField(CandidateURL, on_delete=models.CASCADE, related_name="resolved_titles")
     resolution_status = models.BooleanField(default=False, help_text="True if resolved, False if unresolved")
     resolution_date_time = models.DateTimeField(default=timezone.now)
     resolved_title = models.CharField(max_length=1024, blank=True)
