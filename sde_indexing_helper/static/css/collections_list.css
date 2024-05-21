@@ -34,6 +34,8 @@ body {
 .dtsp-nameCont .badge{
     position:absolute;
     float:left;
+    background-color:#A7BACD !important;
+    color:black;
 }
 
 .dtsp-name { 
@@ -45,6 +47,7 @@ body {
     background-color: transparent;
     border:none !important;
     box-shadow: none;
+    color:#A7BACD;
 }
 
 .dtsp-collapseButton{
@@ -69,7 +72,7 @@ body {
 }
 
 .dtsp-caret{
-    color: #3C4858;
+    color: #A7BACD;
 }
 
 .main-panel > .content{
@@ -161,3 +164,17 @@ margin-bottom: 0 !important;
     color:#1F2935 !important;
   }
 
+  div.dtsp-topRow button.dtsp-nameButton span{
+   background-image:url("../images/Vector.png") !important;
+  }
+
+  div.dtsp-topRow button.dtsp-countButton span{
+    filter: invert(1);
+
+   }
+
+   .clearButton{
+    display:none;
+   }
+
+  
