@@ -31,7 +31,6 @@ def clean_text(text: str) -> str:
 
 def resolve_brace(pattern: str, context: dict[str, Any]) -> str:
     """Safely interpolates the variables in an f-string pattern using the provided context."""
-    context = {"url": "www.google.com", "title": "Original Title"}
     parsed = ast.parse(f"f'''{pattern}'''", mode="eval")
 
     # Walk through the AST to ensure it only contains safe expressions
@@ -40,14 +39,15 @@ def resolve_brace(pattern: str, context: dict[str, Any]) -> str:
             if not isinstance(node.value, _ast.Name):
                 raise ValueError("Unsupported expression in f-string pattern.")
             if node.value.id not in context:
-                raise ValueError(f"Variable {node.value.id} not allowed in f-string pattern.")
+                raise ValueError(
+                    f"Variable {node.value.id} not allowed in f-string pattern. Allowed variables are: {context.keys()}"
+                )
 
     compiled = compile(parsed, "<string>", "eval")
     return str(eval(compiled, {}, context))
 
 
 def resolve_xpath(xpath: str, url: str) -> str:
-    print("url is", url)
     if not is_valid_xpath(xpath):
         raise ValueError(f"The xpath, {xpath}, is not valid.")
 
