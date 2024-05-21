@@ -3,7 +3,6 @@ import os
 from urllib.parse import urlparse
 
 from django.db import models
-from django.utils import timezone
 
 from .collection import Collection
 from .collection_choice_fields import DocumentTypes
@@ -144,7 +143,7 @@ class ResolvedTitle(models.Model):
     title_pattern = models.ForeignKey(TitlePattern, on_delete=models.CASCADE, related_name="resolved_titles")
     candidate_url = models.OneToOneField(CandidateURL, on_delete=models.CASCADE, related_name="resolved_titles")
     resolution_status = models.BooleanField(default=False, help_text="True if resolved, False if unresolved")
-    resolution_date_time = models.DateTimeField(default=timezone.now)
+    resolution_date_time = models.DateTimeField(auto_now_add=True)
     resolved_title = models.CharField(max_length=1024, blank=True)
     error_string = models.TextField(blank=True)
     http_status_code = models.IntegerField(null=True, blank=True)
