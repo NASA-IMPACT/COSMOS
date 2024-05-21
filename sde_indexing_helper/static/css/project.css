@@ -186,3 +186,7 @@ body {
  .table > tbody > tr > td {
   border:none;
 }  
+
+.nameStyling:hover{
+  color:#65B1EF;
+}
