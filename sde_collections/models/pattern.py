@@ -1,6 +1,7 @@
 import re
 
 from django.apps import apps
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from ..pattern_interpreter import safe_f_string_evaluation
@@ -23,7 +24,9 @@ class BaseMatchPattern(models.Model):
         help_text="This pattern is compared against the URL of all the documents in the collection "
         "and matching documents will be returned",
     )
-    match_pattern_type = models.IntegerField(choices=MatchPatternTypeChoices.choices, default=1)
+    match_pattern_type = models.IntegerField(
+        choices=MatchPatternTypeChoices.choices, default=1
+    )
     candidate_urls = models.ManyToManyField(
         "CandidateURL",
         related_name="%(class)s_urls",
@@ -33,10 +36,14 @@ class BaseMatchPattern(models.Model):
         """Find all the urls matching the pattern."""
         escaped_match_pattern = re.escape(self.match_pattern)
         if self.match_pattern_type == self.MatchPatternTypeChoices.INDIVIDUAL_URL:
-            return self.collection.candidate_urls.filter(url__regex=f"{escaped_match_pattern}$")
+            return self.collection.candidate_urls.filter(
+                url__regex=f"{escaped_match_pattern}$"
+            )
         elif self.match_pattern_type == self.MatchPatternTypeChoices.MULTI_URL_PATTERN:
             return self.collection.candidate_urls.filter(
-                url__regex=escaped_match_pattern.replace(r"\*", ".*")  # allow * wildcards
+                url__regex=escaped_match_pattern.replace(
+                    r"\*", ".*"
+                )  # allow * wildcards
             )
         else:
             raise NotImplementedError
@@ -51,7 +58,10 @@ class BaseMatchPattern(models.Model):
         if not processed_pattern.startswith("http"):
             # if it doesn't begin with http, it must need a star at the beginning
             processed_pattern = f"*{processed_pattern}"
-        if self.match_pattern_type == BaseMatchPattern.MatchPatternTypeChoices.MULTI_URL_PATTERN:
+        if (
+            self.match_pattern_type
+            == BaseMatchPattern.MatchPatternTypeChoices.MULTI_URL_PATTERN
+        ):
             # all multi urls should have a star at the end, but individuals should not
             processed_pattern = f"{processed_pattern}*"
         return processed_pattern
@@ -89,7 +99,9 @@ class ExcludePattern(BaseMatchPattern):
         candidate_url_ids = list(matched_urls.values_list("id", flat=True))
         self.candidate_urls.through.objects.bulk_create(
             objs=[
-                ExcludePattern.candidate_urls.through(candidateurl_id=candidate_url_id, excludepattern_id=self.id)
+                ExcludePattern.candidate_urls.through(
+                    candidateurl_id=candidate_url_id, excludepattern_id=self.id
+                )
                 for candidate_url_id in candidate_url_ids
             ]
         )
@@ -112,7 +124,9 @@ class IncludePattern(BaseMatchPattern):
         candidate_url_ids = list(matched_urls.values_list("id", flat=True))
         self.candidate_urls.through.objects.bulk_create(
             objs=[
-                IncludePattern.candidate_urls.through(candidateurl_id=candidate_url_id, includepattern_id=self.id)
+                IncludePattern.candidate_urls.through(
+                    candidateurl_id=candidate_url_id, includepattern_id=self.id
+                )
                 for candidate_url_id in candidate_url_ids
             ]
         )
@@ -129,11 +143,17 @@ class IncludePattern(BaseMatchPattern):
         unique_together = ("collection", "match_pattern")
 
 
+def validate_title_pattern(title_pattern_string):
+    if not title_pattern_string.startswith("http"):
+        raise ValidationError("Title pattern has to start with http")
+
+
 class TitlePattern(BaseMatchPattern):
     title_pattern = models.CharField(
         "Title Pattern",
         help_text="This is the pattern for the new title. You can either write an exact replacement string"
         " (no quotes required) or you can write sinequa-valid code",
+        validators=[validate_title_pattern],
     )
 
     def apply(self) -> None:
@@ -156,12 +176,18 @@ class TitlePattern(BaseMatchPattern):
 
         TitlePatternCandidateURL = TitlePattern.candidate_urls.through
         pattern_url_associations = [
-            TitlePatternCandidateURL(titlepattern_id=self.id, candidateurl_id=url.id) for url in updated_urls
+            TitlePatternCandidateURL(titlepattern_id=self.id, candidateurl_id=url.id)
+            for url in updated_urls
         ]
-        TitlePatternCandidateURL.objects.bulk_create(pattern_url_associations, ignore_conflicts=True)
+        TitlePatternCandidateURL.objects.bulk_create(
+            pattern_url_associations, ignore_conflicts=True
+        )
 
     def unapply(self) -> None:
         self.candidate_urls.update(generated_title="")
+
+    def resolve(self) -> None:
+        print(f"Resolving title pattern {self.id}")
 
     class Meta:
         """Meta definition for TitlePattern."""
