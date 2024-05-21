@@ -1,5 +1,8 @@
+import _ast
+import ast
 import html as html_lib
 import re
+from dataclasses import dataclass
 
 import requests
 from lxml import etree, html
@@ -26,11 +29,25 @@ def clean_text(text):
     return text_content
 
 
-def resolve_brace(brace_content):
-    return brace_content
+def resolve_brace(pattern, context):
+    """Safely interpolates the variables in an f-string pattern using the provided context."""
+    context = {"url": "www.google.com", "title": "Original Title"}
+    parsed = ast.parse(f"f'''{pattern}'''", mode="eval")
+
+    # Walk through the AST to ensure it only contains safe expressions
+    for node in ast.walk(parsed):
+        if isinstance(node, _ast.FormattedValue):
+            if not isinstance(node.value, _ast.Name):
+                raise ValueError("Unsupported expression in f-string pattern.")
+            if node.value.id not in context:
+                raise ValueError(f"Variable {node.value.id} not allowed in f-string pattern.")
+
+    compiled = compile(parsed, "<string>", "eval")
+    return eval(compiled, {}, context)
 
 
 def resolve_xpath(xpath, url):
+    print("url is", url)
     if not is_valid_xpath(xpath):
         raise ValueError(f"The xpath, {xpath}, is not valid.")
 
@@ -97,7 +114,7 @@ def parse_title(input_string):
     return result
 
 
-def resolve_title(raw_title, url):
+def resolve_title(raw_title, context):
     parsed_title = parse_title(raw_title)
     final_string = ""
 
@@ -105,37 +122,26 @@ def resolve_title(raw_title, url):
         element_type, element_value = element
 
         if element_type == "xpath":
-            final_string += resolve_xpath(element_value, url)
+            final_string += resolve_xpath(element_value, context["url"])
         elif element_type == "brace":
-            final_string += resolve_brace(element_value)
+            final_string += resolve_brace(element_value, context)
         elif element_type == "str":
             final_string += element_value
 
     return final_string
 
 
-xpath = '//*[@id="centeredcontent2"]/table[4]/tbody/tr/td/table/tbody/tr/td/table/tbody/tr[2]/td/div/p[1]/text()[1]'
-
-candidate_urls = [
-    "https://mars.nasa.gov/imagine/leaders/project_resources/webcast_20021213.html",
-    "https://mars.nasa.gov/imagine/leaders/project_resources/webcast_20041209.html",
-    "https://mars.nasa.gov/imagine/leaders/project_resources/webcast_20050224.html",
-    "https://mars.nasa.gov/imagine/leaders/project_resources/webcast_20050804.html",
-    "https://mars.nasa.gov/imagine/leaders/project_resources/webcast_20060223.html",
-    "https://mars.nasa.gov/imagine/leaders/project_resources/webcast_20060731_bioDonFreeman.html",
-    "https://mars.nasa.gov/imagine/leaders/project_resources/webcast_20060731_bioPaulaGoodman.html",
-    "https://mars.nasa.gov/imagine/leaders/project_resources/webcast_20060731_bioThaddeusMiles.html",
-    "https://mars.nasa.gov/imagine/leaders/project_resources/webcast_20060731.html",
-    "https://mars.nasa.gov/imagine/leaders/project_resources/webcast_20070629_bioKimberlyPaul.html",
-    "https://mars.nasa.gov/imagine/leaders/project_resources/webcast_20070629_bioMadelynePfeiffer.html",
-    "https://mars.nasa.gov/imagine/leaders/project_resources/webcast_20070629_bioRachelEvans.html",
-    "https://mars.nasa.gov/imagine/leaders/project_resources/webcast_20070629.html",
-    "https://mars.nasa.gov/imagine/leaders/project_resources/webcasts.html",
-]
+@dataclass
+class CandidateURL:
+    url: str
+    scraped_title: str
+    collection: str
+    title_pattern: str
 
 
 xpath = '//*[@id="main_content_wrapper"]/h4'
-candidate_urls = [
+pattern = '{collection} Overview: xpath://*[@id="main_content_wrapper"]/h4'
+urls = [
     "https://curator.jsc.nasa.gov/antmet/sample_preparation.cfm?section=cabinet",
     "https://curator.jsc.nasa.gov/antmet/sample_preparation.cfm?section=flowbench",
     "https://curator.jsc.nasa.gov/antmet/sample_preparation.cfm?section=materials",
@@ -143,6 +149,22 @@ candidate_urls = [
     "https://curator.jsc.nasa.gov/antmet/sample_preparation.cfm?section=thinandthick",
 ]
 
+candidate_urls = [
+    CandidateURL(url=url, scraped_title="Scraped Title", collection="Collection Name", title_pattern=pattern)
+    for url in urls
+]
+
+
 for candidate_url in candidate_urls:
-    value = resolve_xpath(xpath, candidate_url)
-    print(f"The value at the specified XPath is: {value}")
+    context = {
+        "url": candidate_url.url,
+        "title": candidate_url.scraped_title,
+        "collection": candidate_url.collection,
+    }
+
+    title = resolve_title(candidate_url.title_pattern, context)
+    print(title)
+    print()
+    # value = resolve_xpath(xpath, candidate_url)
+
+    # print(f"The value at the specified XPath is: {value}")
