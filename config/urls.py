@@ -5,10 +5,10 @@ from django.urls import include, path
 from django.views import defaults as default_views
 
 admin.site.site_header = (
-    "SDE Indexing Administration"  # default: "Django Administration"
+    "SDE Indexing Helper Administration"  # default: "Django Administration"
 )
-admin.site.index_title = "SDE Indexing"  # default: "Site administration"
-admin.site.site_title = "SDE Indexing"  # default: "Django site admin"
+admin.site.index_title = "SDE Indexing Helper"  # default: "Site administration"
+admin.site.site_title = "SDE Indexing Helper"  # default: "Django site admin"
 
 urlpatterns = [
     path("", include("sde_collections.urls", namespace="sde_collections")),
