@@ -120,9 +120,7 @@ div > .nav {
     border-top:0px;
    }
 
-   .urlStyle{
-    color:#65B1EF;
-   }
+
 
    .urlStyle:hover{
     color:#65B1EF;
@@ -173,4 +171,8 @@ color:black;
 
    .urlSubmitButton{
     margin-left:10px;
+   }
+
+   .tableHeaderRow{
+    background-color:#050E19
    }

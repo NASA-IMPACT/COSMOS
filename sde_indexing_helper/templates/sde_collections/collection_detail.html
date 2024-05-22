@@ -22,9 +22,9 @@
     </div>
     <div class="col-md-6">
         <a href="{{ collection.server_url_prod }}" target="_blank" style="color:white"><button
-                class="btn btn-primary btn-sm pull-right">View on prod</button></a>
+                class="btn buttonColor btn-sm pull-right">View on prod</button></a>
         <a href="{{ collection.server_url_secret_prod }}" target="_blank" style="color:white"><button
-                class="btn btn-primary btn-sm pull-right">View on secret prod</button></a>
+                class="btn buttonColor btn-sm pull-right">View on secret prod</button></a>
     </div>
 </div>
 
@@ -202,10 +202,10 @@
         <div class="tab-pane fade" id="statustimeline">
             <table class="table table-striped">
                 <thead>
-                    <tr>
-                        <th>Workflow Status</th>
-                        <th>Curator</th>
-                        <th>Timeframe</th>
+                    <tr class="tableHeaderRow">
+                        <th class="whiteText">Workflow Status</th>
+                        <th class="whiteText">Curator</th>
+                        <th class="whiteText">Timeframe</th>
                     </tr>
                 <thead>
                 <tbody>
@@ -216,12 +216,9 @@
                             id="workflow-status-badge-{{ entry.id }}"
                             aria-expanded="false">{{ entry.get_workflow_status_display }}</button>
                         </td>
-                        <td>                            
-                            <button class="btn {% if entry.curated_by %} btn-success {% else %} btn-dark {% endif %} btn-sm"
-                            type="button"
-                            id="curator-button-{{ entry.id }}"
-                            aria-expanded="false">{{ entry.curated_by }}</button></td>
-                        <td>{{entry.created_at|timesince}}</td>
+                        <td class="whiteText">                            
+                            {{ entry.curated_by }}</td>
+                        <td class="whiteText">{{entry.created_at|timesince}}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
