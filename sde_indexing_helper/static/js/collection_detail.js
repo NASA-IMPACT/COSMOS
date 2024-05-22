@@ -65,6 +65,15 @@ $(document).ready(function () {
   });
 });
 
+$(document).ready(function () {
+  $("#closeModalButton").on("click", function (event) {
+    event.preventDefault();
+    console.log("clicked!");
+    $("#detailDivisionDropdown").val(currentDivisionVal);
+    $("#areYouSureModal").modal("hide");
+  });
+});
+
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 
 function postDivisionChange(collection_id, division) {
