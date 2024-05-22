@@ -90,3 +90,24 @@ div > .nav {
 .divisionDropdown {
     appearance: auto !important;
   }
+
+  .editTitle {
+    cursor: pointer;
+    height: 22px;
+    padding-left: 7px;
+  }
+
+  .modal-footer {
+    justify-content: center;
+  }
+
+  #modalForm {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }

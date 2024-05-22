@@ -13,7 +13,7 @@
 <div class="row">
     <div class="col-md-6 titleCol">
 
-        <h1>{{ collection.name }}</h1>
+        <h1>{{ collection.name }}<img class="editTitle" src="../../static/images/Task.png"></img></h1>
         <div class="badge-container">
             <button class="btn badge {{ collection.workflow_status_button_color }} btn-sm"
                 id="workflow-status-badge-{{ collection.id }}" aria-expanded="false">{{collection.get_workflow_status_display }}</button>
@@ -240,13 +240,15 @@
                 </button>
             </div>
                 <div class="modal-body" id="modal-body">
-                    <h5 class="modal-title">Are you sure?</h5>
+                    <h5 class="modal-title"></h5>
                     <p class="caption" id="caption"></p>
                 </div>
                 <div class="modal-footer">
-                    <form>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="makeChangeButton">Yes</button>
-                    <button type="submit" class="btn btn-primary" id="dontMakeChangeButton">No</button>
+                    <form id="modalForm">
+                        <div>
+                    <button type="submit" class="btn btn-secondary" id="dontMakeChangeButton"></button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" id="makeChangeButton"></button>
+                </div>
                 </form>
                 </div>
         </div>
