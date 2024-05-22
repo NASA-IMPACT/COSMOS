@@ -131,3 +131,46 @@ div > .nav {
    .underline{
     text-decoration: underline;
    }
+
+   .buttonColor{
+    background-color:#0066CA;
+   }
+
+   .formBackground{
+    background-color:#A7BACD;
+   }
+   .reqUrlForm input {
+    background-color:#A7BACD;
+    border-style: none;
+    border-radius:5px;
+   }
+
+   .form-control, .is-focused .form-control{
+    background-image:none;
+   }
+   .form-control:focus{
+    color:black;
+    background-color:#A7BACD;
+
+   }
+
+   .form-control {
+color:black;
+   }
+
+   .urlDeleteButton{
+    padding: 7px !important;
+    margin-top: 14px;
+   }
+
+   .reqUrlForm{
+    display:inline-flex;
+   }
+
+   form{
+    margin-bottom:0px;
+   }
+
+   .urlSubmitButton{
+    margin-left:10px;
+   }

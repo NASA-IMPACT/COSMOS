@@ -96,7 +96,7 @@
                     </tr>
                     <tr>
                         <th class="detailsHeader">Update Frequency</th>
-                        <td>{{ collection.get_update_frequency_display }}</td>
+                        <td class="whiteText">{{ collection.get_update_frequency_display }}</td>
                     </tr>
                     <tr>
                         <th class="detailsHeader">Tree Root</th>
@@ -116,17 +116,16 @@
                         <th class="detailsHeader">GitHub Issue Link</th>
                         <td>
                             {% if github_form.errors %}
-                            <span class="error-message whiteText" id="github-link-error">{{ github_form.errors.github_issue_link
-                                }}</span>
+                            <span class="error-message whiteText" id="github-link-error">{{ github_form.errors.github_issue_link }}</span>
                             {% endif %}
                             <a id="github-link-display" class="urlStyle underline" href="{{ collection.github_issue_link }}" target="_blank">{{collection.github_issue_link }}</a>
-                            <form id="github-link-form" action="{% url 'sde_collections:detail' collection.pk %}"
+                            <form id="github-link-form" class="reqUrlForm" action="{% url 'sde_collections:detail' collection.pk %}"
                                 method="POST">
                                 {% csrf_token %}
                                 {{ github_form.github_issue_link }}
-                                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                                <button type="submit" class="btn btn-sm buttonColor">Save</button>
                             </form>
-                            <button type="submit" class="btn btn-info btn-sm" id="edit-github-link-button">
+                            <button type="submit" class="btn btn-sm buttonColor" id="edit-github-link-button">
                                 <i class="material-icons">edit</i>
                             </button>
                             <button type="submit" class="btn btn-danger btn-sm" id="cancel-github-link-button">
@@ -144,21 +143,23 @@
                         <th class="detailsHeader">Required URLs</th>
                         <td>
                             {% for required_url in required_urls %}
-                            <form action="{% url 'sde_collections:delete_required_url' required_url.pk %}">
+                            <div>
+                            <form  class="reqUrlForm" action="{% url 'sde_collections:delete_required_url' required_url.pk %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-danger delete_required_url pull-left"
+                                <button type="submit" class="btn btn-sm btn-danger urlDeleteButton delete_required_url pull-left"
                                     data-id={{ required_url.pk }}>
                                     <i class="material-icons">delete</i>
                                 </button>
                             </form>
-                            <a href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
+                            <a class="urlStyle" href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
+                            </div>
                             {% empty %}
-                            <p>No required URLs yet</p>
+                            <p class="greyText">No required URLs yet</p>
                             {% endfor %}
-                            <form method="post" action="{% url 'sde_collections:detail' collection.pk %}">
+                            <form method="post" class="reqUrlForm"  action="{% url 'sde_collections:detail' collection.pk %}">
                                 {% csrf_token %}
                                 {{ form.url }}
-                                <button type="submit" class="btn btn-sm btn-primary">Add URL</button>
+                                <button type="submit" class="btn btn-sm buttonColor urlSubmitButton">Add URL</button>
                             </form>
                         </td>
                     </tr>
@@ -185,8 +186,8 @@
                                 {% if user.is_authenticated %}
                                 <form method="post" action="{% url 'sde_collections:detail' collection.pk %}">
                                     {% csrf_token %}
-                                    <textarea name="text" class="form-control">{{ comment_form.text.value }}</textarea>
-                                    <button type="submit" name="comment_button" class="btn btn-primary">Submit</button>
+                                    <textarea name="text" class="form-control formBackground">{{ comment_form.text.value }}</textarea>
+                                    <button type="submit" name="comment_button" class="btn buttonColor">Submit</button>
                                 </form>
                                 {% else %}
                                 <p>Please log in to post comments.</p>
