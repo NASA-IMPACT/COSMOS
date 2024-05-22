@@ -18,6 +18,7 @@
         <thead>
             <tr>
                 <th>Candidate URL</th>
+                <th>Title Pattern</th>
                 <th>Resolved Title</th>
                 <th>Created At</th>
             </tr>
@@ -26,6 +27,7 @@
             {% for resolved_title in resolved_titles %}
             <tr>
                 <td>{{ resolved_title.candidate_url }}</td>
+                <td>{{ resolved_title.title_pattern }}</td>
                 <td>{{ resolved_title.resolved_title }}</td>
                 <td>{{ resolved_title.created_at|date:"Y-m-d H:i" }}</td>
             </tr>
