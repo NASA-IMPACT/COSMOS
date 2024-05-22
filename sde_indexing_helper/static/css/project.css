@@ -158,7 +158,33 @@ body {
   font-weight: 500;
 } 
 
+.dtsp-name{
+  color:white;
+  font-weight:400;
+}
 
+.dtsp-nameColumn{
+  background-color: #15232E;
+  border:none;
+ 
+}
+
+.dtsp-searchPane{
+  background-color: #15232E;
+}
+
+.dt-scroll{
+  background-color: #15232E !important;
+}
+
+.dt-scroll-body{
+  height:min-content !important;
+}
+
+
+ .table > tbody > tr > td {
+  border:none;
+}  
 
 .nameStyling:hover{
   color:#65B1EF;
