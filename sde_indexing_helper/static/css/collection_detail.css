@@ -82,6 +82,7 @@ div > .nav {
 
 .titleCol {
     display: flex;
+    color:white;
 }
 
 .table > thead > tr > th {
@@ -89,4 +90,89 @@ div > .nav {
 }
 .divisionDropdown {
     appearance: auto !important;
+    padding:10px;
   }
+
+  .detailContainer{
+    background-color:#15232E;
+    padding: 28px;
+    border-radius: 12px;
+  }
+
+  .detailsTab{
+    color:#65B1EF !important;
+  }
+
+  .table tbody tr:nth-child(odd) {
+    background-color: #15232E !important;
+   }
+  
+   .table tbody tr:nth-child(even) {
+    background-color: #3F4A58 !important;
+   }
+
+   .detailsHeader{
+    color:white;
+    border:none;
+   }
+
+   .table th{
+    border-top:0px;
+   }
+
+
+
+   .urlStyle:hover{
+    color:#65B1EF;
+   }
+
+   .underline{
+    text-decoration: underline;
+   }
+
+   .buttonColor{
+    background-color:#0066CA;
+   }
+
+   .formBackground{
+    background-color:#A7BACD;
+   }
+   .reqUrlForm input {
+    background-color:#A7BACD;
+    border-style: none;
+    border-radius:5px;
+   }
+
+   .form-control, .is-focused .form-control{
+    background-image:none;
+   }
+   .form-control:focus{
+    color:black;
+    background-color:#A7BACD;
+
+   }
+
+   .form-control {
+color:black;
+   }
+
+   .urlDeleteButton{
+    padding: 7px !important;
+    margin-top: 14px;
+   }
+
+   .reqUrlForm{
+    display:inline-flex;
+   }
+
+   form{
+    margin-bottom:0px;
+   }
+
+   .urlSubmitButton{
+    margin-left:10px;
+   }
+
+   .tableHeaderRow{
+    background-color:#050E19
+   }

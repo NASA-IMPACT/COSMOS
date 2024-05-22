@@ -205,3 +205,11 @@ letter-spacing: -0.02em;
 .notifyBadge{
     margin-left:5px !important;
 }
+
+.table tbody tr:nth-child(odd) {
+    background-color: #050E19 !important;
+   }
+  
+   .table tbody tr:nth-child(even) {
+    background-color: #3F4A58 !important;
+   }

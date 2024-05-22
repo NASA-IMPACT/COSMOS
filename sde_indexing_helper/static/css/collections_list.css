@@ -199,3 +199,11 @@ margin-bottom: 0 !important;
    .dtsp-searchIcon{
     margin-top:10px;
    }
+
+   .table tbody tr:nth-child(odd) {
+    background-color: #050E19 !important;
+   }
+  
+   .table tbody tr:nth-child(even) {
+    background-color: #3F4A58 !important;
+   }
