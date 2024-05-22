@@ -82,6 +82,7 @@ div > .nav {
 
 .titleCol {
     display: flex;
+    color:white;
 }
 
 .table > thead > tr > th {
@@ -89,4 +90,44 @@ div > .nav {
 }
 .divisionDropdown {
     appearance: auto !important;
+    padding:10px;
   }
+
+  .detailContainer{
+    background-color:#15232E;
+    padding: 28px;
+    border-radius: 12px;
+  }
+
+  .detailsTab{
+    color:#65B1EF !important;
+  }
+
+  .table tbody tr:nth-child(odd) {
+    background-color: #15232E !important;
+   }
+  
+   .table tbody tr:nth-child(even) {
+    background-color: #3F4A58 !important;
+   }
+
+   .detailsHeader{
+    color:white;
+    border:none;
+   }
+
+   .table th{
+    border-top:0px;
+   }
+
+   .urlStyle{
+    color:#65B1EF;
+   }
+
+   .urlStyle:hover{
+    color:#65B1EF;
+   }
+
+   .underline{
+    text-decoration: underline;
+   }
