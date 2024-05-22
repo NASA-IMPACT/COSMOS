@@ -92,6 +92,61 @@ border-radius: 10px;
 body {
   background-color: #050E19;
 }
+
+.tableHeader{
+  background-color: #050E19;
+  color:white;
+  font-family: Roboto, sans-serif;
+  font-weight: 600 !important;
+}
+
+.textBoxStyling{
+ background-color: #15232E;
+ color:white;
+ border: 1px solid #3F4A58;
+}
+
+.selectStyling{
+  background-color:#A7BACD !important;
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: #050E19 !important;
+ }
+
+ .table tbody tr:nth-child(even) {
+  background-color: #3F4A58 !important;
+ }
+ 
+ .whiteText{
+  color:white;
+ }
+ .dt-info{
+  color:white;
+ }
+
+ .noBorder{
+  border:none !important;
+ }
+
+ .filterRowBottom{
+  border-bottom:1px solid;
+ }
+
+ .urlIcon{
+  color: #65B1EF;
+}
+
+.dt-empty{
+  color:white;
+}
+
+.nameStyling{
+  color: #65B1EF;
+  font-size:14px;
+  font-weight:400;
+}
+
 .btn-prime {
   color: #FFFFFF;
   background-color: #0066CA;
@@ -103,4 +158,34 @@ body {
   font-weight: 500;
 } 
 
+.dtsp-name{
+  color:white;
+  font-weight:400;
+}
 
+.dtsp-nameColumn{
+  background-color: #15232E;
+  border:none;
+ 
+}
+
+.dtsp-searchPane{
+  background-color: #15232E;
+}
+
+.dt-scroll{
+  background-color: #15232E !important;
+}
+
+.dt-scroll-body{
+  height:min-content !important;
+}
+
+
+ .table > tbody > tr > td {
+  border:none;
+}  
+
+.nameStyling:hover{
+  color:#65B1EF;
+}
