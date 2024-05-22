@@ -83,11 +83,31 @@ $(document).ready(function () {
       }
     } else {
       if (buttonId === "makeChangeButton") {
+        currentDivisionVal = $("#detailDivisionDropdown").val();
         postDivisionChange(collection_id, newDivisionVal);
       } else if (buttonId === "dontMakeChangeButton") {
         $("#detailDivisionDropdown").val(currentDivisionVal);
         $modal = $("#areYouSureModal").modal("hide");
       }
+    }
+  });
+});
+
+$(document).ready(function () {
+  $("#closeModalButton").on("click", function (event) {
+    event.preventDefault();
+    console.log("clicked!");
+    $("#detailDivisionDropdown").val(currentDivisionVal);
+    $("#areYouSureModal").modal("hide");
+  });
+});
+
+$(document).ready(function () {
+  // Close the modal when clicking outside of the modal content
+  $(window).click(function (event) {
+    if ($(event.target).is("#areYouSureModal")) {
+      $("#detailDivisionDropdown").val(currentDivisionVal);
+      $modal = $("#areYouSureModal").modal("hide");
     }
   });
 });
