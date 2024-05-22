@@ -3,12 +3,12 @@ import os
 import shutil
 
 import boto3
+from django.apps import apps
 from django.conf import settings
 from django.core import management
 from django.core.management.commands import loaddata
 
 from config import celery_app
-from sde_collections.models.pattern import TitlePattern
 
 from .models.collection import Collection
 from .sinequa_api import Api
@@ -130,5 +130,6 @@ def pull_latest_collection_metadata_from_github():
 
 @celery_app.task()
 def resolve_title_pattern(title_pattern_id):
+    TitlePattern = apps.get_model("sde_collections", "TitlePattern")
     title_pattern = TitlePattern.objects.get(id=title_pattern_id)
     title_pattern.apply()

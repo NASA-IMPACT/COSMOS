@@ -277,7 +277,7 @@ class TitlePatternAdmin(admin.ModelAdmin):
 
 
 class ResolvedTitleAdmin(admin.ModelAdmin):
-    list_display = ["title_pattern", "resolved_title", "resolution_status", "resolution_date_time"]
+    list_display = ["title_pattern", "candidate_url", "resolved_title", "created_at"]
 
 
 admin.site.register(CandidateURL, CandidateURLAdmin)

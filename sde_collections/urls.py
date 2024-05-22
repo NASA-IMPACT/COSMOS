@@ -57,4 +57,5 @@ urlpatterns = [
         name="candidate-url-api",
     ),
     path("resolved-titles/", view=views.ResolvedTitleListView.as_view(), name="resolved-titles"),
+    path("titles-and-errors/", views.TitlesAndErrorsView.as_view(), name="titles-and-errors-list"),
 ]

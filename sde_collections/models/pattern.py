@@ -1,10 +1,12 @@
 import re
 
-# from django.apps import apps
+from django.apps import apps
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-from sde_collections.models.candidate_url import ResolvedTitleError
+from sde_collections.tasks import resolve_title_pattern
 
 from ..utils.title_resolver import (
     is_valid_fstring,
@@ -13,8 +15,6 @@ from ..utils.title_resolver import (
     resolve_title,
 )
 from .collection_choice_fields import DocumentTypes
-
-# from sde_collections.models.candidate_url import ResolvedTitleError
 
 
 class BaseMatchPattern(models.Model):
@@ -164,9 +164,10 @@ class TitlePattern(BaseMatchPattern):
     )
 
     def apply(self) -> None:
-        # CandidateURL = apps.get_model("sde_collections", "CandidateURL")
         matched_urls = self.matched_urls()
         updated_urls = []
+        ResolvedTitle = apps.get_model("sde_collections", "ResolvedTitle")
+        ResolvedTitleError = apps.get_model("sde_collections", "ResolvedTitleError")
 
         for candidate_url in matched_urls:
             context = {
@@ -177,7 +178,15 @@ class TitlePattern(BaseMatchPattern):
 
             try:
                 generated_title = resolve_title(self.title_pattern, context)
-                candidate_url.generated_title = generated_title
+
+                # check to see if the candidate url has an existing resolved title and delete it
+                ResolvedTitle.objects.filter(candidate_url=candidate_url).delete()
+
+                resolved_title = ResolvedTitle.objects.create(
+                    title_pattern=self, candidate_url=candidate_url, resolved_title=generated_title
+                )
+                resolved_title.save()
+
             except ValueError as e:
                 message = str(e)
                 error_object = ResolvedTitleError.objects.create(error_string=message)
@@ -235,3 +244,9 @@ class DocumentTypePattern(BaseMatchPattern):
         verbose_name = "Document Type Pattern"
         verbose_name_plural = "Document Type Patterns"
         unique_together = ("collection", "match_pattern")
+
+
+@receiver(post_save, sender=TitlePattern)
+def send_title_patterns_to_celery(sender, instance, created, **kwargs):
+    if created:
+        resolve_title_pattern.delay(instance.id)

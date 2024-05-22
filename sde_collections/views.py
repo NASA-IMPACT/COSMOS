@@ -4,10 +4,10 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .forms import CollectionGithubIssueForm, CommentsForm, RequiredUrlForm
-from .models.candidate_url import CandidateURL, ResolvedTitle
+from .models.candidate_url import CandidateURL, ResolvedTitle, ResolvedTitleError
 from .models.collection import Collection, Comments, RequiredUrls
 from .models.collection_choice_fields import (
     ConnectorChoices,
@@ -466,8 +466,22 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
 
 class ResolvedTitleListView(ListView):
     model = ResolvedTitle
-    template_name = "sde_collections/resolved_titles_list.html"
     context_object_name = "resolved_titles"
+    template_name = "candidate_url_list.html"
 
-    def get_queryset(self):
-        return super().get_queryset().order_by("-resolution_date_time")
+
+class ResolvedTitleErrorListView(ListView):
+    model = ResolvedTitleError
+    context_object_name = "resolved_title_errors"
+    template_name = "candidate_url_list.html"
+
+
+class TitlesAndErrorsView(View):
+    def get(self, request, *args, **kwargs):
+        resolved_titles = ResolvedTitle.objects.all()
+        resolved_title_errors = ResolvedTitleError.objects.all()
+        context = {
+            "resolved_titles": resolved_titles,
+            "resolved_title_errors": resolved_title_errors,
+        }
+        return render(request, "sde_collections/titles_and_errors_list.html", context)
