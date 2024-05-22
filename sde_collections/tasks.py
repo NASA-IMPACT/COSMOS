@@ -32,9 +32,7 @@ def _get_data_to_import(collection, server_name):
     page = 1
     while True:
         print(f"Getting page: {page}")
-        response = api.query(
-            page=page, collection_config_folder=collection.config_folder
-        )
+        response = api.query(page=page, collection_config_folder=collection.config_folder)
         if response["cursorRowCount"] == 0:
             break
 
@@ -75,9 +73,7 @@ def import_candidate_urls_from_api(server_name="test", collection_ids=[]):
         urls_file = f"{TEMP_FOLDER_NAME}/{collection.config_folder}.json"
 
         print("Getting responses from API")
-        data_to_import = _get_data_to_import(
-            server_name=server_name, collection=collection
-        )
+        data_to_import = _get_data_to_import(server_name=server_name, collection=collection)
         print(f"Got {len(data_to_import)} records for {collection.config_folder}")
 
         print("Dumping django fixture to file")
@@ -135,4 +131,4 @@ def pull_latest_collection_metadata_from_github():
 @celery_app.task()
 def resolve_title_pattern(title_pattern_id):
     title_pattern = TitlePattern.objects.get(id=title_pattern_id)
-    title_pattern.resolve()
+    title_pattern.apply()
