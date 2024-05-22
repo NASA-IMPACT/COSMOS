@@ -4,6 +4,8 @@ import re
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from sde_collections.models.candidate_url import ResolvedTitleError
+
 from ..utils.title_resolver import (
     is_valid_fstring,
     is_valid_xpath,
@@ -177,10 +179,17 @@ class TitlePattern(BaseMatchPattern):
                 generated_title = resolve_title(self.title_pattern, context)
                 candidate_url.generated_title = generated_title
             except ValueError as e:
-                # error_object = ResolvedTitleError.objects.create(error_string=message)
+                message = str(e)
+                error_object = ResolvedTitleError.objects.create(error_string=message)
 
-                # ResolvedTitleError.objects.create(error_string=str(e), http_status_code=)
+                status_code = re.search(r"Status code: (\d+)", message)
+                if status_code:
+                    error_object.http_status_code = int(status_code.group(1))
+
+                error_object.save()
+
                 raise ValidationError(str(e))
+
         TitlePatternCandidateURL = TitlePattern.candidate_urls.through
         pattern_url_associations = [
             TitlePatternCandidateURL(titlepattern_id=self.id, candidateurl_id=url.id) for url in updated_urls
