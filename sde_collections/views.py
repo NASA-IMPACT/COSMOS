@@ -145,6 +145,8 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
         context["segment"] = "collection-detail"
         context["comments"] = Comments.objects.filter(collection=self.get_object()).order_by("-created_at")
         context["workflow_history"] = WorkflowHistory.objects.filter(collection=self.get_object()).order_by('-created_at')
+        context["workflow_status_choices"] = WorkflowStatusChoices
+
         return context
 
 class RequiredUrlsDeleteView(LoginRequiredMixin, DeleteView):
@@ -190,6 +192,8 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
             match_pattern_type=2
         )  # 2=regex patterns
         context["title_patterns"] = self.collection.titlepattern.all()
+        context["workflow_status_choices"] = WorkflowStatusChoices
+
         return context
 
 
