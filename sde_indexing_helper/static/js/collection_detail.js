@@ -2,7 +2,6 @@ var collection_id;
 var newDivisionVal;
 var currentDivisionVal;
 var currentDivisonText;
-var editTitleModal; // boolean value to confirm if the edit title modal is active
 
 let originalValue = document.getElementById("github-link-display").textContent;
 document.getElementById("github-link-form").style.display = "none";
@@ -28,12 +27,9 @@ document
     document.getElementById("id_github_issue_link").value = originalValue;
   });
 
-// store current division option
-$(document).ready(function () {
-  currentDivisionVal = $("#detailDivisionDropdown").val();
-  currentDivisonText = $("#detailDivisionDropdown option:selected").text();
-  collection_id = $("#detailDocTypeDropdown").data("collection-id");
-});
+//////////////////////////////
+///// DIVISION CHANGE ////////
+//////////////////////////////
 
 $(document).ready(function () {
   $("body").on("change", "#detailDivisionDropdown", function () {
@@ -43,60 +39,60 @@ $(document).ready(function () {
     $("#caption").text(
       `Divison will be changed from ${currentDivisonText} to ${selectedText}.`
     );
-    $("#makeChangeButton").text(`Yes`);
-    $("#dontMakeChangeButton").text(`No`);
+    var modalForm =
+      '<form id="modalForm">' +
+      "<div>" +
+      '<button type="button" class="btn btn-secondary" id="cancelDivisionChange">No</button>' +
+      '<button type="button" class="btn btn-primary" data-dismiss="modal" id="makeDivisionChange">Yes</button>' +
+      "</div>" +
+      "</form>";
+
+    $(".modal-footer").html(modalForm);
     collection_id = $(this).data("collection-id");
     newDivisionVal = $(this).val();
   });
+});
 
+// store current division option
+$(document).ready(function () {
+  currentDivisionVal = $("#detailDivisionDropdown").val();
+  currentDivisonText = $("#detailDivisionDropdown option:selected").text();
+  collection_id = $("#detailDocTypeDropdown").data("collection-id");
+});
+
+function postDivisionChange(collection_id, division) {
+  var url = `/api/collections/${collection_id}/`;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    data: {
+      division: division,
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      toastr.success("Division Updated!");
+      currentDivisionVal = $("#detailDivisionDropdown").val();
+      currentDivisonText = $("#detailDivisionDropdown option:selected").text();
+    },
+    error: function (xhr, textStatus, errorThrown) {
+      console.log("Error:", errorThrown);
+      toastr.error("Error updating name.");
+    },
+  });
+}
+
+$(document).ready(function () {
   $("body").on("change", "#detailDocTypeDropdown", function () {
     postDocTypeChange(collection_id, $(this).val());
   });
 });
 
 $(document).ready(function () {
-  $("body").on("click", ".editTitle", function () {
-    $modal = $("#areYouSureModal").modal();
-    editTitleModal = true;
-    $(".modal-title").text("Rename Page Title");
-    $("#caption").text(`New name for Landing Page`);
-  });
-  $("#makeChangeButton").text(`Rename`);
-  $("#dontMakeChangeButton").text(`Cancel`);
-  var inputField = $(
-    '<input type="text" name="inputFieldName" id="inputFieldId">'
-  );
-  $("#modalForm").prepend(inputField);
-});
-
-$(document).ready(function () {
-  $("form").on("click", "button", function (event) {
-    event.preventDefault();
-    var buttonId = $(this).attr("id");
-
-    if (editTitleModal) {
-      var inputValue = $("#inputFieldId").val();
-      if (buttonId === "makeChangeButton") {
-        patchTitle(collection_id, inputValue);
-      } else if (buttonId === "dontMakeChangeButton") {
-        $modal = $("#areYouSureModal").modal("hide");
-      }
-    } else {
-      if (buttonId === "makeChangeButton") {
-        currentDivisionVal = $("#detailDivisionDropdown").val();
-        postDivisionChange(collection_id, newDivisionVal);
-      } else if (buttonId === "dontMakeChangeButton") {
-        $("#detailDivisionDropdown").val(currentDivisionVal);
-        $modal = $("#areYouSureModal").modal("hide");
-      }
-    }
-  });
-});
-
-$(document).ready(function () {
   $("#closeModalButton").on("click", function (event) {
     event.preventDefault();
-    console.log("clicked!");
     $("#detailDivisionDropdown").val(currentDivisionVal);
     $("#areYouSureModal").modal("hide");
   });
@@ -113,46 +109,6 @@ $(document).ready(function () {
 });
 
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
-
-function patchTitle(collection_id, inputValue) {
-  $.ajax({
-    url: "/api/collections/" + collection_id + "/",
-    type: "PATCH",
-    data: {
-      name: inputValue,
-      csrfmiddlewaretoken: csrftoken,
-    },
-    headers: {
-      "X-CSRFToken": csrftoken,
-    },
-    success: function (data) {
-      console.log("Success:", data);
-      toastr.success("Name Updated!");
-    },
-    error: function (xhr, textStatus, errorThrown) {
-      console.log("Error:", errorThrown);
-      toastr.error("Error updating name.");
-    },
-  });
-}
-
-function postDivisionChange(collection_id, division) {
-  var url = `/api/collections/${collection_id}/`;
-  $.ajax({
-    url: url,
-    type: "PUT",
-    data: {
-      division: division,
-      csrfmiddlewaretoken: csrftoken,
-    },
-    headers: {
-      "X-CSRFToken": csrftoken,
-    },
-    success: function (data) {
-      toastr.success("Division Updated!");
-    },
-  });
-}
 
 function postDocTypeChange(collection_id, docType) {
   var url = `/api/collections/${collection_id}/`;
@@ -171,3 +127,84 @@ function postDocTypeChange(collection_id, docType) {
     },
   });
 }
+
+//////////////////////////////
+/////// TITLE CHANGE ////////
+//////////////////////////////
+
+$(document).ready(function () {
+  $(".editTitle").on("click", function () {
+    $modal = $("#areYouSureModal").modal();
+    $(".modal-title").text("Rename Page Title");
+    $("#caption").text(`New name for Landing Page`);
+  });
+  var modalForm =
+    '<form id="modalForm">' +
+    "<div>" +
+    '<input type="text" name="inputFieldName" id="inputFieldId">' +
+    '<button type="button" class="btn btn-secondary" id="cancelTitleRename">Cancel</button>' +
+    '<button type="button" class="btn btn-primary" data-dismiss="modal" id="renameTitle">Rename</button>' +
+    "</div>" +
+    "</form>";
+
+  $(".modal-footer").html(modalForm);
+});
+
+function patchTitle(collection_id, inputValue) {
+  $.ajax({
+    url: "/api/collections/" + collection_id + "/",
+    type: "PUT",
+    data: {
+      name: inputValue,
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      console.log("Success:", data);
+      $(".collectionName").text(`${data.name}`);
+      toastr.success("Name Updated!");
+    },
+    error: function (xhr, textStatus, errorThrown) {
+      console.log("Error:", errorThrown);
+      toastr.error("Error updating name.");
+    },
+  });
+}
+
+$(document).ready(function () {
+  $("#areYouSureModal").on("show.bs.modal", function (e) {
+    if ($("#inputFieldId").val()) {
+      $("#inputFieldId").val("");
+    }
+  });
+});
+
+$(document).ready(function () {
+  $("form").on("click", "button", function (event) {
+    event.preventDefault();
+    var buttonId = $(this).attr("id");
+
+    console.log("IN HERE", buttonId);
+
+    switch (buttonId) {
+      case "renameTitle":
+        var inputValue = $("#inputFieldId").val();
+        patchTitle(collection_id, inputValue);
+        break;
+      case "cancelTitleRename":
+        editTitleModal = false;
+        $modal = $("#areYouSureModal").modal("hide");
+        break;
+      case "makeDivisionChange":
+        currentDivisionVal = $("#detailDivisionDropdown").val();
+        postDivisionChange(collection_id, newDivisionVal);
+        break;
+      case "cancelDivisionChange":
+        $("#detailDivisionDropdown").val(currentDivisionVal);
+        $modal = $("#areYouSureModal").modal("hide");
+        break;
+    }
+  });
+});

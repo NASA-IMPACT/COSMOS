@@ -80,7 +80,7 @@ div > .nav {
     cursor: default !important;
 }
 
-.titleCol {
+.titleCol, .nameWrapper {
     display: flex;
 }
 
