@@ -32,6 +32,7 @@ document
 $(document).ready(function () {
   currentDivisionVal = $("#detailDivisionDropdown").val();
   currentDivisonText = $("#detailDivisionDropdown option:selected").text();
+  collection_id = $("#detailDocTypeDropdown").data("collection-id");
 });
 
 $(document).ready(function () {
@@ -49,8 +50,6 @@ $(document).ready(function () {
   });
 
   $("body").on("change", "#detailDocTypeDropdown", function () {
-    var collection_id = $(this).data("collection-id");
-    var collection_division = $(this).data("collection-division");
     postDocTypeChange(collection_id, $(this).val());
   });
 });
@@ -78,7 +77,7 @@ $(document).ready(function () {
     if (editTitleModal) {
       var inputValue = $("#inputFieldId").val();
       if (buttonId === "makeChangeButton") {
-        patchTitle(collection_id);
+        patchTitle(collection_id, inputValue);
       } else if (buttonId === "dontMakeChangeButton") {
         $modal = $("#areYouSureModal").modal("hide");
       }
@@ -95,7 +94,7 @@ $(document).ready(function () {
 
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 
-function patchTitle(collection_id) {
+function patchTitle(collection_id, inputValue) {
   $.ajax({
     url: "/api/collections/" + collection_id + "/",
     type: "PATCH",
@@ -108,11 +107,11 @@ function patchTitle(collection_id) {
     },
     success: function (data) {
       console.log("Success:", data);
-      toastr.success("Division Updated!");
+      toastr.success("Name Updated!");
     },
     error: function (xhr, textStatus, errorThrown) {
       console.log("Error:", errorThrown);
-      toastr.error("Error updating division.");
+      toastr.error("Error updating name.");
     },
   });
 }
