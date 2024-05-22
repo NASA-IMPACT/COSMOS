@@ -1,6 +1,6 @@
 import re
 
-from django.apps import apps
+# from django.apps import apps
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -11,6 +11,8 @@ from ..utils.title_resolver import (
     resolve_title,
 )
 from .collection_choice_fields import DocumentTypes
+
+# from sde_collections.models.candidate_url import ResolvedTitleError
 
 
 class BaseMatchPattern(models.Model):
@@ -160,7 +162,7 @@ class TitlePattern(BaseMatchPattern):
     )
 
     def apply(self) -> None:
-        CandidateURL = apps.get_model("sde_collections", "CandidateURL")
+        # CandidateURL = apps.get_model("sde_collections", "CandidateURL")
         matched_urls = self.matched_urls()
         updated_urls = []
 
@@ -174,13 +176,11 @@ class TitlePattern(BaseMatchPattern):
             try:
                 generated_title = resolve_title(self.title_pattern, context)
                 candidate_url.generated_title = generated_title
-                updated_urls.append(candidate_url)
             except ValueError as e:
-                print(f"Error applying title pattern to {candidate_url.url}: {e}")
+                # error_object = ResolvedTitleError.objects.create(error_string=message)
 
-        if updated_urls:
-            CandidateURL.objects.bulk_update(updated_urls, ["generated_title"])
-
+                # ResolvedTitleError.objects.create(error_string=str(e), http_status_code=)
+                raise ValidationError(str(e))
         TitlePatternCandidateURL = TitlePattern.candidate_urls.through
         pattern_url_associations = [
             TitlePatternCandidateURL(titlepattern_id=self.id, candidateurl_id=url.id) for url in updated_urls

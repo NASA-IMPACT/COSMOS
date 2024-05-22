@@ -140,8 +140,8 @@ class CandidateURL(models.Model):
 
 
 class ResolvedTitleBase(models.Model):
-    title_pattern = models.ForeignKey(TitlePattern, on_delete=models.CASCADE, related_name="resolved_titles")
-    candidate_url = models.OneToOneField(CandidateURL, on_delete=models.CASCADE, related_name="resolved_titles")
+    title_pattern = models.ForeignKey(TitlePattern, on_delete=models.CASCADE)
+    candidate_url = models.OneToOneField(CandidateURL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -155,7 +155,12 @@ class ResolvedTitle(ResolvedTitleBase):
         verbose_name = "Resolved Title"
         verbose_name_plural = "Resolved Titles"
 
+    def save(self, *args, **kwargs):
+        # Finds the linked candidate URL and deletes ResolvedTitleError objects linked to it
+        ResolvedTitleError.objects.filter(candidate_url=self.candidate_url).delete()
+        super().save(*args, **kwargs)
+
 
 class ResolvedTitleError(ResolvedTitleBase):
-    error_string = models.TextField(blank=True, default="")
+    error_string = models.TextField(null=False, blank=False)
     http_status_code = models.IntegerField(null=True, blank=True)
