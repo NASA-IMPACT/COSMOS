@@ -110,14 +110,6 @@ body {
   background-color:#A7BACD !important;
 }
 
-.table tbody tr:nth-child(odd) {
-  background-color: #050E19 !important;
- }
-
- .table tbody tr:nth-child(even) {
-  background-color: #3F4A58 !important;
- }
- 
  .whiteText{
   color:white;
  }
@@ -189,3 +181,11 @@ body {
 .nameStyling:hover{
   color:#65B1EF;
 }
+
+.greyText{
+  color: #8697A8;
+}
+
+.urlStyle{
+  color:#65B1EF !important;
+ }

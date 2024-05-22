@@ -38,21 +38,21 @@
     </div>
     <div class="col-md-6">
         <a href="{{ collection.server_url_prod }}" target="_blank" style="color:white"><button
-                class="btn btn-primary btn-sm pull-right">View on prod</button></a>
+                class="btn buttonColor btn-sm pull-right">View on prod</button></a>
         <a href="{{ collection.server_url_secret_prod }}" target="_blank" style="color:white"><button
-                class="btn btn-primary btn-sm pull-right">View on secret prod</button></a>
+                class="btn buttonColor btn-sm pull-right">View on secret prod</button></a>
     </div>
 </div>
 
-<div>
+<div class="detailContainer">
 
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">
         <li class="nav-item">
-            <a class="tab-nav active" data-toggle="tab" href="#metadata">Metadata</a>
+            <a class="tab-nav active detailsTab" data-toggle="tab" href="#metadata">Metadata</a>
         </li>
         <li class="nav-item">
-            <a class="tab-nav" data-toggle="tab" href="#statustimeline">Status Timeline</a>
+            <a class="tab-nav detailsTab" data-toggle="tab" href="#statustimeline">Status Timeline</a>
         </li>
     </ul>
 
@@ -62,19 +62,19 @@
             <table class="table table-striped">
                 <tbody>
                     <tr>
-                        <th>URL</th>
+                        <th class="detailsHeader">URL</th>
                         <td>
-                            <a target="_blank" href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{collection.url }}</a>
+                            <a class="urlStyle underline" target="_blank" href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{collection.url }}</a>
                         </td>
                     </tr>
                     <tr>
-                        <th>Config Folder</th>
-                        <td>{{ collection.config_folder }}</td>
+                        <th class="detailsHeader">Config Folder</th>
+                        <td class="whiteText">{{ collection.config_folder }}</td>
                     </tr>
                     <tr>
-                        <th>Division</th>
+                        <th class="detailsHeader">Division</th>
                         <td>
-                            <select  class="divisionDropdown" value="{{collection.division}}" id="detailDivisionDropdown" data-collection-id={{ collection.id }}>
+                            <select  class="divisionDropdown selectStyling" value="{{collection.division}}" id="detailDivisionDropdown" data-collection-id={{ collection.id }}>
                                 <option value="1" {% if collection.division == 1 %} selected="selected" {% endif %}>
                                     Astrophysics</option>
                                 <option value="2" {% if collection.division == 2 %} selected="selected" {% endif %}>
@@ -91,13 +91,9 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>Update Frequency</th>
-                        <td>{{ collection.get_update_frequency_display }}</td>
-                    </tr>
-                    <tr>
-                        <th>Document Type</th>
+                        <th class="detailsHeader">Document Type</th>
                         <td>
-                            <select  class="divisionDropdown" value="{{collection.document_type}}" id="detailDocTypeDropdown" data-collection-id={{ collection.id }} >
+                            <select  class="divisionDropdown selectStyling" value="{{collection.document_type}}" id="detailDocTypeDropdown" data-collection-id={{ collection.id }} >
                                 <option value="1" {% if collection.document_type == 1 %} selected="selected" {% endif %}>
                                     Images</option>
                                 <option value="2" {% if collection.document_type == 2 %} selected="selected" {% endif %}>
@@ -115,34 +111,37 @@
                         <!-- <td>{{ collection.get_document_type_display }}</td> -->
                     </tr>
                     <tr>
-                        <th>Tree Root</th>
-                        <td>{{ collection.tree_root }}</td>
+                        <th class="detailsHeader">Update Frequency</th>
+                        <td class="whiteText">{{ collection.get_update_frequency_display }}</td>
                     </tr>
                     <tr>
-                        <th>Notes</th>
-                        <td>{{ collection.notes }}</td>
+                        <th class="detailsHeader">Tree Root</th>
+                        <td class="urlStyle" {{ collection.tree_root }}</td>
                     </tr>
                     <tr>
-                        <th>Sinequa Configuration</th>
+                        <th class="detailsHeader">Notes</th>
+                        <td class="whiteText">{{ collection.notes }}</td>
+                    </tr>
+                    <tr>
+                        <th class="detailsHeader">Sinequa Configuration</th>
                         <td>
-                            <a href="{{ collection.sinequa_configuration }}" target="_blank">{{collection.sinequa_configuration }}</a>
+                            <a class="urlStyle underline" href="{{ collection.sinequa_configuration }}" target="_blank">{{collection.sinequa_configuration }}</a>
                         </td>
                     </tr>
                     <tr>
-                        <th>GitHub Issue Link</th>
+                        <th class="detailsHeader">GitHub Issue Link</th>
                         <td>
                             {% if github_form.errors %}
-                            <span class="error-message" id="github-link-error">{{ github_form.errors.github_issue_link
-                                }}</span>
+                            <span class="error-message whiteText" id="github-link-error">{{ github_form.errors.github_issue_link }}</span>
                             {% endif %}
-                            <a id="github-link-display" href="{{ collection.github_issue_link }}" target="_blank">{{collection.github_issue_link }}</a>
-                            <form id="github-link-form" action="{% url 'sde_collections:detail' collection.pk %}"
+                            <a id="github-link-display" class="urlStyle underline" href="{{ collection.github_issue_link }}" target="_blank">{{collection.github_issue_link }}</a>
+                            <form id="github-link-form" class="reqUrlForm" action="{% url 'sde_collections:detail' collection.pk %}"
                                 method="POST">
                                 {% csrf_token %}
                                 {{ github_form.github_issue_link }}
-                                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                                <button type="submit" class="btn btn-sm buttonColor">Save</button>
                             </form>
-                            <button type="submit" class="btn btn-info btn-sm" id="edit-github-link-button">
+                            <button type="submit" class="btn btn-sm buttonColor" id="edit-github-link-button">
                                 <i class="material-icons">edit</i>
                             </button>
                             <button type="submit" class="btn btn-danger btn-sm" id="cancel-github-link-button">
@@ -151,35 +150,37 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>Candidate URLs</th>
+                        <th class="detailsHeader">Candidate URLs</th>
                         <td>
-                            <a href="{% url 'sde_collections:candidate_urls' collection.id %}">View</a>
+                            <a class="urlStyle underline" href="{% url 'sde_collections:candidate_urls' collection.id %}">View</a>
                         </td>
                     </tr>
                     <tr>
-                        <th>Required URLs</th>
+                        <th class="detailsHeader">Required URLs</th>
                         <td>
                             {% for required_url in required_urls %}
-                            <form action="{% url 'sde_collections:delete_required_url' required_url.pk %}">
+                            <div>
+                            <form  class="reqUrlForm" action="{% url 'sde_collections:delete_required_url' required_url.pk %}">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-danger delete_required_url pull-left"
+                                <button type="submit" class="btn btn-sm btn-danger urlDeleteButton delete_required_url pull-left"
                                     data-id={{ required_url.pk }}>
                                     <i class="material-icons">delete</i>
                                 </button>
                             </form>
-                            <a href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
+                            <a class="urlStyle" href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
+                            </div>
                             {% empty %}
-                            <p>No required URLs yet</p>
+                            <p class="greyText">No required URLs yet</p>
                             {% endfor %}
-                            <form method="post" action="{% url 'sde_collections:detail' collection.pk %}">
+                            <form method="post" class="reqUrlForm"  action="{% url 'sde_collections:detail' collection.pk %}">
                                 {% csrf_token %}
                                 {{ form.url }}
-                                <button type="submit" class="btn btn-sm btn-primary">Add URL</button>
+                                <button type="submit" class="btn btn-sm buttonColor urlSubmitButton">Add URL</button>
                             </form>
                         </td>
                     </tr>
                     <tr>
-                        <th>Comments</th>
+                        <th class="detailsHeader">Comments</th>
                         <td>
                             <div id="comments-display">
                                 {% for comment in comments %}
@@ -195,14 +196,14 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>Post a Comment</th>
+                        <th class="detailsHeader">Post a Comment</th>
                         <td>
                             <div id="comment-form-container">
                                 {% if user.is_authenticated %}
                                 <form method="post" action="{% url 'sde_collections:detail' collection.pk %}">
                                     {% csrf_token %}
-                                    <textarea name="text" class="form-control">{{ comment_form.text.value }}</textarea>
-                                    <button type="submit" name="comment_button" class="btn btn-primary">Submit</button>
+                                    <textarea name="text" class="form-control formBackground">{{ comment_form.text.value }}</textarea>
+                                    <button type="submit" name="comment_button" class="btn buttonColor">Submit</button>
                                 </form>
                                 {% else %}
                                 <p>Please log in to post comments.</p>
@@ -217,10 +218,10 @@
         <div class="tab-pane fade" id="statustimeline">
             <table class="table table-striped">
                 <thead>
-                    <tr>
-                        <th>Workflow Status</th>
-                        <th>Curator</th>
-                        <th>Timeframe</th>
+                    <tr class="tableHeaderRow">
+                        <th class="whiteText">Workflow Status</th>
+                        <th class="whiteText">Curator</th>
+                        <th class="whiteText">Timeframe</th>
                     </tr>
                 <thead>
                 <tbody>
@@ -232,12 +233,9 @@
                                     id="workflow-history-button-{{ collection.id }}"
                                     aria-expanded="false">{{ entry.get_workflow_status_display }}</button>
                         </td>
-                        <td>                            
-                            <button class="btn {% if entry.curated_by %} btn-success {% else %} btn-dark {% endif %} btn-sm"
-                            type="button"
-                            id="curator-button-{{ entry.id }}"
-                            aria-expanded="false">{{ entry.curated_by }}</button></td>
-                        <td>{{entry.created_at|timesince}}</td>
+                        <td class="whiteText">                            
+                            {{ entry.curated_by }}</td>
+                        <td class="whiteText">{{entry.created_at|timesince}}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

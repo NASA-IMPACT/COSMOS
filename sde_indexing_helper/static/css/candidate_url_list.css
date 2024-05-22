@@ -209,3 +209,10 @@ letter-spacing: -0.02em;
 .title-dropdown {
     width: fit-content !important;
 }
+.table tbody tr:nth-child(odd) {
+    background-color: #050E19 !important;
+   }
+  
+   .table tbody tr:nth-child(even) {
+    background-color: #3F4A58 !important;
+   }
