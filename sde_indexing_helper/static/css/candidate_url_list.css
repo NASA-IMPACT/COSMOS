@@ -139,7 +139,7 @@ div > .nav {
 }
 
 
-.table_filter_row_input, .dropdown-toggle{
+.table_filter_row_input, .doc-dropdown{
     width: 100%;
 }
 
@@ -221,3 +221,14 @@ letter-spacing: -0.02em;
     word-wrap: break-word;
     z-index: 1;
  }
+
+.title-dropdown {
+    width: fit-content !important;
+}
+.table tbody tr:nth-child(odd) {
+    background-color: #050E19 !important;
+   }
+  
+   .table tbody tr:nth-child(even) {
+    background-color: #3F4A58 !important;
+   }
