@@ -146,3 +146,18 @@ text-align: left;
 color: rgba(255, 255, 255, 1);
 margin-bottom: 0 !important;
   }
+  
+  .tableHeader{
+    background-color:#15232E !important;
+  }
+
+  .dt-column-title{
+    font-weight:600;
+    font-size:16px;
+  }
+
+  .candidateCount{
+    background-color:#A7BACD !important;
+    color:#1F2935 !important;
+  }
+

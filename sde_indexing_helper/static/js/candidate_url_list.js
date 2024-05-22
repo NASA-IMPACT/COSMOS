@@ -163,7 +163,7 @@ function initializeDataTable() {
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
-        $(row).addClass("table-danger");
+        $(row).attr('style', 'background-color: #ab387d !important'); 
       }
     },
   });
@@ -228,14 +228,14 @@ function initializeDataTable() {
         });
     },
     columns: [
-      { data: "match_pattern" },
+      { data: "match_pattern", class: "whiteText" },
       {
         data: "match_pattern_type_display",
-        class: "text-center",
+        class: "text-center whiteText",
         sortable: true,
       },
-      { data: "reason", class: "text-center", sortable: false },
-      { data: "candidate_urls_count", class: "text-center", sortable: false },
+      { data: "reason", class: "text-center whiteText", sortable: false },
+      { data: "candidate_urls_count", class: "text-center whiteText", sortable: false },
       {
         data: null,
         sortable: false,
@@ -301,13 +301,13 @@ function initializeDataTable() {
         });
     },
     columns: [
-      { data: "match_pattern" },
+      { data: "match_pattern", class: "whiteText" },
       {
         data: "match_pattern_type_display",
-        class: "text-center",
+        class: "text-center whiteText",
         sortable: false,
       },
-      { data: "candidate_urls_count", class: "text-center", sortable: false },
+      { data: "candidate_urls_count", class: "text-center whiteText", sortable: false },
       {
         data: null,
         sortable: false,
@@ -367,14 +367,14 @@ function initializeDataTable() {
         });
     },
     columns: [
-      { data: "match_pattern" },
+      { data: "match_pattern", class: "whiteText" },
       {
         data: "match_pattern_type_display",
-        class: "text-center",
+        class: "text-center whiteText",
         sortable: false,
       },
-      { data: "title_pattern" },
-      { data: "candidate_urls_count", class: "text-center", sortable: false },
+      { data: "title_pattern", class: "whiteText" },
+      { data: "candidate_urls_count", class: "text-center whiteText", sortable: false },
       {
         data: null,
         sortable: false,
@@ -472,14 +472,14 @@ function initializeDataTable() {
     },
 
     columns: [
-      { data: "match_pattern" },
+      { data: "match_pattern", class: "whiteText" },
       {
         data: "match_pattern_type_display",
-        class: "text-center",
+        class: "text-center whiteText",
         sortable: false,
       },
-      { data: "document_type_display" },
-      { data: "candidate_urls_count", class: "text-center", sortable: false },
+      { data: "document_type_display", class: "whiteText" },
+      { data: "candidate_urls_count", class: "text-center whiteText", sortable: false },
       {
         data: null,
         sortable: false,
@@ -549,7 +549,7 @@ function getURLColumn() {
     render: function (data, type, row) {
       return `<a target="_blank" href="${data}" data-url="/api/candidate-urls/${
         row["id"]
-      }/" class="url_link"> <i class="material-icons">open_in_new</i></a> <span class="candidate_url">${remove_protocol(
+      }/" class="url_link"> <i class="material-icons whiteText">open_in_new</i></a> <span class="candidate_url nameStyling">${remove_protocol(
         data
       )}</span>`;
     },
@@ -559,6 +559,9 @@ function getURLColumn() {
 function getScrapedTitleColumn() {
   return {
     data: "scraped_title",
+    render: function (data, type, row) {
+      return `<span class="whiteText">${data}</span>`;
+    }
   };
 }
 
@@ -566,7 +569,7 @@ function getGeneratedTitleColumn() {
   return {
     data: "generated_title",
     render: function (data, type, row) {
-      return `<input type="text" class="form-control individual_title_input" value='${data}' data-generated-title-id=${
+      return `<input type="text" class="form-control individual_title_input whiteText" value='${data}' data-generated-title-id=${
         row["generated_title_id"]
       } data-match-pattern-type=${
         row["match_pattern_type"]
@@ -622,10 +625,10 @@ function getDocumentTypeColumn() {
       button_text = data ? dict[data] : "Select";
       button_color = data ? "btn-success" : "btn-secondary";
       return `
-            <div class="dropdown document_type_dropdown" data-match-pattern=${remove_protocol(
+            <div class="dropdown document_type_dropdown " data-match-pattern=${remove_protocol(
               row["url"]
             )}>
-              <button class="btn ${button_color} btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <button class="btn ${button_color} btn-sm dropdown-toggle selectStyling" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 ${button_text}
               </button>
               <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
