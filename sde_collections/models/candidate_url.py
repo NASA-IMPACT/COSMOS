@@ -139,19 +139,23 @@ class CandidateURL(models.Model):
         super().save(*args, **kwargs)
 
 
-class ResolvedTitle(models.Model):
+class ResolvedTitleBase(models.Model):
     title_pattern = models.ForeignKey(TitlePattern, on_delete=models.CASCADE, related_name="resolved_titles")
     candidate_url = models.OneToOneField(CandidateURL, on_delete=models.CASCADE, related_name="resolved_titles")
-    resolution_status = models.BooleanField(default=False, help_text="True if resolved, False if unresolved")
-    resolution_date_time = models.DateTimeField(auto_now_add=True)
-    resolved_title = models.CharField(blank=True)
-    error_string = models.TextField(blank=True)
-    http_status_code = models.IntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        status = "Resolved" if self.resolution_status else "Unresolved"
-        return f"{self.resolved_title} - {status}"
+    class Meta:
+        abstract = True
+
+
+class ResolvedTitle(ResolvedTitleBase):
+    resolved_title = models.CharField(blank=True, default="")
 
     class Meta:
         verbose_name = "Resolved Title"
         verbose_name_plural = "Resolved Titles"
+
+
+class ResolvedTitleError(ResolvedTitleBase):
+    error_string = models.TextField(blank=True, default="")
+    http_status_code = models.IntegerField(null=True, blank=True)
