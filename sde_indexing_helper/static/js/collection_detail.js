@@ -142,6 +142,8 @@ $(document).ready(function () {
 $(document).ready(function () {
   $(".editTitle").on("click", function () {
     $modal = $("#titleChangeModal").modal();
+    var currentName = $("#collectionName").text();
+    $("#titleCaption").text(`Name will be changed from ${currentName} to: `);
   });
 });
 
