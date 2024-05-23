@@ -211,9 +211,6 @@ class TitlePattern(BaseMatchPattern):
     def unapply(self) -> None:
         self.candidate_urls.update(generated_title="")
 
-    def resolve(self) -> None:
-        print(f"Resolving title pattern {self.id}")
-
     class Meta:
         """Meta definition for TitlePattern."""
 
