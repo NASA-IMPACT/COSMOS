@@ -467,13 +467,11 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
 class ResolvedTitleListView(ListView):
     model = ResolvedTitle
     context_object_name = "resolved_titles"
-    template_name = "candidate_url_list.html"
 
 
 class ResolvedTitleErrorListView(ListView):
     model = ResolvedTitleError
     context_object_name = "resolved_title_errors"
-    template_name = "candidate_url_list.html"
 
 
 class TitlesAndErrorsView(View):
