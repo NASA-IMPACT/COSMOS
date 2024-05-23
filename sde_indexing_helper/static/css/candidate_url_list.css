@@ -206,6 +206,22 @@ letter-spacing: -0.02em;
     margin-left:5px !important;
 }
 
+.sorting_1 {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 600px;
+    width: 600px;
+    color: #65B1EF;
+  }
+
+ .sorting_1:hover {
+    overflow: visible;
+    white-space: normal;
+    word-wrap: break-word;
+    z-index: 1;
+ }
+
 .title-dropdown {
     width: fit-content !important;
 }
