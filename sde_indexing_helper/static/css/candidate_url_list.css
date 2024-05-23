@@ -139,7 +139,7 @@ div > .nav {
 }
 
 
-.table_filter_row_input, .dropdown-toggle{
+.table_filter_row_input, .doc-dropdown{
     width: 100%;
 }
 
@@ -206,6 +206,9 @@ letter-spacing: -0.02em;
     margin-left:5px !important;
 }
 
+.title-dropdown {
+    width: fit-content !important;
+}
 .table tbody tr:nth-child(odd) {
     background-color: #050E19 !important;
    }
@@ -213,7 +216,6 @@ letter-spacing: -0.02em;
    .table tbody tr:nth-child(even) {
     background-color: #3F4A58 !important;
    }
-
    .candidateTitle{
     font-size:24px;
     font-weight: 500;
@@ -232,3 +234,4 @@ letter-spacing: -0.02em;
     border-width: 1px !important;
     border-color: #A7BACD !important;
    }
+
