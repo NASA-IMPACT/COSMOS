@@ -67,6 +67,7 @@ class CandidateURLSerializer(serializers.ModelSerializer):
             "scraped_title",
             "generated_title",
             "generated_title_id",
+            "updated_title",
             "match_pattern_type",
             "candidate_urls_count",
             "document_type",
