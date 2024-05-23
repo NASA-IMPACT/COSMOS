@@ -192,13 +192,15 @@ class TitlePattern(BaseMatchPattern):
 
             except ValueError as e:
                 message = str(e)
-                error_object = ResolvedTitleError.objects.create(error_string=message)
+                resolved_title_error = ResolvedTitleError.objects.create(
+                    title_pattern=self, candidate_url=candidate_url, error_string=message
+                )
 
                 status_code = re.search(r"Status code: (\d+)", message)
                 if status_code:
-                    error_object.http_status_code = int(status_code.group(1))
+                    resolved_title_error.http_status_code = int(status_code.group(1))
 
-                error_object.save()
+                resolved_title_error.save()
 
                 raise ValidationError(str(e))
 
