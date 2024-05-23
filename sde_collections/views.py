@@ -478,8 +478,8 @@ class ResolvedTitleErrorListView(ListView):
 
 class TitlesAndErrorsView(View):
     def get(self, request, *args, **kwargs):
-        resolved_titles = ResolvedTitle.objects.all()
-        resolved_title_errors = ResolvedTitleError.objects.all()
+        resolved_titles = ResolvedTitle.objects.select_related("title_pattern", "candidate_url").all()
+        resolved_title_errors = ResolvedTitleError.objects.select_related("title_pattern", "candidate_url").all()
         context = {
             "resolved_titles": resolved_titles,
             "resolved_title_errors": resolved_title_errors,
