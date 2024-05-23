@@ -189,3 +189,16 @@ body {
 .urlStyle{
   color:#65B1EF !important;
  }
+
+ .underline{
+  text-decoration: underline;
+ }
+
+ .tabStyle{
+  color:#8697A8 !important;
+}
+
+.nav-item .active{
+  color:#65B1EF !important;
+
+}

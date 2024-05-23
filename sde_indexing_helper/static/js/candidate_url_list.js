@@ -98,6 +98,7 @@ function initializeDataTable() {
       "spacer",
       {
         text: "Customize Columns",
+        className:"customizeColumns",
         action: function () {
           modalContents("#candidate_urls_table");
         },

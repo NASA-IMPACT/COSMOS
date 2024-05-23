@@ -143,7 +143,7 @@ div > .nav {
     width: 100%;
 }
 
-.body-content {
+.candidateUrlContainer {
     background: #15232E;
     padding: 40px 30px;
     border-radius: 15px;
@@ -212,4 +212,23 @@ letter-spacing: -0.02em;
   
    .table tbody tr:nth-child(even) {
     background-color: #3F4A58 !important;
+   }
+
+   .candidateTitle{
+    font-size:24px;
+    font-weight: 500;
+   }
+
+   .pageTitle{
+    font-size:56px;
+    color:white;
+    font-weight:500;
+   }
+
+   .buttons-csv, .customizeColumns{
+    background: transparent !important;
+    color: #8697A8 !important;
+    border-style: solid !important;
+    border-width: 1px !important;
+    border-color: #A7BACD !important;
    }
