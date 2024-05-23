@@ -45,11 +45,6 @@ urlpatterns = [
         view=views.WebappGitHubConsolidationView.as_view(),
         name="consolidate_db_and_github_configs",
     ),
-    # List all CandidateURL instances: /candidate-urls/
-    # Retrieve a specific CandidateURL instance: /candidate-urls/{id}/
-    # Create a new CandidateURL instance: /candidate-urls/
-    # Update an existing CandidateURL instance: /candidate-urls/{id}/
-    # Delete an existing CandidateURL instance: /candidate-urls/{id}/
     path("api/", include(router.urls)),
     path(
         "candidate-urls-api/<str:config_folder>/",
