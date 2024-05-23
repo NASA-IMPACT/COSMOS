@@ -2,7 +2,7 @@ import re
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -187,6 +187,9 @@ class TitlePattern(BaseMatchPattern):
                 )
                 resolved_title.save()
 
+                candidate_url.generated_title = generated_title
+                candidate_url.save()
+
             except ValueError as e:
                 message = str(e)
                 error_object = ResolvedTitleError.objects.create(error_string=message)
@@ -247,6 +250,6 @@ class DocumentTypePattern(BaseMatchPattern):
 
 
 @receiver(post_save, sender=TitlePattern)
-def send_title_patterns_to_celery(sender, instance, created, **kwargs):
+def post_save_handler(sender, instance, created, **kwargs):
     if created:
-        resolve_title_pattern.delay(instance.id)
+        transaction.on_commit(lambda: resolve_title_pattern.delay(instance.pk))

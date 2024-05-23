@@ -3,6 +3,7 @@ import os
 import shutil
 
 import boto3
+from celery import shared_task
 from django.apps import apps
 from django.conf import settings
 from django.core import management
@@ -128,8 +129,13 @@ def pull_latest_collection_metadata_from_github():
     s3_client.upload_file(FILENAME, s3_bucket_name, s3_key)
 
 
-@celery_app.task()
-def resolve_title_pattern(title_pattern_id):
+@shared_task(bind=True, max_retries=5, default_retry_delay=1)
+def resolve_title_pattern(self, title_pattern_id):
     TitlePattern = apps.get_model("sde_collections", "TitlePattern")
-    title_pattern = TitlePattern.objects.get(id=title_pattern_id)
-    title_pattern.apply()
+
+    try:
+        title_pattern = TitlePattern.objects.get(id=title_pattern_id)
+        title_pattern.apply()
+    except TitlePattern.DoesNotExist:
+        # Retry the task if the title pattern is not yet available
+        raise self.retry(countdown=0.5)
