@@ -6,14 +6,14 @@ from environmental_justice.views import EnvironmentalJusticeRowViewSet
 from . import views
 
 router = routers.DefaultRouter()
-router.register(r"collections", views.CollectionViewSet)
-router.register(r"collections-read", views.CollectionReadViewSet)
 router.register(r"candidate-urls", views.CandidateURLViewSet)
+router.register(r"collections-read", views.CollectionReadViewSet)
+router.register(r"collections", views.CollectionViewSet)
+router.register(r"document-type-patterns", views.DocumentTypePatternViewSet)
+router.register(r"environmental-justice", EnvironmentalJusticeRowViewSet)
 router.register(r"exclude-patterns", views.ExcludePatternViewSet)
 router.register(r"include-patterns", views.IncludePatternViewSet)
 router.register(r"title-patterns", views.TitlePatternViewSet)
-router.register(r"document-type-patterns", views.DocumentTypePatternViewSet)
-router.register(r"environmental-justice", EnvironmentalJusticeRowViewSet)
 
 app_name = "sde_collections"
 
