@@ -184,7 +184,7 @@ function getScrapedTitleColumn() {
 
 function getGeneratedTitleColumn() {
     return {
-        "data": "generated_title", "render": function (data, type, row) {
+        "data": "updated_title", "render": function (data, type, row) {
             return `<input type="text" class="form-control individual_title_input" value='${data}' data-generated-title-id=${row['generated_title_id']} data-match-pattern-type=${row['match_pattern_type']} data-candidate-urls-count=${row['candidate_urls_count']} data-url=${remove_protocol(row['url'])} />`;
         }
     }
