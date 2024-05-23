@@ -164,9 +164,10 @@ class TitlePattern(BaseMatchPattern):
 
     def apply(self) -> None:
         matched_urls = self.matched_urls()
-        updated_urls = []
         ResolvedTitle = apps.get_model("sde_collections", "ResolvedTitle")
         ResolvedTitleError = apps.get_model("sde_collections", "ResolvedTitleError")
+
+        resolved_titles = []
 
         for candidate_url in matched_urls:
             context = {
@@ -178,14 +179,16 @@ class TitlePattern(BaseMatchPattern):
             try:
                 generated_title = resolve_title(self.title_pattern, context)
 
-                # check to see if the candidate url has an existing resolved title and delete it
-                ResolvedTitle.objects.filter(candidate_url=candidate_url).delete()
-
-                resolved_title = ResolvedTitle.objects.create(
-                    title_pattern=self, candidate_url=candidate_url, resolved_title=generated_title
+                resolved_titles.append(
+                    {
+                        "title_pattern": self,
+                        "candidate_url": candidate_url,
+                        "resolved_title": generated_title,
+                        "active": True,
+                    }
                 )
-                resolved_title.save()
 
+                # eventually we will remove this and just use the resolved title
                 candidate_url.generated_title = generated_title
                 candidate_url.save()
 
@@ -201,11 +204,8 @@ class TitlePattern(BaseMatchPattern):
 
                 resolved_title_error.save()
 
-        TitlePatternCandidateURL = TitlePattern.candidate_urls.through
-        pattern_url_associations = [
-            TitlePatternCandidateURL(titlepattern_id=self.id, candidateurl_id=url.id) for url in updated_urls
-        ]
-        TitlePatternCandidateURL.objects.bulk_create(pattern_url_associations, ignore_conflicts=True)
+        pattern_url_associations = [ResolvedTitle(**resolved_title_dict) for resolved_title_dict in resolved_titles]
+        ResolvedTitle.objects.bulk_create(pattern_url_associations, ignore_conflicts=True)
 
     def unapply(self) -> None:
         self.candidate_urls.update(generated_title="")
