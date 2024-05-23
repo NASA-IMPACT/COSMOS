@@ -70,7 +70,11 @@ def resolve_xpath(xpath: str, url: str) -> str:
         values = tree.xpath(xpath)
 
         if len(values) == 1:
-            text_content = values[0].text
+            if isinstance(values[0], str):
+                text_content = values[0]
+            else:
+                text_content = values[0].text
+
             if text_content:
                 text_content = clean_text(text_content)
                 return text_content
