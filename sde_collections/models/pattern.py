@@ -188,10 +188,6 @@ class TitlePattern(BaseMatchPattern):
                     }
                 )
 
-                # eventually we will remove this and just use the resolved title
-                candidate_url.generated_title = generated_title
-                candidate_url.save()
-
             except (ValueError, ValidationError) as e:
                 message = str(e)
                 resolved_title_error = ResolvedTitleError.objects.create(
