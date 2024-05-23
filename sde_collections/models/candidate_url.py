@@ -150,6 +150,7 @@ class ResolvedTitleBase(models.Model):
 
 class ResolvedTitle(ResolvedTitleBase):
     resolved_title = models.CharField(blank=True, default="")
+    active = models.BooleanField(default=False)  # Is this the resolved title that should be used?
 
     class Meta:
         verbose_name = "Resolved Title"

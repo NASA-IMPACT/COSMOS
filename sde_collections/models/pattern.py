@@ -162,6 +162,7 @@ class TitlePattern(BaseMatchPattern):
         " (no quotes required) or you can write sinequa-valid code",
         validators=[validate_title_pattern],
     )
+    matched_urls = models.ManyToManyField("CandidateUrl", through="ResolvedTitle", related_name="title_patterns")
 
     def apply(self) -> None:
         matched_urls = self.matched_urls()
