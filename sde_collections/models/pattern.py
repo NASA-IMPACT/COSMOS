@@ -158,8 +158,6 @@ def validate_title_pattern(title_pattern_string):
 class TitlePattern(BaseMatchPattern):
     title_pattern = models.CharField(
         "Title Pattern",
-        help_text="This is the pattern for the new title. You can either write an exact replacement string"
-        " (no quotes required) or you can write sinequa-valid code",
         validators=[validate_title_pattern],
     )
     urls = models.ManyToManyField("CandidateUrl", through="ResolvedTitle", related_name="title_patterns")
