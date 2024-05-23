@@ -170,6 +170,9 @@ class TitlePatternSerializer(BasePatternSerializer, serializers.ModelSerializer)
             pass
         return value
 
+    def get_candidate_urls_count(self, instance):
+        return instance.urls.count()
+
 
 class DocumentTypePatternSerializer(BasePatternSerializer, serializers.ModelSerializer):
     document_type_display = serializers.CharField(source="get_document_type_display", read_only=True)
