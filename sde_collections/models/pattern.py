@@ -208,7 +208,8 @@ class TitlePattern(BaseMatchPattern):
         ResolvedTitle.objects.bulk_create(pattern_url_associations, ignore_conflicts=True)
 
     def unapply(self) -> None:
-        self.candidate_urls.update(generated_title="")
+        ResolvedTitle = apps.get_model("sde_collections", "ResolvedTitle")
+        ResolvedTitle.objects.filter(title_pattern=self).delete()
 
     class Meta:
         """Meta definition for TitlePattern."""
