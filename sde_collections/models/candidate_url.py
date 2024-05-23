@@ -87,6 +87,14 @@ class CandidateURL(models.Model):
         ordering = ["url"]
 
     @property
+    def updated_title(self) -> str:
+        """Return the most recently updated title."""
+        try:
+            return ResolvedTitle.objects.filter(candidate_url=self).first().resolved_title
+        except AttributeError:
+            return self.generated_title if self.generated_title else self.scraped_title
+
+    @property
     def fileext(self) -> str:
         # Parse the URL to get the path
         parsed_url = urlparse(self.url)
