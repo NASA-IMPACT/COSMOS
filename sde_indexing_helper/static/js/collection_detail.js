@@ -27,29 +27,61 @@ document
     document.getElementById("id_github_issue_link").value = originalValue;
   });
 
+$(document).ready(function () {
+  $("body").on("change", "#detailDocTypeDropdown", function () {
+    postDocTypeChange(collection_id, $(this).val());
+  });
+});
+
+var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
+
+function postDocTypeChange(collection_id, docType) {
+  var url = `/api/collections/${collection_id}/`;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    data: {
+      document_type: docType,
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      toastr.success("Document Type Updated!");
+    },
+  });
+}
+
 //////////////////////////////
 ///// DIVISION CHANGE ////////
 //////////////////////////////
 
 $(document).ready(function () {
   $("body").on("change", "#detailDivisionDropdown", function () {
-    $modal = $("#areYouSureModal").modal();
+    $modal = $("#divisionChangeModal").modal();
     var selectedText = $("#detailDivisionDropdown option:selected").text();
-    $(".modal-title").text("Are you sure?");
     $("#caption").text(
       `Divison will be changed from ${currentDivisonText} to ${selectedText}.`
     );
-    var modalForm =
-      '<form id="modalForm">' +
-      "<div>" +
-      '<button type="button" class="btn btn-secondary" id="cancelDivisionChange">No</button>' +
-      '<button type="button" class="btn btn-primary" data-dismiss="modal" id="makeDivisionChange">Yes</button>' +
-      "</div>" +
-      "</form>";
-
-    $(".modal-footer").html(modalForm);
     collection_id = $(this).data("collection-id");
     newDivisionVal = $(this).val();
+  });
+
+  $("#divisionChangeModalForm").on("click", "button", function (event) {
+    event.preventDefault();
+    var buttonId = $(this).attr("id");
+
+    switch (buttonId) {
+      case "makeDivisionChange":
+        currentDivisionVal = $("#detailDivisionDropdown").val();
+        postDivisionChange(collection_id, newDivisionVal);
+        break;
+      case "cancelDivisionChange":
+        $("#detailDivisionDropdown").val(currentDivisionVal);
+        $modal = $("#divisionChangeModal").modal("hide");
+        break;
+    }
   });
 });
 
@@ -78,55 +110,30 @@ function postDivisionChange(collection_id, division) {
       currentDivisonText = $("#detailDivisionDropdown option:selected").text();
     },
     error: function (xhr, textStatus, errorThrown) {
-      console.log("Error:", errorThrown);
+      // console.log("Error:", errorThrown);
       toastr.error("Error updating name.");
     },
   });
 }
 
+// on close of modal, manually resetting division value to original value
 $(document).ready(function () {
-  $("body").on("change", "#detailDocTypeDropdown", function () {
-    postDocTypeChange(collection_id, $(this).val());
-  });
-});
-
-$(document).ready(function () {
-  $("#closeModalButton").on("click", function (event) {
+  $("#closeDivisionModal").on("click", function (event) {
     event.preventDefault();
     $("#detailDivisionDropdown").val(currentDivisionVal);
-    $("#areYouSureModal").modal("hide");
+    $("#divisionChangeModal").modal("hide");
   });
 });
 
+// Close the modal when clicking outside of the modal content
 $(document).ready(function () {
-  // Close the modal when clicking outside of the modal content
   $(window).click(function (event) {
-    if ($(event.target).is("#areYouSureModal")) {
+    if ($(event.target).is("#divisionChangeModal")) {
       $("#detailDivisionDropdown").val(currentDivisionVal);
-      $modal = $("#areYouSureModal").modal("hide");
+      $modal = $("#divisionChangeModal").modal("hide");
     }
   });
 });
-
-var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
-
-function postDocTypeChange(collection_id, docType) {
-  var url = `/api/collections/${collection_id}/`;
-  $.ajax({
-    url: url,
-    type: "PUT",
-    data: {
-      document_type: docType,
-      csrfmiddlewaretoken: csrftoken,
-    },
-    headers: {
-      "X-CSRFToken": csrftoken,
-    },
-    success: function (data) {
-      toastr.success("Document Type Updated!");
-    },
-  });
-}
 
 //////////////////////////////
 /////// TITLE CHANGE ////////
@@ -134,20 +141,23 @@ function postDocTypeChange(collection_id, docType) {
 
 $(document).ready(function () {
   $(".editTitle").on("click", function () {
-    $modal = $("#areYouSureModal").modal();
-    $(".modal-title").text("Rename Page Title");
-    $("#caption").text(`New name for Landing Page`);
+    $modal = $("#titleChangeModal").modal();
   });
-  var modalForm =
-    '<form id="modalForm">' +
-    "<div>" +
-    '<input type="text" name="inputFieldName" id="inputFieldId">' +
-    '<button type="button" class="btn btn-secondary" id="cancelTitleRename">Cancel</button>' +
-    '<button type="button" class="btn btn-primary" data-dismiss="modal" id="renameTitle">Rename</button>' +
-    "</div>" +
-    "</form>";
+});
 
-  $(".modal-footer").html(modalForm);
+$(document).ready(function () {
+  $("#closeTitleModal").on("click", function (event) {
+    event.preventDefault();
+    $("#titleChangeModal").modal("hide");
+  });
+});
+
+$(document).ready(function () {
+  $(window).click(function (event) {
+    if ($(event.target).is("#titleChangeModal")) {
+      $modal = $("#titleChangeModal").modal("hide");
+    }
+  });
 });
 
 function patchTitle(collection_id, inputValue) {
@@ -162,31 +172,21 @@ function patchTitle(collection_id, inputValue) {
       "X-CSRFToken": csrftoken,
     },
     success: function (data) {
-      console.log("Success:", data);
+      // console.log("Success:", data);
       $(".collectionName").text(`${data.name}`);
       toastr.success("Name Updated!");
     },
     error: function (xhr, textStatus, errorThrown) {
-      console.log("Error:", errorThrown);
+      // console.log("Error:", errorThrown);
       toastr.error("Error updating name.");
     },
   });
 }
 
 $(document).ready(function () {
-  $("#areYouSureModal").on("show.bs.modal", function (e) {
-    if ($("#inputFieldId").val()) {
-      $("#inputFieldId").val("");
-    }
-  });
-});
-
-$(document).ready(function () {
-  $("form").on("click", "button", function (event) {
+  $("#titleChangeModalForm").on("click", "button", function (event) {
     event.preventDefault();
     var buttonId = $(this).attr("id");
-
-    console.log("IN HERE", buttonId);
 
     switch (buttonId) {
       case "renameTitle":
@@ -195,15 +195,7 @@ $(document).ready(function () {
         break;
       case "cancelTitleRename":
         editTitleModal = false;
-        $modal = $("#areYouSureModal").modal("hide");
-        break;
-      case "makeDivisionChange":
-        currentDivisionVal = $("#detailDivisionDropdown").val();
-        postDivisionChange(collection_id, newDivisionVal);
-        break;
-      case "cancelDivisionChange":
-        $("#detailDivisionDropdown").val(currentDivisionVal);
-        $modal = $("#areYouSureModal").modal("hide");
+        $modal = $("#titleChangeModal").modal("hide");
         break;
     }
   });
