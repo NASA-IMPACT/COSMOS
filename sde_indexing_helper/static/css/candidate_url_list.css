@@ -235,3 +235,12 @@ letter-spacing: -0.02em;
     border-color: #A7BACD !important;
    }
 
+
+   .custom-select{
+    border-style: solid;
+    border-color: grey;
+    border-width: 1px;
+    margin-top: 8px;
+    padding:5px;
+    color:#8697A8
+   }
