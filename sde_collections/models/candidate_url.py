@@ -155,6 +155,7 @@ class ResolvedTitle(ResolvedTitleBase):
     class Meta:
         verbose_name = "Resolved Title"
         verbose_name_plural = "Resolved Titles"
+        ordering = ["-created_at"]
 
     def save(self, *args, **kwargs):
         # Finds the linked candidate URL and deletes ResolvedTitleError objects linked to it
