@@ -163,7 +163,7 @@ function initializeDataTable() {
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
-        $(row).attr('style', 'background-color: #ab387d !important'); 
+        $(row).attr("style", "background-color: #ab387d !important");
       }
     },
   });
@@ -235,7 +235,11 @@ function initializeDataTable() {
         sortable: true,
       },
       { data: "reason", class: "text-center whiteText", sortable: false },
-      { data: "candidate_urls_count", class: "text-center whiteText", sortable: false },
+      {
+        data: "candidate_urls_count",
+        class: "text-center whiteText",
+        sortable: false,
+      },
       {
         data: null,
         sortable: false,
@@ -307,7 +311,11 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: false,
       },
-      { data: "candidate_urls_count", class: "text-center whiteText", sortable: false },
+      {
+        data: "candidate_urls_count",
+        class: "text-center whiteText",
+        sortable: false,
+      },
       {
         data: null,
         sortable: false,
@@ -374,7 +382,11 @@ function initializeDataTable() {
         sortable: false,
       },
       { data: "title_pattern", class: "whiteText" },
-      { data: "candidate_urls_count", class: "text-center whiteText", sortable: false },
+      {
+        data: "candidate_urls_count",
+        class: "text-center whiteText",
+        sortable: false,
+      },
       {
         data: null,
         sortable: false,
@@ -479,7 +491,11 @@ function initializeDataTable() {
         sortable: false,
       },
       { data: "document_type_display", class: "whiteText" },
-      { data: "candidate_urls_count", class: "text-center whiteText", sortable: false },
+      {
+        data: "candidate_urls_count",
+        class: "text-center whiteText",
+        sortable: false,
+      },
       {
         data: null,
         sortable: false,
@@ -563,7 +579,7 @@ function getScrapedTitleColumn() {
     data: "scraped_title",
     render: function (data, type, row) {
       return `<span class="whiteText">${data}</span>`;
-    }
+    },
   };
 }
 
@@ -1165,10 +1181,6 @@ $(".document_type_form_select").on("click", function (e) {
 
   // close the modal if it is open
   $("#documentTypePatternModal").modal("hide");
-});
-
-$("#filter-checkbox").on("change", function () {
-  $("#candidate_urls_table").DataTable().ajax.reload(null, false);
 });
 
 function postWorkflowStatus(collection_id, workflow_status) {
