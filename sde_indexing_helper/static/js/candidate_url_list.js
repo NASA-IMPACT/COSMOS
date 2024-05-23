@@ -163,7 +163,7 @@ function initializeDataTable() {
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
-        $(row).attr('style', 'background-color: #ab387d !important'); 
+        $(row).attr("style", "background-color: #ab387d !important");
       }
     },
   });
@@ -235,7 +235,11 @@ function initializeDataTable() {
         sortable: true,
       },
       { data: "reason", class: "text-center whiteText", sortable: false },
-      { data: "candidate_urls_count", class: "text-center whiteText", sortable: false },
+      {
+        data: "candidate_urls_count",
+        class: "text-center whiteText",
+        sortable: false,
+      },
       {
         data: null,
         sortable: false,
@@ -307,7 +311,11 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: false,
       },
-      { data: "candidate_urls_count", class: "text-center whiteText", sortable: false },
+      {
+        data: "candidate_urls_count",
+        class: "text-center whiteText",
+        sortable: false,
+      },
       {
         data: null,
         sortable: false,
@@ -374,7 +382,11 @@ function initializeDataTable() {
         sortable: false,
       },
       { data: "title_pattern", class: "whiteText" },
-      { data: "candidate_urls_count", class: "text-center whiteText", sortable: false },
+      {
+        data: "candidate_urls_count",
+        class: "text-center whiteText",
+        sortable: false,
+      },
       {
         data: null,
         sortable: false,
@@ -479,7 +491,11 @@ function initializeDataTable() {
         sortable: false,
       },
       { data: "document_type_display", class: "whiteText" },
-      { data: "candidate_urls_count", class: "text-center whiteText", sortable: false },
+      {
+        data: "candidate_urls_count",
+        class: "text-center whiteText",
+        sortable: false,
+      },
       {
         data: null,
         sortable: false,
@@ -563,7 +579,7 @@ function getScrapedTitleColumn() {
     data: "scraped_title",
     render: function (data, type, row) {
       return `<span class="whiteText">${data}</span>`;
-    }
+    },
   };
 }
 
@@ -1096,8 +1112,19 @@ $(".custom-menu li").click(function () {
 
 $("#exclude_pattern_form").on("submit", function (e) {
   e.preventDefault();
-  inputs = {};
+
+  // if pattern exists
+  var table = $("#exclude_patterns_table").DataTable();
+  var itemIdColumnData = table.column(0).data().toArray();
   input_serialized = $(this).serializeArray();
+  if (itemIdColumnData.includes(input_serialized[0].value)) {
+    toastr.success("Pattern already exists");
+    $("#excludePatternModal").modal("hide");
+    return;
+  }
+
+  // if pattern does not exist
+  inputs = {};
   input_serialized.forEach((field) => {
     inputs[field.name] = field.value;
   });
@@ -1113,8 +1140,19 @@ $("#exclude_pattern_form").on("submit", function (e) {
 
 $("#include_pattern_form").on("submit", function (e) {
   e.preventDefault();
-  inputs = {};
+
+  // if pattern exists
+  var table = $("#include_patterns_table").DataTable();
+  var itemIdColumnData = table.column(0).data().toArray();
   input_serialized = $(this).serializeArray();
+  if (itemIdColumnData.includes(input_serialized[0].value)) {
+    toastr.success("Pattern already exists");
+    $("#includePatternModal").modal("hide");
+    return;
+  }
+
+  // if pattern does not exist
+  inputs = {};
   input_serialized.forEach((field) => {
     inputs[field.name] = field.value;
   });
