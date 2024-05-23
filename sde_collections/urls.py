@@ -46,6 +46,7 @@ urlpatterns = [
         name="consolidate_db_and_github_configs",
     ),
     path("api/", include(router.urls)),
+    # this endpoint is used by sinequa to get data from the SDE
     path(
         "candidate-urls-api/<str:config_folder>/",
         view=views.CandidateURLAPIView.as_view(),
