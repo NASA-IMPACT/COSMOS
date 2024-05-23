@@ -59,7 +59,7 @@ xpath_mappings = {
     "All Things Electric and Magnetic - {xpath:/html/body/div[1]/center[1]/table/tbody/tr/td[2]/font/center/h1/i}": "All Things Electric and Magnetic - xpath:/html/body/div[1]/center[1]/table/tbody/tr/td[2]/font/center/h1/i",
     'Tutorial - {xpath://*[@id="Analyzing-interstellar-reddening-and-calculating-synthetic-photometry"]}': 'Tutorial - xpath://*[@id="Analyzing-interstellar-reddening-and-calculating-synthetic-photometry"]',
     'Health & Air Quality - {xpath://*[@id="block-views-block-hero-block-7"]/div/div/div[2]/div/div/div[2]/div/p}': 'Health & Air Quality - xpath://*[@id="block-views-block-hero-block-7"]/div/div/div[2]/div/div/div[2]/div/p',
-    'News - {xpath://*[@id="left-column"]/h2} - {xpath://*[@id="left-column"]/p[1]}': 'News - {xpath://*[@id="left-column"]/h2} - xpath://*[@id="left-column"]/p[1]',
+    'News - {xpath://*[@id="left-column"]/h2} - {xpath://*[@id="left-column"]/p[1]}': 'News - xpath://*[@id="left-column"]/h2} - xpath://*[@id="left-column"]/p[1]',
     'JWST {xpath://*[@id="stsci-content"]/div/div/h2} - {title}': 'JWST xpath://*[@id="stsci-content"]/div/div/h2 - {title}',
     '{xpath://*[@id="container-body"]/div[2]/div[2]/ol/li/h2} | NASA Astrobiology Institute': 'xpath://*[@id="container-body"]/div[2]/div[2]/ol/li/h2 | NASA Astrobiology Institute',
     'Directory - {xpath://*[@id="container-body"]/div[2]/div[2]/div[1]/h2/text()} | NASA Astrobiology Institute': 'Directory - xpath://*[@id="container-body"]/div[2]/div[2]/div[1]/h2/text() | NASA Astrobiology Institute',
