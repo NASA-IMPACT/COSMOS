@@ -190,7 +190,7 @@ class TitlePattern(BaseMatchPattern):
                 candidate_url.generated_title = generated_title
                 candidate_url.save()
 
-            except ValueError as e:
+            except (ValueError, ValidationError) as e:
                 message = str(e)
                 resolved_title_error = ResolvedTitleError.objects.create(
                     title_pattern=self, candidate_url=candidate_url, error_string=message
@@ -201,8 +201,6 @@ class TitlePattern(BaseMatchPattern):
                     resolved_title_error.http_status_code = int(status_code.group(1))
 
                 resolved_title_error.save()
-
-                raise ValidationError(str(e))
 
         TitlePatternCandidateURL = TitlePattern.candidate_urls.through
         pattern_url_associations = [
