@@ -153,7 +153,7 @@ function initializeDataTable() {
       getExcludedColumn(true_icon, false_icon),
       getScrapedTitleColumn(),
       getGeneratedTitleColumn(),
-      getVisitedColumn(true_icon, false_icon),
+      // getVisitedColumn(true_icon, false_icon),
       getDocumentTypeColumn(),
       { data: "id", visible: false, searchable: false },
       { data: "generated_title_id", visible: false, searchable: false },
