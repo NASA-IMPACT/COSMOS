@@ -1,3 +1,68 @@
+var uniqueId; //used for logic related to contents on column customization modal
+
+function modalContents(tableName) {
+  var checkboxCount = $("#modalBody input[type='checkbox']").length;
+
+  if (checkboxCount > 0 && tableName === uniqueId) {
+    $modal = $("#hideShowColumnsModal").modal();
+    return;
+  }
+
+  $modal = $("#hideShowColumnsModal").modal();
+  var table = $(tableName).DataTable();
+  if (tableName !== uniqueId) {
+    $("#modalBody").html("");
+  }
+  uniqueId = tableName;
+
+  table.columns().every(function (idx) {
+    var column = this;
+    var columnName = column.header().textContent.trim();
+    if (!column.visible() || columnName.length === 0) return;
+    var $checkbox = $('<input type="checkbox">')
+      .attr({
+        id: "checkbox_" + columnName.replace(/\s+/g, "_"), // Generate a unique ID for each checkbox
+        name: columnName.replace(/\s+/g, "_"), // Set name attribute for each checkbox
+        value: idx,
+      })
+      .prop("checked", true);
+    var $label = $("<label>")
+      .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
+      .text(columnName);
+
+    var $caption = $("<p>")
+      .text(
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."
+      )
+      .attr({
+        id: "caption",
+      });
+
+    var $captionContainer = $("<div>").append($caption);
+
+    var $checkboxContainer = $("<div>")
+      .append($checkbox)
+      .append($label)
+      .addClass("checkbox-wrapper");
+
+    $("#modalBody").append($checkboxContainer);
+    $("#modalBody").append($captionContainer);
+  });
+}
+
+$("body").on("click", "#hideShowSubmitButton", function () {
+  var table = $(uniqueId).DataTable();
+  $("[id^='checkbox_']").each(function () {
+    var checkboxValue = $(this).val();
+    let column = table.column(checkboxValue);
+    var isChecked = $(this).is(":checked");
+    if (column.visible() === false && isChecked) column.visible(true);
+    else if (column.visible() === true && !isChecked) column.visible(false);
+  });
+
+  $("#hideShowColumnsModal").modal("hide");
+});
+
 let table = $("#collection_table").DataTable({
   paging: false,
   stateSave: true,
@@ -5,22 +70,21 @@ let table = $("#collection_table").DataTable({
   layout: {
     topStart: "searchPanes",
   },
+  dom: "PiBf",
   buttons: [
-    "csv",
     {
-      text: "JSON",
-      action: function (e, dt, button, config) {
-        var data = dt.buttons.exportData();
-
-        $.fn.dataTable.fileSave(
-          new Blob([JSON.stringify(data)]),
-          "collections.json"
-        );
+      text: "Customize Columns",
+      action: function () {
+        modalContents("#collection_table");
       },
     },
   ],
   columnDefs: [
-    {width: "200px", targets: 1},
+    {
+      targets: 8,
+      visible: false,
+    },
+    { width: "200px", targets: 1 },
     {
       searchPanes: {
         options: [
