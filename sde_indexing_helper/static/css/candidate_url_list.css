@@ -242,16 +242,7 @@ letter-spacing: -0.02em;
     color:white;
     font-weight:500;
    }
-
-   .buttons-csv, .customizeColumns{
-    background: transparent !important;
-    color: #8697A8 !important;
-    border-style: solid !important;
-    border-width: 1px !important;
-    border-color: #A7BACD !important;
-   }
-
-
+   
    .custom-select{
     border-style: solid;
     border-color: grey;

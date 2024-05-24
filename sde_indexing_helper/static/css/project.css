@@ -216,3 +216,11 @@ body {
   font-weight:900;
   font-size:16px;
  }
+
+ .buttons-csv, .customizeColumns{
+  background: transparent !important;
+  color: #8697A8 !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  border-color: #A7BACD !important;
+ }
