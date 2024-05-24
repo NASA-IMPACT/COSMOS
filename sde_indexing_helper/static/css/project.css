@@ -206,3 +206,13 @@ body {
 .buttonColor{
   background-color:#0066CA;
  }
+
+ .header-title{
+  font-size:16px;
+  font-weight:600;
+ }
+
+ .dt-info{
+  font-weight:900;
+  font-size:16px;
+ }
