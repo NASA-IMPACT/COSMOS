@@ -856,6 +856,13 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0) {
     toastr.error("Please highlight a pattern to exclude.");
     return;
   }
+  // if pattern exists in table already
+  var table = $("#exclude_patterns_table").DataTable();
+  var itemIdColumnData = table.column(0).data().toArray();
+  if (itemIdColumnData.includes(match_pattern)) {
+    toastr.success("Pattern already exists");
+    return;
+  }
 
   $.ajax({
     url: "/api/exclude-patterns/",
@@ -886,6 +893,14 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0) {
 function postIncludePatterns(match_pattern, match_pattern_type = 0) {
   if (!match_pattern) {
     toastr.error("Please highlight a pattern to include.");
+    return;
+  }
+
+  // if pattern exists in table already
+  var table = $("#include_patterns_table").DataTable();
+  var itemIdColumnData = table.column(0).data().toArray();
+  if (itemIdColumnData.includes(match_pattern)) {
+    toastr.success("Pattern already exists");
     return;
   }
 
