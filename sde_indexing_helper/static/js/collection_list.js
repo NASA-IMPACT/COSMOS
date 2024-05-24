@@ -74,6 +74,7 @@ let table = $("#collection_table").DataTable({
   buttons: [
     {
       text: "Customize Columns",
+      className: "customizeColumns",
       action: function () {
         modalContents("#collection_table");
       },

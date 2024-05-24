@@ -123,9 +123,7 @@ div > .nav {
     border-radius: 12px;
   }
 
-  .detailsTab{
-    color:#65B1EF !important;
-  }
+ 
 
   .table tbody tr:nth-child(odd) {
     background-color: #15232E !important;
@@ -150,13 +148,7 @@ div > .nav {
     color:#65B1EF;
    }
 
-   .underline{
-    text-decoration: underline;
-   }
-
-   .buttonColor{
-    background-color:#0066CA;
-   }
+  
 
    .formBackground{
     background-color:#A7BACD;

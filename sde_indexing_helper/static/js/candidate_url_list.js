@@ -98,6 +98,7 @@ function initializeDataTable() {
       "spacer",
       {
         text: "Customize Columns",
+        className:"customizeColumns",
         action: function () {
           modalContents("#candidate_urls_table");
         },
@@ -196,6 +197,7 @@ function initializeDataTable() {
     buttons: [
       {
         text: "Customize Columns",
+        className:"customizeColumns",
         action: function () {
           modalContents("#exclude_patterns_table");
         },
@@ -274,6 +276,7 @@ function initializeDataTable() {
     buttons: [
       {
         text: "Customize Columns",
+        className:"customizeColumns",
         action: function () {
           modalContents("#include_patterns_table");
         },
@@ -343,6 +346,7 @@ function initializeDataTable() {
     buttons: [
       {
         text: "Customize Columns",
+        className:"customizeColumns",
         action: function () {
           modalContents("#title_patterns_table");
         },
@@ -422,6 +426,7 @@ function initializeDataTable() {
     buttons: [
       {
         text: "Customize Columns",
+        className:"customizeColumns",
         action: function () {
           modalContents("#document_type_patterns_table");
         },
