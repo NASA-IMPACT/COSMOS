@@ -26,7 +26,7 @@ body {
 
 .dtsp-nameButton{
     opacity:0.6;
-    background-color: transparent;
+    background-color: transparent !important;
     border:none !important;
     box-shadow: none;
 }
@@ -44,7 +44,7 @@ body {
 
 .dtsp-countButton{
     opacity:0.6;
-    background-color: transparent;
+    background-color: transparent !important;
     border:none !important;
     box-shadow: none;
     color:#A7BACD;
@@ -56,14 +56,14 @@ body {
 
 .clearButton{
     opacity:0.6;
-    background-color: transparent;
+    background-color: transparent !important;
     border:none !important;
     box-shadow: none;
 }
 
 .dtsp-searchIcon{
     opacity:0.6;
-    background-color: transparent;
+    background-color: transparent !important;
     border:none !important;
     box-shadow: none;
 }
@@ -207,3 +207,67 @@ margin-bottom: 0 !important;
    .table tbody tr:nth-child(even) {
     background-color: #3F4A58 !important;
    }
+
+
+   .modalTitle {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 36px;
+    letter-spacing: -0.03em;
+    }
+    
+    #hideShowColumnsModal {
+        position: fixed;
+        top: 0;
+        right: 0 !important;
+        left: unset !important;
+        background: #FFFFFF;
+        width: 30vw;
+        z-index: 2000;
+    }
+    
+ #subTitle {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 21px;
+    letter-spacing: -0.02em;
+    }
+    
+    
+    .hideShowSubmitButton {
+        width: 110px;
+      }
+      .checkbox-wrapper {
+        display: flex;
+        align-items: baseline;
+      }
+      
+      .checkbox-wrapper label {
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 24px;
+        margin-bottom: 0;
+        color: rgba(31, 41, 53, 1);
+        padding-left: 10px;
+      }
+    
+      .modalFooter {
+        position: sticky;
+        bottom: 0;
+        position: sticky;
+        bottom: 0;
+        padding: 10px 0;
+        background: #FFFFFF;
+      }
+
+      .dtsp-collapseAll{
+        color:white !important;
+      }
+
+      .dtsp-showAll{
+        color:white !important;
+      }
+
+      .dtsp-clearAll{
+        color:white !important;
+      }

@@ -98,6 +98,7 @@ function initializeDataTable() {
       "spacer",
       {
         text: "Customize Columns",
+        className:"customizeColumns",
         action: function () {
           modalContents("#candidate_urls_table");
         },
@@ -196,6 +197,7 @@ function initializeDataTable() {
     buttons: [
       {
         text: "Customize Columns",
+        className:"customizeColumns",
         action: function () {
           modalContents("#exclude_patterns_table");
         },
@@ -274,6 +276,7 @@ function initializeDataTable() {
     buttons: [
       {
         text: "Customize Columns",
+        className:"customizeColumns",
         action: function () {
           modalContents("#include_patterns_table");
         },
@@ -343,6 +346,7 @@ function initializeDataTable() {
     buttons: [
       {
         text: "Customize Columns",
+        className:"customizeColumns",
         action: function () {
           modalContents("#title_patterns_table");
         },
@@ -422,6 +426,7 @@ function initializeDataTable() {
     buttons: [
       {
         text: "Customize Columns",
+        className:"customizeColumns",
         action: function () {
           modalContents("#document_type_patterns_table");
         },
@@ -1218,10 +1223,6 @@ $(".document_type_form_select").on("click", function (e) {
 
   // close the modal if it is open
   $("#documentTypePatternModal").modal("hide");
-});
-
-$("#filter-checkbox").on("change", function () {
-  $("#candidate_urls_table").DataTable().ajax.reload(null, false);
 });
 
 function postWorkflowStatus(collection_id, workflow_status) {

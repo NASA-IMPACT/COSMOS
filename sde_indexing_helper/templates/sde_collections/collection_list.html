@@ -116,6 +116,24 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <div id="hideShowColumnsModal" class="modal pr-4 pl-4 pt-4">
+        <div class="modalDialog">
+            <div class="modalContent">
+                <div class="modalHeader ">
+                    <h5 class="modalTitle" id="hideShowColumnsModalTitle">Customize Columns</h5>
+                    <p id="subTitle">Attributes marked with a checkbox will be displayed in the table.</p>
+                </div>
+                <form id="hide_show_columns_form">
+                    <div class="modalBody" id="modalBody">
+                    </div>
+                    <div class="modalFooter">
+                        <div type="submit" class="btn-prime hideShowSubmitButton" id="hideShowSubmitButton">Confirm</div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
 {% block javascripts %}
     <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>

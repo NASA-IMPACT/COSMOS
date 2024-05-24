@@ -189,3 +189,38 @@ body {
 .urlStyle{
   color:#65B1EF !important;
  }
+
+ .underline{
+  text-decoration: underline;
+ }
+
+ .tabStyle{
+  color:#8697A8 !important;
+}
+
+.nav-item .active{
+  color:#65B1EF !important;
+
+}
+
+.buttonColor{
+  background-color:#0066CA;
+ }
+
+ .header-title{
+  font-size:16px;
+  font-weight:600;
+ }
+
+ .dt-info{
+  font-weight:900;
+  font-size:16px;
+ }
+
+ .buttons-csv, .customizeColumns{
+  background: transparent !important;
+  color: #8697A8 !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  border-color: #A7BACD !important;
+ }
