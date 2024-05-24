@@ -253,8 +253,9 @@ letter-spacing: -0.02em;
    }
 
    .addPattern {
-    background-color: transparent !important;
-  
+    background-color: #0066CA !important;
+    border-color: #0066CA !important;
+    color: #fff !important;
    }
 
    #exclude_patterns_table_wrapper .dt-buttons, #include_patterns_table_wrapper .dt-buttons, #document_type_patterns_table_wrapper .dt-buttons, #title_patterns_table_wrapper .dt-buttons {
