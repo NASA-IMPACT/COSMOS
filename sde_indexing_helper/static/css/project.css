@@ -53,7 +53,7 @@
   width: 25%;
 }
 
-#candidate_urls_table_wrapper div.dt-length, #exclude_patterns_table_wrapper div.dt-length, #include_patterns_table_wrapper div.dt-length{
+#candidate_urls_table_wrapper div.dt-length, #exclude_patterns_table_wrapper div.dt-length, #include_patterns_table_wrapper div.dt-length, #document_type_patterns_table_wrapper div.dt-length, #title_patterns_table_wrapper div.dt-length{
   display: inline-block;
     width: 10%;
 }
