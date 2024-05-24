@@ -91,14 +91,14 @@ function initializeDataTable() {
     serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
-    dom: "lBritip",
+    dom: "ilBrtip",
     buttons: [
       "spacer",
       "csv",
       "spacer",
       {
         text: "Customize Columns",
-        className:"customizeColumns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#candidate_urls_table");
         },
@@ -197,7 +197,7 @@ function initializeDataTable() {
     buttons: [
       {
         text: "Customize Columns",
-        className:"customizeColumns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#exclude_patterns_table");
         },
@@ -276,7 +276,7 @@ function initializeDataTable() {
     buttons: [
       {
         text: "Customize Columns",
-        className:"customizeColumns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#include_patterns_table");
         },
@@ -346,7 +346,7 @@ function initializeDataTable() {
     buttons: [
       {
         text: "Customize Columns",
-        className:"customizeColumns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#title_patterns_table");
         },
@@ -426,7 +426,7 @@ function initializeDataTable() {
     buttons: [
       {
         text: "Customize Columns",
-        className:"customizeColumns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#document_type_patterns_table");
         },

@@ -44,6 +44,20 @@
   width: 100%;
 } */
 
+#candidate_urls_table_wrapper div.dt-info:first-of-type {
+  display: inline-block;
+  width: 25%;
+}
+
+#candidate_urls_table_wrapper div.dt-length {
+  display: inline-block;
+    width: 25%;
+}
+
+#candidate_urls_table_wrapper div.dt-buttons {
+  width: 49%;    
+  justify-content: end;
+}
 
 div.dtsp-panesContainer div.dtsp-searchPane div.dt-container, div.dtsp-panesContainer div.dtsp-searchPane div.dataTables_wrapper {
  border:none;
