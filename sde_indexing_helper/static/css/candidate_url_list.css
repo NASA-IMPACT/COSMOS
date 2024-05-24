@@ -243,11 +243,28 @@ letter-spacing: -0.02em;
     font-weight:500;
    }
    
-   .custom-select{
-    border-style: solid;
-    border-color: grey;
-    border-width: 1px;
-    margin-top: 8px;
-    padding:5px;
-    color:#8697A8
+   .custom-select, .buttons-csv, .customizeColumns{
+    border-style: solid !important;
+    border-color: #A7BACD !important;
+    border-width: 1px !important;
+    color:#A7BACD !important;
+    border-radius: 5px !important;
+    padding: 11px 15px;
    }
+
+   .customizeColumns {
+    margin-left: 10px !important;
+   }
+
+   .form-control:read-only  {
+    background-image: none;
+   }
+
+    .dt-container div.dt-length label {
+    display: none;
+   }
+
+   div.dt-container div.dt-info {
+    padding-top: 0;
+    white-space: normal;
+}

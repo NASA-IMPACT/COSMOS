@@ -85,7 +85,10 @@ function initializeDataTable() {
 
   var candidate_urls_table = $("#candidate_urls_table").DataTable({
     // scrollY: true,
-    lengthMenu: [25, 50, 100, 500],
+    lengthMenu: [
+      [25, 50, 100, 500],
+      ["Show 25", "Show 50", "Show 100", "Show 500"],
+    ],
     pageLength: 100,
     stateSave: true,
     serverSide: true,
@@ -196,6 +199,13 @@ function initializeDataTable() {
     dom: "lBrtip",
     buttons: [
       {
+        text: "Add Pattern",
+        className: "addPattern",
+        action: function () {
+          $modal = $("#excludePatternModal").modal();
+        },
+      },
+      {
         text: "Customize Columns",
         className: "customizeColumns",
         action: function () {
@@ -274,6 +284,13 @@ function initializeDataTable() {
     lengthMenu: [25, 50, 100, 500],
     dom: "lBrtip",
     buttons: [
+      {
+        text: "Add Pattern",
+        className: "addPattern",
+        action: function () {
+          $modal = $("#includePatternModal").modal();
+        },
+      },
       {
         text: "Customize Columns",
         className: "customizeColumns",
@@ -689,17 +706,17 @@ function handleCreateDocumentTypePatternButton() {
   });
 }
 
-function handleCreateExcludePatternButton() {
-  $("body").on("click", ".create_exclude_pattern_button", function () {
-    $modal = $("#excludePatternModal").modal();
-  });
-}
+// function handleCreateExcludePatternButton() {
+//   $("body").on("click", ".create_exclude_pattern_button", function () {
+//     $modal = $("#excludePatternModal").modal();
+//   });
+// }
 
-function handleCreateIncludePatternButton() {
-  $("body").on("click", ".create_include_pattern_button", function () {
-    $modal = $("#includePatternModal").modal();
-  });
-}
+// function handleCreateIncludePatternButton() {
+//   $("body").on("click", ".create_include_pattern_button", function () {
+//     $modal = $("#includePatternModal").modal();
+//   });
+// }
 
 function handleCreateTitlePatternButton() {
   $("body").on("click", ".create_title_pattern_button", function () {

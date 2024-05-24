@@ -44,18 +44,22 @@
   width: 100%;
 } */
 
+.btn.btn-secondary {
+  box-shadow: none !important;
+}
+
 #candidate_urls_table_wrapper div.dt-info:first-of-type {
   display: inline-block;
   width: 25%;
 }
 
-#candidate_urls_table_wrapper div.dt-length {
+#candidate_urls_table_wrapper div.dt-length, #exclude_patterns_table_wrapper div.dt-length, #include_patterns_table_wrapper div.dt-length{
   display: inline-block;
-    width: 25%;
+    width: 10%;
 }
 
 #candidate_urls_table_wrapper div.dt-buttons {
-  width: 49%;    
+  width: 64%;    
   justify-content: end;
 }
 
