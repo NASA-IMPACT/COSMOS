@@ -213,7 +213,10 @@ function initializeDataTable() {
         },
       },
     ],
-    lengthMenu: [25, 50, 100, 500],
+    lengthMenu: [
+      [25, 50, 100, 500],
+      ["Show 25", "Show 50", "Show 100", "Show 500"],
+    ],
     orderCellsTop: true,
     pageLength: 100,
     ajax: `/api/exclude-patterns/?format=datatables&collection_id=${collection_id}`,
@@ -281,7 +284,10 @@ function initializeDataTable() {
 
   var include_patterns_table = $("#include_patterns_table").DataTable({
     // scrollY: true,
-    lengthMenu: [25, 50, 100, 500],
+    lengthMenu: [
+      [25, 50, 100, 500],
+      ["Show 25", "Show 50", "Show 100", "Show 500"],
+    ],
     dom: "lBrtip",
     buttons: [
       {
@@ -376,7 +382,10 @@ function initializeDataTable() {
         },
       },
     ],
-    lengthMenu: [25, 50, 100, 500],
+    lengthMenu: [
+      [25, 50, 100, 500],
+      ["Show 25", "Show 50", "Show 100", "Show 500"],
+    ],
     pageLength: 100,
     orderCellsTop: true,
     ajax: `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
@@ -464,7 +473,10 @@ function initializeDataTable() {
       },
     ],
     serverSide: true,
-    lengthMenu: [25, 50, 100, 500],
+    lengthMenu: [
+      [25, 50, 100, 500],
+      ["Show 25", "Show 50", "Show 100", "Show 500"],
+    ],
     orderCellsTop: true,
     pageLength: 100,
     ajax: `/api/document-type-patterns/?format=datatables&collection_id=${collection_id}`,
