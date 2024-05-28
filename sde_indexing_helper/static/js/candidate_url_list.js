@@ -85,20 +85,23 @@ function initializeDataTable() {
 
   var candidate_urls_table = $("#candidate_urls_table").DataTable({
     // scrollY: true,
-    lengthMenu: [25, 50, 100, 500],
+    lengthMenu: [
+      [25, 50, 100, 500],
+      ["Show 25", "Show 50", "Show 100", "Show 500"],
+    ],
     pageLength: 100,
     stateSave: true,
     serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
-    dom: "lBritip",
+    dom: "ilBrtip",
     buttons: [
       "spacer",
       "csv",
       "spacer",
       {
         text: "Customize Columns",
-        className:"customizeColumns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#candidate_urls_table");
         },
@@ -196,8 +199,15 @@ function initializeDataTable() {
     dom: "lBrtip",
     buttons: [
       {
+        text: "Add Pattern",
+        className: "addPattern",
+        action: function () {
+          $modal = $("#excludePatternModal").modal();
+        },
+      },
+      {
         text: "Customize Columns",
-        className:"customizeColumns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#exclude_patterns_table");
         },
@@ -275,8 +285,15 @@ function initializeDataTable() {
     dom: "lBrtip",
     buttons: [
       {
+        text: "Add Pattern",
+        className: "addPattern",
+        action: function () {
+          $modal = $("#includePatternModal").modal();
+        },
+      },
+      {
         text: "Customize Columns",
-        className:"customizeColumns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#include_patterns_table");
         },
@@ -345,8 +362,15 @@ function initializeDataTable() {
     dom: "lBrtip",
     buttons: [
       {
+        text: "Add Pattern",
+        className: "addPattern",
+        action: function () {
+          $modal = $("#titlePatternModal").modal();
+        },
+      },
+      {
         text: "Customize Columns",
-        className:"customizeColumns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#title_patterns_table");
         },
@@ -425,8 +449,15 @@ function initializeDataTable() {
     dom: "lBrtip",
     buttons: [
       {
+        text: "Add Pattern",
+        className: "addPattern",
+        action: function () {
+          $modal = $("#documentTypePatternModal").modal();
+        },
+      },
+      {
         text: "Customize Columns",
-        className:"customizeColumns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#document_type_patterns_table");
         },
@@ -545,11 +576,6 @@ function handleTabsClick() {
 function setupClickHandlers() {
   handleHideorShowSubmitButton();
   handleAddNewPatternClick();
-
-  handleCreateDocumentTypePatternButton();
-  handleCreateExcludePatternButton();
-  handleCreateIncludePatternButton();
-  handleCreateTitlePatternButton();
 
   handleDeleteDocumentTypeButtonClick();
   handleDeleteExcludePatternButtonClick();
@@ -680,30 +706,6 @@ function handleHideorShowSubmitButton() {
     });
 
     $("#hideShowColumnsModal").modal("hide");
-  });
-}
-
-function handleCreateDocumentTypePatternButton() {
-  $("body").on("click", ".create_document_type_pattern_button", function () {
-    $modal = $("#documentTypePatternModal").modal();
-  });
-}
-
-function handleCreateExcludePatternButton() {
-  $("body").on("click", ".create_exclude_pattern_button", function () {
-    $modal = $("#excludePatternModal").modal();
-  });
-}
-
-function handleCreateIncludePatternButton() {
-  $("body").on("click", ".create_include_pattern_button", function () {
-    $modal = $("#includePatternModal").modal();
-  });
-}
-
-function handleCreateTitlePatternButton() {
-  $("body").on("click", ".create_title_pattern_button", function () {
-    $modal = $("#titlePatternModal").modal();
   });
 }
 

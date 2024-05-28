@@ -44,6 +44,24 @@
   width: 100%;
 } */
 
+.btn.btn-secondary {
+  box-shadow: none !important;
+}
+
+#candidate_urls_table_wrapper div.dt-info:first-of-type {
+  display: inline-block;
+  width: 25%;
+}
+
+#candidate_urls_table_wrapper div.dt-length, #exclude_patterns_table_wrapper div.dt-length, #include_patterns_table_wrapper div.dt-length, #document_type_patterns_table_wrapper div.dt-length, #title_patterns_table_wrapper div.dt-length{
+  display: inline-block;
+    width: 10%;
+}
+
+#candidate_urls_table_wrapper div.dt-buttons {
+  width: 64%;    
+  justify-content: end;
+}
 
 div.dtsp-panesContainer div.dtsp-searchPane div.dt-container, div.dtsp-panesContainer div.dtsp-searchPane div.dataTables_wrapper {
  border:none;
