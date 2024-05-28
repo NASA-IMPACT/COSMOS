@@ -154,7 +154,6 @@ function initializeDataTable() {
       getExcludedColumn(true_icon, false_icon),
       getScrapedTitleColumn(),
       getGeneratedTitleColumn(),
-      // getVisitedColumn(true_icon, false_icon),
       getDocumentTypeColumn(),
       { data: "id", visible: false, searchable: false },
       { data: "generated_title_id", visible: false, searchable: false },
@@ -615,20 +614,6 @@ function getExcludedColumn(true_icon, false_icon) {
         : `<a class="exclude_individual_url" value=${remove_protocol(
             row["url"]
           )}>${false_icon}</a>`;
-    },
-  };
-}
-
-function getVisitedColumn(true_icon, false_icon) {
-  true_icon =
-    '<i class="material-icons visited_icon" style="color: green">check</i>';
-  false_icon =
-    '<i class="material-icons visited_icon" style="color: red">close</i>';
-  return {
-    data: "visited",
-    class: "col-1 text-center",
-    render: function (data, type, row) {
-      return data === true ? true_icon : false_icon;
     },
   };
 }
