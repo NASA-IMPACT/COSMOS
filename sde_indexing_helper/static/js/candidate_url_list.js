@@ -876,13 +876,12 @@ function postDocumentTypePatterns(
 }
 
 function postExcludePatterns(match_pattern, match_pattern_type = 0, force) {
-  console.log(match_pattern);
   if (!match_pattern) {
     toastr.error("Please highlight a pattern to exclude.");
     return;
   }
   if(!force){ //If the user clicked the icon in the table, we make the change regardless
-  // if pattern exists in table already
+  // if pattern exists in table already (unless another pattern overrules it)
   var table = $("#exclude_patterns_table").DataTable();
   var itemIdColumnData = table.column(0).data().toArray();
   if (itemIdColumnData.includes(match_pattern)) {
