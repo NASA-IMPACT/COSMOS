@@ -1,5 +1,6 @@
 var uniqueId; //used for logic related to contents on column customization modal
 
+
 function modalContents(tableName) {
   var checkboxCount = $("#modalBody input[type='checkbox']").length;
 
@@ -29,10 +30,11 @@ function modalContents(tableName) {
     var $label = $("<label>")
       .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
       .text(columnName);
-
+console.log(columnName);
     var $caption = $("<p>")
       .text(
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."
+        tableHeaderDefinitions[columnName]
+        // "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."
       )
       .attr({
         id: "caption",

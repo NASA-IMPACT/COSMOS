@@ -59,6 +59,8 @@ function modalContents(tableName) {
       .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
       .text(columnName);
 
+      console.log(columnName);
+
     var $caption = $("<p>")
       .text(
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."
