@@ -26,7 +26,7 @@ body {
 
 .dtsp-nameButton{
     opacity:0.6;
-    background-color: transparent;
+    background-color: transparent !important;
     border:none !important;
     box-shadow: none;
 }
@@ -44,7 +44,7 @@ body {
 
 .dtsp-countButton{
     opacity:0.6;
-    background-color: transparent;
+    background-color: transparent !important;
     border:none !important;
     box-shadow: none;
     color:#A7BACD;
@@ -56,14 +56,14 @@ body {
 
 .clearButton{
     opacity:0.6;
-    background-color: transparent;
+    background-color: transparent !important;
     border:none !important;
     box-shadow: none;
 }
 
 .dtsp-searchIcon{
     opacity:0.6;
-    background-color: transparent;
+    background-color: transparent !important;
     border:none !important;
     box-shadow: none;
 }
@@ -258,4 +258,16 @@ margin-bottom: 0 !important;
         bottom: 0;
         padding: 10px 0;
         background: #FFFFFF;
+      }
+
+      .dtsp-collapseAll{
+        color:white !important;
+      }
+
+      .dtsp-showAll{
+        color:white !important;
+      }
+
+      .dtsp-clearAll{
+        color:white !important;
       }

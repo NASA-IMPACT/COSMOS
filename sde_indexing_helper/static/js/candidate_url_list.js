@@ -863,6 +863,13 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0) {
     toastr.error("Please highlight a pattern to exclude.");
     return;
   }
+  // if pattern exists in table already
+  var table = $("#exclude_patterns_table").DataTable();
+  var itemIdColumnData = table.column(0).data().toArray();
+  if (itemIdColumnData.includes(match_pattern)) {
+    toastr.success("Pattern already exists");
+    return;
+  }
 
   $.ajax({
     url: "/api/exclude-patterns/",
@@ -893,6 +900,14 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0) {
 function postIncludePatterns(match_pattern, match_pattern_type = 0) {
   if (!match_pattern) {
     toastr.error("Please highlight a pattern to include.");
+    return;
+  }
+
+  // if pattern exists in table already
+  var table = $("#include_patterns_table").DataTable();
+  var itemIdColumnData = table.column(0).data().toArray();
+  if (itemIdColumnData.includes(match_pattern)) {
+    toastr.success("Pattern already exists");
     return;
   }
 
@@ -1119,8 +1134,19 @@ $(".custom-menu li").click(function () {
 
 $("#exclude_pattern_form").on("submit", function (e) {
   e.preventDefault();
-  inputs = {};
+
+  // if pattern exists
+  var table = $("#exclude_patterns_table").DataTable();
+  var itemIdColumnData = table.column(0).data().toArray();
   input_serialized = $(this).serializeArray();
+  if (itemIdColumnData.includes(input_serialized[0].value)) {
+    toastr.success("Pattern already exists");
+    $("#excludePatternModal").modal("hide");
+    return;
+  }
+
+  // if pattern does not exist
+  inputs = {};
   input_serialized.forEach((field) => {
     inputs[field.name] = field.value;
   });
@@ -1136,8 +1162,19 @@ $("#exclude_pattern_form").on("submit", function (e) {
 
 $("#include_pattern_form").on("submit", function (e) {
   e.preventDefault();
-  inputs = {};
+
+  // if pattern exists
+  var table = $("#include_patterns_table").DataTable();
+  var itemIdColumnData = table.column(0).data().toArray();
   input_serialized = $(this).serializeArray();
+  if (itemIdColumnData.includes(input_serialized[0].value)) {
+    toastr.success("Pattern already exists");
+    $("#includePatternModal").modal("hide");
+    return;
+  }
+
+  // if pattern does not exist
+  inputs = {};
   input_serialized.forEach((field) => {
     inputs[field.name] = field.value;
   });
