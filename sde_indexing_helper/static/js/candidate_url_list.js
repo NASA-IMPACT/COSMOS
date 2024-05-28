@@ -125,6 +125,29 @@ function initializeDataTable() {
         d.is_excluded = $("#filter-checkbox").is(":checked") ? false : null;
       },
     },
+    // initComplete: function (data) {
+    //   const addDropdownSelect = [1, 4, 5];
+    //   const dict = {
+    //     1: "Images",
+    //     2: "Data",
+    //     3: "Documentation",
+    //     4: "Software and Tools",
+    //     5: "Missions and Instruments",
+    //     6: "Training and Education",
+    //   };
+    //   this.api()
+    //     .columns()
+    //     .every(function (index) {
+    //       let column = this;
+    //       if (addDropdownSelect.includes(index)) {
+    //         $("thead tr td select.dropdown-" + index).on("change", function () {
+    //           var val = $.fn.dataTable.util.escapeRegex($(this).val());
+    //           column.search(val ? "^" + val + "$" : "", true, false).draw();
+    //         });
+    //       }
+    //     });
+    // },
+
     initComplete: function (data) {
       const addDropdownSelect = [1, 4, 5];
       const dict = {
@@ -144,6 +167,17 @@ function initializeDataTable() {
               var val = $.fn.dataTable.util.escapeRegex($(this).val());
               column.search(val ? "^" + val + "$" : "", true, false).draw();
             });
+            // Add list of options
+            column
+              .data()
+              .unique()
+              .sort()
+              .each(function (d, j) {
+                let val = index === 5 ? dict[d] : d;
+                $("thead tr td select.dropdown-" + index).append(
+                  '<option value="' + d + '">' + val + "</option>"
+                );
+              });
           }
         });
     },
