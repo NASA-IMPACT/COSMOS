@@ -242,3 +242,21 @@ body {
   border-width: 1px !important;
   border-color: #A7BACD !important;
  }
+
+.user-bubble {
+  width: 30px;
+  height: 30px;
+  background-color: #2C3542;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+ .user-icon {
+  color: #FFFFFF;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 0 0 0 !important;
+ }
