@@ -144,6 +144,14 @@
                         <td ></td>
                         <td ></td>
                     </tr> -->
+                    <tr>
+                        <td ><input type="text" class="table_filter_row_input" id="candidateMatchPatternFilter" placeholder="Match Pattern" /></td>
+                        <td > <select id="exclude-patterns-dropdown-1" class="select-dropdown"><option value="">SELECT</option></select>
+                            <td ><input type="text" class="table_filter_row_input" id="candidateReasonFilter" placeholder="Reason" /></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                    </tr>
                 </thead>
             </table>
             <hr>
@@ -185,6 +193,13 @@
                         <td ></td>
                         <td ></td>
                     </tr> -->
+                    <tr>
+                        <td ><input type="text" class="table_filter_row_input" id="candidateIncludeMatchPatternFilter" placeholder="Match Pattern" /></td>
+                        <td > <select id="include-patterns-dropdown-1" class="select-dropdown"><option value="">SELECT</option></select></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                    </tr>
                 </thead>
             </table>
 
@@ -219,13 +234,21 @@
                             <strong>ID</strong>
                         </th>
                     </tr>
-                    <tr>
+                    <!-- <tr>
                         <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateTitleMatchPatternFilter" placeholder="Match Pattern" /></td>
                         <td > <select id="title-patterns-dropdown-1" class="select-dropdown selectStyling"><option value="">SELECT</option>
                             <option value="Individual URL Pattern">Individual URL Pattern</option>
                             <option value="Multi-URL Pattern">Multi-URL Pattern</option>
                         </select></td>
                         <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateTitlePatternTypeFilter" placeholder="Title Pattern" /></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                    </tr> -->
+                    <tr>
+                        <td ><input type="text" class="table_filter_row_input" id="candidateTitleMatchPatternFilter" placeholder="Match Pattern" /></td>
+                        <td > <select id="title-patterns-dropdown-1" class="select-dropdown"><option value="">SELECT</option></select></td>
+                        <td ><input type="text" class="table_filter_row_input" id="candidateTitlePatternTypeFilter" placeholder="Title Pattern" /></td>
                         <td ></td>
                         <td ></td>
                         <td ></td>
@@ -263,7 +286,7 @@
                             <strong>ID</strong>
                         </th>
                     </tr>
-                    <tr>
+                    <!-- <tr>
                         <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateDocTypeMatchPatternFilter" placeholder="Match Pattern" /></td>
                         <td ><select id="document-type-patterns-dropdown-1" class="select-dropdown selectStyling"><option value="">SELECT</option>
                             <option value="Individual URL Pattern">Individual URL Pattern</option>
@@ -280,7 +303,17 @@
                         <td ></td>
                         <td ></td>
                         <td ></td>
-                    </tr>
+                    </tr> -->
+
+    <tr>
+        <td ><input type="text" class="table_filter_row_input" id="candidateDocTypeMatchPatternFilter" placeholder="Match Pattern" /></td>
+        <td ><select id="document-type-patterns-dropdown-1" class="select-dropdown"><option value="">SELECT<div></div></option></select></td>
+        <td ><select id="document-type-patterns-dropdown-2" class="select-dropdown"><option value="">SELECT<div></div></option></select></td>
+        <td ></td>
+        <td ></td>
+        <td ></td>
+    </tr>
+
                 </thead>
             </table>
         </div>
