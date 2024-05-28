@@ -577,11 +577,6 @@ function setupClickHandlers() {
   handleHideorShowSubmitButton();
   handleAddNewPatternClick();
 
-  handleCreateDocumentTypePatternButton();
-  handleCreateExcludePatternButton();
-  handleCreateIncludePatternButton();
-  handleCreateTitlePatternButton();
-
   handleDeleteDocumentTypeButtonClick();
   handleDeleteExcludePatternButtonClick();
   handleDeleteIncludePatternButtonClick();
