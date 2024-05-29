@@ -224,6 +224,8 @@ letter-spacing: -0.02em;
 
 .title-dropdown {
     width: fit-content !important;
+    margin-top:20px;
+    margin-bottom:20px;
 }
 .table tbody tr:nth-child(odd) {
     background-color: #050E19 !important;
@@ -278,4 +280,9 @@ letter-spacing: -0.02em;
    div.dt-container div.dt-info {
     padding-top: 0;
     white-space: normal;
+}
+
+.headerDiv{
+    display: flex;
+    justify-content: space-between;
 }
