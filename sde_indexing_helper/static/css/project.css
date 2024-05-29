@@ -242,3 +242,15 @@ body {
   border-width: 1px !important;
   border-color: #A7BACD !important;
  }
+
+ .dropdown-menu{
+  background-color:#15232E;
+ }
+
+ .dropdown-item{
+  color:white !important;
+ }
+
+ .dropdown-item:hover{
+  background-color:#0066CA !important;
+ }

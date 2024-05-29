@@ -279,3 +279,7 @@ letter-spacing: -0.02em;
     padding-top: 0;
     white-space: normal;
 }
+
+.selected{
+    background-color: inherit !important;
+}

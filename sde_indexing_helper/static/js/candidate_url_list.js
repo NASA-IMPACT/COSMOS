@@ -109,10 +109,6 @@ function initializeDataTable() {
         },
       },
     ],
-    select: {
-      style: "os",
-      selector: "td:nth-child(5)",
-    },
     rowId: "url",
     stateLoadCallback: function (settings) {
       var state = JSON.parse(
@@ -673,7 +669,7 @@ function getDocumentTypeColumn() {
       button_text = data ? dict[data] : "Select";
       button_color = data ? "btn-success" : "btn-secondary";
       return `
-            <div class="dropdown document_type_dropdown " data-match-pattern=${remove_protocol(
+            <div  data-match-pattern=${remove_protocol(
               row["url"]
             )}>
               <button class="btn ${button_color} btn-sm dropdown-toggle selectStyling" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
