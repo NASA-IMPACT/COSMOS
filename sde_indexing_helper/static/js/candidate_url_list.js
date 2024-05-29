@@ -98,6 +98,18 @@ function initializeDataTable() {
         exportOptions: {
           columns: [0, 1, 2, 3, 4, 5],
         },
+        customize: function (csv) {
+          console.log("CSV", csv.split("\n")[1].split('","'));
+          console.log("CSV", csv.split("\n")[2].split('","'));
+          // // Customization logic for the CSV
+          // // e.g., Add a header row, modify content, etc.
+          // var csvRows = csv.split("\n");
+          // // Add a custom header
+          // csvRows.unshift(
+          //   "Custom Header 1, Custom Header 2, Custom Header 3, Custom Header 4, Custom Header 5, Custom Header 6"
+          // );
+          // return csvRows.join("\n");
+        },
       },
       "spacer",
       {
