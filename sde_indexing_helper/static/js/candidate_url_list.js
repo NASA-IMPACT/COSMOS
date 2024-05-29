@@ -109,7 +109,7 @@ function initializeDataTable() {
       {
         extend: "csv",
         exportOptions: {
-          columns: [0, 1, 2, 3, 4, 11],
+          columns: [0, 1, 2, 3, 10],
         },
         customize: function (csv) {
           var lines = csv.split("\n");
@@ -878,14 +878,16 @@ function postDocumentTypePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
-      if(currentTab === ""){ //Only add a notification if we are on the first tab
-      newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
-      $("#documentTypePatternsTab").html(
-        `Document Type Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newDocumentTypePatternsCount + " new" + 
-          `</span>`
-      );
-    }
+      if (currentTab === "") {
+        //Only add a notification if we are on the first tab
+        newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
+        $("#documentTypePatternsTab").html(
+          `Document Type Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+            newDocumentTypePatternsCount +
+            " new" +
+            `</span>`
+        );
+      }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -899,15 +901,16 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0, force) {
     toastr.error("Please highlight a pattern to exclude.");
     return;
   }
-  if(!force){ //If the user clicked the icon in the table, we make the change regardless
-  // if pattern exists in table already (unless another pattern overrules it)
-  var table = $("#exclude_patterns_table").DataTable();
-  var itemIdColumnData = table.column(0).data().toArray();
-  if (itemIdColumnData.includes(match_pattern)) {
-    toastr.success("Pattern already exists");
-    return;
+  if (!force) {
+    //If the user clicked the icon in the table, we make the change regardless
+    // if pattern exists in table already (unless another pattern overrules it)
+    var table = $("#exclude_patterns_table").DataTable();
+    var itemIdColumnData = table.column(0).data().toArray();
+    if (itemIdColumnData.includes(match_pattern)) {
+      toastr.success("Pattern already exists");
+      return;
+    }
   }
-}
 
   $.ajax({
     url: "/api/exclude-patterns/",
@@ -921,14 +924,16 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0, force) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
-      if(currentTab === ""){ //Only add a notification if we are on the first tab
-      newExcludePatternsCount = newExcludePatternsCount + 1;
-      $("#excludePatternsTab").html(
-        `Exclude Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newExcludePatternsCount + " new" + 
-          `</span>`
-      );
-    }
+      if (currentTab === "") {
+        //Only add a notification if we are on the first tab
+        newExcludePatternsCount = newExcludePatternsCount + 1;
+        $("#excludePatternsTab").html(
+          `Exclude Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+            newExcludePatternsCount +
+            " new" +
+            `</span>`
+        );
+      }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -963,14 +968,16 @@ function postIncludePatterns(match_pattern, match_pattern_type = 0) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#include_patterns_table").DataTable().ajax.reload(null, false);
-      if(currentTab === ""){ //Only add a notification if we are on the first tab
-      newIncludePatternsCount = newIncludePatternsCount + 1;
-      $("#includePatternsTab").html(
-        `Include Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newIncludePatternsCount + " new" + 
-          `</span>`
-      );
-    }
+      if (currentTab === "") {
+        //Only add a notification if we are on the first tab
+        newIncludePatternsCount = newIncludePatternsCount + 1;
+        $("#includePatternsTab").html(
+          `Include Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+            newIncludePatternsCount +
+            " new" +
+            `</span>`
+        );
+      }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -1002,14 +1009,16 @@ function postTitlePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#title_patterns_table").DataTable().ajax.reload(null, false);
-      if(currentTab === ""){ //Only add a notification if we are on the first tab
-      newTitlePatternsCount = newTitlePatternsCount + 1;
-      $("#titlePatternsTab").html(
-        `Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newTitlePatternsCount + " new" + 
-          `</span>`
-      );
-    }
+      if (currentTab === "") {
+        //Only add a notification if we are on the first tab
+        newTitlePatternsCount = newTitlePatternsCount + 1;
+        $("#titlePatternsTab").html(
+          `Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+            newTitlePatternsCount +
+            " new" +
+            `</span>`
+        );
+      }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
