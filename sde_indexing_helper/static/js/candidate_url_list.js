@@ -13,6 +13,14 @@ var matchPatternTypeMap = {
   "Multi-URL Pattern": 2,
 };
 var uniqueId; //used for logic related to contents on column customization modal
+const dict = {
+  1: "Images",
+  2: "Data",
+  3: "Documentation",
+  4: "Software and Tools",
+  5: "Missions and Instruments",
+  6: "Training and Education",
+};
 
 //fix table allignment when changing around tabs
 $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
@@ -96,19 +104,29 @@ function initializeDataTable() {
       {
         extend: "csv",
         exportOptions: {
-          columns: [0, 1, 2, 3, 4, 5],
+          columns: [0, 1, 2, 3, 4, 11],
         },
         customize: function (csv) {
-          console.log("CSV", csv.split("\n")[1].split('","'));
-          console.log("CSV", csv.split("\n")[2].split('","'));
-          // // Customization logic for the CSV
-          // // e.g., Add a header row, modify content, etc.
-          // var csvRows = csv.split("\n");
-          // // Add a custom header
-          // csvRows.unshift(
-          //   "Custom Header 1, Custom Header 2, Custom Header 3, Custom Header 4, Custom Header 5, Custom Header 6"
-          // );
-          // return csvRows.join("\n");
+          var lines = csv.split("\n");
+          console.log("lines[1].split(", ")", lines[1].split(","));
+          const colInfo = {
+            0: $("#candidateUrlFilter").val() || "No input",
+            1: $(".dropdown-1").val() || "SELECT",
+            2: $("#candidateScrapedTitleFilter").val() || "No input",
+            3: $("#candidateNewTitleFilter").val() || "No input",
+            4: $(".dropdown-4").val() || "SELECT",
+            5: dict[$(".dropdown-5").val()] || "SELECT",
+          };
+          if (lines.length > 2) {
+            var secondRow = lines[1].split(",");
+            // Modify the second row as needed
+            for (let key in colInfo) {
+              secondRow[key] = colInfo[key];
+            }
+
+            lines[1] = secondRow.join(",");
+          }
+          return lines.join("\n");
         },
       },
       "spacer",
@@ -143,14 +161,6 @@ function initializeDataTable() {
     },
     initComplete: function (data) {
       const addDropdownSelect = [1, 4, 5];
-      const dict = {
-        1: "Images",
-        2: "Data",
-        3: "Documentation",
-        4: "Software and Tools",
-        5: "Missions and Instruments",
-        6: "Training and Education",
-      };
       this.api()
         .columns()
         .every(function (index) {
@@ -176,6 +186,14 @@ function initializeDataTable() {
       { data: "match_pattern_type", visible: false, searchable: false },
       { data: "candidate_urls_count", visible: false, searchable: false },
       { data: "excluded", visible: false, searchable: false },
+      {
+        data: null,
+        render: function (data, type, row) {
+          if (!row.document_type) return "Select";
+          return dict[row.document_type];
+        },
+        visible: false,
+      },
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
