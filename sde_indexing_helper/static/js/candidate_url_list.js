@@ -93,8 +93,12 @@ function initializeDataTable() {
     pagingType: "input",
     dom: "lBritip",
     buttons: [
-      "spacer",
-      "csv",
+      {
+        extend: "csv",
+        exportOptions: {
+          columns: [0, 1, 2, 3, 4, 5],
+        },
+      },
       "spacer",
       {
         text: "Customize Columns",
