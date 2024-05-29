@@ -129,7 +129,7 @@ body {
 }
 
  .whiteText{
-  color:white;
+  color:white !important;
  }
  .dt-info{
   color:white;
@@ -241,4 +241,12 @@ body {
   border-style: solid !important;
   border-width: 1px !important;
   border-color: #A7BACD !important;
+ }
+
+ .customizeColumnContainer{
+  background-color: #15232E !important;
+ }
+
+ .headerDescription{
+  font-family: sans-serif;
  }
