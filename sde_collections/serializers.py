@@ -26,8 +26,9 @@ class CollectionSerializer(serializers.ModelSerializer):
             "curated_by",
             "division",
             "document_type",
+            "name",
         )
-        extra_kwargs = {"division":{'required': False}, "document_type":{'required': False}}
+        extra_kwargs = {"division":{'required': False}, "document_type":{'required': False}, "name":{'required': False}}
 
         # extra_kwargs = {
         #     "name": {"required": False},

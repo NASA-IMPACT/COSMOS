@@ -122,14 +122,14 @@
 .nav-item > .active {
     color: #0066CA;
     font-weight: 700;
-    border-bottom: 2px solid #FF3D57;
-    padding-bottom: 30px;
+    border-bottom: 3px solid #FF3D57;
+    padding-bottom: 15px;
 }
 
 /* line under the tab options */
 div > .nav {
-    padding-bottom: 30px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+    padding-bottom: 15px;
+    border-bottom: 1px solid #F8FAFB;
 }
 
 /* badge showing workflow status by header */
@@ -143,7 +143,7 @@ div > .nav {
     width: 100%;
 }
 
-.body-content {
+.candidateUrlContainer {
     background: #15232E;
     padding: 40px 30px;
     border-radius: 15px;
@@ -207,21 +207,14 @@ letter-spacing: -0.02em;
 }
 
 .sorting_1 {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    overflow: visible;
+    white-space: normal;
+    word-wrap: break-word;
     max-width: 600px;
     width: 600px;
     color: #65B1EF;
   }
-
- .sorting_1:hover {
-    overflow: visible;
-    white-space: normal;
-    word-wrap: break-word;
-    z-index: 1;
- }
-
+  
 .title-dropdown {
     width: fit-content !important;
 }
@@ -232,3 +225,50 @@ letter-spacing: -0.02em;
    .table tbody tr:nth-child(even) {
     background-color: #3F4A58 !important;
    }
+   .candidateTitle{
+    font-size:24px;
+    font-weight: 500;
+   }
+
+   .pageTitle{
+    font-size:56px;
+    color:white;
+    font-weight:500;
+   }
+   
+   .custom-select, .buttons-csv, .customizeColumns, .addPattern{
+    border-style: solid !important;
+    border-color: #A7BACD !important;
+    border-width: 1px !important;
+    color:#A7BACD !important;
+    border-radius: 5px !important;
+    padding: 11px 15px;
+   }
+
+   .addPattern {
+    background-color: #0066CA !important;
+    border-color: #0066CA !important;
+    color: #fff !important;
+   }
+
+   #exclude_patterns_table_wrapper .dt-buttons, #include_patterns_table_wrapper .dt-buttons, #document_type_patterns_table_wrapper .dt-buttons, #title_patterns_table_wrapper .dt-buttons {
+    width: 89%;
+    justify-content: end;
+   }
+
+   .customizeColumns {
+    margin-left: 10px !important;
+   }
+
+   .form-control:read-only  {
+    background-image: none;
+   }
+
+    .dt-container div.dt-length label {
+    display: none;
+   }
+
+   div.dt-container div.dt-info {
+    padding-top: 0;
+    white-space: normal;
+}

@@ -13,7 +13,7 @@
 <div class="row">
     <div class="col-md-6 titleCol">
 
-        <h1>{{ collection.name }}</h1>
+        <h1 class="nameWrapper"><div class="collectionName" id="collectionName">{{ collection.name }}</div><img class="editTitle" src="../../static/images/Task.png"></img></h1>
         <div class="badge-container">
             <div class="dropdown workflow_status_dropdown"
             data-match-pattern
@@ -49,10 +49,10 @@
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">
         <li class="nav-item">
-            <a class="tab-nav active detailsTab" data-toggle="tab" href="#metadata">Metadata</a>
+            <a class="tab-nav active tabStyle" data-toggle="tab" href="#metadata">Metadata</a>
         </li>
         <li class="nav-item">
-            <a class="tab-nav detailsTab" data-toggle="tab" href="#statustimeline">Status Timeline</a>
+            <a class="tab-nav tabStyle" data-toggle="tab" href="#statustimeline">Status Timeline</a>
         </li>
     </ul>
 
@@ -245,12 +245,12 @@
         </div>
       </div>
 
-      <div class="modal" id="areYouSureModal" tabindex="-1"
-    aria-labelledby="areYouSureModal" aria-hidden="true">
+      <div class="modal" id="divisionChangeModal" tabindex="-1"
+    aria-labelledby="divisionChangeModal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="closeModalButton">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="closeDivisionModal">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -259,17 +259,45 @@
                     <p class="caption" id="caption"></p>
                 </div>
                 <div class="modal-footer">
-                    <form>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="makeChangeButton">Yes</button>
-                    <button type="submit" class="btn btn-primary" id="dontMakeChangeButton">No</button>
-                </form>
+                    <form id="divisionChangeModalForm">
+                        <div>
+                        <button type="submit" class="btn btn-secondary" id="cancelDivisionChange">No</button> 
+                        <button type="submit" class="btn btn-primary" data-dismiss="modal" id="makeDivisionChange">Yes</button> 
+                        </div>
+                        </form>
                 </div>
         </div>
     </div>
 </div>
 
+<div class="modal" id="titleChangeModal" tabindex="-1"
+aria-labelledby="titleChangeModal" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="closeTitleModal">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+            <div class="modal-body" id="modal-body">
+                <h5 class="modal-title">Rename Collection</h5>
+                <p class="caption" id="titleCaption"></p>
+            </div>
+            <div class="modal-footer">
+                <form id="titleChangeModalForm">
+                        <input type="text" name="inputFieldName" id="inputFieldId"> 
+                        <div>
+                        <button type="submit" class="btn btn-secondary" id="cancelTitleRename">Cancel</button> 
+                        <button type="submit" class="btn btn-primary" data-dismiss="modal" id="renameTitle">Rename</button> 
+                    </div>
+                    </form>
+            </div>
+    </div>
+</div>
+</div>
+
 {% endblock content %}
 {% block javascripts %}
 <script src="{% static 'js/collection_detail.js' %}"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script src="{% static 'js/core/bootstrap.min.js' %}"></script>
 {% endblock javascripts %}

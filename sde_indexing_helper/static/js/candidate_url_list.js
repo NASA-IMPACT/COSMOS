@@ -8,6 +8,7 @@ var newIncludePatternsCount = 0;
 var newExcludePatternsCount = 0;
 var newTitlePatternsCount = 0;
 var newDocumentTypePatternsCount = 0;
+var currentTab = ""; //blank for the first tab
 var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
   "Multi-URL Pattern": 2,
@@ -24,6 +25,7 @@ const dict = {
 
 //fix table allignment when changing around tabs
 $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
+  currentTab = e.target.id;
   $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
 });
 
@@ -93,13 +95,16 @@ function initializeDataTable() {
 
   var candidate_urls_table = $("#candidate_urls_table").DataTable({
     // scrollY: true,
-    lengthMenu: [25, 50, 100, 500],
+    lengthMenu: [
+      [25, 50, 100, 500],
+      ["Show 25", "Show 50", "Show 100", "Show 500"],
+    ],
     pageLength: 100,
     stateSave: true,
     serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
-    dom: "lBritip",
+    dom: "ilBrtip",
     buttons: [
       {
         extend: "csv",
@@ -132,6 +137,7 @@ function initializeDataTable() {
       "spacer",
       {
         text: "Customize Columns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#candidate_urls_table");
         },
@@ -179,7 +185,6 @@ function initializeDataTable() {
       getExcludedColumn(true_icon, false_icon),
       getScrapedTitleColumn(),
       getGeneratedTitleColumn(),
-      getVisitedColumn(true_icon, false_icon),
       getDocumentTypeColumn(),
       { data: "id", visible: false, searchable: false },
       { data: "generated_title_id", visible: false, searchable: false },
@@ -229,13 +234,24 @@ function initializeDataTable() {
     dom: "lBrtip",
     buttons: [
       {
+        text: "Add Pattern",
+        className: "addPattern",
+        action: function () {
+          $modal = $("#excludePatternModal").modal();
+        },
+      },
+      {
         text: "Customize Columns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#exclude_patterns_table");
         },
       },
     ],
-    lengthMenu: [25, 50, 100, 500],
+    lengthMenu: [
+      [25, 50, 100, 500],
+      ["Show 25", "Show 50", "Show 100", "Show 500"],
+    ],
     orderCellsTop: true,
     pageLength: 100,
     ajax: `/api/exclude-patterns/?format=datatables&collection_id=${collection_id}`,
@@ -303,11 +319,22 @@ function initializeDataTable() {
 
   var include_patterns_table = $("#include_patterns_table").DataTable({
     // scrollY: true,
-    lengthMenu: [25, 50, 100, 500],
+    lengthMenu: [
+      [25, 50, 100, 500],
+      ["Show 25", "Show 50", "Show 100", "Show 500"],
+    ],
     dom: "lBrtip",
     buttons: [
       {
+        text: "Add Pattern",
+        className: "addPattern",
+        action: function () {
+          $modal = $("#includePatternModal").modal();
+        },
+      },
+      {
         text: "Customize Columns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#include_patterns_table");
         },
@@ -376,13 +403,24 @@ function initializeDataTable() {
     dom: "lBrtip",
     buttons: [
       {
+        text: "Add Pattern",
+        className: "addPattern",
+        action: function () {
+          $modal = $("#titlePatternModal").modal();
+        },
+      },
+      {
         text: "Customize Columns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#title_patterns_table");
         },
       },
     ],
-    lengthMenu: [25, 50, 100, 500],
+    lengthMenu: [
+      [25, 50, 100, 500],
+      ["Show 25", "Show 50", "Show 100", "Show 500"],
+    ],
     pageLength: 100,
     orderCellsTop: true,
     ajax: `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
@@ -455,14 +493,25 @@ function initializeDataTable() {
     dom: "lBrtip",
     buttons: [
       {
+        text: "Add Pattern",
+        className: "addPattern",
+        action: function () {
+          $modal = $("#documentTypePatternModal").modal();
+        },
+      },
+      {
         text: "Customize Columns",
+        className: "customizeColumns",
         action: function () {
           modalContents("#document_type_patterns_table");
         },
       },
     ],
     serverSide: true,
-    lengthMenu: [25, 50, 100, 500],
+    lengthMenu: [
+      [25, 50, 100, 500],
+      ["Show 25", "Show 50", "Show 100", "Show 500"],
+    ],
     orderCellsTop: true,
     pageLength: 100,
     ajax: `/api/document-type-patterns/?format=datatables&collection_id=${collection_id}`,
@@ -575,11 +624,6 @@ function setupClickHandlers() {
   handleHideorShowSubmitButton();
   handleAddNewPatternClick();
 
-  handleCreateDocumentTypePatternButton();
-  handleCreateExcludePatternButton();
-  handleCreateIncludePatternButton();
-  handleCreateTitlePatternButton();
-
   handleDeleteDocumentTypeButtonClick();
   handleDeleteExcludePatternButtonClick();
   handleDeleteIncludePatternButtonClick();
@@ -648,20 +692,6 @@ function getExcludedColumn(true_icon, false_icon) {
   };
 }
 
-function getVisitedColumn(true_icon, false_icon) {
-  true_icon =
-    '<i class="material-icons visited_icon" style="color: green">check</i>';
-  false_icon =
-    '<i class="material-icons visited_icon" style="color: red">close</i>';
-  return {
-    data: "visited",
-    class: "col-1 text-center",
-    render: function (data, type, row) {
-      return data === true ? true_icon : false_icon;
-    },
-  };
-}
-
 function getDocumentTypeColumn() {
   return {
     data: "document_type",
@@ -712,30 +742,6 @@ function handleHideorShowSubmitButton() {
   });
 }
 
-function handleCreateDocumentTypePatternButton() {
-  $("body").on("click", ".create_document_type_pattern_button", function () {
-    $modal = $("#documentTypePatternModal").modal();
-  });
-}
-
-function handleCreateExcludePatternButton() {
-  $("body").on("click", ".create_exclude_pattern_button", function () {
-    $modal = $("#excludePatternModal").modal();
-  });
-}
-
-function handleCreateIncludePatternButton() {
-  $("body").on("click", ".create_include_pattern_button", function () {
-    $modal = $("#includePatternModal").modal();
-  });
-}
-
-function handleCreateTitlePatternButton() {
-  $("body").on("click", ".create_title_pattern_button", function () {
-    $modal = $("#titlePatternModal").modal();
-  });
-}
-
 function handleDocumentTypeSelect() {
   $("body").on("click", ".document_type_select", function () {
     $match_pattern = $(this)
@@ -759,7 +765,8 @@ function handleExcludeIndividualUrlClick() {
   $("body").on("click", ".exclude_individual_url", function () {
     postExcludePatterns(
       (match_pattern = $(this).attr("value")),
-      (match_pattern_type = 1)
+      (match_pattern_type = 1),
+      true
     );
   });
 }
@@ -871,12 +878,14 @@ function postDocumentTypePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
+      if(currentTab === ""){ //Only add a notification if we are on the first tab
       newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
       $("#documentTypePatternsTab").html(
         `Document Type Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newDocumentTypePatternsCount +
+          newDocumentTypePatternsCount + " new" + 
           `</span>`
       );
+    }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -885,11 +894,20 @@ function postDocumentTypePatterns(
   });
 }
 
-function postExcludePatterns(match_pattern, match_pattern_type = 0) {
+function postExcludePatterns(match_pattern, match_pattern_type = 0, force) {
   if (!match_pattern) {
     toastr.error("Please highlight a pattern to exclude.");
     return;
   }
+  if(!force){ //If the user clicked the icon in the table, we make the change regardless
+  // if pattern exists in table already (unless another pattern overrules it)
+  var table = $("#exclude_patterns_table").DataTable();
+  var itemIdColumnData = table.column(0).data().toArray();
+  if (itemIdColumnData.includes(match_pattern)) {
+    toastr.success("Pattern already exists");
+    return;
+  }
+}
 
   $.ajax({
     url: "/api/exclude-patterns/",
@@ -903,12 +921,14 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+      if(currentTab === ""){ //Only add a notification if we are on the first tab
       newExcludePatternsCount = newExcludePatternsCount + 1;
       $("#excludePatternsTab").html(
         `Exclude Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newExcludePatternsCount +
+          newExcludePatternsCount + " new" + 
           `</span>`
       );
+    }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -920,6 +940,14 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0) {
 function postIncludePatterns(match_pattern, match_pattern_type = 0) {
   if (!match_pattern) {
     toastr.error("Please highlight a pattern to include.");
+    return;
+  }
+
+  // if pattern exists in table already
+  var table = $("#include_patterns_table").DataTable();
+  var itemIdColumnData = table.column(0).data().toArray();
+  if (itemIdColumnData.includes(match_pattern)) {
+    toastr.success("Pattern already exists");
     return;
   }
 
@@ -935,12 +963,14 @@ function postIncludePatterns(match_pattern, match_pattern_type = 0) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#include_patterns_table").DataTable().ajax.reload(null, false);
+      if(currentTab === ""){ //Only add a notification if we are on the first tab
       newIncludePatternsCount = newIncludePatternsCount + 1;
       $("#includePatternsTab").html(
         `Include Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newIncludePatternsCount +
+          newIncludePatternsCount + " new" + 
           `</span>`
       );
+    }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -972,12 +1002,14 @@ function postTitlePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#title_patterns_table").DataTable().ajax.reload(null, false);
+      if(currentTab === ""){ //Only add a notification if we are on the first tab
       newTitlePatternsCount = newTitlePatternsCount + 1;
       $("#titlePatternsTab").html(
         `Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newTitlePatternsCount +
+          newTitlePatternsCount + " new" + 
           `</span>`
       );
+    }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -1146,8 +1178,19 @@ $(".custom-menu li").click(function () {
 
 $("#exclude_pattern_form").on("submit", function (e) {
   e.preventDefault();
-  inputs = {};
+
+  // if pattern exists
+  var table = $("#exclude_patterns_table").DataTable();
+  var itemIdColumnData = table.column(0).data().toArray();
   input_serialized = $(this).serializeArray();
+  if (itemIdColumnData.includes(input_serialized[0].value)) {
+    toastr.success("Pattern already exists");
+    $("#excludePatternModal").modal("hide");
+    return;
+  }
+
+  // if pattern does not exist
+  inputs = {};
   input_serialized.forEach((field) => {
     inputs[field.name] = field.value;
   });
@@ -1163,8 +1206,19 @@ $("#exclude_pattern_form").on("submit", function (e) {
 
 $("#include_pattern_form").on("submit", function (e) {
   e.preventDefault();
-  inputs = {};
+
+  // if pattern exists
+  var table = $("#include_patterns_table").DataTable();
+  var itemIdColumnData = table.column(0).data().toArray();
   input_serialized = $(this).serializeArray();
+  if (itemIdColumnData.includes(input_serialized[0].value)) {
+    toastr.success("Pattern already exists");
+    $("#includePatternModal").modal("hide");
+    return;
+  }
+
+  // if pattern does not exist
+  inputs = {};
   input_serialized.forEach((field) => {
     inputs[field.name] = field.value;
   });

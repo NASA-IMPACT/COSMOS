@@ -44,6 +44,24 @@
   width: 100%;
 } */
 
+.btn.btn-secondary {
+  box-shadow: none !important;
+}
+
+#candidate_urls_table_wrapper div.dt-info:first-of-type {
+  display: inline-block;
+  width: 25%;
+}
+
+#candidate_urls_table_wrapper div.dt-length, #exclude_patterns_table_wrapper div.dt-length, #include_patterns_table_wrapper div.dt-length, #document_type_patterns_table_wrapper div.dt-length, #title_patterns_table_wrapper div.dt-length{
+  display: inline-block;
+    width: 10%;
+}
+
+#candidate_urls_table_wrapper div.dt-buttons {
+  width: 64%;    
+  justify-content: end;
+}
 
 div.dtsp-panesContainer div.dtsp-searchPane div.dt-container, div.dtsp-panesContainer div.dtsp-searchPane div.dataTables_wrapper {
  border:none;
@@ -188,4 +206,57 @@ body {
 
 .urlStyle{
   color:#65B1EF !important;
+ }
+
+ .underline{
+  text-decoration: underline;
+ }
+
+ .tabStyle{
+  color:#8697A8 !important;
+}
+
+.nav-item .active{
+  color:#65B1EF !important;
+
+}
+
+.buttonColor{
+  background-color:#0066CA;
+ }
+
+ .header-title{
+  font-size:16px;
+  font-weight:600;
+ }
+
+ .dt-info{
+  font-weight:900;
+  font-size:16px;
+ }
+
+ .buttons-csv, .customizeColumns{
+  background: transparent !important;
+  color: #8697A8 !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  border-color: #A7BACD !important;
+ }
+
+.user-bubble {
+  width: 30px;
+  height: 30px;
+  background-color: #2C3542;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+ .user-icon {
+  color: #FFFFFF;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 0 0 0 !important;
  }

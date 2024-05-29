@@ -19,13 +19,16 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
     <script src="//cdn.datatables.net/plug-ins/2.0.5/pagination/input.js"></script>
     <script src="{% static 'js/candidate_url_list.js' %}"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
 {% endblock javascripts %}
+
 {% block content %}
 {% csrf_token %}
-<h3>
+<h1 class="pageTitle">Candidate URLs</h1>
+<div class="candidateUrlContainer">
+<h3 class="whiteText candidateTitle">
     {{ candidate_urls.count|intcomma }} Candidate URLs for <a
-        href="{% url 'sde_collections:detail' collection.pk %}"><strong>{{ collection.name }}</strong></a>
+        href="{% url 'sde_collections:detail' collection.pk %}"><strong class="urlStyle underline">{{ collection.name }}</strong></a>
         <button class="btn badge {{ collection.workflow_status_button_color }} dropdown-toggle title-dropdown btn-sm"
         type="button"
         data-toggle="dropdown"
@@ -47,19 +50,19 @@
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">
         <li class="nav-item">
-            <a class="tab-nav active" data-toggle="tab" href="#Candidate-URLs">Candidate URLs</a>
+            <a class="tab-nav active tabStyle" data-toggle="tab" href="#Candidate-URLs">Candidate URLs</a>
         </li>
         <li class="nav-item">
-            <a class="tab-nav" id="excludePatternsTab" data-toggle="tab" href="#Exclude-Patterns">Exclude Patterns</a>
+            <a class="tab-nav tabStyle" id="excludePatternsTab" data-toggle="tab" href="#Exclude-Patterns">Exclude Patterns</a>
         </li>
         <li class="nav-item">
-            <a class="tab-nav" id="includePatternsTab" data-toggle="tab" href="#Include-Patterns">Include Patterns</a>
+            <a class="tab-nav tabStyle" id="includePatternsTab" data-toggle="tab" href="#Include-Patterns">Include Patterns</a>
         </li>
         <li class="nav-item">
-            <a class="tab-nav" id="titlePatternsTab" data-toggle="tab" href="#Title-Patterns">Title Patterns</a>
+            <a class="tab-nav tabStyle" id="titlePatternsTab" data-toggle="tab" href="#Title-Patterns">Title Patterns</a>
         </li>
         <li class="nav-item">
-            <a class="tab-nav" id="documentTypePatternsTab" data-toggle="tab" href="#Document-Type-Patterns">Document Type Patterns</a>
+            <a class="tab-nav tabStyle" id="documentTypePatternsTab" data-toggle="tab" href="#Document-Type-Patterns">Document Type Patterns</a>
         </li>
     </ul>
 
@@ -73,7 +76,6 @@
                         <th scope="col" class="text-center col-1"><div class="header-title">Exclude</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">Scraped Title</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">New Title</div></th>
-                        <th scope="col" class="text-center col-1"><div class="header-title">Visited?</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">Document Type</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">ID</div></th>
                         <th></th>                        
@@ -90,11 +92,6 @@
                         </select></td>
                         <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateScrapedTitleFilter" placeholder="Scraped Title" /></td>
                         <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateNewTitleFilter" placeholder="New Title" /></td>
-                        <td><select class="dropdown-4 select-dropdown selectStyling">
-                            <option value="">SELECT</option>
-                            <option value="false">FALSE</option>
-                            <option value="true">TRUE</option>
-                        </select></td>
                         <td><select class="dropdown-5 select-dropdown selectStyling"><option value="">SELECT</option>
                         <option value="0">None</option>
                         <option value="1">Images</option>
@@ -115,13 +112,6 @@
             </table>
         </div>
         <div class="tab-pane fade" id="Exclude-Patterns">
-            <hr>
-            <h3>
-                Exclude Patterns
-                <button class="btn btn-primary btn-sm create_exclude_pattern_button">
-                    Add Pattern
-                </button>
-            </h3>
             <table class="table" id="exclude_patterns_table" style="width:100%">
                 <thead class="tableHeader">
                     <tr>
@@ -149,12 +139,6 @@
         </div>
 
         <div class="tab-pane fade" id="Include-Patterns">
-            <h3>
-                Include Patterns
-                <button class="btn btn-primary btn-sm create_include_pattern_button">
-                    Add Pattern
-                </button>
-            </h3>
             <table class="table" id="include_patterns_table" style="width:100%">
                 <thead class="tableHeader">
                     <tr>
@@ -189,13 +173,6 @@
 
         </div>
         <div class="tab-pane fade" id="Title-Patterns">
-            <hr>
-            <h3>
-                Title Patterns
-                <button class="btn btn-primary btn-sm create_title_pattern_button">
-                    Add Pattern
-                </button>
-            </h3>
             <table class="table" id="title_patterns_table" style="width:100%">
                 <thead class="tableHeader">
                     <tr>
@@ -233,13 +210,6 @@
             </table>
         </div>
         <div class="tab-pane fade" id="Document-Type-Patterns">
-            <hr>
-            <h3>
-                Document Type Patterns
-                <button class="btn btn-primary btn-sm create_document_type_pattern_button">
-                    Add Pattern
-                </button>
-            </h3>
             <table class="table" id="document_type_patterns_table" style="width:100%">
                 <thead class="tableHeader">
                     <tr>
@@ -288,7 +258,7 @@
 </div>
 
 <br>
-
+</div>
 
 
 <ul class="custom-menu list-group">
