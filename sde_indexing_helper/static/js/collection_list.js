@@ -30,7 +30,6 @@ function modalContents(tableName) {
     var $label = $("<label>")
       .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
       .text(columnName);
-console.log(columnName);
     var $caption = $("<p>")
       .text(
         tableHeaderDefinitions[columnName]
