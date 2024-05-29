@@ -63,7 +63,8 @@ function modalContents(tableName) {
 
     var $caption = $("<p>")
       .text(
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."
+        // "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."
+        candidateTableHeaderDefinitons[columnName]
       )
       .attr({
         id: "caption",

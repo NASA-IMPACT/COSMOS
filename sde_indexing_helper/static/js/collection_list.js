@@ -34,7 +34,6 @@ console.log(columnName);
     var $caption = $("<p>")
       .text(
         tableHeaderDefinitions[columnName]
-        // "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore."
       )
       .attr({
         id: "caption",

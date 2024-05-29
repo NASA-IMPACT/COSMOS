@@ -13,26 +13,14 @@
 
 
 const candidateTableHeaderDefinitons = {
-  "URL": "{insert description here}",
-  "Exclude": "{insert description here}",
-  "Scraped Title": "{insert description here}",
-  "New Title" : "{insert description here}",
+  "URL": "A scraped URL.",
+  "Exclude": "Whether or not this URL is excluded from the collection.",
+  "Scraped Title": "Title scraped from the document.",
+  "New Title" : "New title set by a user.",
   "Document Type": "{insert description here}",
-  "Match Pattern" : "",
-  "Match Pattern Type": "",
-  "Reason": "",
-  "Affected URLs": "",
-  "Actions": ""
+  "Match Pattern" : "Pattern that is used to match against URLs in the collection.",
+  "Match Pattern Type": "{Insert explanation here}",
+  "Reason": "{Insert explanation here}",
+  "Affected URLs": "The URLs that match the pattern.",
+  "Actions": "Delete a pattern."
 };
-
-
-URL
-candidate_url_list.js:62 Exclude
-candidate_url_list.js:62 Scraped Title
-candidate_url_list.js:62 New Title
-candidate_url_list.js:62 Document Type
-Match Pattern
-candidate_url_list.js:62 Match Pattern Type
-candidate_url_list.js:62 Reason
-candidate_url_list.js:62 Affected URLs
-candidate_url_list.js:62 Actions
