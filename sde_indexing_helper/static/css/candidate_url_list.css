@@ -217,6 +217,8 @@ letter-spacing: -0.02em;
   
 .title-dropdown {
     width: fit-content !important;
+    margin-top:20px;
+    margin-bottom:20px;
 }
 .table tbody tr:nth-child(odd) {
     background-color: #050E19 !important;
@@ -278,4 +280,9 @@ div.dt-buttons .btn.processing:after {
     border-left-color: transparent !important;
     border-right-color: transparent !important;
     -webkit-animation: dtb-spinner 1500ms infinite linear;
+}
+
+.headerDiv{
+    display: flex;
+    justify-content: space-between;
 }
