@@ -281,7 +281,7 @@ letter-spacing: -0.02em;
 
  .dropdown-toggle {
     width: 80%;
-    display: flex;
+    /* display: flex; */
     align-items: center;
-    justify-content: space-between;
+    /* justify-content: space-between; */
 }
