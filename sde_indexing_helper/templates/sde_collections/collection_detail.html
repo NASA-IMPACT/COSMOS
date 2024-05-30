@@ -12,35 +12,35 @@
 <br>
 <div class="row">
     <div class="col-md-6 titleCol">
-
         <h1 class="nameWrapper"><div class="collectionName" id="collectionName">{{ collection.name }}</div><img class="editTitle" src="../../static/images/Task.png"></img></h1>
-        <div class="badge-container">
-            <div class="dropdown workflow_status_dropdown"
-            data-match-pattern
-            remove_protocol
-            row
-            url>                          
-           <button class="btn {{ collection.workflow_status_button_color }} btn-sm dropdown-toggle"
-                   type="button"
-                   id="workflow-status-button-{{ collection.id }}"
-                   data-toggle="dropdown"
-                   aria-haspopup="true"
-                   aria-expanded="false">{{ collection.get_workflow_status_display }}</button>
-           <div class="dropdown-menu"
-                aria-labelledby="workflow-status-button-{{ collection.id }}">
-               {% for choice in workflow_status_choices %}
-                   <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
-               {% endfor %}
-           </div>
-       </div>
-        </div>
-
     </div>
-    <div class="col-md-6">
+    <div class="col-md-6 buttonsCol">
+        <div>
         <a href="{{ collection.server_url_prod }}" target="_blank" style="color:white"><button
                 class="btn buttonColor btn-sm pull-right">View on prod</button></a>
         <a href="{{ collection.server_url_secret_prod }}" target="_blank" style="color:white"><button
                 class="btn buttonColor btn-sm pull-right">View on secret prod</button></a>
+            </div>
+                <div class="badge-container">
+                    <div class="dropdown workflow_status_dropdown"
+                    data-match-pattern
+                    remove_protocol
+                    row
+                    url>                          
+                   <button class="btn {{ collection.workflow_status_button_color }} btn-sm dropdown-toggle"
+                           type="button"
+                           id="workflow-status-button-{{ collection.id }}"
+                           data-toggle="dropdown"
+                           aria-haspopup="true"
+                           aria-expanded="false">{{ collection.get_workflow_status_display }}</button>
+                   <div class="dropdown-menu"
+                        aria-labelledby="workflow-status-button-{{ collection.id }}">
+                       {% for choice in workflow_status_choices %}
+                           <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
+                       {% endfor %}
+                   </div>
+               </div>
+                </div>
     </div>
 </div>
 
