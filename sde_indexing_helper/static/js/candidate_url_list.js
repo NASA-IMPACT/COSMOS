@@ -856,7 +856,7 @@ function postDocumentTypePatterns(
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
       if (errorMessage == '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}') {
-        toastr.error("Pattern already exists");
+        toastr.success("Pattern already exists");
         return;
       }
       toastr.error(errorMessage);
@@ -984,7 +984,7 @@ function postTitlePatterns(
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
       if (errorMessage == '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}') {
-        toastr.error("Pattern already exists");
+        toastr.success("Pattern already exists");
         return;
       }
       toastr.error(errorMessage);
