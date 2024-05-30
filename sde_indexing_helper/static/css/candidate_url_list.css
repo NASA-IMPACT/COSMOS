@@ -143,6 +143,54 @@ div > .nav {
     width: 100%;
 }
 
+.doc-dropdown {
+    background: #A7BACD !important;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 17.58px;
+    color: #1F2935;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-transform: capitalize;
+    border-radius: 4px;
+    margin-bottom: 0;
+}
+
+.doc-dropdown-input {
+    flex-direction: column;
+    width: 100%;
+}
+
+.dropdown-item:hover {
+    background-color: #0066CA;
+}
+
+.doc-type-form-dropdown-menu {
+    width: 100%;
+    background: #15232E;
+    color: white;
+    border: 1px solid white;
+    padding: 24px 15px;
+    border-radius: 4px;
+}
+
+.doc-type-form-dropdown-menu a {
+    height: 24px;
+    padding: 0;
+}
+
+.document_type_form_select {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    height: 37px !important;
+    align-items: center;
+    display: flex;
+    padding-left: 10px !important;
+    border-radius: 1px !important;
+}
+
 .candidateUrlContainer {
     background: #15232E;
     padding: 40px 30px;
@@ -278,4 +326,33 @@ letter-spacing: -0.02em;
 .headerDiv{
     display: flex;
     justify-content: space-between;
+}
+
+#match_pattern_input, #title_pattern_input {
+    background: #3F4A58;
+    border-radius: 4px;
+}
+
+.modal-body .bmd-label-static  {
+    top: -20px !important;
+}
+
+.modal-header {
+    margin-bottom: 40px;
+}
+
+.form-label {
+    color: white;
+    display: flex;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+}
+
+.asterik {
+    color: #C3001A;
+}
+
+.title_pattern-form-group {
+    margin-top: 40px;
 }
