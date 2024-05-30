@@ -109,18 +109,17 @@ function initializeDataTable() {
       {
         extend: "csv",
         exportOptions: {
-          columns: [0, 1, 2, 3, 10],
+          columns: [0, 2, 3, 10, 11],
         },
         customize: function (csv) {
           var lines = csv.split("\n");
           console.log("lines[1].split(", ")", lines[1].split(","));
           const colInfo = {
             0: $("#candidateUrlFilter").val() || "No input",
-            1: $(".dropdown-1").val() || "SELECT",
-            2: $("#candidateScrapedTitleFilter").val() || "No input",
-            3: $("#candidateNewTitleFilter").val() || "No input",
-            4: $(".dropdown-4").val() || "SELECT",
-            5: dict[$(".dropdown-5").val()] || "SELECT",
+            1: $("#candidateScrapedTitleFilter").val() || "No input",
+            2: $("#candidateNewTitleFilter").val() || "No input",
+            3: dict[$(".dropdown-5").val()] || "No Selection",
+            4: $(".dropdown-1").val() || "No Selection",
           };
           if (lines.length > 2) {
             var secondRow = lines[1].split(",");
@@ -196,6 +195,19 @@ function initializeDataTable() {
         render: function (data, type, row) {
           if (!row.document_type) return "Select";
           return dict[row.document_type];
+        },
+        visible: false,
+      },
+      {
+        data: null,
+        render: function (data, type, row) {
+          const excludedDict = {
+            true: "Yes",
+            false: "No",
+          };
+
+          console.log("row.excluded", row.excluded);
+          return excludedDict[row.excluded];
         },
         visible: false,
       },
