@@ -214,11 +214,12 @@ body {
 
  .tabStyle{
   color:#8697A8 !important;
+  padding-top:10px;
 }
 
 .nav-item .active{
   color:#65B1EF !important;
-
+  background-color:rgba(255, 255, 255, 0.07);
 }
 
 .buttonColor{
@@ -249,4 +250,21 @@ body {
 
  .headerDescription{
   font-family: sans-serif;
+ }
+.user-bubble {
+  width: 30px;
+  height: 30px;
+  background-color: #2C3542;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+ .user-icon {
+  color: #FFFFFF;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 0 0 0 !important;
  }
