@@ -61,13 +61,14 @@
     color: #0066CA;
     font-weight: 700;
     border-bottom: 2px solid #FF3D57;
-    padding-bottom: 30px;
+    padding-bottom: 20px;
 }
 
 /* line under the tab options */
 div > .nav {
-    padding-bottom: 30px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+    padding-bottom: 20px;
+    border-bottom: 1px solid;
+    border-bottom-color:rgba(167, 186, 205, 1);
 }
 
 /* badge container to fix size of div and prevent hugging single line titles */
