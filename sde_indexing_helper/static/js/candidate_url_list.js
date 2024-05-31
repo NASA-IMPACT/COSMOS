@@ -86,11 +86,6 @@ function initializeDataTable() {
   var false_icon = '<i class="material-icons" style="color: red">close</i>';
 
   var candidate_urls_table = $("#candidate_urls_table").DataTable({
-    // scrollY: true,
-    // lengthMenu: [
-    //   [25, 50, 100, 500],
-    //   ["Show 25", "Show 50", "Show 100", "Show 500"],
-    // ],
     pageLength: 100,
     stateSave: true,
     layout: {
@@ -98,10 +93,6 @@ function initializeDataTable() {
       topEnd: null,
       topStart: {
         info:true,
-        // lengthMenu: [
-        //   [25, 50, 100, 500],
-        //   ["Show 25", "Show 50", "Show 100", "Show 500"],
-        // ],
         pageLength: {
           menu: [[25, 50, 100, 500],["Show 25", "Show 50", "Show 100", "Show 500"]]
       },
@@ -121,19 +112,6 @@ function initializeDataTable() {
   },
     serverSide: true,
     orderCellsTop: true,
-    // dom: "ilBrtip",
-    // buttons: [
-    //   "spacer",
-    //   "csv",
-    //   "spacer",
-    //   {
-    //     text: "Customize Columns",
-    //     className: "customizeColumns",
-    //     action: function () {
-    //       modalContents("#candidate_urls_table");
-    //     },
-    //   },
-    // ],
     select: {
       style: "os",
       selector: "td:nth-child(5)",

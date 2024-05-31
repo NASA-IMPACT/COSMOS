@@ -298,17 +298,10 @@ letter-spacing: -0.02em;
 }
 
 .dt-inputpaging{
-  /* float:right; */
   position: absolute;
   right: 16px;
   top: -27px;
 }
-
-/* .mr-auto{
-    float: left;
-    width: 50%;
-} */
-
 .ml-auto{
     width:50%;
 }
