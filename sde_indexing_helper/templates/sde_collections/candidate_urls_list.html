@@ -265,21 +265,22 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="excludePatternModalLabel">Exclude Pattern Form</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form id="exclude_pattern_form">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="match_pattern_input">Match Pattern*</label>
+                        <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </div>
+                    <div class="button-wrapper">
+                    <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                </div></div>
             </form>
         </div>
     </div>
@@ -290,21 +291,22 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="includePatternModalLabel">Include Pattern Form</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form id="include_pattern_form">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="match_pattern_input">Match Pattern*</label>
+                        <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </div>
+                    <div class="button-wrapper">
+                    <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                </div></div>
             </form>
         </div>
     </div>
@@ -315,25 +317,26 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="titlePatternModalLabel">Title Pattern Form</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form id="title_pattern_form">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="match_pattern_input">Match Pattern*</label>
+                        <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
                     </div>
-                    <div class="form-group">
-                        <label for="title_pattern_input">Title Pattern*</label>
+                    <div class="form-group title_pattern-form-group">
+                        <label for="title_pattern_input" class="form-label">Title Pattern <div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="title_pattern_input" required name="title_pattern">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </div>
+                    <div class="button-wrapper">
+                    <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                </div> </div>
             </form>
         </div>
     </div>
@@ -344,25 +347,25 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="documentTypePatternModalLabel">Document Type Pattern Form</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form id="document_type_pattern_form">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="match_pattern_input">Match Pattern*</label>
+                        <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <input type="hidden" name="document_type_pattern" class="form-control"
                                 aria-label="Document Type" id="doc_type_input_field">
-                            <div class="input-group-append">
+                            <div class="input-group-append doc-dropdown-input">
                                 <button class="btn btn-secondary btn-block dropdown-toggle doc-dropdown" type="button"
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Document
                                     Type</button>
-                                <div class="dropdown-menu">
+                                <div class="doc-type-form dropdown-menu">
                                     <a class="dropdown-item document_type_form_select" value="1">Images</a>
                                     <a class="dropdown-item document_type_form_select" value="2">Data</a>
                                     <a class="dropdown-item document_type_form_select" value="3">Documentation</a>
