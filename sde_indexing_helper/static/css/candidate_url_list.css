@@ -41,8 +41,9 @@
     white-space: nowrap;
     font-family: sans-serif;
     background: #FFF;
-    color: #333;
+    color: white;
     border-radius: 5px;
+    background-color:#15232E;
 }
 
 .custom-menu li {
@@ -51,7 +52,7 @@
 }
 
 .custom-menu li:hover {
-    background-color: #DEF;
+    background-color: #0066CA;
 }
 
 .pattern_type {
@@ -272,6 +273,11 @@ letter-spacing: -0.02em;
     padding-top: 0;
     white-space: normal;
 }
+
+.selected{
+    background-color: inherit !important;
+}
+
 
 div.dt-buttons .btn.processing:after {
     border: 2px solid #FFFFFF !important;
