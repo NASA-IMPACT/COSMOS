@@ -73,8 +73,9 @@ div > .nav {
 
 /* badge container to fix size of div and prevent hugging single line titles */
 .badge-container {
-    height: 1.6rem;
-    margin-left: 15px;
+    display: flex;
+    justify-content: end;
+    margin-bottom: 0.5rem;
 }
 
 .badge {
@@ -192,4 +193,10 @@ color:black;
 
    .tableHeaderRow{
     background-color:#050E19
+   }
+
+   .buttonsCol {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
    }

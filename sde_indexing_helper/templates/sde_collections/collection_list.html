@@ -63,7 +63,7 @@
                         {% endif %}
                     </td>
                     <td class="whiteText noBorder">{{ collection.get_division_display }}</td>
-                    <td class="noBorder">
+                    <td class="noBorder centerAlign">
                         <a href=" {% if collection.num_candidate_urls > 0 %} {% url 'sde_collections:candidate_urls' collection.pk %} {% endif %} "
                            class="btn btn-sm {% if collection.num_candidate_urls > 0 %}btn-primary {% else %}disabled{% endif %}candidateCount"
                            role="button">{{ collection.num_candidate_urls|intcomma }}</a>
