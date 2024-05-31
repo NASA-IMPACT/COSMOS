@@ -233,10 +233,6 @@ margin-bottom: 0 !important;
     letter-spacing: -0.02em;
     }
     
-    
-    .hideShowSubmitButton {
-        width: 110px;
-      }
       .checkbox-wrapper {
         display: flex;
         align-items: baseline;
@@ -270,4 +266,8 @@ margin-bottom: 0 !important;
 
       .dtsp-clearAll{
         color:white !important;
+      }
+
+      .centerAlign{
+        text-align:center !important;
       }
