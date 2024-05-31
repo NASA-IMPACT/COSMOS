@@ -59,7 +59,8 @@
 }
 
 #candidate_urls_table_wrapper div.dt-buttons {
-  width: 64%;    
+  /* width: 64%;     */
+  float:right;
   justify-content: end;
 }
 
@@ -233,6 +234,7 @@ body {
  .dt-info{
   font-weight:900;
   font-size:16px;
+  margin-top:15px;
  }
 
  .buttons-csv, .customizeColumns{

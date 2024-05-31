@@ -298,7 +298,10 @@ letter-spacing: -0.02em;
 }
 
 .dt-inputpaging{
-  float:right;
+  /* float:right; */
+  position: absolute;
+  right: 16px;
+  top: -27px;
 }
 
 /* .mr-auto{
@@ -309,3 +312,8 @@ letter-spacing: -0.02em;
 .ml-auto{
     width:50%;
 }
+
+.custom-select-sm{
+    margin-left:5px;
+}
+
