@@ -301,10 +301,10 @@ letter-spacing: -0.02em;
   float:right;
 }
 
-.mr-auto{
+/* .mr-auto{
     float: left;
     width: 50%;
-}
+} */
 
 .ml-auto{
     width:50%;

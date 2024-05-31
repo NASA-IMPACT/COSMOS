@@ -97,6 +97,7 @@ function initializeDataTable() {
       bottomEnd: 'inputPaging',
       topEnd: null,
       topStart: {
+        info:true,
         // lengthMenu: [
         //   [25, 50, 100, 500],
         //   ["Show 25", "Show 50", "Show 100", "Show 500"],
@@ -105,7 +106,6 @@ function initializeDataTable() {
           menu: [[25, 50, 100, 500],["Show 25", "Show 50", "Show 100", "Show 500"]]
       },
         buttons: [
-          // "pageLength",
           "spacer",
           "csv",
           "spacer",
