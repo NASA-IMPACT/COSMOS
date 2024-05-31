@@ -12,6 +12,11 @@ from slugify import slugify
 from config_generation.db_to_xml import XmlEditor
 
 from ..utils.github_helper import GitHubHandler
+from ..utils.slack_utils import (
+    STATUS_CHANGE_NOTIFICATIONS,
+    format_slack_message,
+    send_slack_message,
+)
 from .collection_choice_fields import (
     ConnectorChoices,
     CurationStatusChoices,
@@ -30,7 +35,7 @@ class Collection(models.Model):
 
     name = models.CharField("Name", max_length=1024)
     config_folder = models.CharField("Config Folder", max_length=2048, unique=True, editable=False)
-    url = models.URLField("URL", max_length=2048, blank=True)
+    url = models.URLField("URL", max_length=2048)
     division = models.IntegerField(choices=Divisions.choices)
     turned_on = models.BooleanField("Turned On", default=True)
     connector = models.IntegerField(choices=ConnectorChoices.choices, default=ConnectorChoices.CRAWLER2)
@@ -118,7 +123,7 @@ class Collection(models.Model):
     def server_url_secret_prod(self) -> str:
         base_url = "https://sciencediscoveryengine.nasa.gov"
         payload = {
-            "name": "query-sde-primary",
+            "name": "secret-prod",
             "scope": "All",
             "text": "",
             "advanced": {
@@ -126,7 +131,7 @@ class Collection(models.Model):
             },
         }
         encoded_payload = urllib.parse.quote(json.dumps(payload))
-        return f"{base_url}/app/nasa-sba-sde/#/search?query={encoded_payload}"
+        return f"{base_url}/app/secret-prod/#/search?query={encoded_payload}"
 
     @property
     def server_url_prod(self) -> str:
@@ -453,6 +458,15 @@ class Collection(models.Model):
         if not self.config_folder:
             self.config_folder = self._compute_config_folder_name()
 
+        if not self._state.adding:
+            old_status = Collection.objects.get(id=self.id).workflow_status
+            new_status = self.workflow_status
+            if old_status != new_status:
+                transition = (old_status, new_status)
+                if transition in STATUS_CHANGE_NOTIFICATIONS:
+                    details = STATUS_CHANGE_NOTIFICATIONS[transition]
+                    message = format_slack_message(self.name, details, self.id)
+                    send_slack_message(message)
         # Call the parent class's save method
         super().save(*args, **kwargs)
 
