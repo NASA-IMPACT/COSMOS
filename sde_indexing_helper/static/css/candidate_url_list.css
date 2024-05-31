@@ -166,7 +166,7 @@ div > .nav {
     background-color: #0066CA;
 }
 
-.doc-type-form-dropdown-menu {
+.doc-type-form {
     width: 100%;
     background: #15232E;
     color: white;
@@ -175,7 +175,7 @@ div > .nav {
     border-radius: 4px;
 }
 
-.doc-type-form-dropdown-menu a {
+.doc-type-form a {
     height: 24px;
     padding: 0;
 }
@@ -356,3 +356,24 @@ letter-spacing: -0.02em;
 .title_pattern-form-group {
     margin-top: 40px;
 }
+
+.is-focused [class^='bmd-label']{
+    color:#0066CA;
+   }
+   .form-control{
+    color:white;
+   }
+
+   .form-control:focus{
+    color:white;
+   }
+
+   .is-focused .form-label{
+    background-image:linear-gradient(to top, #0066CA 2px, rgba(156, 39, 176, 0) 2px), linear-gradient(to top, #d2d2d2 1px, rgba(210, 210, 210, 0) 1px);
+    color:#AAAAAA;
+   }
+
+   .dropdown-item:hover{
+    background-color: #0066CA !important;
+
+   }
