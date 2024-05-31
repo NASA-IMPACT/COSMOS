@@ -95,7 +95,6 @@ function initializeDataTable() {
     stateSave: true,
     layout: {
       bottomEnd: 'inputPaging',
-      topEnd: 'inputPaging',
   },
     serverSide: true,
     orderCellsTop: true,

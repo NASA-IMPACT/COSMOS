@@ -296,3 +296,16 @@ letter-spacing: -0.02em;
     color: white;
     border:solid 0.5px !important;
 }
+
+.dt-inputpaging{
+  float:right;
+}
+
+.mr-auto{
+    float: left;
+    width: 50%;
+}
+
+.ml-auto{
+    width:50%;
+}
