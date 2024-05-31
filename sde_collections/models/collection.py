@@ -180,6 +180,7 @@ class Collection(models.Model):
             14: "btn-primary",
             15: "btn-info",
             16: "btn-secondary",
+            17: "btn-light",
         }
         return color_choices[self.workflow_status]
 
@@ -500,24 +501,20 @@ class Comments(models.Model):
     def __str__(self):
         return self.text
 
+
 class WorkflowHistory(models.Model):
-    collection = models.ForeignKey(
-        Collection, on_delete=models.CASCADE, related_name="workflow_history", null=True
-    )    
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name="workflow_history", null=True)
     workflow_status = models.IntegerField(
         choices=WorkflowStatusChoices.choices,
         default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
     )
-    old_status = models.IntegerField(
-        choices=WorkflowStatusChoices.choices, null=True
-    )
+    old_status = models.IntegerField(choices=WorkflowStatusChoices.choices, null=True)
     curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-
     def __str__(self):
-        return (str(self.collection) + str(self.workflow_status))
-        
+        return str(self.collection) + str(self.workflow_status)
+
     @property
     def workflow_status_button_color(self) -> str:
         color_choices = {
@@ -537,8 +534,10 @@ class WorkflowHistory(models.Model):
             14: "btn-primary",
             15: "btn-info",
             16: "btn-secondary",
+            17: "btn-light",
         }
         return color_choices[self.workflow_status]
+
 
 @receiver(post_save, sender=Collection)
 def log_workflow_history(sender, instance, created, **kwargs):
@@ -547,13 +546,13 @@ def log_workflow_history(sender, instance, created, **kwargs):
             collection=instance,
             workflow_status=instance.workflow_status,
             curated_by=instance.curated_by,
-            old_status=instance.old_workflow_status
+            old_status=instance.old_workflow_status,
         )
 
 
 @receiver(post_save, sender=Collection)
 def create_configs_on_status_change(sender, instance, created, **kwargs):
-    """ 
+    """
     Creates various config files on certain workflow status changes
     """
 
