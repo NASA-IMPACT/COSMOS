@@ -69,9 +69,7 @@ function modalContents(tableName) {
       .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
       .text(columnName);
     var $caption = $("<p>")
-      .text(
-        candidateTableHeaderDefinitons[columnName]
-      )
+      .text(candidateTableHeaderDefinitons[columnName])
       .attr({
         id: "caption",
       });
@@ -99,6 +97,7 @@ function initializeDataTable() {
       ["Show 25", "Show 50", "Show 100", "Show 500"],
     ],
     pageLength: 100,
+    colReorder: true,
     stateSave: true,
     serverSide: true,
     orderCellsTop: true,
@@ -108,28 +107,42 @@ function initializeDataTable() {
       {
         extend: "csv",
         exportOptions: {
-          columns: [0, 2, 3, 10, 11],
+          columns: [0, 11, 2, 3, 10],
         },
         customize: function (csv) {
           var lines = csv.split("\n");
-          console.log("lines[1].split(", ")", lines[1].split(","));
-          const colInfo = {
-            0: $("#candidateUrlFilter").val() || "No input",
-            1: $("#candidateScrapedTitleFilter").val() || "No input",
-            2: $("#candidateNewTitleFilter").val() || "No input",
-            3: dict[$(".dropdown-5").val()] || "No Selection",
-            4: $(".dropdown-1").val() || "No Selection",
-          };
-          if (lines.length > 2) {
-            var secondRow = lines[1].split(",");
-            // Modify the second row as needed
-            for (let key in colInfo) {
-              secondRow[key] = colInfo[key];
-            }
+          // Reorder the header columns
+          var headers = lines[0].split(",");
+          var reorderedHeaders = [
+            headers[0],
+            headers[4],
+            headers[1],
+            headers[2],
+            headers[3],
+          ];
+          lines[0] = reorderedHeaders.join(",");
 
-            lines[1] = secondRow.join(",");
+          // Add filter information in the footer
+          const secondRowFilters = [
+            "Applied filters:",
+            `URL: ${$("#candidateUrlFilter").val() || "No input"}`,
+            `Exclude: ${$(".dropdown-1").val() || "No selection"}`,
+            `Scraped Title: ${
+              $("#candidateNewTitleFilter").val() || "No input"
+            }`,
+            `New Title: ${dict[$(".dropdown-5").val()] || "No input"}`,
+            `Document Type: ${
+              $("#candidateScrapedTitleFilter").val() || "No selection"
+            }`,
+          ];
+          var appliedFiltersInfo = secondRowFilters.join("\n");
+
+          // Remove the second row with the filters
+          if (lines.length > 2) {
+            lines.splice(1, 1);
           }
-          return lines.join("\n");
+
+          return lines.join("\n") + appliedFiltersInfo;
         },
       },
       "spacer",
@@ -204,8 +217,6 @@ function initializeDataTable() {
             true: "Yes",
             false: "No",
           };
-
-          console.log("row.excluded", row.excluded);
           return excludedDict[row.excluded];
         },
         visible: false,
