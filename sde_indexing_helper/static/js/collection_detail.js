@@ -202,6 +202,20 @@ $(document).ready(function () {
     }
   });
 });
+
+$(document).ready(function () {
+  $("#inputFieldId").on("keypress", function (event) {
+    if (event.which === 13) {
+      event.preventDefault();
+      var inputValue = $(this).val();
+      if (inputValue.trim() !== "") {
+        patchTitle(collection_id, inputValue);
+        $modal = $("#titleChangeModal").modal("hide");
+      } else return;
+    }
+  });
+});
+
 function postWorkflowStatus(collection_id, workflow_status) {
   var url = `/api/collections/${collection_id}/`;
   $.ajax({
