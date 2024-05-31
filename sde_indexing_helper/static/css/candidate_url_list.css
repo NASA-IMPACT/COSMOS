@@ -272,3 +272,27 @@ letter-spacing: -0.02em;
     padding-top: 0;
     white-space: normal;
 }
+
+.page-link{
+    color:white !important;
+    border:0.5px solid !important;
+    margin-left:3px;
+    margin-right:3px;
+}
+.page-link:hover{
+    background-color: #0066CA !important;
+
+}
+
+.page-item.disabled .page-link {
+    color:grey!important;
+}
+.dt-paging-input{
+    color:white;
+}
+
+.dt-paging-input input{
+    background-color: #3F4A58;
+    color: white;
+    border:solid 0.5px !important;
+}

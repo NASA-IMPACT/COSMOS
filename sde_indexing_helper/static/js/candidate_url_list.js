@@ -93,10 +93,13 @@ function initializeDataTable() {
     ],
     pageLength: 100,
     stateSave: true,
+    layout: {
+      bottomEnd: 'inputPaging',
+      topEnd: 'inputPaging',
+  },
     serverSide: true,
     orderCellsTop: true,
-    pagingType: "input",
-    dom: "ilBrtip",
+    // dom: "ilBrtip",
     buttons: [
       "spacer",
       "csv",
