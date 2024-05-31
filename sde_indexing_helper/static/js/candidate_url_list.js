@@ -112,7 +112,6 @@ function initializeDataTable() {
     serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
-    dom: "ilBrtip",
     buttons: [
       "spacer",
       "csv",
