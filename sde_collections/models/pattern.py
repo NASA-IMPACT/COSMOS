@@ -177,13 +177,13 @@ class TitlePattern(BaseMatchPattern):
             }
 
             try:
-                generated_title = resolve_title(self.title_pattern, context)
+                updated_title = resolve_title(self.title_pattern, context)
 
                 resolved_titles.append(
                     {
                         "title_pattern": self,
                         "candidate_url": candidate_url,
-                        "resolved_title": generated_title,
+                        "resolved_title": updated_title,
                         "active": True,
                     }
                 )

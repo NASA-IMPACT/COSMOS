@@ -48,7 +48,7 @@ function initializeDataTable() {
         "columns": [
             getURLColumn(),
             getExcludedColumn(true_icon, false_icon),
-            getScrapedTitleColumn(),
+            // getScrapedTitleColumn(),
             getGeneratedTitleColumn(),
             getVisitedColumn(true_icon, false_icon),
             getDocumentTypeColumn(),
@@ -185,7 +185,27 @@ function getScrapedTitleColumn() {
 function getGeneratedTitleColumn() {
     return {
         "data": "updated_title", "render": function (data, type, row) {
-            return `<input type="text" class="form-control individual_title_input" value='${data}' data-generated-title-id=${row['generated_title_id']} data-match-pattern-type=${row['match_pattern_type']} data-candidate-urls-count=${row['candidate_urls_count']} data-url=${remove_protocol(row['url'])} />`;
+            return `
+<div class="row">
+    <div class="col-sm-9">
+        <input
+            type="text"
+            class="form-control individual_title_input"
+            value='${data}'
+            data-generated-title-id=${row['generated_title_id']}
+            data-match-pattern-type=${row['match_pattern_type']}
+            data-candidate-urls-count=${row['candidate_urls_count']}
+            data-url=${remove_protocol(row['url'])}
+        />
+    </div>
+    <div class="col-sm-2">
+        <button
+            class="btn btn-sm">
+            Patterns
+        </button>
+    </div>
+</div>
+            `;
         }
     }
 }
