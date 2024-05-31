@@ -63,7 +63,7 @@
                         {% endif %}
                     </td>
                     <td class="whiteText noBorder">{{ collection.get_division_display }}</td>
-                    <td class="noBorder">
+                    <td class="noBorder centerAlign">
                         <a href=" {% if collection.num_candidate_urls > 0 %} {% url 'sde_collections:candidate_urls' collection.pk %} {% endif %} "
                            class="btn btn-sm {% if collection.num_candidate_urls > 0 %}btn-primary {% else %}disabled{% endif %}candidateCount"
                            role="button">{{ collection.num_candidate_urls|intcomma }}</a>
@@ -117,17 +117,17 @@
         </tbody>
     </table>
 
-    <div id="hideShowColumnsModal" class="modal pr-4 pl-4 pt-4">
+    <div id="hideShowColumnsModal" class="modal pr-4 pl-4 pt-4 customizeColumnContainer">
         <div class="modalDialog">
             <div class="modalContent">
                 <div class="modalHeader ">
-                    <h5 class="modalTitle" id="hideShowColumnsModalTitle">Customize Columns</h5>
-                    <p id="subTitle">Attributes marked with a checkbox will be displayed in the table.</p>
+                    <h5 class="modalTitle whiteText" id="hideShowColumnsModalTitle">Customize Columns</h5>
+                    <p id="subTitle" class="whiteText">Attributes marked with a checkbox will be displayed in the table.</p>
                 </div>
                 <form id="hide_show_columns_form">
-                    <div class="modalBody" id="modalBody">
+                    <div class="modalBody whiteText" id="modalBody">
                     </div>
-                    <div class="modalFooter">
+                    <div class="modalFooter customizeColumnContainer">
                         <div type="submit" class="btn-prime hideShowSubmitButton" id="hideShowSubmitButton">Confirm</div>
                     </div>
                 </form>

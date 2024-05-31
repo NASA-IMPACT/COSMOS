@@ -27,10 +27,10 @@ function modalContents(tableName) {
         value: idx,
       })
       .prop("checked", true);
-    var $label = $("<label>")
+    var $label = $("<label class='whiteText'>")
       .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
       .text(columnName);
-    var $caption = $("<p>")
+    var $caption = $("<p class='headerDescription'>")
       .text(
         tableHeaderDefinitions[columnName]
       )
@@ -70,7 +70,7 @@ let table = $("#collection_table").DataTable({
   layout: {
     topStart: "searchPanes",
   },
-  dom: "PiBf",
+  dom: "PiB",
   buttons: [
     {
       text: "Customize Columns",
@@ -85,8 +85,7 @@ let table = $("#collection_table").DataTable({
       targets: 8,
       visible: false,
     },
-    { width: "200px", targets: 1 },
-    {
+    { width: "200px", targets: 1 },    {
       searchPanes: {
         options: [
           {

@@ -41,8 +41,9 @@
     white-space: nowrap;
     font-family: sans-serif;
     background: #FFF;
-    color: #333;
+    color: white;
     border-radius: 5px;
+    background-color:#15232E;
 }
 
 .custom-menu li {
@@ -51,7 +52,7 @@
 }
 
 .custom-menu li:hover {
-    background-color: #DEF;
+    background-color: #0066CA;
 }
 
 .pattern_type {
@@ -221,9 +222,7 @@ letter-spacing: -0.02em;
 }
 
 
-.hideShowSubmitButton {
-    width: 110px;
-  }
+
   .checkbox-wrapper {
     display: flex;
     align-items: baseline;
@@ -323,6 +322,31 @@ letter-spacing: -0.02em;
     white-space: normal;
 }
 
+.selected{
+    background-color: inherit !important;
+}
+
+
+div.dt-buttons .btn.processing:after {
+    border: 2px solid #FFFFFF !important;
+    border-left-color: transparent !important;
+    border-right-color: transparent !important;
+    -webkit-animation: dtb-spinner 1500ms infinite linear;
+}
+
+.document_type_dropdown, .dropdown-toggle {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+ .dropdown-toggle {
+    width: 80%;
+    /* display: flex; */
+    align-items: center;
+    /* justify-content: space-between; */
+ }
+ 
 .headerDiv{
     display: flex;
     justify-content: space-between;

@@ -57,10 +57,10 @@ function modalContents(tableName) {
         value: idx,
       })
       .prop("checked", true);
-    var $label = $("<label>")
+    var $label = $("<label class='whiteText'>")
       .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
       .text(columnName);
-    var $caption = $("<p>")
+    var $caption = $("<p class='headerDescription'>")
       .text(
         candidateTableHeaderDefinitons[columnName]
       )
@@ -108,10 +108,6 @@ function initializeDataTable() {
         },
       },
     ],
-    select: {
-      style: "os",
-      selector: "td:nth-child(5)",
-    },
     rowId: "url",
     stateLoadCallback: function (settings) {
       var state = JSON.parse(
@@ -672,7 +668,7 @@ function getDocumentTypeColumn() {
       button_text = data ? dict[data] : "Select";
       button_color = data ? "btn-success" : "btn-secondary";
       return `
-            <div class="dropdown document_type_dropdown " data-match-pattern=${remove_protocol(
+            <div  data-match-pattern=${remove_protocol(
               row["url"]
             )}>
               <button class="btn ${button_color} btn-sm dropdown-toggle selectStyling" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -854,6 +850,10 @@ function postDocumentTypePatterns(
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
+      if (errorMessage == '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}') {
+        toastr.success("Pattern already exists");
+        return;
+      }
       toastr.error(errorMessage);
     },
   });
@@ -978,6 +978,10 @@ function postTitlePatterns(
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
+      if (errorMessage == '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}') {
+        toastr.success("Pattern already exists");
+        return;
+      }
       toastr.error(errorMessage);
     },
   });
