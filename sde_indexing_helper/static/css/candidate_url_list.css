@@ -299,3 +299,13 @@ div.dt-buttons .btn.processing:after {
     display: flex;
     justify-content: space-between;
 }
+
+.url-cell {
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+ }
+
+ .url-icon {
+    color: #65B1EF;
+ }

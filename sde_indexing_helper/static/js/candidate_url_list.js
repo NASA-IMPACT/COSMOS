@@ -608,11 +608,12 @@ function getURLColumn() {
   return {
     data: "url",
     render: function (data, type, row) {
-      return `<a target="_blank" href="${data}" data-url="/api/candidate-urls/${
-        row["id"]
-      }/" class="url_link"> <i class="material-icons whiteText">open_in_new</i></a> <span class="candidate_url nameStyling">${remove_protocol(
+      return `<div class="url-cell"><span class="candidate_url nameStyling">${remove_protocol(
         data
-      )}</span>`;
+      )}</span> 
+      <a target="_blank" href="${data}" data-url="/api/candidate-urls/${
+        row["id"]
+      }/" class="url-link"> <i class="material-icons url-icon">open_in_new</i></a></div>`;
     },
   };
 }
