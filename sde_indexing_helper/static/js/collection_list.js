@@ -27,10 +27,10 @@ function modalContents(tableName) {
         value: idx,
       })
       .prop("checked", true);
-    var $label = $("<label>")
+    var $label = $("<label class='whiteText'>")
       .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
       .text(columnName);
-    var $caption = $("<p>")
+    var $caption = $("<p class='headerDescription'>")
       .text(
         tableHeaderDefinitions[columnName]
       )
