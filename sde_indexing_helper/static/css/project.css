@@ -129,7 +129,7 @@ body {
 }
 
  .whiteText{
-  color:white;
+  color:white !important;
  }
  .dt-info{
   color:white;
@@ -260,6 +260,15 @@ body {
   background-color:#0066CA !important;
  }
 
+ .customizeColumnContainer{
+  background-color: #15232E !important;
+ }
+
+ .headerDescription{
+  font-family: sans-serif;
+  font-size:14px;
+ }
+ 
 .user-bubble {
   width: 30px;
   height: 30px;
@@ -277,3 +286,9 @@ body {
   align-items: center;
   margin: 0 0 0 0 !important;
  }
+
+ .hideShowSubmitButton {
+  width: 110px;
+  box-shadow: 0px 8px 16px 0px #0037FA4D;
+
+}

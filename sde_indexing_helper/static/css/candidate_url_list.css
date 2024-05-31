@@ -174,9 +174,7 @@ letter-spacing: -0.02em;
 }
 
 
-.hideShowSubmitButton {
-    width: 110px;
-  }
+
   .checkbox-wrapper {
     display: flex;
     align-items: baseline;
