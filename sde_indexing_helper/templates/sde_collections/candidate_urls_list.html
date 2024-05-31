@@ -21,34 +21,36 @@
     <!-- <script src="//cdn.datatables.net/plug-ins/2.0.8/pagination/input.js"></script> -->
     <script src="https://cdn.datatables.net/plug-ins/2.0.8/features/inputPaging/dist/dataTables.inputPaging.min.js"></script>
     <script src="{% static 'js/candidate_url_list.js' %}"></script>
+    <script src="{% static 'js/project.js' %}"></script>
     <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
 {% endblock javascripts %}
 
 {% block content %}
 {% csrf_token %}
+<div class="headerDiv">
 <h1 class="pageTitle">Candidate URLs</h1>
+<button class="btn badge {{ collection.workflow_status_button_color }} dropdown-toggle title-dropdown btn-sm"
+type="button"
+data-toggle="dropdown"
+aria-haspopup="true"
+id="workflow-status-button-{{ collection.id }}"
+aria-expanded="false">{{ collection.get_workflow_status_display }}</button>
+<div class="dropdown-menu"
+aria-labelledby="workflow-status-button-{{ collection.id }}">
+{% for choice in workflow_status_choices %}
+<a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
+{% endfor %}
+</div>
+</div>
 <div class="candidateUrlContainer">
 <h3 class="whiteText candidateTitle">
     {{ candidate_urls.count|intcomma }} Candidate URLs for <a
         href="{% url 'sde_collections:detail' collection.pk %}"><strong class="urlStyle underline">{{ collection.name }}</strong></a>
-        <button class="btn badge {{ collection.workflow_status_button_color }} dropdown-toggle title-dropdown btn-sm"
-        type="button"
-        data-toggle="dropdown"
-        aria-haspopup="true"
-        id="workflow-status-button-{{ collection.id }}"
-        aria-expanded="false">{{ collection.get_workflow_status_display }}</button>
-        <div class="dropdown-menu"
-        aria-labelledby="workflow-status-button-{{ collection.id }}">
-        {% for choice in workflow_status_choices %}
-        <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
-        {% endfor %}
-    </div>
     <br>
     <!-- <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small> -->
 </h3>
 
 <div>
-
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">
         <li class="nav-item">
@@ -265,21 +267,22 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="excludePatternModalLabel">Exclude Pattern Form</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form id="exclude_pattern_form">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="match_pattern_input">Match Pattern*</label>
+                        <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </div>
+                    <div class="button-wrapper">
+                    <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                </div></div>
             </form>
         </div>
     </div>
@@ -290,21 +293,22 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="includePatternModalLabel">Include Pattern Form</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form id="include_pattern_form">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="match_pattern_input">Match Pattern*</label>
+                        <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </div>
+                    <div class="button-wrapper">
+                    <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                </div></div>
             </form>
         </div>
     </div>
@@ -315,25 +319,26 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="titlePatternModalLabel">Title Pattern Form</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form id="title_pattern_form">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="match_pattern_input">Match Pattern*</label>
+                        <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
                     </div>
-                    <div class="form-group">
-                        <label for="title_pattern_input">Title Pattern*</label>
+                    <div class="form-group title_pattern-form-group">
+                        <label for="title_pattern_input" class="form-label">Title Pattern <div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="title_pattern_input" required name="title_pattern">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </div>
+                    <div class="button-wrapper">
+                    <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                </div> </div>
             </form>
         </div>
     </div>
@@ -344,25 +349,25 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="documentTypePatternModalLabel">Document Type Pattern Form</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <form id="document_type_pattern_form">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="match_pattern_input">Match Pattern*</label>
+                        <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <input type="hidden" name="document_type_pattern" class="form-control"
                                 aria-label="Document Type" id="doc_type_input_field">
-                            <div class="input-group-append">
+                            <div class="input-group-append doc-dropdown-input">
                                 <button class="btn btn-secondary btn-block dropdown-toggle doc-dropdown" type="button"
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Document
                                     Type</button>
-                                <div class="dropdown-menu">
+                                <div class="doc-type-form dropdown-menu">
                                     <a class="dropdown-item document_type_form_select" value="1">Images</a>
                                     <a class="dropdown-item document_type_form_select" value="2">Data</a>
                                     <a class="dropdown-item document_type_form_select" value="3">Documentation</a>
@@ -379,17 +384,17 @@
     </div>
 </div>
 
-<div id="hideShowColumnsModal" class="modal pr-4 pl-4 pt-4">
+<div id="hideShowColumnsModal" class="modal pr-4 pl-4 pt-4 customizeColumnContainer">
     <div class="modalDialog">
         <div class="modalContent">
             <div class="modalHeader ">
-                <h5 class="modalTitle" id="hideShowColumnsModalTitle">Customize Columns</h5>
-                <p id="subTitle">Attributes marked with a checkbox will be displayed in the table.</p>
+                <h5 class="modalTitle whiteText" id="hideShowColumnsModalTitle">Customize Columns</h5>
+                <p id="subTitle" class="whiteText">Attributes marked with a checkbox will be displayed in the table.</p>
             </div>
             <form id="hide_show_columns_form">
-                <div class="modalBody" id="modalBody">
+                <div class="modalBody whiteText" id="modalBody">
                 </div>
-                <div class="modalFooter">
+                <div class="modalFooter customizeColumnContainer">
                     <div type="submit" class="btn-prime hideShowSubmitButton" id="hideShowSubmitButton">Confirm</div>
                 </div>
             </form>

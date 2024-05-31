@@ -12,35 +12,35 @@
 <br>
 <div class="row">
     <div class="col-md-6 titleCol">
-
         <h1 class="nameWrapper"><div class="collectionName" id="collectionName">{{ collection.name }}</div><img class="editTitle" src="../../static/images/Task.png"></img></h1>
-        <div class="badge-container">
-            <div class="dropdown workflow_status_dropdown"
-            data-match-pattern
-            remove_protocol
-            row
-            url>                          
-           <button class="btn {{ collection.workflow_status_button_color }} btn-sm dropdown-toggle"
-                   type="button"
-                   id="workflow-status-button-{{ collection.id }}"
-                   data-toggle="dropdown"
-                   aria-haspopup="true"
-                   aria-expanded="false">{{ collection.get_workflow_status_display }}</button>
-           <div class="dropdown-menu"
-                aria-labelledby="workflow-status-button-{{ collection.id }}">
-               {% for choice in workflow_status_choices %}
-                   <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
-               {% endfor %}
-           </div>
-       </div>
-        </div>
-
     </div>
-    <div class="col-md-6">
+    <div class="col-md-6 buttonsCol">
+        <div>
         <a href="{{ collection.server_url_prod }}" target="_blank" style="color:white"><button
                 class="btn buttonColor btn-sm pull-right">View on prod</button></a>
         <a href="{{ collection.server_url_secret_prod }}" target="_blank" style="color:white"><button
                 class="btn buttonColor btn-sm pull-right">View on secret prod</button></a>
+            </div>
+                <div class="badge-container">
+                    <div class="dropdown workflow_status_dropdown"
+                    data-match-pattern
+                    remove_protocol
+                    row
+                    url>                          
+                   <button class="btn {{ collection.workflow_status_button_color }} btn-sm dropdown-toggle"
+                           type="button"
+                           id="workflow-status-button-{{ collection.id }}"
+                           data-toggle="dropdown"
+                           aria-haspopup="true"
+                           aria-expanded="false">{{ collection.get_workflow_status_display }}</button>
+                   <div class="dropdown-menu"
+                        aria-labelledby="workflow-status-button-{{ collection.id }}">
+                       {% for choice in workflow_status_choices %}
+                           <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
+                       {% endfor %}
+                   </div>
+               </div>
+                </div>
     </div>
 </div>
 
@@ -250,7 +250,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="closeDivisionModal">
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close" id="closeDivisionModal">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -260,9 +260,9 @@
                 </div>
                 <div class="modal-footer">
                     <form id="divisionChangeModalForm">
-                        <div>
-                        <button type="submit" class="btn btn-secondary" id="cancelDivisionChange">No</button> 
-                        <button type="submit" class="btn btn-primary" data-dismiss="modal" id="makeDivisionChange">Yes</button> 
+                        <div class="button-wrapper">
+                        <button type="submit" class="btn btn-secondary modal-button-1" id="cancelDivisionChange">No</button> 
+                        <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="makeDivisionChange">Yes</button> 
                         </div>
                         </form>
                 </div>
@@ -275,20 +275,20 @@ aria-labelledby="titleChangeModal" aria-hidden="true">
 <div class="modal-dialog">
     <div class="modal-content">
         <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="closeTitleModal">
+            <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close" id="closeTitleModal">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
             <div class="modal-body" id="modal-body">
                 <h5 class="modal-title">Rename Collection</h5>
-                <p class="caption" id="titleCaption"></p>
+                <p class="caption rename-collection-caption" id="titleCaption"></p>
             </div>
             <div class="modal-footer">
                 <form id="titleChangeModalForm">
                         <input type="text" name="inputFieldName" id="inputFieldId"> 
-                        <div>
-                        <button type="submit" class="btn btn-secondary" id="cancelTitleRename">Cancel</button> 
-                        <button type="submit" class="btn btn-primary" data-dismiss="modal" id="renameTitle">Rename</button> 
+                        <div class="button-wrapper">
+                        <button type="submit" class="btn btn-secondary modal-button-1" id="cancelTitleRename">Cancel</button> 
+                        <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="renameTitle">Rename</button> 
                     </div>
                     </form>
             </div>
