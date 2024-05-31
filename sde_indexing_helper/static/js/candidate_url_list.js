@@ -87,30 +87,53 @@ function initializeDataTable() {
 
   var candidate_urls_table = $("#candidate_urls_table").DataTable({
     // scrollY: true,
-    lengthMenu: [
-      [25, 50, 100, 500],
-      ["Show 25", "Show 50", "Show 100", "Show 500"],
-    ],
+    // lengthMenu: [
+    //   [25, 50, 100, 500],
+    //   ["Show 25", "Show 50", "Show 100", "Show 500"],
+    // ],
     pageLength: 100,
     stateSave: true,
     layout: {
       bottomEnd: 'inputPaging',
+      topEnd: null,
+      topStart: {
+        // lengthMenu: [
+        //   [25, 50, 100, 500],
+        //   ["Show 25", "Show 50", "Show 100", "Show 500"],
+        // ],
+        pageLength: {
+          menu: [[25, 50, 100, 500],["Show 25", "Show 50", "Show 100", "Show 500"]]
+      },
+        buttons: [
+          // "pageLength",
+          "spacer",
+          "csv",
+          "spacer",
+          {
+            text: "Customize Columns",
+            className: "customizeColumns",
+            action: function () {
+              modalContents("#candidate_urls_table");
+            },
+          },
+        ],
+      }
   },
     serverSide: true,
     orderCellsTop: true,
     // dom: "ilBrtip",
-    buttons: [
-      "spacer",
-      "csv",
-      "spacer",
-      {
-        text: "Customize Columns",
-        className: "customizeColumns",
-        action: function () {
-          modalContents("#candidate_urls_table");
-        },
-      },
-    ],
+    // buttons: [
+    //   "spacer",
+    //   "csv",
+    //   "spacer",
+    //   {
+    //     text: "Customize Columns",
+    //     className: "customizeColumns",
+    //     action: function () {
+    //       modalContents("#candidate_urls_table");
+    //     },
+    //   },
+    // ],
     select: {
       style: "os",
       selector: "td:nth-child(5)",
