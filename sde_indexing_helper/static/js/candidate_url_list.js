@@ -107,7 +107,7 @@ function initializeDataTable() {
       {
         extend: "csv",
         exportOptions: {
-          columns: [0, 11, 2, 3, 10],
+          columns: [0, 11, 2, 12, 10],
         },
         customize: function (csv) {
           var lines = csv.split("\n");
@@ -217,6 +217,13 @@ function initializeDataTable() {
         },
         visible: false,
       },
+      {
+        data:null,
+        render: function (data,type,row){
+          return row.generated_title;
+        },
+        visible: false,
+      }
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
