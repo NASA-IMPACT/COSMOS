@@ -191,7 +191,6 @@ function initializeDataTable() {
 
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
     // scrollY: true,
-    serverSide: true,
     dom: "lBrtip",
     buttons: [
       {
@@ -249,8 +248,8 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
-      },
+        sortable: true,
+    },
       {
         data: null,
         sortable: false,
@@ -303,7 +302,6 @@ function initializeDataTable() {
     ],
     pageLength: 100,
     orderCellsTop: true,
-    serverSide: true,
     ajax: `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
     initComplete: function (data) {
       var table = $("#include_patterns_table").DataTable();
@@ -336,7 +334,7 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
+        sortable: true,
       },
       {
         data: null,
@@ -360,7 +358,6 @@ function initializeDataTable() {
 
   var title_patterns_table = $("#title_patterns_table").DataTable({
     // scrollY: true,
-    serverSide: true,
     dom: "lBrtip",
     buttons: [
       {
@@ -418,7 +415,7 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
+        sortable: true,
       },
       {
         data: null,
@@ -468,7 +465,6 @@ function initializeDataTable() {
         },
       },
     ],
-    serverSide: true,
     lengthMenu: [
       [25, 50, 100, 500],
       ["Show 25", "Show 50", "Show 100", "Show 500"],
@@ -538,7 +534,7 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
+        sortable: true,
       },
       {
         data: null,
