@@ -358,7 +358,9 @@ body {
 
 }
 
-
+.auth-wrapper {
+  height: 100vh;
+}
 .auth-col-1, .auth-col-2 {
   width: 50%;
 }
@@ -368,10 +370,19 @@ body {
   height: 100vh;
   background: no-repeat;
 }
+.auth-col-2-wrapper {
+  position: relative;
+}
+
+.auth-sde-idx-helper {
+  justify-content: center;
+    display: flex;
+}
 
 .auth-col-2 {
   padding: 0;
   background-color: rgba(5, 14, 25, 1);
+  margin: auto;
 }
 
 .auth-content {
@@ -381,13 +392,31 @@ body {
 
 /* LOGIN PAGE CSS */
 
+.signup {
+  padding-right: 30px;
+}
+.login-links {
+  padding-top: 25px;
+  display: flex;
+    justify-content: center;
+    color: var(--NASA-DM-Link, rgba(101, 177, 239, 1));
+    font-size: 13px;
+    cursor: pointer;
+}
+
+#id_password_helptext {
+  display: none;
+}
+
 .login-card-wrapper {
   width: 66%;
 }
 
 .login-card {
+  margin-top: 70px;
   background: rgba(21, 35, 46, 1);
   padding: 32px 32px 40px 32px;
+  border: 1px solid var(--NASA-Secondary-Blue, rgba(167, 186, 205, 1))
 }
 
 .login {
@@ -470,13 +499,25 @@ box-shadow: 0px 8px 16px 0px #0037FA4D;
 
 .footer-nasa-link, .footer-copyright-link {
   padding-right: 20px;
-  cursor: pointer;
 }
+
+.footer-copyright-link a {
+  color: rgba(255, 255, 255, 1);
+}
+
 .footer-left-side-link{
   background-image: url("../images/NASA\ Logo.svg");
   width: 47px;
 height: 38px;
-cursor: pointer;
+}
+
+.footer-contact-us-link, .footer-left-side-link, .footer-nasa-link, .footer-copyright-link {
+  cursor: pointer;
+}
+
+.base-html-footer-wrapper {
+  display: flex;
+    justify-content: center;
 }
 
 
