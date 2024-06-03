@@ -13,11 +13,6 @@
           <h4 class="card-title login-title">Login To Your Account</h4>
         </div>
         <div >
-          <!-- <h6 class="card-category">
-            {% if msg %}
-              <span class="alert-danger danger-message">{{ msg | safe }}</span>
-            {% endif %}
-          </h6> -->
           <form class="login" method="POST" action="{% url 'account_login' %}">
             {% csrf_token %}
             {{ form|crispy }}
@@ -29,7 +24,7 @@
             <button class="login-button" type="submit">{% translate "Log In" %}</button>
           </form>
           <div class="login-links">
-            <div class="signup">Sign Up</div>
+            <div class="signin">Sign Up</div>
             <div>Forgot Password?</div>
           </div>
         </div>

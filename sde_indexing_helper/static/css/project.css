@@ -358,6 +358,8 @@ body {
 
 }
 
+/* base_auth.html layout css */
+
 .auth-wrapper {
   height: 100vh;
 }
@@ -392,9 +394,10 @@ body {
 
 /* LOGIN PAGE CSS */
 
-.signup {
+.signin {
   padding-right: 30px;
 }
+
 .login-links {
   padding-top: 25px;
   display: flex;
@@ -402,6 +405,14 @@ body {
     color: var(--NASA-DM-Link, rgba(101, 177, 239, 1));
     font-size: 13px;
     cursor: pointer;
+}
+
+.login-links a {
+  color: var(--NASA-DM-Link, rgba(101, 177, 239, 1));
+}
+
+#signup_form .form-label {
+  display: none;
 }
 
 #id_password_helptext {
@@ -455,14 +466,39 @@ box-shadow: 0px 8px 16px 0px #0037FA4D;
   display: none;
 }
 
-#id_login, #id_password {
+#placeholder {
+  color: rgba(255, 255, 255, 1);
+}
+
+.title-wrapper h4 {
+  padding-bottom: 0;
+}
+
+.title-wrapper{
+  padding-bottom: 30px;
+}
+
+.title-wrapper p {
+  margin-bottom: 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 1);
+}
+
+#id_password1_helptext ul {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 1);
+}
+
+.auth-col-2-wrapper input {
   background: var(--NASA-Table, rgba(63, 74, 88, 1));
   border-radius: 5px;
   color: rgba(255, 255, 255, 1);
   padding: 9px 14px;
+  background-image: none !important;
 }
 
-#placeholder {
+.auth-col-2-wrapper .form-control:focus {
+  background: var(--NASA-Table, rgba(63, 74, 88, 1));
   color: rgba(255, 255, 255, 1);
 }
 
