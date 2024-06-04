@@ -533,11 +533,12 @@ box-shadow: 0px 8px 16px 0px #0037FA4D;
     align-items: center;
 }
 
-.footer-nasa-link, .footer-copyright-link {
+.footer-nasa-link, .footer-nasa-link:hover, .footer-nasa-link:focus, .footer-copyright-link {
   padding-right: 20px;
+  color: rgba(255, 255, 255, 1) !important;
 }
 
-.footer-copyright-link a {
+.footer-copyright-link a,  .footer-contact-us-link:hover, .footer-contact-us-link:focus, .footer-contact-us-link  {
   color: rgba(255, 255, 255, 1);
 }
 
