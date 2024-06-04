@@ -448,7 +448,7 @@ padding-bottom: 30px;
 }
 
 .login-button {
-  background-color: rgba(0, 102, 202, 1);
+  background-color: rgba(0, 102, 202, 1) !important;
   color: rgba(255, 255, 255, 1);
   border: none !important;
   width: 100%;
@@ -462,7 +462,7 @@ box-shadow: 0px 8px 16px 0px #0037FA4D;
 
 }
 
-#div_id_login .form-label,  #div_id_password .form-label{
+#div_id_login .form-label,  #div_id_password .form-label, #div_id_email .form-label{
   display: none;
 }
 
