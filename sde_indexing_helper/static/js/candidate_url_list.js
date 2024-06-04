@@ -115,10 +115,10 @@ function initializeDataTable() {
           var headers = lines[0].split(",");
           var reorderedHeaders = [
             headers[0],
+            headers[3],
             headers[4],
             headers[1],
-            headers[2],
-            headers[3],
+            headers[2]      
           ];
           lines[0] = reorderedHeaders.join(",");
 
