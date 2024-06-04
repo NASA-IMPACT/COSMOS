@@ -163,7 +163,7 @@ function initializeDataTable() {
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
-        $(row).attr("style", "background-color: #ab387d !important");
+        $(row).attr("style", "background-color: rgba(255, 61, 87, 0.36) !important");
       }
     },
   });
