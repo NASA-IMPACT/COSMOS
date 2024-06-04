@@ -24,9 +24,21 @@ STATUS_CHANGE_NOTIFICATIONS = {
             SLACK_ID_MAPPING["Advait Yogaonkar"],
         ],
     },
+    (WorkflowStatusChoices.READY_FOR_ENGINEERING, WorkflowStatusChoices.READY_FOR_CURATION): {
+        "message": "Engineering on {name} is complete. Ready for curation! :mag:",
+        "tags": [SLACK_ID_MAPPING["Emily Foshee"]],
+    },
     (WorkflowStatusChoices.ENGINEERING_IN_PROGRESS, WorkflowStatusChoices.READY_FOR_CURATION): {
         "message": "Engineering on {name} is complete. Ready for curation! :mag:",
         "tags": [SLACK_ID_MAPPING["Emily Foshee"]],
+    },
+    (WorkflowStatusChoices.READY_FOR_CURATION, WorkflowStatusChoices.CURATED): {
+        "message": "Curation on {name} is complete. It's now curated! :checkered_flag:",
+        "tags": [
+            SLACK_ID_MAPPING["Carson Davis"],
+            SLACK_ID_MAPPING["Bishwas Praveen"],
+            SLACK_ID_MAPPING["Ashish Acharya"],
+        ],
     },
     (WorkflowStatusChoices.CURATION_IN_PROGRESS, WorkflowStatusChoices.CURATED): {
         "message": "Curation on {name} is complete. It's now curated! :checkered_flag:",
