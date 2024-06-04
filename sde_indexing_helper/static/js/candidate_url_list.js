@@ -35,11 +35,17 @@ function modalContents(tableName) {
   var checkboxCount = $("#modalBody input[type='checkbox']").length;
 
   if (checkboxCount > 0 && tableName === uniqueId) {
-    $modal = $("#hideShowColumnsModal").modal();
+    $modal = $("#hideShowColumnsModal").modal({
+      backdrop: 'static',
+      keyboard: true,
+    });
     return;
   }
 
-  $modal = $("#hideShowColumnsModal").modal();
+  $modal = $("#hideShowColumnsModal").modal({
+    backdrop: 'static',
+    keyboard: true,
+  });
   var table = $(tableName).DataTable();
   if (tableName !== uniqueId) {
     $("#modalBody").html("");
@@ -583,6 +589,7 @@ function handleTabsClick() {
 
 function setupClickHandlers() {
   handleHideorShowSubmitButton();
+  handleHideorShowKeypress();
   handleAddNewPatternClick();
 
   handleDeleteDocumentTypeButtonClick();
@@ -686,6 +693,31 @@ function getDocumentTypeColumn() {
             </div>`;
     },
   };
+}
+
+function handleHideorShowKeypress() {
+  $("body").on("keydown", function () {
+    //Close modal via escape
+    if (event.key == "Escape" && $("#hideShowColumnsModal").is(":visible")) {
+      $("#hideShowColumnsModal").modal("hide");
+    }
+    //Confirm modal selections via enter
+    if(event.key == "Enter" && $("#hideShowColumnsModal").is(":visible")) {
+      var table = $(uniqueId).DataTable();
+      $("[id^='checkbox_']").each(function () {
+        var checkboxValue = $(this).val();
+        let column = table.column(checkboxValue);
+        var isChecked = $(this).is(":checked");
+        if (column.visible() === false && isChecked) column.visible(true);
+        else if (column.visible() === true && !isChecked) column.visible(false);
+      });
+      $("#hideShowColumnsModal").modal("hide");
+    }
+  });
+  
+  $("body").on("click", ".modal-backdrop", function () {
+    $("#hideShowColumnsModal").modal("hide");
+  });
 }
 
 function handleHideorShowSubmitButton() {
