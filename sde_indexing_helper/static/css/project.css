@@ -502,6 +502,10 @@ box-shadow: 0px 8px 16px 0px #0037FA4D;
   color: rgba(255, 255, 255, 1);
 }
 
+.signup-errors {
+  margin: 0;
+}
+
 /* FOOTER CSS */
 
 .footer-wrapper {

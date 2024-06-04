@@ -14,9 +14,22 @@
         <p>Create an account for SDE Indexing Helper</p>
       </div>
       <div >
-        <form  id="signup_form" method="post" action="{% url 'account_signup' %}">
+        <form  id="signup_form"  method="post" action="{% url 'account_signup' %}">
           {% csrf_token %}
           {{ form|crispy }}
+          {% if form.errors %}
+          <div class="alert alert-danger">
+            <ul class="signup-errors">
+              {% for field, errors in form.errors.items %}
+                  {% for error in errors %}
+                  <li>
+                  {{ error }}
+                  </li>
+                  {% endfor %}
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
           {% if redirect_field_value %}
           <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
           {% endif %}
@@ -31,3 +44,4 @@
 </div>
 
 {% endblock %}
+
