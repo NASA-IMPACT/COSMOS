@@ -142,21 +142,33 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
         if "comments_form" not in context:
             context["comments_form"] = CommentsForm()
         
-        # Fetch the most recent entry for each workflow status
-        recent_entries = WorkflowHistory.objects.filter(collection=self.get_object()).values('workflow_status').annotate(latest_created_at=Max('created_at'))
+        # Initialize a dictionary to hold the most recent history for each workflow status
+        timeline_history = {}
         
-        # Fetch the actual WorkflowHistory instances based on the most recent entries
-        timeline_objects = WorkflowHistory.objects.filter(
-            collection=self.get_object(),
-            created_at__in=[entry['latest_created_at'] for entry in recent_entries]
-        ).order_by('workflow_status')
+        # Get the most recent history for each workflow status
+        recent_histories = WorkflowHistory.objects.filter(collection=self.get_object()).order_by('workflow_status', '-created_at').distinct('workflow_status')
+        
+        # Populate the dictionary with the actual history objects
+        for history in recent_histories:
+            timeline_history[history.workflow_status] = history
+
+        #add placeholders for no history status
+        for status in WorkflowStatusChoices:
+            if status not in timeline_history:
+                timeline_history[status] = {
+                    'workflow_status': status,
+                    'created_at': None,
+                    'label': WorkflowStatusChoices(status).label,
+                }
+        
+        # Convert the dictionary to a list, ensuring the order of statuses
+        context['timeline_history'] = [timeline_history[status] for status in WorkflowStatusChoices]
 
         context["required_urls"] = RequiredUrls.objects.filter(collection=self.get_object())
         context["segment"] = "collection-detail"
         context["comments"] = Comments.objects.filter(collection=self.get_object()).order_by("-created_at")
         context["workflow_history"] = WorkflowHistory.objects.filter(collection=self.get_object()).order_by('-created_at')
         context["workflow_status_choices"] = WorkflowStatusChoices
-        context["timeline_history"] = timeline_objects
 
         return context
 

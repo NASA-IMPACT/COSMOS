@@ -48,9 +48,17 @@
     <div class="arrow" id="left-arrow">◀</div>
     <div class="timeline" id="timeline">
         {% for stage in timeline_history %}
-            <div class="timeline-stage" style="background-color: {{ stage.color }}">
-                <div class="status-label">{{stage.get_workflow_status_display}}</div>
-                <div class="modified-date">{{ stage.created_at|date:"m/d/Y" }}</div>
+            <div class="timeline-stage">
+                <div class="status-label">
+                    {% if stage.created_at %}
+                        {{ stage.get_workflow_status_display }}
+                    {% else %}
+                        {{ stage.label }}
+                    {% endif %}
+                </div>
+                {% if stage and stage.created_at %}
+                    <div class="modified-date">{{ stage.created_at|date:"m/d/Y" }}</div>
+                {% endif %}
             </div>
         {% endfor %}
     </div>
