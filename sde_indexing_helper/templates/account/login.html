@@ -24,8 +24,9 @@
             <button class="login-button" type="submit">{% translate "Log In" %}</button>
           </form>
           <div class="login-links">
-            <div class="signin">Sign Up</div>
-            <div>Forgot Password?</div>
+            {# URL provided by django-allauth/account/urls.py #}
+          <a href="{% url 'account_signup' %}" class="signin">Sign Up</a>
+            <a href="{% url 'account_reset_password' %}">Forgot Password?</a>
           </div>
         </div>
       </div>

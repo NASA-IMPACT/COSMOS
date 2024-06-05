@@ -11,19 +11,32 @@
     <div class="card login-card">
       <div class="title-wrapper">
         <h4 class="card-title login-title">Lets Get Started!</h4>
-        <p>Create an account to SDE Indexing Helper</p>
+        <p>Create an account for SDE Indexing Helper</p>
       </div>
       <div >
-        <form  id="signup_form" method="post" action="{% url 'account_signup' %}">
+        <form  id="signup_form"  method="post" action="{% url 'account_signup' %}">
           {% csrf_token %}
           {{ form|crispy }}
+          {% if form.errors %}
+          <div class="alert alert-danger">
+            <ul class="signup-errors">
+              {% for field, errors in form.errors.items %}
+                  {% for error in errors %}
+                  <li>
+                  {{ error }}
+                  </li>
+                  {% endfor %}
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
           {% if redirect_field_value %}
           <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
           {% endif %}
           <button class="login-button" type="submit">{% translate "Create" %} &raquo;</button>
         </form>
         <div class="login-links">
-          <p>{% blocktranslate %}Already have an account? <a href="{{ login_url }}">Login Here</a>{% endblocktranslate %}</p>
+          <p>{% blocktranslate %} <a href="{{ login_url }}">Already have an account? Login Here</a>{% endblocktranslate %}</p>
         </div>
       </div>
     </div>
@@ -31,3 +44,4 @@
 </div>
 
 {% endblock %}
+
