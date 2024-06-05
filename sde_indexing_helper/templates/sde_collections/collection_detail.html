@@ -45,6 +45,28 @@
 </div>
 
 <div class="detailContainer">
+    <div class="arrow" id="left-arrow">◀</div>
+    <div class="timeline" id="timeline">
+        {% for stage in timeline_history %}
+            <div class="timeline-stage" style="background-color: {{ stage.color }}">
+                <div class="status-label">{{stage.get_workflow_status_display}}</div>
+                <div class="modified-date">{{ stage.created_at|date:"m/d/Y" }}</div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="arrow" id="right-arrow">▶</div>
+
+    <!-- <script>
+        $(document).ready(function() {
+            $('#left-arrow').click(function() {
+                $('#timeline').scrollLeft($('#timeline').scrollLeft() - 150);
+            });
+
+            $('#right-arrow').click(function() {
+                $('#timeline').scrollLeft($('#timeline').scrollLeft() + 150);
+            });
+        });
+    </script> -->
 
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">

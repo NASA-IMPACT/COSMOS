@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
+from django.db.models import Max
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
@@ -140,12 +141,22 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
             )
         if "comments_form" not in context:
             context["comments_form"] = CommentsForm()
+        
+        # Fetch the most recent entry for each workflow status
+        recent_entries = WorkflowHistory.objects.filter(collection=self.get_object()).values('workflow_status').annotate(latest_created_at=Max('created_at'))
+        
+        # Fetch the actual WorkflowHistory instances based on the most recent entries
+        timeline_objects = WorkflowHistory.objects.filter(
+            collection=self.get_object(),
+            created_at__in=[entry['latest_created_at'] for entry in recent_entries]
+        ).order_by('workflow_status')
 
         context["required_urls"] = RequiredUrls.objects.filter(collection=self.get_object())
         context["segment"] = "collection-detail"
         context["comments"] = Comments.objects.filter(collection=self.get_object()).order_by("-created_at")
         context["workflow_history"] = WorkflowHistory.objects.filter(collection=self.get_object()).order_by('-created_at')
         context["workflow_status_choices"] = WorkflowStatusChoices
+        context["timeline_history"] = timeline_objects
 
         return context
 
