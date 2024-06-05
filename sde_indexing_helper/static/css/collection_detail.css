@@ -73,8 +73,9 @@ div > .nav {
 
 /* badge container to fix size of div and prevent hugging single line titles */
 .badge-container {
-    height: 1.6rem;
-    margin-left: 15px;
+    display: flex;
+    justify-content: end;
+    margin-bottom: 0.5rem;
 }
 
 .badge {
@@ -193,3 +194,33 @@ color:black;
    .tableHeaderRow{
     background-color:#050E19
    }
+
+   .caption {
+    margin-bottom: 0;
+    text-align: center;
+   }
+
+   .rename-collection-caption {
+    padding-bottom: 14px;
+   }
+
+   #inputFieldId {
+    background-color: #3F4A58;
+    color: white;
+    border-radius: 4px;
+    border: none;
+    height: 29px;
+   }
+
+   .modal-header {
+    border-bottom: none;
+   }
+
+   .modal-content form {
+    margin-bottom: 0 !important;
+   .buttonsCol {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+   }
+}
