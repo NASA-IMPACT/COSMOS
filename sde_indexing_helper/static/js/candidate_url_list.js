@@ -14,6 +14,14 @@ var matchPatternTypeMap = {
   "Multi-URL Pattern": 2,
 };
 var uniqueId; //used for logic related to contents on column customization modal
+const dict = {
+  1: "Images",
+  2: "Data",
+  3: "Documentation",
+  4: "Software and Tools",
+  5: "Missions and Instruments",
+  6: "Training and Education",
+};
 
 //fix table allignment when changing around tabs
 $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
@@ -61,9 +69,7 @@ function modalContents(tableName) {
       .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
       .text(columnName);
     var $caption = $("<p class='headerDescription'>")
-      .text(
-        candidateTableHeaderDefinitons[columnName]
-      )
+      .text(candidateTableHeaderDefinitons[columnName])
       .attr({
         id: "caption",
       });
@@ -85,20 +91,81 @@ function initializeDataTable() {
   var false_icon = '<i class="material-icons" style="color: red">close</i>';
 
   var candidate_urls_table = $("#candidate_urls_table").DataTable({
-    // scrollY: true,
-    lengthMenu: [
-      [25, 50, 100, 500],
-      ["Show 25", "Show 50", "Show 100", "Show 500"],
-    ],
     pageLength: 100,
+    colReorder: true,
     stateSave: true,
+    layout: {
+      bottomEnd: 'inputPaging',
+      topEnd: null,
+      topStart: {
+        info:true,
+        pageLength: {
+          menu: [[25, 50, 100, 500],["Show 25", "Show 50", "Show 100", "Show 500"]]
+      },
+        buttons: [
+          "spacer",
+          "csv",
+          "spacer",
+          {
+            text: "Customize Columns",
+            className: "customizeColumns",
+            action: function () {
+              modalContents("#candidate_urls_table");
+            },
+          },
+        ],
+      }
+  },
     serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
-    dom: "ilBrtip",
     buttons: [
-      "spacer",
-      "csv",
+      {
+        extend: "csv",
+        exportOptions: {
+          columns: [0, 11, 2, 12, 10],
+        },
+        customize: function (csv) {
+          var lines = csv.split("\n");
+          // Reorder the header columns
+          var headers = lines[0].split(",");
+          var reorderedHeaders = [
+            headers[0],
+            headers[3],
+            headers[4],
+            headers[1],
+            headers[2],
+          ];
+          lines[0] = reorderedHeaders.join(",");
+
+          // Add filter information in the footer
+          const secondRowFilters = [
+            "Applied filters:",
+            `URL: ${$("#candidateUrlFilter").val() || "No input"}`,
+            `Exclude: ${$(".dropdown-1").val() || "No selection"}`,
+            `Scraped Title: ${
+              $("#candidateNewTitleFilter").val() || "No input"
+            }`,
+            `New Title: ${dict[$(".dropdown-5").val()] || "No input"}`,
+            `Document Type: ${
+              $("#candidateScrapedTitleFilter").val() || "No selection"
+            }`,
+          ];
+          var appliedFiltersInfo = secondRowFilters.join("\n");
+
+          // Remove the second row with the filters
+          if (lines.length > 2) {
+            lines.splice(1, 1);
+          }
+          let alteredLines = [];
+          lines.forEach((line) => {
+            let newLine = "";
+            newLine = line.replace("open_in_new","");  
+            alteredLines.push(newLine);
+          })
+          return alteredLines.join("\n") + appliedFiltersInfo;
+        },
+      },
       "spacer",
       {
         text: "Customize Columns",
@@ -128,14 +195,6 @@ function initializeDataTable() {
     },
     initComplete: function (data) {
       const addDropdownSelect = [1, 4, 5];
-      const dict = {
-        1: "Images",
-        2: "Data",
-        3: "Documentation",
-        4: "Software and Tools",
-        5: "Missions and Instruments",
-        6: "Training and Education",
-      };
       this.api()
         .columns()
         .every(function (index) {
@@ -160,6 +219,32 @@ function initializeDataTable() {
       { data: "match_pattern_type", visible: false, searchable: false },
       { data: "candidate_urls_count", visible: false, searchable: false },
       { data: "excluded", visible: false, searchable: false },
+      {
+        data: null,
+        render: function (data, type, row) {
+          if (!row.document_type) return "Select";
+          return dict[row.document_type];
+        },
+        visible: false,
+      },
+      {
+        data: null,
+        render: function (data, type, row) {
+          const excludedDict = {
+            true: "Yes",
+            false: "No",
+          };
+          return excludedDict[row.excluded];
+        },
+        visible: false,
+      },
+      {
+        data: null,
+        render: function (data, type, row) {
+          return row.generated_title;
+        },
+        visible: false,
+      },
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
@@ -191,7 +276,6 @@ function initializeDataTable() {
 
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
     // scrollY: true,
-    serverSide: true,
     dom: "lBrtip",
     buttons: [
       {
@@ -249,8 +333,8 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
-      },
+        sortable: true,
+    },
       {
         data: null,
         sortable: false,
@@ -303,7 +387,6 @@ function initializeDataTable() {
     ],
     pageLength: 100,
     orderCellsTop: true,
-    serverSide: true,
     ajax: `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
     initComplete: function (data) {
       var table = $("#include_patterns_table").DataTable();
@@ -336,7 +419,7 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
+        sortable: true,
       },
       {
         data: null,
@@ -360,7 +443,6 @@ function initializeDataTable() {
 
   var title_patterns_table = $("#title_patterns_table").DataTable({
     // scrollY: true,
-    serverSide: true,
     dom: "lBrtip",
     buttons: [
       {
@@ -418,7 +500,7 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
+        sortable: true,
       },
       {
         data: null,
@@ -468,7 +550,6 @@ function initializeDataTable() {
         },
       },
     ],
-    serverSide: true,
     lengthMenu: [
       [25, 50, 100, 500],
       ["Show 25", "Show 50", "Show 100", "Show 500"],
@@ -538,7 +619,7 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
+        sortable: true,
       },
       {
         data: null,
@@ -604,11 +685,12 @@ function getURLColumn() {
   return {
     data: "url",
     render: function (data, type, row) {
-      return `<a target="_blank" href="${data}" data-url="/api/candidate-urls/${
-        row["id"]
-      }/" class="url_link"> <i class="material-icons whiteText">open_in_new</i></a> <span class="candidate_url nameStyling">${remove_protocol(
+      return `<div class="url-cell"><span class="candidate_url nameStyling">${remove_protocol(
         data
-      )}</span>`;
+      )}</span> 
+      <a target="_blank" href="${data}" data-url="/api/candidate-urls/${
+        row["id"]
+      }/" class="url-link"> <i class="material-icons url-icon">open_in_new</i></a></div>`;
     },
   };
 }
@@ -668,9 +750,7 @@ function getDocumentTypeColumn() {
       button_text = data ? dict[data] : "Select";
       button_color = data ? "btn-success" : "btn-secondary";
       return `
-            <div  data-match-pattern=${remove_protocol(
-              row["url"]
-            )}>
+            <div  data-match-pattern=${remove_protocol(row["url"])}>
               <button class="btn ${button_color} btn-sm dropdown-toggle selectStyling" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 ${button_text}
               </button>
@@ -839,18 +919,23 @@ function postDocumentTypePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
-      if(currentTab === ""){ //Only add a notification if we are on the first tab
-      newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
-      $("#documentTypePatternsTab").html(
-        `Document Type Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newDocumentTypePatternsCount + " new" + 
-          `</span>`
-      );
-    }
+      if (currentTab === "") {
+        //Only add a notification if we are on the first tab
+        newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
+        $("#documentTypePatternsTab").html(
+          `Document Type Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+            newDocumentTypePatternsCount +
+            " new" +
+            `</span>`
+        );
+      }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
-      if (errorMessage == '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}') {
+      if (
+        errorMessage ==
+        '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}'
+      ) {
         toastr.success("Pattern already exists");
         return;
       }
@@ -864,15 +949,16 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0, force) {
     toastr.error("Please highlight a pattern to exclude.");
     return;
   }
-  if(!force){ //If the user clicked the icon in the table, we make the change regardless
-  // if pattern exists in table already (unless another pattern overrules it)
-  var table = $("#exclude_patterns_table").DataTable();
-  var itemIdColumnData = table.column(0).data().toArray();
-  if (itemIdColumnData.includes(match_pattern)) {
-    toastr.success("Pattern already exists");
-    return;
+  if (!force) {
+    //If the user clicked the icon in the table, we make the change regardless
+    // if pattern exists in table already (unless another pattern overrules it)
+    var table = $("#exclude_patterns_table").DataTable();
+    var itemIdColumnData = table.column(0).data().toArray();
+    if (itemIdColumnData.includes(match_pattern)) {
+      toastr.success("Pattern already exists");
+      return;
+    }
   }
-}
 
   $.ajax({
     url: "/api/exclude-patterns/",
@@ -886,14 +972,16 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0, force) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
-      if(currentTab === ""){ //Only add a notification if we are on the first tab
-      newExcludePatternsCount = newExcludePatternsCount + 1;
-      $("#excludePatternsTab").html(
-        `Exclude Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newExcludePatternsCount + " new" + 
-          `</span>`
-      );
-    }
+      if (currentTab === "") {
+        //Only add a notification if we are on the first tab
+        newExcludePatternsCount = newExcludePatternsCount + 1;
+        $("#excludePatternsTab").html(
+          `Exclude Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+            newExcludePatternsCount +
+            " new" +
+            `</span>`
+        );
+      }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -928,14 +1016,16 @@ function postIncludePatterns(match_pattern, match_pattern_type = 0) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#include_patterns_table").DataTable().ajax.reload(null, false);
-      if(currentTab === ""){ //Only add a notification if we are on the first tab
-      newIncludePatternsCount = newIncludePatternsCount + 1;
-      $("#includePatternsTab").html(
-        `Include Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newIncludePatternsCount + " new" + 
-          `</span>`
-      );
-    }
+      if (currentTab === "") {
+        //Only add a notification if we are on the first tab
+        newIncludePatternsCount = newIncludePatternsCount + 1;
+        $("#includePatternsTab").html(
+          `Include Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+            newIncludePatternsCount +
+            " new" +
+            `</span>`
+        );
+      }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -967,22 +1057,30 @@ function postTitlePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#title_patterns_table").DataTable().ajax.reload(null, false);
-      if(currentTab === ""){ //Only add a notification if we are on the first tab
-      newTitlePatternsCount = newTitlePatternsCount + 1;
-      $("#titlePatternsTab").html(
-        `Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newTitlePatternsCount + " new" + 
-          `</span>`
-      );
-    }
+      if (currentTab === "") {
+        //Only add a notification if we are on the first tab
+        newTitlePatternsCount = newTitlePatternsCount + 1;
+        $("#titlePatternsTab").html(
+          `Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+            newTitlePatternsCount +
+            " new" +
+            `</span>`
+        );
+      }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
-      if (errorMessage == '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}') {
+      if (
+        errorMessage ==
+        '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}'
+      ) {
         toastr.success("Pattern already exists");
         return;
       }
-      toastr.error(errorMessage);
+      var errorMessages = JSON.parse(errorMessage);
+      Object.entries(errorMessages.error).forEach(([key, value]) => {
+        toastr.error(value, key);
+      });
     },
   });
 }

@@ -12,14 +12,45 @@ Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings
 ## Basic Commands
 
 ### Building The Project
+
     ```bash
     $ docker-compose -f local.yml build
     ```
 
 ### Running The Necessary Containers
+
     ```bash
     $ docker-compose -f local.yml up
     ```
+
+### Non-docker Local Setup
+
+If you want to run the project without docker, you will need the following:
+
+- Postgres
+
+Run the following commands:
+
+````
+$ psql postgres
+postgres=# create database <some database>;
+postgres=# create user <some username> with password '<some password>';
+postgres=# grant all privileges on database <some database> to <some username>;
+
+# This next one is optional, but it will allow the user to create databases for testing
+
+postgres=# alter role <some username> with superuser;
+```
+
+Now copy .env_sample in the root directory to .env. Note that in this setup we don't end up using the .envs/ directory, but instead we use the .env file.
+
+Replace the variables in this line in the .env file: `DATABASE_URL='postgresql://<user>:<password>@localhost:5432/<database>'` with your user, password and database. Change the port if you have a different one.
+
+You don't need to change any other variable, unless you want to use specific modules (like the GitHub code will require a GitHub token etc).
+
+There is a section in `config/settings/base.py` which reads environment variables from this file. The line should look like `READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=True)`. Make sure either the default is True here (which it should already be), or run `export DJANGO_READ_DOT_ENV_FILE=True` in your terminal.
+
+Run `python manage.py runserver` to test if your setup worked. You might have to run an initial migration with `python manage.py migrate`.
 
 ### Setting Up Your Users
 
@@ -144,7 +175,7 @@ To run a celery worker:
 ```bash
 cd sde_indexing_helper
 celery -A config.celery_app worker -l info
-```
+````
 
 Please note: For Celery's import magic to work, it is important _where_ the celery commands are run. If you are in the same folder with _manage.py_, you should be right.
 
@@ -185,7 +216,6 @@ Run against the files :
     ```
 
     It's usually a good idea to run the hooks against all of the files when adding new hooks (usually `pre-commit` will only run on the chnages files during git hooks).
-
 
 ### Sentry
 
