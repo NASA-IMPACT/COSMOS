@@ -186,8 +186,8 @@
                                 {% for comment in comments %}
                                 <div class="comment">
                                     <strong>{{ comment.user.username }}</strong>
-                                    <span>{{ comment.created_at|date:"M. d, Y, P" }}</span>
-                                    <p>{{ comment.text }}</p>
+                                    <span class="whiteText">{{ comment.created_at|date:"M. d, Y, P" }}</span>
+                                    <p class="whiteText">{{ comment.text }}</p>
                                 </div>
                                 {% empty %}
                                 <p>No comments yet</p>

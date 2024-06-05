@@ -91,18 +91,34 @@ function initializeDataTable() {
   var false_icon = '<i class="material-icons" style="color: red">close</i>';
 
   var candidate_urls_table = $("#candidate_urls_table").DataTable({
-    // scrollY: true,
-    lengthMenu: [
-      [25, 50, 100, 500],
-      ["Show 25", "Show 50", "Show 100", "Show 500"],
-    ],
     pageLength: 100,
     colReorder: true,
     stateSave: true,
+    layout: {
+      bottomEnd: 'inputPaging',
+      topEnd: null,
+      topStart: {
+        info:true,
+        pageLength: {
+          menu: [[25, 50, 100, 500],["Show 25", "Show 50", "Show 100", "Show 500"]]
+      },
+        buttons: [
+          "spacer",
+          "csv",
+          "spacer",
+          {
+            text: "Customize Columns",
+            className: "customizeColumns",
+            action: function () {
+              modalContents("#candidate_urls_table");
+            },
+          },
+        ],
+      }
+  },
     serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
-    dom: "ilBrtip",
     buttons: [
       {
         extend: "csv",
