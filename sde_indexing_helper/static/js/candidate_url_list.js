@@ -118,7 +118,7 @@ function initializeDataTable() {
             headers[3],
             headers[4],
             headers[1],
-            headers[2]      
+            headers[2],
           ];
           lines[0] = reorderedHeaders.join(",");
 
@@ -218,12 +218,12 @@ function initializeDataTable() {
         visible: false,
       },
       {
-        data:null,
-        render: function (data,type,row){
+        data: null,
+        render: function (data, type, row) {
           return row.generated_title;
         },
         visible: false,
-      }
+      },
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
@@ -914,6 +914,13 @@ function postDocumentTypePatterns(
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
+      if (
+        errorMessage ==
+        '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}'
+      ) {
+        toastr.success("Pattern already exists");
+        return;
+      }
       toastr.error(errorMessage);
     },
   });
@@ -1045,7 +1052,17 @@ function postTitlePatterns(
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
-      toastr.error(errorMessage);
+      if (
+        errorMessage ==
+        '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}'
+      ) {
+        toastr.success("Pattern already exists");
+        return;
+      }
+      var errorMessages = JSON.parse(errorMessage);
+      Object.entries(errorMessages.error).forEach(([key, value]) => {
+        toastr.error(value, key);
+      });
     },
   });
 }

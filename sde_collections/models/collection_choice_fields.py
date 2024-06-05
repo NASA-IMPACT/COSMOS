@@ -95,3 +95,4 @@ class WorkflowStatusChoices(models.IntegerChoices):
     PERFECT_ON_PROD = 14, "Perfect and on Production"
     LOW_PRIORITY_PROBLEMS_ON_PROD = 15, "Low Priority Problems on Production"
     HIGH_PRIORITY_PROBLEMS_ON_PROD = 16, "High Priority Problems on Production, only for old sources"
+    MERGE_PENDING = 17, "Code Merge Pending"
