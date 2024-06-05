@@ -200,7 +200,15 @@ function initializeDataTable() {
       },
     },
     initComplete: function (data) {
-      const addDropdownSelect = [1, 4, 5];
+      const addDropdownSelect = [1, 4];
+      const dict = {
+        1: "Images",
+        2: "Data",
+        3: "Documentation",
+        4: "Software and Tools",
+        5: "Missions and Instruments",
+        6: "Training and Education",
+      };
       this.api()
         .columns()
         .every(function (index) {
