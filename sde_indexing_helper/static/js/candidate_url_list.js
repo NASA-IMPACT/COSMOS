@@ -141,8 +141,13 @@ function initializeDataTable() {
           if (lines.length > 2) {
             lines.splice(1, 1);
           }
-
-          return lines.join("\n") + appliedFiltersInfo;
+          let alteredLines = [];
+          lines.forEach((line) => {
+            let newLine = "";
+            newLine = line.replace("open_in_new","");  
+            alteredLines.push(newLine);
+          })
+          return alteredLines.join("\n") + appliedFiltersInfo;
         },
       },
       "spacer",
