@@ -36,3 +36,191 @@
 .comment p {
     margin-top: 5px;
 }
+
+/* nav tab headers, renamed to prevent material dashboard css conflict */
+.tab-nav {
+    color: black;
+    padding-right: 25px;
+    padding-left: 25px;
+    font-weight: 500;
+}
+
+/* tab headers hover effect */
+.tab-nav:hover {
+    text-decoration: underline;
+    color: #0066CA; 
+}
+
+/* alligning tab container with the table  */
+.nav-tabs {
+    padding-left: 0px;
+}
+
+/* active tab  */
+.nav-item > .active {
+    color: #0066CA;
+    font-weight: 700;
+    border-bottom: 2px solid #FF3D57;
+    padding-bottom: 20px;
+}
+
+/* line under the tab options */
+div > .nav {
+    padding-bottom: 20px;
+    border-bottom: 1px solid;
+    border-bottom-color:rgba(167, 186, 205, 1);
+}
+
+/* badge container to fix size of div and prevent hugging single line titles */
+.badge-container {
+    display: flex;
+    justify-content: end;
+    margin-bottom: 0.5rem;
+}
+
+.badge {
+    cursor: default !important;
+}
+
+.titleCol, .nameWrapper {
+    display: flex;
+    color:white;
+}
+
+.table > thead > tr > th {
+    font-weight: 700;
+}
+.divisionDropdown {
+    appearance: auto !important;
+    padding:10px;
+  }
+
+  .editTitle {
+    cursor: pointer;
+    height: 22px;
+    padding-left: 7px;
+  }
+
+  .modal-footer {
+    justify-content: center;
+  }
+
+  #modalForm {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #inputFieldId {
+    width: 100%;
+  }
+  .detailContainer{
+    background-color:#15232E;
+    padding: 28px;
+    border-radius: 12px;
+  }
+
+ 
+
+  .table tbody tr:nth-child(odd) {
+    background-color: #15232E !important;
+   }
+  
+   .table tbody tr:nth-child(even) {
+    background-color: #3F4A58 !important;
+   }
+
+   .detailsHeader{
+    color:white;
+    border:none;
+   }
+
+   .table th{
+    border-top:0px;
+   }
+
+
+
+   .urlStyle:hover{
+    color:#65B1EF;
+   }
+
+  
+
+   .formBackground{
+    background-color:#A7BACD;
+   }
+   .reqUrlForm input {
+    background-color:#A7BACD;
+    border-style: none;
+    border-radius:5px;
+   }
+
+   .form-control, .is-focused .form-control{
+    background-image:none;
+   }
+   .form-control:focus{
+    color:black;
+    background-color:#A7BACD;
+
+   }
+
+   .form-control {
+color:black;
+   }
+
+   .urlDeleteButton{
+    padding: 7px !important;
+    margin-top: 14px;
+   }
+
+   .reqUrlForm{
+    display:inline-flex;
+   }
+
+   form{
+    margin-bottom:0px;
+   }
+
+   .urlSubmitButton{
+    margin-left:10px;
+   }
+
+   .tableHeaderRow{
+    background-color:#050E19
+   }
+
+   .caption {
+    margin-bottom: 0;
+    text-align: center;
+   }
+
+   .rename-collection-caption {
+    padding-bottom: 14px;
+   }
+
+   #inputFieldId {
+    background-color: #3F4A58;
+    color: white;
+    border-radius: 4px;
+    border: none;
+    height: 29px;
+   }
+
+   .modal-header {
+    border-bottom: none;
+   }
+
+   .modal-content form {
+    margin-bottom: 0 !important;
+   .buttonsCol {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+   }
+}

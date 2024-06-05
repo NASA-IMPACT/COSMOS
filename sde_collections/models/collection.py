@@ -180,6 +180,7 @@ class Collection(models.Model):
             14: "btn-primary",
             15: "btn-info",
             16: "btn-secondary",
+            17: "btn-light",
         }
         return color_choices[self.workflow_status]
 
@@ -470,6 +471,11 @@ class Collection(models.Model):
         # Call the parent class's save method
         super().save(*args, **kwargs)
 
+    def __init__(self, *args, **kwargs):
+        # Create a cached version of the last workflow_status to compare against
+        super().__init__(*args, **kwargs)
+        self.old_workflow_status = self.workflow_status
+
 
 class RequiredUrls(models.Model):
     """
@@ -494,6 +500,54 @@ class Comments(models.Model):
 
     def __str__(self):
         return self.text
+
+
+class WorkflowHistory(models.Model):
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name="workflow_history", null=True)
+    workflow_status = models.IntegerField(
+        choices=WorkflowStatusChoices.choices,
+        default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
+    )
+    old_status = models.IntegerField(choices=WorkflowStatusChoices.choices, null=True)
+    curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.collection) + str(self.workflow_status)
+
+    @property
+    def workflow_status_button_color(self) -> str:
+        color_choices = {
+            1: "btn-light",
+            2: "btn-danger",
+            3: "btn-warning",
+            4: "btn-info",
+            5: "btn-success",
+            6: "btn-primary",
+            7: "btn-info",
+            8: "btn-secondary",
+            9: "btn-light",
+            10: "btn-danger",
+            11: "btn-warning",
+            12: "btn-info",
+            13: "btn-success",
+            14: "btn-primary",
+            15: "btn-info",
+            16: "btn-secondary",
+            17: "btn-light",
+        }
+        return color_choices[self.workflow_status]
+
+
+@receiver(post_save, sender=Collection)
+def log_workflow_history(sender, instance, created, **kwargs):
+    if instance.workflow_status != instance.old_workflow_status:
+        WorkflowHistory.objects.create(
+            collection=instance,
+            workflow_status=instance.workflow_status,
+            curated_by=instance.curated_by,
+            old_status=instance.old_workflow_status,
+        )
 
 
 @receiver(post_save, sender=Collection)

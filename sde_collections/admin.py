@@ -3,8 +3,8 @@ import csv
 from django.contrib import admin, messages
 from django.http import HttpResponse
 
+from .models.collection import Collection, WorkflowHistory
 from .models.candidate_url import CandidateURL, ResolvedTitle
-from .models.collection import Collection
 from .models.pattern import IncludePattern, TitlePattern
 from .tasks import import_candidate_urls_from_api
 
@@ -275,11 +275,16 @@ class TitlePatternAdmin(admin.ModelAdmin):
         "collection",
     )
 
+class WorkflowHistoryAdmin(admin.ModelAdmin):
+    list_display = ("collection", "old_status", "workflow_status", "created_at")
+    search_fields = ["collection__name"]
+    list_filter = ["workflow_status", "old_status"]
+
 
 class ResolvedTitleAdmin(admin.ModelAdmin):
     list_display = ["title_pattern", "candidate_url", "resolved_title", "created_at"]
 
-
+admin.site.register(WorkflowHistory, WorkflowHistoryAdmin)
 admin.site.register(CandidateURL, CandidateURLAdmin)
 admin.site.register(TitlePattern, TitlePatternAdmin)
 admin.site.register(IncludePattern)

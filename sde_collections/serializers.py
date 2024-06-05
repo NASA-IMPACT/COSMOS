@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models.candidate_url import CandidateURL
-from .models.collection import Collection
+from .models.collection import Collection, WorkflowHistory
 from .models.collection_choice_fields import DocumentTypes
 from .models.pattern import (
     DocumentTypePattern,
@@ -24,19 +24,27 @@ class CollectionSerializer(serializers.ModelSerializer):
             "curation_status_display",
             "workflow_status_display",
             "curated_by",
+            "division",
+            "document_type",
+            "name",
         )
+        extra_kwargs = {"division":{'required': False}, "document_type":{'required': False}, "name":{'required': False}}
+
         # extra_kwargs = {
         #     "name": {"required": False},
         #     "config_folder": {"required": False},
         #     "division": {"required": False},
         # }
 
-
 class CollectionReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
         fields = "__all__"
 
+class WorkflowHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkflowHistory
+        fields = "__all__"
 
 class CandidateURLSerializer(serializers.ModelSerializer):
     excluded = serializers.BooleanField(required=False)

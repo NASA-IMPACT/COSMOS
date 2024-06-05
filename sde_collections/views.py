@@ -19,7 +19,7 @@ from rest_framework.views import APIView
 
 from .forms import CollectionGithubIssueForm, CommentsForm, RequiredUrlForm
 from .models.candidate_url import CandidateURL, ResolvedTitle, ResolvedTitleError
-from .models.collection import Collection, Comments, RequiredUrls
+from .models.collection import Collection, Comments, RequiredUrls,WorkflowHistory
 from .models.collection_choice_fields import (
     ConnectorChoices,
     CurationStatusChoices,
@@ -43,6 +43,7 @@ from .serializers import (
     ExcludePatternSerializer,
     IncludePatternSerializer,
     TitlePatternSerializer,
+    WorkflowHistorySerializer,
 )
 from .tasks import push_to_github_task
 from .utils.health_check import generate_db_github_metadata_differences
@@ -90,7 +91,6 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         collection = self.get_object()
-
         form = RequiredUrlForm(request.POST)
         github_form = CollectionGithubIssueForm(request.POST)
         comments_form = CommentsForm(request.POST)
@@ -144,8 +144,10 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
         context["required_urls"] = RequiredUrls.objects.filter(collection=self.get_object())
         context["segment"] = "collection-detail"
         context["comments"] = Comments.objects.filter(collection=self.get_object()).order_by("-created_at")
-        return context
+        context["workflow_history"] = WorkflowHistory.objects.filter(collection=self.get_object()).order_by('-created_at')
+        context["workflow_status_choices"] = WorkflowStatusChoices
 
+        return context
 
 class RequiredUrlsDeleteView(LoginRequiredMixin, DeleteView):
     model = RequiredUrls
@@ -190,6 +192,8 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
             match_pattern_type=2
         )  # 2=regex patterns
         context["title_patterns"] = self.collection.titlepattern.all()
+        context["workflow_status_choices"] = WorkflowStatusChoices
+
         return context
 
 
@@ -344,7 +348,6 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
-
 
 class CollectionReadViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Collection.objects.all()

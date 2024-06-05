@@ -1,18 +1,274 @@
-let originalValue = document.getElementById('github-link-display').textContent;
-document.getElementById('github-link-form').style.display = 'none';
-document.getElementById('cancel-github-link-button').style.display = 'none';
-document.getElementById('edit-github-link-button').addEventListener('click', function() {
-    document.getElementById('id_github_issue_link').value = originalValue;
-    document.getElementById('cancel-github-link-button').style.display = 'block';
-    document.getElementById('edit-github-link-button').style.display = 'none';
-    document.getElementById('github-link-display').style.display = 'none';
-    document.getElementById('github-link-form').style.display = 'block';
+var collection_id;
+var newDivisionVal;
+var currentDivisionVal;
+var currentDivisonText;
+
+let originalValue = document.getElementById("github-link-display").textContent;
+document.getElementById("github-link-form").style.display = "none";
+document.getElementById("cancel-github-link-button").style.display = "none";
+document
+  .getElementById("edit-github-link-button")
+  .addEventListener("click", function () {
+    document.getElementById("id_github_issue_link").value = originalValue;
+    document.getElementById("cancel-github-link-button").style.display =
+      "block";
+    document.getElementById("edit-github-link-button").style.display = "none";
+    document.getElementById("github-link-display").style.display = "none";
+    document.getElementById("github-link-form").style.display = "block";
+  });
+
+document
+  .getElementById("cancel-github-link-button")
+  .addEventListener("click", function () {
+    document.getElementById("cancel-github-link-button").style.display = "none";
+    document.getElementById("edit-github-link-button").style.display = "block";
+    document.getElementById("github-link-display").style.display = "block";
+    document.getElementById("github-link-form").style.display = "none";
+    document.getElementById("id_github_issue_link").value = originalValue;
+  });
+
+$(document).ready(function () {
+  $("body").on("change", "#detailDocTypeDropdown", function () {
+    postDocTypeChange(collection_id, $(this).val());
+  });
 });
 
-document.getElementById('cancel-github-link-button').addEventListener('click', function() {
-    document.getElementById('cancel-github-link-button').style.display = 'none';
-    document.getElementById('edit-github-link-button').style.display = 'block';
-    document.getElementById('github-link-display').style.display = 'block';
-    document.getElementById('github-link-form').style.display = 'none';
-    document.getElementById('id_github_issue_link').value = originalValue;
+var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
+
+function postDocTypeChange(collection_id, docType) {
+  var url = `/api/collections/${collection_id}/`;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    data: {
+      document_type: docType,
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      toastr.success("Document Type Updated!");
+    },
+  });
+}
+
+//////////////////////////////
+///// DIVISION CHANGE ////////
+//////////////////////////////
+
+$(document).ready(function () {
+  $("body").on("change", "#detailDivisionDropdown", function () {
+    $modal = $("#divisionChangeModal").modal();
+    var selectedText = $("#detailDivisionDropdown option:selected").text();
+    $("#caption").text(
+      `Divison will be changed from ${currentDivisonText} to ${selectedText}.`
+    );
+    collection_id = $(this).data("collection-id");
+    newDivisionVal = $(this).val();
+  });
+
+  $("#divisionChangeModalForm").on("click", "button", function (event) {
+    event.preventDefault();
+    var buttonId = $(this).attr("id");
+
+    switch (buttonId) {
+      case "makeDivisionChange":
+        currentDivisionVal = $("#detailDivisionDropdown").val();
+        postDivisionChange(collection_id, newDivisionVal);
+        break;
+      case "cancelDivisionChange":
+        $("#detailDivisionDropdown").val(currentDivisionVal);
+        $modal = $("#divisionChangeModal").modal("hide");
+        break;
+    }
+  });
+});
+
+// store current division option
+$(document).ready(function () {
+  currentDivisionVal = $("#detailDivisionDropdown").val();
+  currentDivisonText = $("#detailDivisionDropdown option:selected").text();
+  collection_id = $("#detailDocTypeDropdown").data("collection-id");
+});
+
+function postDivisionChange(collection_id, division) {
+  var url = `/api/collections/${collection_id}/`;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    data: {
+      division: division,
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      toastr.success("Division Updated!");
+      currentDivisionVal = $("#detailDivisionDropdown").val();
+      currentDivisonText = $("#detailDivisionDropdown option:selected").text();
+    },
+    error: function (xhr, textStatus, errorThrown) {
+      // console.log("Error:", errorThrown);
+      toastr.error("Error updating name.");
+    },
+  });
+}
+
+// on close of modal, manually resetting division value to original value
+$(document).ready(function () {
+  $("#closeDivisionModal").on("click", function (event) {
+    event.preventDefault();
+    $("#detailDivisionDropdown").val(currentDivisionVal);
+    $("#divisionChangeModal").modal("hide");
+  });
+});
+
+// Close the modal when clicking outside of the modal content
+$(document).ready(function () {
+  $(window).click(function (event) {
+    if ($(event.target).is("#divisionChangeModal")) {
+      $("#detailDivisionDropdown").val(currentDivisionVal);
+      $modal = $("#divisionChangeModal").modal("hide");
+    }
+  });
+});
+
+//////////////////////////////
+/////// TITLE CHANGE ////////
+//////////////////////////////
+
+$(document).ready(function () {
+  $(".editTitle").on("click", function () {
+    $modal = $("#titleChangeModal").modal();
+    var currentName = $("#collectionName").text();
+    $("#titleCaption").text(`Name will be changed from ${currentName} to: `);
+  });
+});
+
+$(document).ready(function () {
+  $("#closeTitleModal").on("click", function (event) {
+    event.preventDefault();
+    $("#titleChangeModal").modal("hide");
+  });
+});
+
+$(document).ready(function () {
+  $(window).click(function (event) {
+    if ($(event.target).is("#titleChangeModal")) {
+      $modal = $("#titleChangeModal").modal("hide");
+    }
+  });
+});
+
+function patchTitle(collection_id, inputValue) {
+  $.ajax({
+    url: "/api/collections/" + collection_id + "/",
+    type: "PUT",
+    data: {
+      name: inputValue,
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      // console.log("Success:", data);
+      $(".collectionName").text(`${data.name}`);
+      toastr.success("Name Updated!");
+    },
+    error: function (xhr, textStatus, errorThrown) {
+      // console.log("Error:", errorThrown);
+      toastr.error("Error updating name.");
+    },
+  });
+}
+
+$(document).ready(function () {
+  $("#titleChangeModalForm").on("click", "button", function (event) {
+    event.preventDefault();
+    var buttonId = $(this).attr("id");
+
+    switch (buttonId) {
+      case "renameTitle":
+        var inputValue = $("#inputFieldId").val();
+        patchTitle(collection_id, inputValue);
+        break;
+      case "cancelTitleRename":
+        editTitleModal = false;
+        $modal = $("#titleChangeModal").modal("hide");
+        break;
+    }
+  });
+});
+
+$(document).ready(function () {
+  $("#inputFieldId").on("keypress", function (event) {
+    if (event.which === 13) {
+      event.preventDefault();
+      var inputValue = $(this).val();
+      if (inputValue.trim() !== "") {
+        patchTitle(collection_id, inputValue);
+        $modal = $("#titleChangeModal").modal("hide");
+      } else return;
+    }
+  });
+});
+
+function postWorkflowStatus(collection_id, workflow_status) {
+  var url = `/api/collections/${collection_id}/`;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    data: {
+      workflow_status: workflow_status,
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      toastr.success("Workflow Status Updated!");
+    },
+  });
+}
+
+function handleWorkflowStatusSelect() {
+  $("body").on("click", ".workflow_status_select", function () {
+    var collection_id = $(this).data("collection-id");
+    var workflow_status = $(this).attr("value");
+    var workflow_status_text = $(this).text();
+    var color_choices = {
+      1: "btn-light",
+      2: "btn-danger",
+      3: "btn-warning",
+      4: "btn-info",
+      5: "btn-success",
+      6: "btn-primary",
+      7: "btn-info",
+      8: "btn-secondary",
+      9: "btn-light",
+      10: "btn-danger",
+      11: "btn-warning",
+      12: "btn-info",
+      13: "btn-success",
+      14: "btn-primary",
+      15: "btn-info",
+      16: "btn-secondary",
+    };
+
+    $button = $(`#workflow-status-button-${collection_id}`);
+
+    $button.text(workflow_status_text);
+    $button.removeClass(
+      "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+    );
+    $button.addClass(color_choices[parseInt(workflow_status)]);
+    postWorkflowStatus(collection_id, workflow_status);
+  });
+}
+
+$(document).ready(function () {
+  handleWorkflowStatusSelect();
 });

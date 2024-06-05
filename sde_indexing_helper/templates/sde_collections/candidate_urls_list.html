@@ -2,339 +2,404 @@
 {% load static i18n %}
 {% load humanize %}
 {% block title %}
-    {{ collection.name }} Candidate URLs
+{{ collection.name }} Candidate URLs
 {% endblock title %}
 {% block stylesheets %}
     {{ block.super }}
-    <link href="//cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/b-html5-2.3.6/b-print-2.3.6/cr-1.6.2/date-1.4.1/fc-4.2.2/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/rr-1.3.3/sc-2.1.1/sb-1.4.2/sp-2.1.2/sl-1.6.2/sr-1.2.2/datatables.min.css"
-          rel="stylesheet" />
+    <link href="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/candidate_url_list.css' %}" />
+    <link href="{% static 'css/project.css' %}" rel="stylesheet">
 {% endblock stylesheets %}
 {% block javascripts %}
     {{ block.super }}
     <script>var collection_id = "{{ collection.id }}";</script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <script src="//cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/b-html5-2.3.6/b-print-2.3.6/cr-1.6.2/date-1.4.1/fc-4.2.2/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/rr-1.3.3/sc-2.1.1/sb-1.4.2/sp-2.1.2/sl-1.6.2/sr-1.2.2/datatables.min.js"></script>
+    <script src="https://cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
-    <script src="//cdn.datatables.net/plug-ins/1.13.4/pagination/input.js"></script>
+    <script src="//cdn.datatables.net/plug-ins/2.0.5/pagination/input.js"></script>
     <script src="{% static 'js/candidate_url_list.js' %}"></script>
+    <script src="{% static 'js/project.js' %}"></script>
+    <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
 {% endblock javascripts %}
+
 {% block content %}
-    {% csrf_token %}
-    <h3>
-        {{ candidate_urls.count|intcomma }} Candidate URLs for <a href="{% url 'sde_collections:detail' collection.pk %}"><strong>{{ collection.name }}</strong></a>
-        <br>
-        <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small>
-    </h3>
-    <div class="row pull-right">
-        <div class="form-group">
-            <input type="checkbox" id="filter-checkbox">
-            <label for="filter-checkbox">Hide Excluded</label>
-        </div>
-    </div>
+{% csrf_token %}
+<div class="headerDiv">
+<h1 class="pageTitle">Candidate URLs</h1>
+<button class="btn badge {{ collection.workflow_status_button_color }} dropdown-toggle title-dropdown btn-sm"
+type="button"
+data-toggle="dropdown"
+aria-haspopup="true"
+id="workflow-status-button-{{ collection.id }}"
+aria-expanded="false">{{ collection.get_workflow_status_display }}</button>
+<div class="dropdown-menu"
+aria-labelledby="workflow-status-button-{{ collection.id }}">
+{% for choice in workflow_status_choices %}
+<a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
+{% endfor %}
+</div>
+</div>
+<div class="candidateUrlContainer">
+<h3 class="whiteText candidateTitle">
+    {{ candidate_urls.count|intcomma }} Candidate URLs for <a
+        href="{% url 'sde_collections:detail' collection.pk %}"><strong class="urlStyle underline">{{ collection.name }}</strong></a>
     <br>
-    <table class="table" id="candidate_urls_table">
-        <thead>
-            <tr>
-                <th scope="col" class="text-center col-1">URL</th>
-                <th scope="col" class="text-center col-1">Exclude</th>
-                <th scope="col" class="text-center col-1">Scraped Title</th>
-                <th scope="col" class="text-center col-1">New Title</th>
-                <th scope="col" class="text-center col-1">Visited?</th>
-                <th scope="col" class="text-center col-1">Document Type</th>
-                <th scope="col" class="text-center col-1">ID</th>
-            </tr>
-        </thead>
-    </table>
-    <hr>
-    <h3>
-        Exclude Patterns
-        <button class="btn btn-primary btn-sm create_exclude_pattern_button">
-            <i class="material-icons">add</i>
-        </button>
-    </h3>
-    <table class="table" id="exclude_patterns_table">
-        <thead>
-            <tr>
-                <th scope="col" class="text-center col-1">
-                    <strong>Match Pattern</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Match Pattern Type</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Reason</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Affected URLs</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Actions</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>ID</strong>
-                </th>
-            </tr>
-        </thead>
-    </table>
-    <hr>
-    <h3>
-        Include Patterns
-        <button class="btn btn-primary btn-sm create_include_pattern_button">
-            <i class="material-icons">add</i>
-        </button>
-    </h3>
-    <table class="table" id="include_patterns_table">
-        <thead>
-            <tr>
-                <th scope="col" class="text-center col-1">
-                    <strong>Match Pattern</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Match Pattern Type</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Affected URLs</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Actions</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>ID</strong>
-                </th>
-            </tr>
-        </thead>
-    </table>
-    <hr>
-    <h3>
-        Title Patterns
-        <button class="btn btn-primary btn-sm create_title_pattern_button">
-            <i class="material-icons">add</i>
-        </button>
-    </h3>
-    <table class="table" id="title_patterns_table">
-        <thead>
-            <tr>
-                <th scope="col" class="text-center col-1">
-                    <strong>Match Pattern</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Match Pattern Type</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Title Pattern</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Affected URLs</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Actions</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>ID</strong>
-                </th>
-            </tr>
-        </thead>
-    </table>
-    <hr>
-    <h3>
-        Document Type Patterns
-        <button class="btn btn-primary btn-sm create_document_type_pattern_button">
-            <i class="material-icons">add</i>
-        </button>
-    </h3>
-    <table class="table" id="document_type_patterns_table">
-        <thead>
-            <tr>
-                <th scope="col" class="text-center col-1">
-                    <strong>Match Pattern</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Match Pattern Type</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Document Type</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Affected URLs</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>Actions</strong>
-                </th>
-                <th scope="col" class="text-center col-1">
-                    <strong>ID</strong>
-                </th>
-            </tr>
-        </thead>
-    </table>
-    <ul class="custom-menu list-group">
-        <li data-action="exclude-pattern" class="list-group-item">Create Exclude Pattern</li>
-        <li data-action="include-pattern" class="list-group-item">Create Include Pattern</li>
-        <li data-action="title-pattern" class="list-group-item">Create Title Pattern</li>
-        <li data-action="document-type-pattern" class="list-group-item">Create Document Type Pattern</li>
+    <!-- <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small> -->
+</h3>
+
+<div>
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="tab-nav active tabStyle" data-toggle="tab" href="#Candidate-URLs">Candidate URLs</a>
+        </li>
+        <li class="nav-item">
+            <a class="tab-nav tabStyle" id="excludePatternsTab" data-toggle="tab" href="#Exclude-Patterns">Exclude Patterns</a>
+        </li>
+        <li class="nav-item">
+            <a class="tab-nav tabStyle" id="includePatternsTab" data-toggle="tab" href="#Include-Patterns">Include Patterns</a>
+        </li>
+        <li class="nav-item">
+            <a class="tab-nav tabStyle" id="titlePatternsTab" data-toggle="tab" href="#Title-Patterns">Title Patterns</a>
+        </li>
+        <li class="nav-item">
+            <a class="tab-nav tabStyle" id="documentTypePatternsTab" data-toggle="tab" href="#Document-Type-Patterns">Document Type Patterns</a>
+        </li>
     </ul>
-    <div class="modal fade"
-         id="excludePatternModal"
-         data-backdrop="static"
-         data-keyboard="false"
-         tabindex="-1"
-         aria-labelledby="excludePatternModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="excludePatternModalLabel">Exclude Pattern Form</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form id="exclude_pattern_form">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="match_pattern_input">Match Pattern*</label>
-                            <input type="text"
-                                   class="form-control"
-                                   id="match_pattern_input"
-                                   required
-                                   name="match_pattern">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </div>
-                </form>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div class="tab-pane active" id="Candidate-URLs">
+            <table class="table" id="candidate_urls_table" style="width:100%" >
+                <thead class="tableHeader">
+                    <tr>
+                        <th scope="col" class="text-center col-1"><div class="header-title">URL</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">Exclude</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">Scraped Title</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">New Title</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">Document Type</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">ID</div></th>
+                    </tr>
+                    <tr>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateUrlFilter" placeholder="URL" /></td>
+                        <td ><select class="dropdown-1 select-dropdown selectStyling"><option value="">SELECT</option>
+                            <option value="false">FALSE</option>
+                            <option value="true">TRUE</option>
+                        </select></td>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateScrapedTitleFilter" placeholder="Scraped Title" /></td>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateNewTitleFilter" placeholder="New Title" /></td>
+                        <td><select class="dropdown-5 select-dropdown selectStyling"><option value="">SELECT</option>
+                        <option value="0">None</option>
+                        <option value="1">Images</option>
+                        <option value="2">Data</option>
+                        <option value="3">Documentation</option>
+                        <option value="4">Software and Tools</option>
+                        <option value="5">Missions and Instruments</option>
+                        <option value="6">Training and Education</option>
+                        </select></td>
+                        <td ></td>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div class="tab-pane fade" id="Exclude-Patterns">
+            <table class="table" id="exclude_patterns_table" style="width:100%">
+                <thead class="tableHeader">
+                    <tr>
+                        <th scope="col" class="text-center col-1"><strong>Match Pattern</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Match Pattern Type</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Reason</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Affected URLs</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Actions</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>ID</strong></th>
+                    </tr>
+                    <tr>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateMatchPatternFilter" placeholder="Match Pattern" /></td>
+                        <td > <select id="exclude-patterns-dropdown-1" class="select-dropdown selectStyling"><option value="">SELECT</option>
+                            <option value="Individual URL Pattern">Individual URL Pattern</option>
+                            <option value="Multi-URL Pattern">Multi-URL Pattern</option>
+                        </select>
+                            <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateReasonFilter" placeholder="Reason" /></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                    </tr>
+                </thead>
+            </table>
+            <hr>
+        </div>
+
+        <div class="tab-pane fade" id="Include-Patterns">
+            <table class="table" id="include_patterns_table" style="width:100%">
+                <thead class="tableHeader">
+                    <tr>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Match Pattern</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Match Pattern Type</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Affected URLs</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Actions</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>ID</strong>
+                        </th>
+                    </tr>
+                    <tr>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateIncludeMatchPatternFilter" placeholder="Match Pattern" /></td>
+                        <td > <select id="include-patterns-dropdown-1" class="select-dropdown selectStyling"><option value="">SELECT</option>
+                            <option value="Individual URL Pattern">Individual URL Pattern</option>
+                            <option value="Multi-URL Pattern">Multi-URL Pattern</option>
+                        </select></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                    </tr>
+                </thead>
+            </table>
+
+        </div>
+        <div class="tab-pane fade" id="Title-Patterns">
+            <table class="table" id="title_patterns_table" style="width:100%">
+                <thead class="tableHeader">
+                    <tr>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Match Pattern</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Match Pattern Type</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Title Pattern</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Affected URLs</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Actions</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>ID</strong>
+                        </th>
+                    </tr>
+                    <tr>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateTitleMatchPatternFilter" placeholder="Match Pattern" /></td>
+                        <td > <select id="title-patterns-dropdown-1" class="select-dropdown selectStyling"><option value="">SELECT</option>
+                            <option value="Individual URL Pattern">Individual URL Pattern</option>
+                            <option value="Multi-URL Pattern">Multi-URL Pattern</option>
+                        </select></td>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateTitlePatternTypeFilter" placeholder="Title Pattern" /></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div class="tab-pane fade" id="Document-Type-Patterns">
+            <table class="table" id="document_type_patterns_table" style="width:100%">
+                <thead class="tableHeader">
+                    <tr>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Match Pattern</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Match Pattern Type</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Document Type</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Affected URLs</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Actions</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>ID</strong>
+                        </th>
+                    </tr>
+                    <tr>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateDocTypeMatchPatternFilter" placeholder="Match Pattern" /></td>
+                        <td ><select id="document-type-patterns-dropdown-1" class="select-dropdown selectStyling"><option value="">SELECT</option>
+                            <option value="Individual URL Pattern">Individual URL Pattern</option>
+                            <option value="Multi-URL Pattern">Multi-URL Pattern</option>
+                        </select></td>
+                        <td ><select id="document-type-patterns-dropdown-2" class="select-dropdown selectStyling"><option value="">SELECT</option>
+                            <option value="Images">Images</option>
+                            <option value="Data">Data</option>
+                            <option value="Documentation">Documentation</option>
+                            <option value="Software and Tools">Software and Tools</option>
+                            <option value="Missions and Instruments">Missions and Instruments</option>
+                            <option value="Training and Education">Training and Education</option>
+                        </select></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<br>
+</div>
+
+
+<ul class="custom-menu list-group">
+    <li data-action="exclude-pattern" class="list-group-item">Create Exclude Pattern</li>
+    <li data-action="include-pattern" class="list-group-item">Create Include Pattern</li>
+    <li data-action="title-pattern" class="list-group-item">Create Title Pattern</li>
+    <li data-action="document-type-pattern" class="list-group-item">Create Document Type Pattern</li>
+</ul>
+<div class="modal fade" id="excludePatternModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="excludePatternModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="excludePatternModalLabel">Exclude Pattern Form</h5>
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
+            <form id="exclude_pattern_form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
+                        <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="button-wrapper">
+                    <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                </div></div>
+            </form>
         </div>
     </div>
-        <div class="modal fade"
-         id="includePatternModal"
-         data-backdrop="static"
-         data-keyboard="false"
-         tabindex="-1"
-         aria-labelledby="includePatternModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="includePatternModalLabel">Include Pattern Form</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form id="include_pattern_form">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="match_pattern_input">Match Pattern*</label>
-                            <input type="text"
-                                   class="form-control"
-                                   id="match_pattern_input"
-                                   required
-                                   name="match_pattern">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </div>
-                </form>
+</div>
+<div class="modal fade" id="includePatternModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="includePatternModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="includePatternModalLabel">Include Pattern Form</h5>
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
+            <form id="include_pattern_form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
+                        <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="button-wrapper">
+                    <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                </div></div>
+            </form>
         </div>
     </div>
-    <div class="modal fade"
-         id="titlePatternModal"
-         data-backdrop="static"
-         data-keyboard="false"
-         tabindex="-1"
-         aria-labelledby="titlePatternModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="titlePatternModalLabel">Title Pattern Form</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form id="title_pattern_form">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="match_pattern_input">Match Pattern*</label>
-                            <input type="text"
-                                   class="form-control"
-                                   id="match_pattern_input"
-                                   required
-                                   name="match_pattern">
-                        </div>
-                        <div class="form-group">
-                            <label for="title_pattern_input">Title Pattern*</label>
-                            <input type="text"
-                                   class="form-control"
-                                   id="title_pattern_input"
-                                   required
-                                   name="title_pattern">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </div>
-                </form>
+</div>
+<div class="modal fade" id="titlePatternModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="titlePatternModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="titlePatternModalLabel">Title Pattern Form</h5>
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
+            <form id="title_pattern_form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
+                        <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
+                    </div>
+                    <div class="form-group title_pattern-form-group">
+                        <label for="title_pattern_input" class="form-label">Title Pattern <div class="asterik">*</div></label>
+                        <input type="text" class="form-control" id="title_pattern_input" required name="title_pattern">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="button-wrapper">
+                    <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                </div> </div>
+            </form>
         </div>
     </div>
-    <div class="modal fade"
-         id="documentTypePatternModal"
-         data-backdrop="static"
-         data-keyboard="false"
-         tabindex="-1"
-         aria-labelledby="documentTypePatternModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="documentTypePatternModalLabel">Document Type Pattern Form</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form id="document_type_pattern_form">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="match_pattern_input">Match Pattern*</label>
-                            <input type="text"
-                                   class="form-control"
-                                   id="match_pattern_input"
-                                   required
-                                   name="match_pattern">
-                        </div>
-                        <div class="form-group">
-                            <div class="input-group">
-                                <input type="hidden"
-                                       name="document_type_pattern"
-                                       class="form-control"
-                                       aria-label="Document Type"
-                                       id="doc_type_input_field">
-                                <div class="input-group-append">
-                                    <button class="btn btn-secondary btn-block dropdown-toggle"
-                                            type="button"
-                                            data-toggle="dropdown"
-                                            aria-haspopup="true"
-                                            aria-expanded="false">Select Document Type</button>
-                                    <div class="dropdown-menu">
-                                        <a class="dropdown-item document_type_form_select" value="1">Images</a>
-                                        <a class="dropdown-item document_type_form_select" value="2">Data</a>
-                                        <a class="dropdown-item document_type_form_select" value="3">Documentation</a>
-                                        <a class="dropdown-item document_type_form_select" value="4">Software and Tools</a>
-                                        <a class="dropdown-item document_type_form_select" value="5">Missions and Instruments</a>
-                                    </div>
+</div>
+<div class="modal fade" id="documentTypePatternModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="documentTypePatternModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="documentTypePatternModalLabel">Document Type Pattern Form</h5>
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="document_type_pattern_form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
+                        <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input type="hidden" name="document_type_pattern" class="form-control"
+                                aria-label="Document Type" id="doc_type_input_field">
+                            <div class="input-group-append doc-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle doc-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Document
+                                    Type</button>
+                                <div class="doc-type-form dropdown-menu">
+                                    <a class="dropdown-item document_type_form_select" value="1">Images</a>
+                                    <a class="dropdown-item document_type_form_select" value="2">Data</a>
+                                    <a class="dropdown-item document_type_form_select" value="3">Documentation</a>
+                                    <a class="dropdown-item document_type_form_select" value="4">Software and Tools</a>
+                                    <a class="dropdown-item document_type_form_select" value="5">Missions and
+                                        Instruments</a>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
+</div>
+
+<div id="hideShowColumnsModal" class="modal pr-4 pl-4 pt-4 customizeColumnContainer">
+    <div class="modalDialog">
+        <div class="modalContent">
+            <div class="modalHeader ">
+                <h5 class="modalTitle whiteText" id="hideShowColumnsModalTitle">Customize Columns</h5>
+                <p id="subTitle" class="whiteText">Attributes marked with a checkbox will be displayed in the table.</p>
+            </div>
+            <form id="hide_show_columns_form">
+                <div class="modalBody whiteText" id="modalBody">
+                </div>
+                <div class="modalFooter customizeColumnContainer">
+                    <div type="submit" class="btn-prime hideShowSubmitButton" id="hideShowSubmitButton">Confirm</div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
 {% endblock content %}
