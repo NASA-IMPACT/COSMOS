@@ -352,6 +352,15 @@ div.dt-buttons .btn.processing:after {
     justify-content: space-between;
 }
 
+.url-cell {
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+ }
+
+ .url-icon {
+    color: #65B1EF;
+ }
 #match_pattern_input, #title_pattern_input {
     background: #3F4A58;
     border-radius: 4px;
