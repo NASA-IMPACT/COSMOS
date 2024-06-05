@@ -62,6 +62,7 @@ class Collection(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     new_collection = models.BooleanField(default=False)
     cleaning_order = models.IntegerField(default=0, blank=True)
+    error = models.TextField(blank=True, null=True)
 
     curation_status = models.IntegerField(
         choices=CurationStatusChoices.choices,
@@ -502,11 +503,17 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
     Creates various config files on certain workflow status changes
     """
 
-    if "workflow_status" in instance.tracker.changed():
-        if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
-            instance.create_plugin_config(overwrite=True)
-        elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
-            instance.create_scraper_config(overwrite=False)
-            instance.create_indexer_config(overwrite=False)
-        elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_PUBLIC_PROD:
-            instance.add_to_public_query()
+    try:
+        if "workflow_status" in instance.tracker.changed():
+            if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
+                instance.create_plugin_config(overwrite=True)
+            elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
+                instance.create_scraper_config(overwrite=False)
+                instance.create_indexer_config(overwrite=False)
+            elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_PUBLIC_PROD:
+                instance.add_to_public_query()
+        instance.error = ""
+        instance.save()
+    except Exception as e:
+        instance.error = str(e)
+        instance.save()
