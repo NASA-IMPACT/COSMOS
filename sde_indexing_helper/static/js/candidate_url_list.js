@@ -43,11 +43,17 @@ function modalContents(tableName) {
   var checkboxCount = $("#modalBody input[type='checkbox']").length;
 
   if (checkboxCount > 0 && tableName === uniqueId) {
-    $modal = $("#hideShowColumnsModal").modal();
+    $modal = $("#hideShowColumnsModal").modal({
+      backdrop: 'static',
+      keyboard: true,
+    });
     return;
   }
 
-  $modal = $("#hideShowColumnsModal").modal();
+  $modal = $("#hideShowColumnsModal").modal({
+    backdrop: 'static',
+    keyboard: true,
+  });
   var table = $(tableName).DataTable();
   if (tableName !== uniqueId) {
     $("#modalBody").html("");
@@ -91,18 +97,34 @@ function initializeDataTable() {
   var false_icon = '<i class="material-icons" style="color: red">close</i>';
 
   var candidate_urls_table = $("#candidate_urls_table").DataTable({
-    // scrollY: true,
-    lengthMenu: [
-      [25, 50, 100, 500],
-      ["Show 25", "Show 50", "Show 100", "Show 500"],
-    ],
     pageLength: 100,
     colReorder: true,
     stateSave: true,
+    layout: {
+      bottomEnd: 'inputPaging',
+      topEnd: null,
+      topStart: {
+        info:true,
+        pageLength: {
+          menu: [[25, 50, 100, 500],["Show 25", "Show 50", "Show 100", "Show 500"]]
+      },
+        buttons: [
+          "spacer",
+          "csv",
+          "spacer",
+          {
+            text: "Customize Columns",
+            className: "customizeColumns",
+            action: function () {
+              modalContents("#candidate_urls_table");
+            },
+          },
+        ],
+      }
+  },
     serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
-    dom: "ilBrtip",
     buttons: [
       {
         extend: "csv",
@@ -141,8 +163,13 @@ function initializeDataTable() {
           if (lines.length > 2) {
             lines.splice(1, 1);
           }
-
-          return lines.join("\n") + appliedFiltersInfo;
+          let alteredLines = [];
+          lines.forEach((line) => {
+            let newLine = "";
+            newLine = line.replace("open_in_new","");  
+            alteredLines.push(newLine);
+          })
+          return alteredLines.join("\n") + appliedFiltersInfo;
         },
       },
       "spacer",
@@ -173,7 +200,15 @@ function initializeDataTable() {
       },
     },
     initComplete: function (data) {
-      const addDropdownSelect = [1, 4, 5];
+      const addDropdownSelect = [1, 4];
+      const dict = {
+        1: "Images",
+        2: "Data",
+        3: "Documentation",
+        4: "Software and Tools",
+        5: "Missions and Instruments",
+        6: "Training and Education",
+      };
       this.api()
         .columns()
         .every(function (index) {
@@ -227,7 +262,7 @@ function initializeDataTable() {
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
-        $(row).attr("style", "background-color: #ab387d !important");
+        $(row).attr("style", "background-color: rgba(255, 61, 87, 0.36) !important");
       }
     },
   });
@@ -255,7 +290,6 @@ function initializeDataTable() {
 
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
     // scrollY: true,
-    serverSide: true,
     dom: "lBrtip",
     buttons: [
       {
@@ -313,8 +347,8 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
-      },
+        sortable: true,
+    },
       {
         data: null,
         sortable: false,
@@ -367,7 +401,6 @@ function initializeDataTable() {
     ],
     pageLength: 100,
     orderCellsTop: true,
-    serverSide: true,
     ajax: `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
     initComplete: function (data) {
       var table = $("#include_patterns_table").DataTable();
@@ -400,7 +433,7 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
+        sortable: true,
       },
       {
         data: null,
@@ -424,7 +457,6 @@ function initializeDataTable() {
 
   var title_patterns_table = $("#title_patterns_table").DataTable({
     // scrollY: true,
-    serverSide: true,
     dom: "lBrtip",
     buttons: [
       {
@@ -482,7 +514,7 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
+        sortable: true,
       },
       {
         data: null,
@@ -532,7 +564,6 @@ function initializeDataTable() {
         },
       },
     ],
-    serverSide: true,
     lengthMenu: [
       [25, 50, 100, 500],
       ["Show 25", "Show 50", "Show 100", "Show 500"],
@@ -602,7 +633,7 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
+        sortable: true,
       },
       {
         data: null,
@@ -647,6 +678,7 @@ function handleTabsClick() {
 
 function setupClickHandlers() {
   handleHideorShowSubmitButton();
+  handleHideorShowKeypress();
   handleAddNewPatternClick();
 
   handleDeleteDocumentTypeButtonClick();
@@ -668,11 +700,12 @@ function getURLColumn() {
   return {
     data: "url",
     render: function (data, type, row) {
-      return `<a target="_blank" href="${data}" data-url="/api/candidate-urls/${
-        row["id"]
-      }/" class="url_link"> <i class="material-icons whiteText">open_in_new</i></a> <span class="candidate_url nameStyling">${remove_protocol(
+      return `<div class="url-cell"><span class="candidate_url nameStyling">${remove_protocol(
         data
-      )}</span>`;
+      )}</span> 
+      <a target="_blank" href="${data}" data-url="/api/candidate-urls/${
+        row["id"]
+      }/" class="url-link"> <i class="material-icons url-icon">open_in_new</i></a></div>`;
     },
   };
 }
@@ -732,7 +765,9 @@ function getDocumentTypeColumn() {
       button_text = data ? dict[data] : "Select";
       button_color = data ? "btn-success" : "btn-secondary";
       return `
-            <div  data-match-pattern=${remove_protocol(row["url"])}>
+            <div class="dropdown document_type_dropdown"  data-match-pattern=${remove_protocol(
+              row["url"]
+            )}>
               <button class="btn ${button_color} btn-sm dropdown-toggle selectStyling" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 ${button_text}
               </button>
@@ -748,6 +783,31 @@ function getDocumentTypeColumn() {
             </div>`;
     },
   };
+}
+
+function handleHideorShowKeypress() {
+  $("body").on("keydown", function () {
+    //Close modal via escape
+    if (event.key == "Escape" && $("#hideShowColumnsModal").is(":visible")) {
+      $("#hideShowColumnsModal").modal("hide");
+    }
+    //Confirm modal selections via enter
+    if(event.key == "Enter" && $("#hideShowColumnsModal").is(":visible")) {
+      var table = $(uniqueId).DataTable();
+      $("[id^='checkbox_']").each(function () {
+        var checkboxValue = $(this).val();
+        let column = table.column(checkboxValue);
+        var isChecked = $(this).is(":checked");
+        if (column.visible() === false && isChecked) column.visible(true);
+        else if (column.visible() === true && !isChecked) column.visible(false);
+      });
+      $("#hideShowColumnsModal").modal("hide");
+    }
+  });
+  
+  $("body").on("click", ".modal-backdrop", function () {
+    $("#hideShowColumnsModal").modal("hide");
+  });
 }
 
 function handleHideorShowSubmitButton() {
@@ -767,9 +827,7 @@ function handleHideorShowSubmitButton() {
 
 function handleDocumentTypeSelect() {
   $("body").on("click", ".document_type_select", function () {
-    $match_pattern = $(this)
-      .parents(".document_type_dropdown")
-      .data("match-pattern");
+    $match_pattern = $(this).parents(".document_type_dropdown").data("match-pattern");
     postDocumentTypePatterns(
       $match_pattern,
       (match_pattern_type = 1),
