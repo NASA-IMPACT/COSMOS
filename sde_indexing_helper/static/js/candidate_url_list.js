@@ -61,9 +61,7 @@ function modalContents(tableName) {
       .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
       .text(columnName);
     var $caption = $("<p class='headerDescription'>")
-      .text(
-        candidateTableHeaderDefinitons[columnName]
-      )
+      .text(candidateTableHeaderDefinitons[columnName])
       .attr({
         id: "caption",
       });
@@ -127,7 +125,7 @@ function initializeDataTable() {
       },
     },
     initComplete: function (data) {
-      const addDropdownSelect = [1, 4, 5];
+      const addDropdownSelect = [1, 4];
       const dict = {
         1: "Images",
         2: "Data",
@@ -668,9 +666,7 @@ function getDocumentTypeColumn() {
       button_text = data ? dict[data] : "Select";
       button_color = data ? "btn-success" : "btn-secondary";
       return `
-            <div  data-match-pattern=${remove_protocol(
-              row["url"]
-            )}>
+            <div  data-match-pattern=${remove_protocol(row["url"])}>
               <button class="btn ${button_color} btn-sm dropdown-toggle selectStyling" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 ${button_text}
               </button>
@@ -839,18 +835,23 @@ function postDocumentTypePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
-      if(currentTab === ""){ //Only add a notification if we are on the first tab
-      newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
-      $("#documentTypePatternsTab").html(
-        `Document Type Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newDocumentTypePatternsCount + " new" + 
-          `</span>`
-      );
-    }
+      if (currentTab === "") {
+        //Only add a notification if we are on the first tab
+        newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
+        $("#documentTypePatternsTab").html(
+          `Document Type Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+            newDocumentTypePatternsCount +
+            " new" +
+            `</span>`
+        );
+      }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
-      if (errorMessage == '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}') {
+      if (
+        errorMessage ==
+        '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}'
+      ) {
         toastr.success("Pattern already exists");
         return;
       }
@@ -864,15 +865,16 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0, force) {
     toastr.error("Please highlight a pattern to exclude.");
     return;
   }
-  if(!force){ //If the user clicked the icon in the table, we make the change regardless
-  // if pattern exists in table already (unless another pattern overrules it)
-  var table = $("#exclude_patterns_table").DataTable();
-  var itemIdColumnData = table.column(0).data().toArray();
-  if (itemIdColumnData.includes(match_pattern)) {
-    toastr.success("Pattern already exists");
-    return;
+  if (!force) {
+    //If the user clicked the icon in the table, we make the change regardless
+    // if pattern exists in table already (unless another pattern overrules it)
+    var table = $("#exclude_patterns_table").DataTable();
+    var itemIdColumnData = table.column(0).data().toArray();
+    if (itemIdColumnData.includes(match_pattern)) {
+      toastr.success("Pattern already exists");
+      return;
+    }
   }
-}
 
   $.ajax({
     url: "/api/exclude-patterns/",
@@ -886,14 +888,16 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0, force) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
-      if(currentTab === ""){ //Only add a notification if we are on the first tab
-      newExcludePatternsCount = newExcludePatternsCount + 1;
-      $("#excludePatternsTab").html(
-        `Exclude Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newExcludePatternsCount + " new" + 
-          `</span>`
-      );
-    }
+      if (currentTab === "") {
+        //Only add a notification if we are on the first tab
+        newExcludePatternsCount = newExcludePatternsCount + 1;
+        $("#excludePatternsTab").html(
+          `Exclude Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+            newExcludePatternsCount +
+            " new" +
+            `</span>`
+        );
+      }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -928,14 +932,16 @@ function postIncludePatterns(match_pattern, match_pattern_type = 0) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#include_patterns_table").DataTable().ajax.reload(null, false);
-      if(currentTab === ""){ //Only add a notification if we are on the first tab
-      newIncludePatternsCount = newIncludePatternsCount + 1;
-      $("#includePatternsTab").html(
-        `Include Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newIncludePatternsCount + " new" + 
-          `</span>`
-      );
-    }
+      if (currentTab === "") {
+        //Only add a notification if we are on the first tab
+        newIncludePatternsCount = newIncludePatternsCount + 1;
+        $("#includePatternsTab").html(
+          `Include Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+            newIncludePatternsCount +
+            " new" +
+            `</span>`
+        );
+      }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -967,18 +973,23 @@ function postTitlePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#title_patterns_table").DataTable().ajax.reload(null, false);
-      if(currentTab === ""){ //Only add a notification if we are on the first tab
-      newTitlePatternsCount = newTitlePatternsCount + 1;
-      $("#titlePatternsTab").html(
-        `Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newTitlePatternsCount + " new" + 
-          `</span>`
-      );
-    }
+      if (currentTab === "") {
+        //Only add a notification if we are on the first tab
+        newTitlePatternsCount = newTitlePatternsCount + 1;
+        $("#titlePatternsTab").html(
+          `Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+            newTitlePatternsCount +
+            " new" +
+            `</span>`
+        );
+      }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
-      if (errorMessage == '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}') {
+      if (
+        errorMessage ==
+        '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}'
+      ) {
         toastr.success("Pattern already exists");
         return;
       }
