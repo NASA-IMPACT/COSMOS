@@ -1,9 +1,19 @@
 import re
 
 from django.apps import apps
-from django.db import models
+from django.core.exceptions import ValidationError
+from django.db import models, transaction
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-from ..pattern_interpreter import safe_f_string_evaluation
+from sde_collections.tasks import resolve_title_pattern
+
+from ..utils.title_resolver import (
+    is_valid_fstring,
+    is_valid_xpath,
+    parse_title,
+    resolve_title,
+)
 from .collection_choice_fields import DocumentTypes
 
 
@@ -129,30 +139,68 @@ class IncludePattern(BaseMatchPattern):
         unique_together = ("collection", "match_pattern")
 
 
+def validate_title_pattern(title_pattern_string):
+    parsed_title = parse_title(title_pattern_string)
+
+    for element in parsed_title:
+        element_type, element_value = element
+
+        if element_type == "xpath":
+            if not is_valid_xpath(element_value):
+                raise ValidationError(f"'xpath:{element_value}' is not a valid xpath.")
+        elif element_type == "brace":
+            try:
+                is_valid_fstring(element_value)
+            except ValueError as e:
+                raise ValidationError(str(e))
+
+
 class TitlePattern(BaseMatchPattern):
     title_pattern = models.CharField(
         "Title Pattern",
         help_text="This is the pattern for the new title. You can either write an exact replacement string"
         " (no quotes required) or you can write sinequa-valid code",
+        validators=[validate_title_pattern],
     )
 
     def apply(self) -> None:
-        CandidateURL = apps.get_model("sde_collections", "CandidateURL")
         matched_urls = self.matched_urls()
         updated_urls = []
+        ResolvedTitle = apps.get_model("sde_collections", "ResolvedTitle")
+        ResolvedTitleError = apps.get_model("sde_collections", "ResolvedTitleError")
 
         for candidate_url in matched_urls:
-            context = {"url": candidate_url.url, "title": candidate_url.scraped_title}
+            context = {
+                "url": candidate_url.url,
+                "title": candidate_url.scraped_title,
+                "collection": self.collection.name,
+            }
 
             try:
-                generated_title = safe_f_string_evaluation(self.title_pattern, context)
-                candidate_url.generated_title = generated_title
-                updated_urls.append(candidate_url)
-            except ValueError as e:
-                print(f"Error applying title pattern to {candidate_url.url}: {e}")
+                generated_title = resolve_title(self.title_pattern, context)
 
-        if updated_urls:
-            CandidateURL.objects.bulk_update(updated_urls, ["generated_title"])
+                # check to see if the candidate url has an existing resolved title and delete it
+                ResolvedTitle.objects.filter(candidate_url=candidate_url).delete()
+
+                resolved_title = ResolvedTitle.objects.create(
+                    title_pattern=self, candidate_url=candidate_url, resolved_title=generated_title
+                )
+                resolved_title.save()
+
+                candidate_url.generated_title = generated_title
+                candidate_url.save()
+
+            except (ValueError, ValidationError) as e:
+                message = str(e)
+                resolved_title_error = ResolvedTitleError.objects.create(
+                    title_pattern=self, candidate_url=candidate_url, error_string=message
+                )
+
+                status_code = re.search(r"Status code: (\d+)", message)
+                if status_code:
+                    resolved_title_error.http_status_code = int(status_code.group(1))
+
+                resolved_title_error.save()
 
         TitlePatternCandidateURL = TitlePattern.candidate_urls.through
         pattern_url_associations = [
@@ -196,3 +244,9 @@ class DocumentTypePattern(BaseMatchPattern):
         verbose_name = "Document Type Pattern"
         verbose_name_plural = "Document Type Patterns"
         unique_together = ("collection", "match_pattern")
+
+
+@receiver(post_save, sender=TitlePattern)
+def post_save_handler(sender, instance, created, **kwargs):
+    if created:
+        transaction.on_commit(lambda: resolve_title_pattern.delay(instance.pk))

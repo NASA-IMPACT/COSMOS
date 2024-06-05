@@ -50,7 +50,7 @@
 
 #candidate_urls_table_wrapper div.dt-info:first-of-type {
   display: inline-block;
-  width: 25%;
+  /* width: 25%; */
 }
 
 #candidate_urls_table_wrapper div.dt-length, #exclude_patterns_table_wrapper div.dt-length, #include_patterns_table_wrapper div.dt-length, #document_type_patterns_table_wrapper div.dt-length, #title_patterns_table_wrapper div.dt-length{
@@ -59,7 +59,8 @@
 }
 
 #candidate_urls_table_wrapper div.dt-buttons {
-  width: 64%;    
+  /* width: 64%;     */
+  float:right;
   justify-content: end;
 }
 
@@ -234,6 +235,7 @@ body {
  .dt-info{
   font-weight:900;
   font-size:16px;
+  margin-top:15px;
  }
 
  .buttons-csv, .customizeColumns{
