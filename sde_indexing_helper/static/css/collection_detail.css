@@ -125,6 +125,12 @@ div > .nav {
     border-radius: 12px;
   }
 
+  .detailContainer .tab-content .btn {
+    cursor: default;
+  }
+  .detailContainer .tab-content .btn.btn-primary:hover {
+    box-shadow: none;
+  }
  
 
   .table tbody tr:nth-child(odd) {
