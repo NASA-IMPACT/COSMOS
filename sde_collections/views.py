@@ -132,6 +132,11 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        collection = self.get_object()
+        if collection.error:
+            messages.error(
+                self.request, f"Error processing collection : {collection.name}! Error : {collection.last_error}"
+            )
         if "form" not in context:
             context["form"] = RequiredUrlForm()
         if "github_form" not in context:
