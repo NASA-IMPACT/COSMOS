@@ -750,7 +750,9 @@ function getDocumentTypeColumn() {
       button_text = data ? dict[data] : "Select";
       button_color = data ? "btn-success" : "btn-secondary";
       return `
-            <div  data-match-pattern=${remove_protocol(row["url"])}>
+            <div class="dropdown document_type_dropdown"  data-match-pattern=${remove_protocol(
+              row["url"]
+            )}>
               <button class="btn ${button_color} btn-sm dropdown-toggle selectStyling" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 ${button_text}
               </button>
@@ -785,9 +787,7 @@ function handleHideorShowSubmitButton() {
 
 function handleDocumentTypeSelect() {
   $("body").on("click", ".document_type_select", function () {
-    $match_pattern = $(this)
-      .parents(".document_type_dropdown")
-      .data("match-pattern");
+    $match_pattern = $(this).parents(".document_type_dropdown").data("match-pattern");
     postDocumentTypePatterns(
       $match_pattern,
       (match_pattern_type = 1),
