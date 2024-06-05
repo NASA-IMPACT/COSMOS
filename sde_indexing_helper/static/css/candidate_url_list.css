@@ -322,6 +322,43 @@ letter-spacing: -0.02em;
     white-space: normal;
 }
 
+.page-link{
+    color:white !important;
+    border:0.5px solid !important;
+    margin-left:3px;
+    margin-right:3px;
+}
+.page-link:hover{
+    background-color: #0066CA !important;
+
+}
+
+.page-item.disabled .page-link {
+    color:grey!important;
+}
+.dt-paging-input{
+    color:white;
+}
+
+.dt-paging-input input{
+    background-color: #3F4A58;
+    color: white;
+    border:solid 0.5px !important;
+}
+
+.dt-inputpaging{
+  position: absolute;
+  right: 16px;
+  top: -27px;
+}
+.ml-auto{
+    width:50%;
+}
+
+.custom-select-sm{
+    margin-left:5px;
+}
+
 .selected{
     background-color: inherit !important;
 }
@@ -352,6 +389,15 @@ div.dt-buttons .btn.processing:after {
     justify-content: space-between;
 }
 
+.url-cell {
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+ }
+
+ .url-icon {
+    color: #65B1EF;
+ }
 #match_pattern_input, #title_pattern_input {
     background: #3F4A58;
     border-radius: 4px;
@@ -399,5 +445,4 @@ div.dt-buttons .btn.processing:after {
 
    .dropdown-item:hover{
     background-color: #0066CA !important;
-
    }
