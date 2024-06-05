@@ -196,6 +196,9 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
 
         return context
 
+class SdeDashboardView(LoginRequiredMixin,View ):
+
+    template_name = "sde_collections/sde_dashboard.html"
 
 class CollectionFilterMixin:
     def get_queryset(self):
@@ -347,6 +350,9 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
+
+class SdeDashboardViewSet(viewsets.ModelViewSet):
+    queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
 
 class CollectionReadViewSet(viewsets.ReadOnlyModelViewSet):
@@ -354,7 +360,7 @@ class CollectionReadViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CollectionReadSerializer
 
 
-class PushToGithubView(APIView):
+class PushToGithubView(APIView): 
     def post(self, request):
         collection_ids = request.POST.getlist("collection_ids[]", [])
         if len(collection_ids) == 0:
