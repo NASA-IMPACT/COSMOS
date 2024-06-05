@@ -12,6 +12,11 @@ from slugify import slugify
 from config_generation.db_to_xml import XmlEditor
 
 from ..utils.github_helper import GitHubHandler
+from ..utils.slack_utils import (
+    STATUS_CHANGE_NOTIFICATIONS,
+    format_slack_message,
+    send_slack_message,
+)
 from .collection_choice_fields import (
     ConnectorChoices,
     CurationStatusChoices,
@@ -30,7 +35,7 @@ class Collection(models.Model):
 
     name = models.CharField("Name", max_length=1024)
     config_folder = models.CharField("Config Folder", max_length=2048, unique=True, editable=False)
-    url = models.URLField("URL", max_length=2048, blank=True)
+    url = models.URLField("URL", max_length=2048)
     division = models.IntegerField(choices=Divisions.choices)
     turned_on = models.BooleanField("Turned On", default=True)
     connector = models.IntegerField(choices=ConnectorChoices.choices, default=ConnectorChoices.CRAWLER2)
@@ -118,7 +123,7 @@ class Collection(models.Model):
     def server_url_secret_prod(self) -> str:
         base_url = "https://sciencediscoveryengine.nasa.gov"
         payload = {
-            "name": "query-sde-primary",
+            "name": "secret-prod",
             "scope": "All",
             "text": "",
             "advanced": {
@@ -126,7 +131,7 @@ class Collection(models.Model):
             },
         }
         encoded_payload = urllib.parse.quote(json.dumps(payload))
-        return f"{base_url}/app/nasa-sba-sde/#/search?query={encoded_payload}"
+        return f"{base_url}/app/secret-prod/#/search?query={encoded_payload}"
 
     @property
     def server_url_prod(self) -> str:
@@ -175,6 +180,7 @@ class Collection(models.Model):
             14: "btn-primary",
             15: "btn-info",
             16: "btn-secondary",
+            17: "btn-light",
         }
         return color_choices[self.workflow_status]
 
@@ -453,6 +459,15 @@ class Collection(models.Model):
         if not self.config_folder:
             self.config_folder = self._compute_config_folder_name()
 
+        if not self._state.adding:
+            old_status = Collection.objects.get(id=self.id).workflow_status
+            new_status = self.workflow_status
+            if old_status != new_status:
+                transition = (old_status, new_status)
+                if transition in STATUS_CHANGE_NOTIFICATIONS:
+                    details = STATUS_CHANGE_NOTIFICATIONS[transition]
+                    message = format_slack_message(self.name, details, self.id)
+                    send_slack_message(message)
         # Call the parent class's save method
         super().save(*args, **kwargs)
 
@@ -486,24 +501,20 @@ class Comments(models.Model):
     def __str__(self):
         return self.text
 
+
 class WorkflowHistory(models.Model):
-    collection = models.ForeignKey(
-        Collection, on_delete=models.CASCADE, related_name="workflow_history", null=True
-    )    
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name="workflow_history", null=True)
     workflow_status = models.IntegerField(
         choices=WorkflowStatusChoices.choices,
         default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
     )
-    old_status = models.IntegerField(
-        choices=WorkflowStatusChoices.choices, null=True
-    )
+    old_status = models.IntegerField(choices=WorkflowStatusChoices.choices, null=True)
     curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-
     def __str__(self):
-        return (str(self.collection) + str(self.workflow_status))
-        
+        return str(self.collection) + str(self.workflow_status)
+
     @property
     def workflow_status_button_color(self) -> str:
         color_choices = {
@@ -523,8 +534,10 @@ class WorkflowHistory(models.Model):
             14: "btn-primary",
             15: "btn-info",
             16: "btn-secondary",
+            17: "btn-light",
         }
         return color_choices[self.workflow_status]
+
 
 @receiver(post_save, sender=Collection)
 def log_workflow_history(sender, instance, created, **kwargs):
@@ -533,13 +546,13 @@ def log_workflow_history(sender, instance, created, **kwargs):
             collection=instance,
             workflow_status=instance.workflow_status,
             curated_by=instance.curated_by,
-            old_status=instance.old_workflow_status
+            old_status=instance.old_workflow_status,
         )
 
 
 @receiver(post_save, sender=Collection)
 def create_configs_on_status_change(sender, instance, created, **kwargs):
-    """ 
+    """
     Creates various config files on certain workflow status changes
     """
 

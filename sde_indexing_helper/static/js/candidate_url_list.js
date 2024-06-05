@@ -970,37 +970,40 @@ function postTitlePatterns(
     return;
   }
 
-  $.ajax({
-    url: "/api/title-patterns/",
-    type: "POST",
-    data: {
-      collection: collection_id,
-      match_pattern: match_pattern,
-      match_pattern_type: match_pattern_type,
-      title_pattern: title_pattern,
-      csrfmiddlewaretoken: csrftoken,
-    },
-    success: function (data) {
-      $("#candidate_urls_table").DataTable().ajax.reload(null, false);
-      $("#title_patterns_table").DataTable().ajax.reload(null, false);
-      if(currentTab === ""){ //Only add a notification if we are on the first tab
-      newTitlePatternsCount = newTitlePatternsCount + 1;
-      $("#titlePatternsTab").html(
-        `Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newTitlePatternsCount + " new" + 
-          `</span>`
-      );
-    }
-    },
-    error: function (xhr, status, error) {
-      var errorMessage = xhr.responseText;
-      if (errorMessage == '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}') {
-        toastr.success("Pattern already exists");
-        return;
-      }
-      toastr.error(errorMessage);
-    },
-  });
+    $.ajax({
+        url: '/api/title-patterns/',
+        type: "POST",
+        data: {
+            collection: collection_id,
+            match_pattern: match_pattern,
+            match_pattern_type: match_pattern_type,
+            title_pattern: title_pattern,
+            csrfmiddlewaretoken: csrftoken
+        },
+        success: function (data) {
+            $('#candidate_urls_table').DataTable().ajax.reload(null, false);
+            $('#title_patterns_table').DataTable().ajax.reload(null, false);
+            if(currentTab === ""){ //Only add a notification if we are on the first tab
+              newTitlePatternsCount = newTitlePatternsCount + 1;
+              $("#titlePatternsTab").html(
+                `Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+                  newTitlePatternsCount + " new" + 
+                  `</span>`
+              );
+            }
+        },
+        error: function (xhr, status, error) {
+            var errorMessage = xhr.responseText;
+            if (errorMessage == '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}') {
+              toastr.success("Pattern already exists");
+              return;
+            }
+            var errorMessages = JSON.parse(errorMessage);
+            Object.entries(errorMessages.error).forEach(([key, value]) => {
+                toastr.error(value, key);
+            });
+        }
+    });
 }
 
 function postVisited(url) {

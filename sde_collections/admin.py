@@ -3,8 +3,8 @@ import csv
 from django.contrib import admin, messages
 from django.http import HttpResponse
 
-from .models.candidate_url import CandidateURL
 from .models.collection import Collection, WorkflowHistory
+from .models.candidate_url import CandidateURL, ResolvedTitle
 from .models.pattern import IncludePattern, TitlePattern
 from .tasks import import_candidate_urls_from_api
 
@@ -22,10 +22,7 @@ to our production environment as part of our latest deployment! :tada:\n
 Collections Now Live in Prod:\n"""
 
     message_middle = "\n\n".join(
-        [
-            f"- {collection.name} | {collection.server_url_prod}"
-            for collection in queryset.all()
-        ]
+        [f"- {collection.name} | {collection.server_url_prod}" for collection in queryset.all()]
     )
 
     message_end = """
@@ -46,14 +43,10 @@ def download_candidate_urls_as_csv(modeladmin, request, queryset):
     writer = csv.writer(response)
 
     if len(queryset) > 1:
-        messages.add_message(
-            request, messages.ERROR, "You can only export one collection at a time."
-        )
+        messages.add_message(request, messages.ERROR, "You can only export one collection at a time.")
         return
 
-    urls = CandidateURL.objects.filter(collection=queryset.first()).values_list(
-        "url", flat=True
-    )
+    urls = CandidateURL.objects.filter(collection=queryset.first()).values_list("url", flat=True)
 
     # Write your headers here
     writer.writerow(["candidate_url"])
@@ -137,9 +130,7 @@ def import_candidate_urls_secret_test(modeladmin, request, queryset):
 
 @admin.action(description="Import candidate URLs from Secret Production")
 def import_candidate_urls_secret_production(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(
-        modeladmin, request, queryset, "secret_production"
-    )
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "secret_production")
 
 
 @admin.action(description="Import candidate URLs from Li's Server")
@@ -149,9 +140,7 @@ def import_candidate_urls_lis_server(modeladmin, request, queryset):
 
 @admin.action(description="Import candidate URLs from LRM Dev Server")
 def import_candidate_urls_lrm_dev_server(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(
-        modeladmin, request, queryset, "lrm_dev_server"
-    )
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lrm_dev_server")
 
 
 class ExportCsvMixin:
@@ -291,7 +280,12 @@ class WorkflowHistoryAdmin(admin.ModelAdmin):
     search_fields = ["collection__name"]
     list_filter = ["workflow_status", "old_status"]
 
+
+class ResolvedTitleAdmin(admin.ModelAdmin):
+    list_display = ["title_pattern", "candidate_url", "resolved_title", "created_at"]
+
 admin.site.register(WorkflowHistory, WorkflowHistoryAdmin)
 admin.site.register(CandidateURL, CandidateURLAdmin)
 admin.site.register(TitlePattern, TitlePatternAdmin)
 admin.site.register(IncludePattern)
+admin.site.register(ResolvedTitle, ResolvedTitleAdmin)
