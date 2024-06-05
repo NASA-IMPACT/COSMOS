@@ -1,4 +1,4 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/base_auth.html" %}
 {% load i18n %}
 {% load account socialaccount %}
 {% load crispy_forms_tags %}
@@ -6,21 +6,13 @@
   {% translate "Sign In" %}
 {% endblock %}
 {% block content %}
-  <div class="row">
-    <div class="col-md-5">
-      <div class="card">
-        <div class="card-header card-header-primary">
-          <h4 class="card-title">Login</h4>
+  <div class="row login">
+    <div class="login-card-wrapper">
+      <div class="card login-card">
+        <div>
+          <h4 class="card-title login-title">Login To Your Account</h4>
         </div>
-        <div class="card-body">
-          <h6 class="card-category">
-            {% if msg %}
-              <span class="text-danger">{{ msg | safe }}</span>
-            {% else %}
-              Add your credentials
-            {% endif %}
-          </h6>
-          <br />
+        <div >
           <form class="login" method="POST" action="{% url 'account_login' %}">
             {% csrf_token %}
             {{ form|crispy }}
@@ -29,8 +21,12 @@
                      name="{{ redirect_field_name }}"
                      value="{{ redirect_field_value }}" />
             {% endif %}
-            <button class="primaryAction btn btn-primary" type="submit">{% translate "Sign In" %}</button>
+            <button class="login-button" type="submit">{% translate "Log In" %}</button>
           </form>
+          <div class="login-links">
+            <div class="signin">Sign Up</div>
+            <div>Forgot Password?</div>
+          </div>
         </div>
       </div>
     </div>
