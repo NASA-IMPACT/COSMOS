@@ -26,14 +26,14 @@ function modalContents(tableName) {
   table.columns().every(function (idx) {
     var column = this;
     var columnName = column.header().textContent.trim();
-    if (!column.visible() || columnName.length === 0) return;
+    if ( columnName.length === 0) return;
     var $checkbox = $('<input type="checkbox">')
       .attr({
         id: "checkbox_" + columnName.replace(/\s+/g, "_"), // Generate a unique ID for each checkbox
         name: columnName.replace(/\s+/g, "_"), // Set name attribute for each checkbox
         value: idx,
       })
-      .prop("checked", true);
+      .prop("checked", (column.visible() ? true : false));
     var $label = $("<label class='whiteText'>")
       .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
       .text(columnName);
