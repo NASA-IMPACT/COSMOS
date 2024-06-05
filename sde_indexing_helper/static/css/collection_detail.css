@@ -128,10 +128,6 @@ div > .nav {
   .detailContainer .tab-content .btn {
     cursor: default;
   }
-  .detailContainer .tab-content .btn.btn-primary:hover {
-    box-shadow: none;
-  }
- 
 
   .table tbody tr:nth-child(odd) {
     background-color: #15232E !important;
