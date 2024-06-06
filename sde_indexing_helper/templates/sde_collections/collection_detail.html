@@ -48,7 +48,8 @@
     <div class="arrow" id="left-arrow">◀</div>
     <div class="timeline" id="timeline">
         {% for stage in timeline_history %}
-            <div class="timeline-stage">
+            <div class="timeline-stage 
+            {% if stage.created_at and stage.workflow_status == collection.workflow_status %} btn highlight {{ collection.workflow_status_button_color }} {% endif %}">
                 <div class="status-label">
                     {% if stage.created_at %}
                         {{ stage.get_workflow_status_display }}

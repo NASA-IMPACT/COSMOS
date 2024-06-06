@@ -224,42 +224,61 @@ color:black;
    }
 }
 
+/* Status Timeline Classes */
 .timeline {
     display: flex;
     overflow-x: scroll;
     white-space: nowrap;
     padding: 10px;
-    border: 1px solid #ddd;
     margin: 20px 0;
     position: relative;
 }
 
 .timeline-stage {
+    display: flex;
     align-items: center;
     flex-direction: column;
     height: 75px;
     min-width: 170px;
     max-width: 200px;
-    border: 1px solid #ccc;
     text-align: center;
     background-color: #3F4A58;
+    font-size: .85em;
 }
 
+/* Stage Label Stylings */
 .timeline-stage .status-label {
     font-weight: bold;
     margin-bottom: 5px;
-    color: #8697A8;
-    width: 70%;
+    width: 90%;
     margin: auto;
     word-wrap: break-word;
     white-space: normal;
     max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
     
 }
 
-.timeline-stage .modified-date {
+/* Date Label Styling */
+.timeline-stage:not(.highlight) .modified-date {
     font-size: .9em;
-    color: #8697A8;
+    margin-top: auto !important;
+}
+
+/* Color if not inheriting from the selected button color */
+.timeline-stage:not(.highlight) .status-label,
+.timeline-stage:not(.highlight) .modified-date {
+    color: #8697A8;  
+}
+
+/* Overwrite button inheritance for unwanted stylings */
+.highlight {
+    margin: 0;
+    padding: 0;
+    border: 1px solid #ccc !important;
+    text-transform: none;
+
 }
 
 .arrow {
