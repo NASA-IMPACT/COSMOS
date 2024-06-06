@@ -13,6 +13,7 @@ var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
   "Multi-URL Pattern": 2,
 };
+
 var uniqueId; //used for logic related to contents on column customization modal
 const dict = {
   1: "Images",
@@ -44,14 +45,14 @@ function modalContents(tableName) {
 
   if (checkboxCount > 0 && tableName === uniqueId) {
     $modal = $("#hideShowColumnsModal").modal({
-      backdrop: 'static',
+      backdrop: "static",
       keyboard: true,
     });
     return;
   }
 
   $modal = $("#hideShowColumnsModal").modal({
-    backdrop: 'static',
+    backdrop: "static",
     keyboard: true,
   });
   var table = $(tableName).DataTable();
@@ -101,13 +102,16 @@ function initializeDataTable() {
     colReorder: true,
     stateSave: true,
     layout: {
-      bottomEnd: 'inputPaging',
+      bottomEnd: "inputPaging",
       topEnd: null,
       topStart: {
-        info:true,
+        info: true,
         pageLength: {
-          menu: [[25, 50, 100, 500],["Show 25", "Show 50", "Show 100", "Show 500"]]
-      },
+          menu: [
+            [25, 50, 100, 500],
+            ["Show 25", "Show 50", "Show 100", "Show 500"],
+          ],
+        },
         buttons: [
           "spacer",
           "csv",
@@ -120,8 +124,8 @@ function initializeDataTable() {
             },
           },
         ],
-      }
-  },
+      },
+    },
     serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
@@ -166,9 +170,9 @@ function initializeDataTable() {
           let alteredLines = [];
           lines.forEach((line) => {
             let newLine = "";
-            newLine = line.replace("open_in_new","");  
+            newLine = line.replace("open_in_new", "");
             alteredLines.push(newLine);
-          })
+          });
           return alteredLines.join("\n") + appliedFiltersInfo;
         },
       },
@@ -254,7 +258,10 @@ function initializeDataTable() {
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
-        $(row).attr("style", "background-color: rgba(255, 61, 87, 0.36) !important");
+        $(row).attr(
+          "style",
+          "background-color: rgba(255, 61, 87, 0.36) !important"
+        );
       }
     },
   });
@@ -340,7 +347,7 @@ function initializeDataTable() {
         data: "candidate_urls_count",
         class: "text-center whiteText",
         sortable: true,
-    },
+      },
       {
         data: null,
         sortable: false,
@@ -784,7 +791,7 @@ function handleHideorShowKeypress() {
       $("#hideShowColumnsModal").modal("hide");
     }
     //Confirm modal selections via enter
-    if(event.key == "Enter" && $("#hideShowColumnsModal").is(":visible")) {
+    if (event.key == "Enter" && $("#hideShowColumnsModal").is(":visible")) {
       var table = $(uniqueId).DataTable();
       $("[id^='checkbox_']").each(function () {
         var checkboxValue = $(this).val();
@@ -796,7 +803,7 @@ function handleHideorShowKeypress() {
       $("#hideShowColumnsModal").modal("hide");
     }
   });
-  
+
   $("body").on("click", ".modal-backdrop", function () {
     $("#hideShowColumnsModal").modal("hide");
   });
@@ -819,7 +826,9 @@ function handleHideorShowSubmitButton() {
 
 function handleDocumentTypeSelect() {
   $("body").on("click", ".document_type_select", function () {
-    $match_pattern = $(this).parents(".document_type_dropdown").data("match-pattern");
+    $match_pattern = $(this)
+      .parents(".document_type_dropdown")
+      .data("match-pattern");
     postDocumentTypePatterns(
       $match_pattern,
       (match_pattern_type = 1),
@@ -846,9 +855,9 @@ function handleExcludeIndividualUrlClick() {
 
 function handleDeleteExcludePatternButtonClick() {
   $("body").on("click", ".delete-exclude-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    var patternRowId = $(this).data("row-id");
     deletePattern(
-      `/api/exclude-patterns/${row_id}/`,
+      `/api/exclude-patterns/${patternRowId}/`,
       (data_type = "Exclude Pattern")
     );
   });
@@ -856,9 +865,9 @@ function handleDeleteExcludePatternButtonClick() {
 
 function handleDeleteIncludePatternButtonClick() {
   $("body").on("click", ".delete-include-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    var patternRowId = $(this).data("row-id");
     deletePattern(
-      `/api/include-patterns/${row_id}/`,
+      `/api/include-patterns/${patternRowId}/`,
       (data_type = "Include Pattern")
     );
   });
@@ -866,9 +875,9 @@ function handleDeleteIncludePatternButtonClick() {
 
 function handleDeleteTitlePatternButtonClick() {
   $("body").on("click", ".delete-title-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    patternRowId = $(this).data("row-id");
     deletePattern(
-      `/api/title-patterns/${row_id}/`,
+      `/api/title-patterns/${patternRowId}/`,
       (data_type = "Title Pattern")
     );
   });
@@ -876,9 +885,9 @@ function handleDeleteTitlePatternButtonClick() {
 
 function handleDeleteDocumentTypeButtonClick() {
   $("body").on("click", ".delete-document-type-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    patternRowId = $(this).data("row-id");
     deletePattern(
-      `/api/document-type-patterns/${row_id}/`,
+      `/api/document-type-patterns/${patternRowId}/`,
       (data_type = "Document Type Pattern")
     );
   });
@@ -1143,10 +1152,46 @@ function deletePattern(
       `YOU ARE ATTEMPTING TO DELETE A MULTI-URL PATTERN. THIS WILL AFFECT ${candidate_urls_count} URLs. \n\nAre you sure you want to do this? Currently there is no way to delete a single URL from a Multi-URL pattern`
     );
   } else {
-    var confirmDelete = confirm(
+    console.log("data_type", data_type);
+    $modal = $("#deletePatternModal").modal({
+      backdrop: "static",
+      keyboard: true,
+    });
+
+    $(".delete-pattern-caption").text(
       `Are you sure you want to delete this ${data_type}?`
     );
   }
+
+  $("#deletePatternModalForm").on("click", "button", function (event) {
+    event.preventDefault();
+    var buttonId = $(this).attr("id");
+    if (buttonId === "dontDeletePattern") {
+      $modal = $("#deletePatternModal").modal("hide");
+      return;
+    } else if (buttonId === "deletePattern") {
+      $.ajax({
+        url: url,
+        type: "DELETE",
+        data: {
+          csrfmiddlewaretoken: csrftoken,
+        },
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        success: function (data) {
+          $("#candidate_urls_table").DataTable().ajax.reload(null, false);
+          $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+          $("#include_patterns_table").DataTable().ajax.reload(null, false);
+          $("#title_patterns_table").DataTable().ajax.reload(null, false);
+          $("#document_type_patterns_table")
+            .DataTable()
+            .ajax.reload(null, false);
+        },
+      });
+    }
+  });
+
   if (!confirmDelete) {
     return;
   }
