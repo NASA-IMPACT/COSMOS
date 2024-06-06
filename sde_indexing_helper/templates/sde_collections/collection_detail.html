@@ -45,37 +45,27 @@
 </div>
 
 <div class="detailContainer">
-    <div class="arrow" id="left-arrow">◀</div>
-    <div class="timeline" id="timeline">
-        {% for stage in timeline_history %}
-            <div class="timeline-stage 
-            {% if stage.created_at and stage.workflow_status == collection.workflow_status %} btn highlight {{ collection.workflow_status_button_color }} {% endif %}">
-                <div class="status-label">
-                    {% if stage.created_at %}
-                        {{ stage.get_workflow_status_display }}
-                    {% else %}
-                        {{ stage.label }}
+    <div class="timeline-container">
+        <div class="arrow" id="left-arrow">◀</div>
+        <div class="timeline" id="timeline">
+            {% for stage in timeline_history %}
+                <div class="timeline-stage 
+                {% if stage.workflow_status == collection.workflow_status %} btn highlight {{ collection.workflow_status_button_color }} {% endif %}">
+                    <div class="status-label">
+                        {% if stage.created_at %}
+                            {{ stage.get_workflow_status_display }}
+                        {% else %}
+                            {{ stage.label }}
+                        {% endif %}
+                    </div>
+                    {% if stage and stage.created_at %}
+                        <div class="modified-date">{{ stage.created_at|date:"m/d/Y" }}</div>
                     {% endif %}
                 </div>
-                {% if stage and stage.created_at %}
-                    <div class="modified-date">{{ stage.created_at|date:"m/d/Y" }}</div>
-                {% endif %}
-            </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
+        <div class="arrow" id="right-arrow">▶</div>
     </div>
-    <div class="arrow" id="right-arrow">▶</div>
-
-    <!-- <script>
-        $(document).ready(function() {
-            $('#left-arrow').click(function() {
-                $('#timeline').scrollLeft($('#timeline').scrollLeft() - 150);
-            });
-
-            $('#right-arrow').click(function() {
-                $('#timeline').scrollLeft($('#timeline').scrollLeft() + 150);
-            });
-        });
-    </script> -->
 
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">

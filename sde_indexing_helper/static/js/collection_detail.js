@@ -216,6 +216,37 @@ $(document).ready(function () {
   });
 });
 
+// Clicking on left right arrows to move timeline
+$(document).ready(function() {
+  $('#left-arrow').click(function() {
+    console.log('left click')
+      $('#timeline').scrollLeft($('#timeline').scrollLeft() - 170);
+  });
+
+  $('#right-arrow').click(function() {
+    console.log('rightclick')
+      $('#timeline').scrollLeft($('#timeline').scrollLeft() + 170);
+  });
+});
+
+// Scroll to center the highlighted cell
+function centerHighlighted() {
+    const $timeline = $('#timeline');
+    const $highlighted = $timeline.find('.highlight');
+    
+    if ($highlighted.length) {
+        const timelineWidth = $timeline.width();
+        const highlightedOffset = $highlighted.offset().left - $timeline.offset().left;
+        const highlightedWidth = $highlighted.outerWidth(true);
+        const scrollLeft = $timeline.scrollLeft();
+        const centerPosition = highlightedOffset - (timelineWidth / 2) + (highlightedWidth / 2);
+        
+        $timeline.scrollLeft(scrollLeft + centerPosition);
+    }
+}
+
+centerHighlighted();
+
 function postWorkflowStatus(collection_id, workflow_status) {
   var url = `/api/collections/${collection_id}/`;
   $.ajax({

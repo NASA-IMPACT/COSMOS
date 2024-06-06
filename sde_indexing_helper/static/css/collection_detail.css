@@ -225,6 +225,12 @@ color:black;
 }
 
 /* Status Timeline Classes */
+.timeline-container {
+    position: relative;
+    overflow: hidden;
+    padding: 10px;
+}
+
 .timeline {
     display: flex;
     overflow-x: scroll;
@@ -285,12 +291,13 @@ color:black;
 .arrow {
     font-size: 2em;
     cursor: pointer;
-    user-select: none;
     position: absolute;
+    user-select: none;
     top: 50%;
     transform: translateY(-50%);
     z-index: 1;
     padding: 0 10px;
+    opacity: 0%;
 }
 
 #left-arrow {
@@ -298,9 +305,10 @@ color:black;
 }
 
 #right-arrow {
-    right: 10px;
+    right: 1px;
 }
 
 .arrow:hover {
     color: #333;
+    opacity: 100%;
 }
