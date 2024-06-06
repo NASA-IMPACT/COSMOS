@@ -44,14 +44,14 @@ function modalContents(tableName) {
 
   if (checkboxCount > 0 && tableName === uniqueId) {
     $modal = $("#hideShowColumnsModal").modal({
-      backdrop: 'static',
+      backdrop: "static",
       keyboard: true,
     });
     return;
   }
 
   $modal = $("#hideShowColumnsModal").modal({
-    backdrop: 'static',
+    backdrop: "static",
     keyboard: true,
   });
   var table = $(tableName).DataTable();
@@ -101,16 +101,83 @@ function initializeDataTable() {
     colReorder: true,
     stateSave: true,
     layout: {
-      bottomEnd: 'inputPaging',
+      bottomEnd: "inputPaging",
       topEnd: null,
       topStart: {
-        info:true,
+        info: true,
         pageLength: {
-          menu: [[25, 50, 100, 500],["Show 25", "Show 50", "Show 100", "Show 500"]]
-      },
+          menu: [
+            [25, 50, 100, 500],
+            ["Show 25", "Show 50", "Show 100", "Show 500"],
+          ],
+        },
         buttons: [
-          "spacer",
-          "csv",
+          {
+            extend: "csv",
+            exportOptions: {
+              columns: [0, 11, 2, 12, 10],
+            },
+            customize: function (csv) {
+              var lines = csv.split("\n");
+
+              // Reorder the header columns
+              var headers = lines[0].split(",");
+              console.log("headers 4", headers[4]);
+              headers[4] = "New Title";
+              var reorderedHeaders = [
+                headers[0],
+                headers[3],
+                headers[1],
+                headers[4],
+                headers[2],
+              ];
+              lines[0] = reorderedHeaders.join(",");
+
+              const appliedFilt = [
+                [`URL:`, `${$("#candidateUrlFilter").val()}`.trim()],
+                [`Exclude:`, `${$(".dropdown-1").val()}`.trim()],
+                [
+                  `Scraped Title:`,
+                  `${$("#candidateScrapedTitleFilter").val()}`.trim(),
+                ],
+                [`New Title:`, `${$("#candidateNewTitleFilter").val()}`.trim()],
+                [`Document Type:`, `${dict[$(".dropdown-4").val()]}`.trim()],
+              ];
+
+              console.log("appliedFilt", typeof appliedFilt[3][1]);
+              // Add filter information in the footer
+              const secondRowFilters = [
+                "Export of SDE Candidate URLs",
+                `"(Applied Filters: ${appliedFilt
+                  .reduce((acc, curr) => {
+                    if (
+                      curr[1] !== " undefined" &&
+                      curr[1] !== " " &&
+                      curr[1] !== "" &&
+                      curr[1] !== "undefined"
+                    ) {
+                      acc = `${acc}, ${curr[0]} ${curr[1]}`;
+                    }
+                    return acc;
+                  }, "")
+                  .slice(2)})"`,
+              ];
+
+              var appliedFiltersInfo = secondRowFilters.join("\n");
+
+              // Remove the second row with the filters
+              if (lines.length > 2) {
+                lines.splice(1, 1);
+              }
+              let alteredLines = [];
+              lines.forEach((line) => {
+                let newLine = "";
+                newLine = line.replace("open_in_new", "");
+                alteredLines.push(newLine);
+              });
+              return appliedFiltersInfo + "\n" + alteredLines.join("\n");
+            },
+          },
           "spacer",
           {
             text: "Customize Columns",
@@ -120,67 +187,11 @@ function initializeDataTable() {
             },
           },
         ],
-      }
-  },
+      },
+    },
     serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
-    buttons: [
-      {
-        extend: "csv",
-        exportOptions: {
-          columns: [0, 11, 2, 12, 10],
-        },
-        customize: function (csv) {
-          var lines = csv.split("\n");
-          // Reorder the header columns
-          var headers = lines[0].split(",");
-          var reorderedHeaders = [
-            headers[0],
-            headers[3],
-            headers[4],
-            headers[1],
-            headers[2],
-          ];
-          lines[0] = reorderedHeaders.join(",");
-
-          // Add filter information in the footer
-          const secondRowFilters = [
-            "Applied filters:",
-            `URL: ${$("#candidateUrlFilter").val() || "No input"}`,
-            `Exclude: ${$(".dropdown-1").val() || "No selection"}`,
-            `Scraped Title: ${
-              $("#candidateNewTitleFilter").val() || "No input"
-            }`,
-            `New Title: ${dict[$(".dropdown-5").val()] || "No input"}`,
-            `Document Type: ${
-              $("#candidateScrapedTitleFilter").val() || "No selection"
-            }`,
-          ];
-          var appliedFiltersInfo = secondRowFilters.join("\n");
-
-          // Remove the second row with the filters
-          if (lines.length > 2) {
-            lines.splice(1, 1);
-          }
-          let alteredLines = [];
-          lines.forEach((line) => {
-            let newLine = "";
-            newLine = line.replace("open_in_new","");  
-            alteredLines.push(newLine);
-          })
-          return alteredLines.join("\n") + appliedFiltersInfo;
-        },
-      },
-      "spacer",
-      {
-        text: "Customize Columns",
-        className: "customizeColumns",
-        action: function () {
-          modalContents("#candidate_urls_table");
-        },
-      },
-    ],
     rowId: "url",
     stateLoadCallback: function (settings) {
       var state = JSON.parse(
@@ -262,7 +273,10 @@ function initializeDataTable() {
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
-        $(row).attr("style", "background-color: rgba(255, 61, 87, 0.36) !important");
+        $(row).attr(
+          "style",
+          "background-color: rgba(255, 61, 87, 0.36) !important"
+        );
       }
     },
   });
@@ -348,7 +362,7 @@ function initializeDataTable() {
         data: "candidate_urls_count",
         class: "text-center whiteText",
         sortable: true,
-    },
+      },
       {
         data: null,
         sortable: false,
@@ -792,7 +806,7 @@ function handleHideorShowKeypress() {
       $("#hideShowColumnsModal").modal("hide");
     }
     //Confirm modal selections via enter
-    if(event.key == "Enter" && $("#hideShowColumnsModal").is(":visible")) {
+    if (event.key == "Enter" && $("#hideShowColumnsModal").is(":visible")) {
       var table = $(uniqueId).DataTable();
       $("[id^='checkbox_']").each(function () {
         var checkboxValue = $(this).val();
@@ -804,7 +818,7 @@ function handleHideorShowKeypress() {
       $("#hideShowColumnsModal").modal("hide");
     }
   });
-  
+
   $("body").on("click", ".modal-backdrop", function () {
     $("#hideShowColumnsModal").modal("hide");
   });
@@ -827,7 +841,9 @@ function handleHideorShowSubmitButton() {
 
 function handleDocumentTypeSelect() {
   $("body").on("click", ".document_type_select", function () {
-    $match_pattern = $(this).parents(".document_type_dropdown").data("match-pattern");
+    $match_pattern = $(this)
+      .parents(".document_type_dropdown")
+      .data("match-pattern");
     postDocumentTypePatterns(
       $match_pattern,
       (match_pattern_type = 1),
