@@ -1152,7 +1152,6 @@ function deletePattern(
       `YOU ARE ATTEMPTING TO DELETE A MULTI-URL PATTERN. THIS WILL AFFECT ${candidate_urls_count} URLs. \n\nAre you sure you want to do this? Currently there is no way to delete a single URL from a Multi-URL pattern`
     );
   } else {
-    console.log("data_type", data_type);
     $modal = $("#deletePatternModal").modal({
       backdrop: "static",
       keyboard: true,
