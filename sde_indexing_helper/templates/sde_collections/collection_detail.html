@@ -200,9 +200,9 @@
                         <td>
                             <div id="comment-form-container">
                                 {% if user.is_authenticated %}
-                                <form method="post" action="{% url 'sde_collections:detail' collection.pk %}">
+                                <form method="post" action="{% url 'sde_collections:detail' collection.pk %}" >
                                     {% csrf_token %}
-                                    <textarea name="text" class="form-control formBackground">{{ comment_form.text.value }}</textarea>
+                                    <textarea name="text" class="form-control formBackground" required>{{ comment_form.text.value }}</textarea>
                                     <button type="submit" name="comment_button" class="btn buttonColor">Submit</button>
                                 </form>
                                 {% else %}
