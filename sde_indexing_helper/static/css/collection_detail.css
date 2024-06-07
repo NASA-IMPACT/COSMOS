@@ -270,7 +270,7 @@ color:black;
 
 /* Date Label Styling */
 .timeline-stage:not(.highlight) .modified-date {
-    font-size: .9em;
+    font-size: .95em;
     margin-top: auto !important;
 }
 
