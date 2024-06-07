@@ -46,7 +46,22 @@
 
 <div class="detailContainer">
     <div class="timeline-container">
-        <div class="arrow" id="left-arrow">◀</div>
+        <div class="arrow" id="left-arrow">
+            <svg
+                class="arrow-svg"
+                width="6"
+                height="10"
+                viewBox="0 0 6 10"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style="transform: rotate(180deg);"
+                >
+                <path
+                    id="Icon/Arrow"
+                    d="M1.69209 0.273249C2.05245 0.624986 5.57328 4.32082 5.57328 4.32082C5.76553 4.50962 5.86208 4.75532 5.86208 5.00102C5.86208 5.24672 5.76553 5.49242 5.57328 5.6795C5.57328 5.6795 2.05245 9.37706 1.69209 9.72707C1.33173 10.0788 0.683431 10.1029 0.299795 9.72707C-0.0847026 9.35292 -0.114876 8.82962 0.299795 8.37012L3.53009 5.00102L0.299795 1.63192C-0.114876 1.17242 -0.0847026 0.648263 0.299795 0.273249C0.683431 -0.102628 1.33173 -0.0793515 1.69209 0.273249Z"
+                />
+            </svg>
+        </div>
         <div class="timeline" id="timeline">
             {% for stage in timeline_history %}
                 <div class="timeline-stage 
@@ -64,7 +79,22 @@
                 </div>
             {% endfor %}
         </div>
-        <div class="arrow" id="right-arrow">▶</div>
+        <div class="arrow" id="right-arrow">
+            <svg
+                class="arrow-svg"
+                width="6"
+                height="10"
+                viewBox="0 0 6 10"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style="transform: rotate(0deg);"
+                >
+                <path
+                    id="Icon/Arrow"
+                    d="M1.69209 0.273249C2.05245 0.624986 5.57328 4.32082 5.57328 4.32082C5.76553 4.50962 5.86208 4.75532 5.86208 5.00102C5.86208 5.24672 5.76553 5.49242 5.57328 5.6795C5.57328 5.6795 2.05245 9.37706 1.69209 9.72707C1.33173 10.0788 0.683431 10.1029 0.299795 9.72707C-0.0847026 9.35292 -0.114876 8.82962 0.299795 8.37012L3.53009 5.00102L0.299795 1.63192C-0.114876 1.17242 -0.0847026 0.648263 0.299795 0.273249C0.683431 -0.102628 1.33173 -0.0793515 1.69209 0.273249Z"
+                />
+            </svg>
+        </div>
     </div>
 
     <!-- Nav tabs -->

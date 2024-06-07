@@ -218,21 +218,21 @@ $(document).ready(function () {
 
 // Clicking on left right arrows to move timeline
 $(document).ready(function() {
-  $('#left-arrow').click(function() {
-    console.log('left click')
-      $('#timeline').scrollLeft($('#timeline').scrollLeft() - 170);
+  $("#left-arrow").click(function() {
+      $("#timeline").scrollLeft($("#timeline").scrollLeft() - 510);
   });
 
-  $('#right-arrow').click(function() {
-    console.log('rightclick')
-      $('#timeline').scrollLeft($('#timeline').scrollLeft() + 170);
+  $("#right-arrow").click(function() {
+      $("#timeline").scrollLeft($("#timeline").scrollLeft() + 510);
   });
 });
 
+
+
 // Scroll to center the highlighted cell
 function centerHighlighted() {
-    const $timeline = $('#timeline');
-    const $highlighted = $timeline.find('.highlight');
+    const $timeline = $("#timeline");
+    const $highlighted = $timeline.find(".highlight");
     
     if ($highlighted.length) {
         const timelineWidth = $timeline.width();

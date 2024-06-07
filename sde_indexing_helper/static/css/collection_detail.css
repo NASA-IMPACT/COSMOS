@@ -250,6 +250,7 @@ color:black;
     text-align: center;
     background-color: #3F4A58;
     font-size: .85em;
+    border-right: 1px solid #15232E;
     
 }
 
@@ -297,7 +298,23 @@ color:black;
     transform: translateY(-50%);
     z-index: 1;
     padding: 0 10px;
-    opacity: 0%;
+    background-color: #15232E;
+    border: 1px solid #A7BACD;
+    border-radius: 5px;
+    height: 30px;
+    width: 30px;
+}
+
+.arrow-svg {
+    margin-bottom: 3px;
+}
+
+.arrow-svg path {
+    fill: #8697AB;
+}
+
+.arrow:hover .arrow-svg path {
+    fill: #FFFFFF;
 }
 
 #left-arrow {
@@ -305,7 +322,7 @@ color:black;
 }
 
 #right-arrow {
-    right: 1px;
+    right: 10px;
 }
 
 .arrow:hover {
