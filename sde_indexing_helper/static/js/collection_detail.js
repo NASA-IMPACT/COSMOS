@@ -216,17 +216,39 @@ $(document).ready(function () {
   });
 });
 
+const $timeline = $("#timeline");
+
+function checkArrows() {
+  const scrollLeft = $timeline.scrollLeft();
+  const maxScrollLeft = $timeline[0].scrollWidth - $timeline[0].clientWidth;
+
+  if (scrollLeft === 0) {
+      $('#left-arrow').hide();
+  } else {
+      $('#left-arrow').show();
+  }
+
+  if (scrollLeft >= maxScrollLeft) {
+      $('#right-arrow').hide();
+  } else {
+      $('#right-arrow').show();
+  }
+}
+
 // Clicking on left right arrows to move timeline
 $(document).ready(function() {
   $("#left-arrow").click(function() {
       $("#timeline").scrollLeft($("#timeline").scrollLeft() - 510);
+      checkArrows();
   });
 
   $("#right-arrow").click(function() {
       $("#timeline").scrollLeft($("#timeline").scrollLeft() + 510);
+      checkArrows();
   });
 });
 
+$timeline.on("scroll", checkArrows);
 
 
 // Scroll to center the highlighted cell
