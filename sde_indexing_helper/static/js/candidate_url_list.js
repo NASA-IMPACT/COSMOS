@@ -44,14 +44,14 @@ function modalContents(tableName) {
 
   if (checkboxCount > 0 && tableName === uniqueId) {
     $modal = $("#hideShowColumnsModal").modal({
-      backdrop: 'static',
+      backdrop: "static",
       keyboard: true,
     });
     return;
   }
 
   $modal = $("#hideShowColumnsModal").modal({
-    backdrop: 'static',
+    backdrop: "static",
     keyboard: true,
   });
   var table = $(tableName).DataTable();
@@ -100,14 +100,18 @@ function initializeDataTable() {
     pageLength: 100,
     colReorder: true,
     stateSave: true,
+    fixedHeader: true,
     layout: {
-      bottomEnd: 'inputPaging',
+      bottomEnd: "inputPaging",
       topEnd: null,
       topStart: {
-        info:true,
+        info: true,
         pageLength: {
-          menu: [[25, 50, 100, 500],["Show 25", "Show 50", "Show 100", "Show 500"]]
-      },
+          menu: [
+            [25, 50, 100, 500],
+            ["Show 25", "Show 50", "Show 100", "Show 500"],
+          ],
+        },
         buttons: [
           "spacer",
           "csv",
@@ -120,8 +124,8 @@ function initializeDataTable() {
             },
           },
         ],
-      }
-  },
+      },
+    },
     serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
@@ -166,9 +170,9 @@ function initializeDataTable() {
           let alteredLines = [];
           lines.forEach((line) => {
             let newLine = "";
-            newLine = line.replace("open_in_new","");  
+            newLine = line.replace("open_in_new", "");
             alteredLines.push(newLine);
-          })
+          });
           return alteredLines.join("\n") + appliedFiltersInfo;
         },
       },
@@ -262,7 +266,10 @@ function initializeDataTable() {
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
-        $(row).attr("style", "background-color: rgba(255, 61, 87, 0.36) !important");
+        $(row).attr(
+          "style",
+          "background-color: rgba(255, 61, 87, 0.36) !important"
+        );
       }
     },
   });
@@ -348,7 +355,7 @@ function initializeDataTable() {
         data: "candidate_urls_count",
         class: "text-center whiteText",
         sortable: true,
-    },
+      },
       {
         data: null,
         sortable: false,
@@ -792,7 +799,7 @@ function handleHideorShowKeypress() {
       $("#hideShowColumnsModal").modal("hide");
     }
     //Confirm modal selections via enter
-    if(event.key == "Enter" && $("#hideShowColumnsModal").is(":visible")) {
+    if (event.key == "Enter" && $("#hideShowColumnsModal").is(":visible")) {
       var table = $(uniqueId).DataTable();
       $("[id^='checkbox_']").each(function () {
         var checkboxValue = $(this).val();
@@ -804,7 +811,7 @@ function handleHideorShowKeypress() {
       $("#hideShowColumnsModal").modal("hide");
     }
   });
-  
+
   $("body").on("click", ".modal-backdrop", function () {
     $("#hideShowColumnsModal").modal("hide");
   });
@@ -827,7 +834,9 @@ function handleHideorShowSubmitButton() {
 
 function handleDocumentTypeSelect() {
   $("body").on("click", ".document_type_select", function () {
-    $match_pattern = $(this).parents(".document_type_dropdown").data("match-pattern");
+    $match_pattern = $(this)
+      .parents(".document_type_dropdown")
+      .data("match-pattern");
     postDocumentTypePatterns(
       $match_pattern,
       (match_pattern_type = 1),
