@@ -193,7 +193,7 @@ body {
   height:100% !important;
 }
 
-.justify-content-md-center {
+#DataTables_Table_3_wrapper > .justify-content-md-center {
   height: 198px !important;
 }
 
