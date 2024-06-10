@@ -18,6 +18,10 @@ body {
     width: 100%;
 }
 
+.dropdown-menu {
+  z-index: 1030;
+}
+
 .dtsp-nameButton{
     opacity:0.6;
     background-color: transparent !important;
