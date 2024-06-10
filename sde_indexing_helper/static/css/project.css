@@ -186,12 +186,16 @@ body {
 
 .dt-scroll{
   background-color: #15232E !important;
+  height: 100% !important;
 }
 
 .dt-scroll-body{
-  height:min-content !important;
+  height:100% !important;
 }
 
+.justify-content-md-center {
+  height: 198px !important;
+}
 
  .table > tbody > tr > td {
   border:none;
