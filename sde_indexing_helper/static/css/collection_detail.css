@@ -276,16 +276,13 @@ color:black;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    margin-top:0px !important;
 }
 
 /* Date Label Styling */
 .timeline-stage:not(.highlight) .modified-date {
     font-size: .95em;
     margin-top: auto !important;
-}
-
-.modified-date {
-    min-height: 2em !important;
 }
 
 /* Color if not inheriting from the selected button color */
@@ -342,4 +339,8 @@ color:black;
 .arrow:hover {
     color: #333;
     opacity: 100%;
+}
+
+.btn{
+    line-height:24px !important;
 }
