@@ -196,9 +196,24 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
 
         return context
 
-class SdeDashboardView(LoginRequiredMixin,View ):
-
+class SdeDashboardView(LoginRequiredMixin,ListView ):
+       
+    model = Collection
     template_name = "sde_collections/sde_dashboard.html"
+    context_object_name = "collections"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["segment"] = "collections"
+        return context
+
+
 
 class CollectionFilterMixin:
     def get_queryset(self):
@@ -350,10 +365,6 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
-
-class SdeDashboardViewSet(viewsets.ModelViewSet):
-    queryset = Collection.objects.all()
-    serializer_class = CollectionSerializer
 
 class CollectionReadViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Collection.objects.all()
