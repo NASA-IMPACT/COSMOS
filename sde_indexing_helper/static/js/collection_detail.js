@@ -54,6 +54,33 @@ function postDocTypeChange(collection_id, docType) {
 }
 
 //////////////////////////////
+///// DELETE URL CHANGE //////
+//////////////////////////////
+
+function handleDeleteURLButtonClick(dataId) {
+  $modal = $("#deleteURLModal").modal();
+  $("#deleteURLModalForm").on("click", "button", function (event) {
+    event.preventDefault();
+    var buttonId = $(this).attr("id");
+
+    if (buttonId === "cancelURLDeletion") {
+      $modal = $("#deleteURLModal").modal("hide");
+      return;
+    } else if (buttonId === "deleteURL") {
+      // url delete req here
+    }
+  });
+}
+
+$(document).ready(function () {
+  $("body").on("click", ".urlDeleteButton", function (e) {
+    e.preventDefault();
+    var dataId = $(this).data("id");
+    handleDeleteURLButtonClick(dataId);
+  });
+});
+
+//////////////////////////////
 ///// DIVISION CHANGE ////////
 //////////////////////////////
 
