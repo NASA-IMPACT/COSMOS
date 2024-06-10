@@ -125,7 +125,7 @@
                     <tr>
                         <th class="detailsHeader">Sinequa Configuration</th>
                         <td>
-                            <a class="urlStyle underline" href="{{ collection.sinequa_configuration }}" target="_blank">{{collection.sinequa_configuration }}</a>
+                            <a class="urlStyle underline"  href="{{ collection.sinequa_configuration }}" target="_blank">{{collection.sinequa_configuration }}</a>
                         </td>
                     </tr>
                     <tr>
@@ -167,7 +167,7 @@
                                     <i class="material-icons">delete</i>
                                 </button>
                             </form>
-                            <a class="urlStyle" href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
+                            <a class="urlStyle" target="_blank" href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
                             </div>
                             {% empty %}
                             <p class="greyText">No required URLs yet</p>
@@ -186,8 +186,8 @@
                                 {% for comment in comments %}
                                 <div class="comment">
                                     <strong>{{ comment.user.username }}</strong>
-                                    <span>{{ comment.created_at|date:"M. d, Y, P" }}</span>
-                                    <p>{{ comment.text }}</p>
+                                    <span class="whiteText">{{ comment.created_at|date:"M. d, Y, P" }}</span>
+                                    <p class="whiteText">{{ comment.text }}</p>
                                 </div>
                                 {% empty %}
                                 <p>No comments yet</p>
@@ -200,9 +200,9 @@
                         <td>
                             <div id="comment-form-container">
                                 {% if user.is_authenticated %}
-                                <form method="post" action="{% url 'sde_collections:detail' collection.pk %}">
+                                <form method="post" action="{% url 'sde_collections:detail' collection.pk %}" >
                                     {% csrf_token %}
-                                    <textarea name="text" class="form-control formBackground">{{ comment_form.text.value }}</textarea>
+                                    <textarea name="text" class="form-control formBackground" required>{{ comment_form.text.value }}</textarea>
                                     <button type="submit" name="comment_button" class="btn buttonColor">Submit</button>
                                 </form>
                                 {% else %}
@@ -285,7 +285,7 @@ aria-labelledby="titleChangeModal" aria-hidden="true">
             </div>
             <div class="modal-footer">
                 <form id="titleChangeModalForm">
-                        <input type="text" name="inputFieldName" id="inputFieldId"> 
+                        <input type="text" name="inputFieldName" id="inputFieldId" value="{{collection.name}}"> 
                         <div class="button-wrapper">
                         <button type="submit" class="btn btn-secondary modal-button-1" id="cancelTitleRename">Cancel</button> 
                         <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="renameTitle">Rename</button> 

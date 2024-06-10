@@ -19,7 +19,7 @@
     margin-top: -3;
 }
 .comment {
-    background-color: #f8f9fa;
+    background-color: transparent;
     border: 1px solid #ddd;
     padding: 10px;
     margin-bottom: 10px;
@@ -29,7 +29,6 @@
     color: #007bff;
 }
 .comment span {
-    color: #6c6840;
     font-size: 0.9em;
     margin-bottom: 10px;
 }
@@ -125,7 +124,9 @@ div > .nav {
     border-radius: 12px;
   }
 
- 
+  .detailContainer .tab-content .btn {
+    cursor: default;
+  }
 
   .table tbody tr:nth-child(odd) {
     background-color: #15232E !important;
