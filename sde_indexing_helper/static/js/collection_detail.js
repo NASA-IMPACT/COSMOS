@@ -53,6 +53,16 @@ function postDocTypeChange(collection_id, docType) {
   });
 }
 
+
+// Toast for changing workflow status
+$(document).ready(function() {
+  if (localStorage.getItem("WorkflowStatusChange")) {
+    toastr.success("Workflow Status Updated!");
+    localStorage.removeItem("WorkflowStatusChange")
+
+  }
+})
+
 //////////////////////////////
 ///// DIVISION CHANGE ////////
 //////////////////////////////
@@ -282,7 +292,8 @@ function postWorkflowStatus(collection_id, workflow_status) {
       "X-CSRFToken": csrftoken,
     },
     success: function (data) {
-      toastr.success("Workflow Status Updated!");
+      localStorage.setItem("WorkflowStatusChange", data.OperationStatus);
+      location.reload();
     },
   });
 }
