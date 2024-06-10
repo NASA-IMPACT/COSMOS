@@ -140,7 +140,27 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
             )
         if "comments_form" not in context:
             context["comments_form"] = CommentsForm()
+        
+        # Initialize a dictionary to hold the most recent history for each workflow status
+        timeline_history = {}
+        
+        # Get the most recent history for each workflow status
+        recent_histories = WorkflowHistory.objects.filter(collection=self.get_object()).order_by('workflow_status', '-created_at').distinct('workflow_status')
+        
+        # Populate the dictionary with the actual history objects
+        for history in recent_histories:
+            timeline_history[history.workflow_status] = history
 
+        # Add placeholders for stages with no workflow history
+        for status in WorkflowStatusChoices:
+            if status not in timeline_history:
+                timeline_history[status] = {
+                    'workflow_status': status,
+                    'created_at': None,
+                    'label': WorkflowStatusChoices(status).label,
+                }
+        
+        context['timeline_history'] = [timeline_history[status] for status in WorkflowStatusChoices]
         context["required_urls"] = RequiredUrls.objects.filter(collection=self.get_object())
         context["segment"] = "collection-detail"
         context["comments"] = Comments.objects.filter(collection=self.get_object()).order_by("-created_at")

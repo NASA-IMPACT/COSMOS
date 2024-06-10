@@ -44,14 +44,14 @@ function modalContents(tableName) {
 
   if (checkboxCount > 0 && tableName === uniqueId) {
     $modal = $("#hideShowColumnsModal").modal({
-      backdrop: 'static',
+      backdrop: "static",
       keyboard: true,
     });
     return;
   }
 
   $modal = $("#hideShowColumnsModal").modal({
-    backdrop: 'static',
+    backdrop: "static",
     keyboard: true,
   });
   var table = $(tableName).DataTable();
@@ -101,13 +101,16 @@ function initializeDataTable() {
     colReorder: true,
     stateSave: true,
     layout: {
-      bottomEnd: 'inputPaging',
+      bottomEnd: "inputPaging",
       topEnd: null,
       topStart: {
-        info:true,
+        info: true,
         pageLength: {
-          menu: [[25, 50, 100, 500],["Show 25", "Show 50", "Show 100", "Show 500"]]
-      },
+          menu: [
+            [25, 50, 100, 500],
+            ["Show 25", "Show 50", "Show 100", "Show 500"],
+          ],
+        },
         buttons: [
           "spacer",
           "csv",
@@ -120,8 +123,8 @@ function initializeDataTable() {
             },
           },
         ],
-      }
-  },
+      },
+    },
     serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
@@ -166,9 +169,9 @@ function initializeDataTable() {
           let alteredLines = [];
           lines.forEach((line) => {
             let newLine = "";
-            newLine = line.replace("open_in_new","");  
+            newLine = line.replace("open_in_new", "");
             alteredLines.push(newLine);
-          })
+          });
           return alteredLines.join("\n") + appliedFiltersInfo;
         },
       },
@@ -262,7 +265,10 @@ function initializeDataTable() {
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
-        $(row).attr("style", "background-color: rgba(255, 61, 87, 0.36) !important");
+        $(row).attr(
+          "style",
+          "background-color: rgba(255, 61, 87, 0.36) !important"
+        );
       }
     },
   });
@@ -343,12 +349,17 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
       },
-      { data: "reason", class: "text-center whiteText", sortable: false },
+      {
+        data: "reason",
+        class: "text-center whiteText",
+        sortable: false,
+        visible: false,
+      },
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
         sortable: true,
-    },
+      },
       {
         data: null,
         sortable: false,
@@ -362,19 +373,13 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateMatchPatternFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      exclude_patterns_table.columns(0).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateMatchPatternFilter").on("keyup", function () {
+    exclude_patterns_table.columns(0).search(this.value).draw();
+  });
 
-  $("#candidateReasonFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      exclude_patterns_table.columns(2).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateReasonFilter").on("keyup", function () {
+    exclude_patterns_table.columns(2).search(this.value).draw();
+  });
 
   var include_patterns_table = $("#include_patterns_table").DataTable({
     // scrollY: true,
@@ -448,12 +453,9 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateIncludeMatchPatternFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      include_patterns_table.columns(0).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateIncludeMatchPatternFilter").on("keyup", function () {
+    include_patterns_table.columns(0).search(this.value).draw();
+  });
 
   var title_patterns_table = $("#title_patterns_table").DataTable({
     // scrollY: true,
@@ -529,19 +531,13 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateTitleMatchPatternFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      title_patterns_table.columns(0).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateTitleMatchPatternFilter").on("keyup", function (val) {
+    title_patterns_table.columns(0).search(this.value).draw();
+  });
 
-  $("#candidateTitlePatternTypeFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      title_patterns_table.columns(2).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateTitlePatternTypeFilter").on("keyup", function (val) {
+    title_patterns_table.columns(2).search(this.value).draw();
+  });
 
   var document_type_patterns_table = $(
     "#document_type_patterns_table"
@@ -649,12 +645,9 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateDocTypeMatchPatternFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      document_type_patterns_table.columns(0).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateDocTypeMatchPatternFilter").on("keyup", function (val) {
+    document_type_patterns_table.columns(0).search(this.value).draw();
+  });
 }
 
 function handleTabsClick() {
@@ -792,7 +785,7 @@ function handleHideorShowKeypress() {
       $("#hideShowColumnsModal").modal("hide");
     }
     //Confirm modal selections via enter
-    if(event.key == "Enter" && $("#hideShowColumnsModal").is(":visible")) {
+    if (event.key == "Enter" && $("#hideShowColumnsModal").is(":visible")) {
       var table = $(uniqueId).DataTable();
       $("[id^='checkbox_']").each(function () {
         var checkboxValue = $(this).val();
@@ -804,7 +797,7 @@ function handleHideorShowKeypress() {
       $("#hideShowColumnsModal").modal("hide");
     }
   });
-  
+
   $("body").on("click", ".modal-backdrop", function () {
     $("#hideShowColumnsModal").modal("hide");
   });
@@ -827,7 +820,9 @@ function handleHideorShowSubmitButton() {
 
 function handleDocumentTypeSelect() {
   $("body").on("click", ".document_type_select", function () {
-    $match_pattern = $(this).parents(".document_type_dropdown").data("match-pattern");
+    $match_pattern = $(this)
+      .parents(".document_type_dropdown")
+      .data("match-pattern");
     postDocumentTypePatterns(
       $match_pattern,
       (match_pattern_type = 1),
