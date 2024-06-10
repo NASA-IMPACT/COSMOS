@@ -2,6 +2,7 @@ var collection_id;
 var newDivisionVal;
 var currentDivisionVal;
 var currentDivisonText;
+var currentUrlToDelete; 
 
 let originalValue = document.getElementById("github-link-display").textContent;
 document.getElementById("github-link-form").style.display = "none";
@@ -95,7 +96,7 @@ function handleDeleteURLButtonClick(dataId, dataURL) {
     if (buttonId === "cancelURLDeletion") {
       $modal = $("#deleteURLModal").modal("hide");
       return;
-    } else if (buttonId === "deleteURL") {
+    } else if (buttonId === "deleteURL" && dataId === currentUrlToDelete) {
       $.ajax({
         url: "/delete-required-url/" + dataId,
         type: "POST",
@@ -118,6 +119,7 @@ $(document).ready(function () {
   $("body").on("click", ".urlDeleteButton", function (e) {
     e.preventDefault();
     var dataId = $(this).data("id");
+    currentUrlToDelete = dataId.id;
     handleDeleteURLButtonClick(dataId.id, dataId.url);
   });
 });
