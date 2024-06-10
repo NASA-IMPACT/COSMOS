@@ -40,6 +40,14 @@ const stackedLine = new Chart(ctx, {
     type: 'line',
     data: data,
     options: {
+        plugins: {
+            title: {
+                display: true,
+                text: 'Total SDE Entries',
+                position: 'top',
+                align: 'start'
+            }
+        },
         scales: {
             y: {
                 stacked: true
