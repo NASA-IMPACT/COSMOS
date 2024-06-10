@@ -175,6 +175,14 @@ let table = $("#collection_table").DataTable({
       },
       targets: [7, 8],
     },
+    {
+      searchPanes: {
+        dtOpts: {
+          scrollY: "100%",
+        }
+      },
+      targets: [5],
+    },
   ],
 });
 

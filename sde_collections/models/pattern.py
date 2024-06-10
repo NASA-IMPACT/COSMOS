@@ -177,7 +177,8 @@ class TitlePattern(BaseMatchPattern):
             }
 
             try:
-                generated_title = resolve_title(self.title_pattern, context)
+                # generated_title = resolve_title(self.title_pattern, context)
+                generated_title = self.title_pattern
 
                 # check to see if the candidate url has an existing resolved title and delete it
                 ResolvedTitle.objects.filter(candidate_url=candidate_url).delete()
@@ -246,7 +247,7 @@ class DocumentTypePattern(BaseMatchPattern):
         unique_together = ("collection", "match_pattern")
 
 
-@receiver(post_save, sender=TitlePattern)
-def post_save_handler(sender, instance, created, **kwargs):
-    if created:
-        transaction.on_commit(lambda: resolve_title_pattern.delay(instance.pk))
+# @receiver(post_save, sender=TitlePattern)
+# def post_save_handler(sender, instance, created, **kwargs):
+#     if created:
+#         transaction.on_commit(lambda: resolve_title_pattern.delay(instance.pk))

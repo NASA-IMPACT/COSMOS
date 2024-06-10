@@ -53,6 +53,16 @@ function postDocTypeChange(collection_id, docType) {
   });
 }
 
+
+// Toast for changing workflow status
+$(document).ready(function() {
+  if (localStorage.getItem("WorkflowStatusChange")) {
+    toastr.success("Workflow Status Updated!");
+    localStorage.removeItem("WorkflowStatusChange")
+
+  }
+})
+
 //////////////////////////////
 ///// DIVISION CHANGE ////////
 //////////////////////////////
@@ -216,6 +226,59 @@ $(document).ready(function () {
   });
 });
 
+const $timeline = $("#timeline");
+
+function checkArrows() {
+  const scrollLeft = $timeline.scrollLeft();
+  const maxScrollLeft = $timeline[0].scrollWidth - $timeline[0].clientWidth;
+
+  if (scrollLeft === 0) {
+      $('#left-arrow').hide();
+  } else {
+      $('#left-arrow').show();
+  }
+
+  if (scrollLeft >= maxScrollLeft) {
+      $('#right-arrow').hide();
+  } else {
+      $('#right-arrow').show();
+  }
+}
+
+// Clicking on left right arrows to move timeline
+$(document).ready(function() {
+  $("#left-arrow").click(function() {
+      $("#timeline").scrollLeft($("#timeline").scrollLeft() - 510);
+      checkArrows();
+  });
+
+  $("#right-arrow").click(function() {
+      $("#timeline").scrollLeft($("#timeline").scrollLeft() + 510);
+      checkArrows();
+  });
+});
+
+$timeline.on("scroll", checkArrows);
+
+
+// Scroll to center the highlighted cell
+function centerHighlighted() {
+    const $timeline = $("#timeline");
+    const $highlighted = $timeline.find(".highlight");
+    
+    if ($highlighted.length) {
+        const timelineWidth = $timeline.width();
+        const highlightedOffset = $highlighted.offset().left - $timeline.offset().left;
+        const highlightedWidth = $highlighted.outerWidth(true);
+        const scrollLeft = $timeline.scrollLeft();
+        const centerPosition = highlightedOffset - (timelineWidth / 2) + (highlightedWidth / 2);
+        
+        $timeline.scrollLeft(scrollLeft + centerPosition);
+    }
+}
+
+centerHighlighted();
+
 function postWorkflowStatus(collection_id, workflow_status) {
   var url = `/api/collections/${collection_id}/`;
   $.ajax({
@@ -229,7 +292,8 @@ function postWorkflowStatus(collection_id, workflow_status) {
       "X-CSRFToken": csrftoken,
     },
     success: function (data) {
-      toastr.success("Workflow Status Updated!");
+      localStorage.setItem("WorkflowStatusChange", data.OperationStatus);
+      location.reload();
     },
   });
 }
