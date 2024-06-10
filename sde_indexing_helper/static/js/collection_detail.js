@@ -60,6 +60,34 @@ function postDocTypeChange(collection_id, docType) {
 function handleDeleteURLButtonClick(dataId, dataURL) {
   $modal = $("#deleteURLModal").modal();
   $(".delete-URL-caption").text(`Are you sure you want to delete ${dataURL}?`);
+  $("#deleteURLModal").on("keydown", function (event) {
+    if (event.keyCode === 13) {
+      // Check if the focused element is the button
+      if (
+        document.activeElement.id === "deleteURLModal" ||
+        document.activeElement.id === "deleteURL"
+      ) {
+        // Simulate a click event on the button
+        $.ajax({
+          url: "/delete-required-url/" + dataId,
+          type: "POST",
+          headers: {
+            "X-CSRFToken": csrftoken,
+          },
+          success: function (data) {
+            window.location.reload();
+          },
+          error: function (xhr, textStatus, errorThrown) {
+            console.log("Error:", errorThrown);
+            toastr.error("Error deleting URL.");
+          },
+        });
+      } else {
+        $modal = $("#deleteURLModal").modal("hide");
+      }
+    }
+  });
+
   $("#deleteURLModalForm").on("click", "button", function (event) {
     event.preventDefault();
     var buttonId = $(this).attr("id");
