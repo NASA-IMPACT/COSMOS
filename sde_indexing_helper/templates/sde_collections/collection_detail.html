@@ -45,6 +45,55 @@
 </div>
 
 <div class="detailContainer">
+    <div class="timeline-container">
+        <div class="arrow" id="left-arrow">
+            <svg
+                class="arrow-svg"
+                width="6"
+                height="10"
+                viewBox="0 0 6 10"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style="transform: rotate(180deg);"
+                >
+                <path
+                    id="Icon/Arrow"
+                    d="M1.69209 0.273249C2.05245 0.624986 5.57328 4.32082 5.57328 4.32082C5.76553 4.50962 5.86208 4.75532 5.86208 5.00102C5.86208 5.24672 5.76553 5.49242 5.57328 5.6795C5.57328 5.6795 2.05245 9.37706 1.69209 9.72707C1.33173 10.0788 0.683431 10.1029 0.299795 9.72707C-0.0847026 9.35292 -0.114876 8.82962 0.299795 8.37012L3.53009 5.00102L0.299795 1.63192C-0.114876 1.17242 -0.0847026 0.648263 0.299795 0.273249C0.683431 -0.102628 1.33173 -0.0793515 1.69209 0.273249Z"
+                />
+            </svg>
+        </div>
+        <div class="timeline" id="timeline">
+            {% for stage in timeline_history %}
+                <div class="timeline-stage 
+                {% if stage.workflow_status == collection.workflow_status %} btn highlight {{ collection.workflow_status_button_color }} {% endif %}">
+                    <div class="status-label">
+                        {% if stage.created_at %}
+                            {{ stage.get_workflow_status_display }}
+                        {% else %}
+                            {{ stage.label }}
+                        {% endif %}
+                    </div>
+                        <div class="modified-date"> {{ stage.created_at|date:"m/d/Y" }} </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="arrow" id="right-arrow">
+            <svg
+                class="arrow-svg"
+                width="6"
+                height="10"
+                viewBox="0 0 6 10"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style="transform: rotate(0deg);"
+                >
+                <path
+                    id="Icon/Arrow"
+                    d="M1.69209 0.273249C2.05245 0.624986 5.57328 4.32082 5.57328 4.32082C5.76553 4.50962 5.86208 4.75532 5.86208 5.00102C5.86208 5.24672 5.76553 5.49242 5.57328 5.6795C5.57328 5.6795 2.05245 9.37706 1.69209 9.72707C1.33173 10.0788 0.683431 10.1029 0.299795 9.72707C-0.0847026 9.35292 -0.114876 8.82962 0.299795 8.37012L3.53009 5.00102L0.299795 1.63192C-0.114876 1.17242 -0.0847026 0.648263 0.299795 0.273249C0.683431 -0.102628 1.33173 -0.0793515 1.69209 0.273249Z"
+                />
+            </svg>
+        </div>
+    </div>
 
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">
@@ -52,7 +101,7 @@
             <a class="tab-nav active tabStyle" data-toggle="tab" href="#metadata">Metadata</a>
         </li>
         <li class="nav-item">
-            <a class="tab-nav tabStyle" data-toggle="tab" href="#statustimeline">Status Timeline</a>
+            <a class="tab-nav tabStyle" data-toggle="tab" href="#workflowhistory">Workflow History</a>
         </li>
     </ul>
 
@@ -215,13 +264,13 @@
             </table>
 
         </div>
-        <div class="tab-pane fade" id="statustimeline">
+        <div class="tab-pane fade" id="workflowhistory">
             <table class="table table-striped">
                 <thead>
                     <tr class="tableHeaderRow">
                         <th class="whiteText">Workflow Status</th>
                         <th class="whiteText">Curator</th>
-                        <th class="whiteText">Timeframe</th>
+                        <th class="whiteText">Time Updated</th>
                     </tr>
                 <thead>
                 <tbody>
@@ -235,7 +284,7 @@
                         </td>
                         <td class="whiteText">                            
                             {{ entry.curated_by }}</td>
-                        <td class="whiteText">{{entry.created_at|timesince}}</td>
+                        <td class="whiteText">{{entry.created_at|timesince}} ago</td>
                     </tr>
                     {% endfor %}
                 </tbody>
