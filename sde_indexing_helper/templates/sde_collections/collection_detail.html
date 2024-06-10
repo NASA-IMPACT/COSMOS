@@ -125,7 +125,7 @@
                     <tr>
                         <th class="detailsHeader">Sinequa Configuration</th>
                         <td>
-                            <a class="urlStyle underline" href="{{ collection.sinequa_configuration }}" target="_blank">{{collection.sinequa_configuration }}</a>
+                            <a class="urlStyle underline"  href="{{ collection.sinequa_configuration }}" target="_blank">{{collection.sinequa_configuration }}</a>
                         </td>
                     </tr>
                     <tr>
@@ -167,7 +167,7 @@
                                     <i class="material-icons">delete</i>
                                 </button>
                             </form>
-                            <a class="urlStyle" href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
+                            <a class="urlStyle" target="_blank" href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
                             </div>
                             {% empty %}
                             <p class="greyText">No required URLs yet</p>
@@ -200,9 +200,9 @@
                         <td>
                             <div id="comment-form-container">
                                 {% if user.is_authenticated %}
-                                <form method="post" action="{% url 'sde_collections:detail' collection.pk %}">
+                                <form method="post" action="{% url 'sde_collections:detail' collection.pk %}" >
                                     {% csrf_token %}
-                                    <textarea name="text" class="form-control formBackground">{{ comment_form.text.value }}</textarea>
+                                    <textarea name="text" class="form-control formBackground" required>{{ comment_form.text.value }}</textarea>
                                     <button type="submit" name="comment_button" class="btn buttonColor">Submit</button>
                                 </form>
                                 {% else %}
