@@ -68,6 +68,26 @@ function handleDeleteURLButtonClick(dataId) {
       return;
     } else if (buttonId === "deleteURL") {
       // url delete req here
+      $.ajax({
+        url: "/delete-required-url/" + dataId,
+        type: "PUT",
+        data: {
+          name: inputValue,
+          csrfmiddlewaretoken: csrftoken,
+        },
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        success: function (data) {
+          // console.log("Success:", data);
+          $(".collectionName").text(`${data.name}`);
+          toastr.success("Name Updated!");
+        },
+        error: function (xhr, textStatus, errorThrown) {
+          // console.log("Error:", errorThrown);
+          toastr.error("Error updating name.");
+        },
+      });
     }
   });
 }
