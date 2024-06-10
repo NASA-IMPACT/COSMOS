@@ -64,10 +64,7 @@ function handleDeleteURLButtonClick(dataId, dataURL) {
   $("#deleteURLModal").on("keydown", function (event) {
     if (event.keyCode === 13) {
       // Check if the focused element is the button
-      if (
-        document.activeElement.id === "deleteURLModal" ||
-        document.activeElement.id === "deleteURL"
-      ) {
+      if (document.activeElement.id === "deleteURLModal") {
         // Simulate a click event on the button
         $.ajax({
           url: "/delete-required-url/" + dataId,
@@ -83,8 +80,6 @@ function handleDeleteURLButtonClick(dataId, dataURL) {
             toastr.error("Error deleting URL.");
           },
         });
-      } else {
-        $modal = $("#deleteURLModal").modal("hide");
       }
     }
   });

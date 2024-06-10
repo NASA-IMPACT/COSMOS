@@ -1157,6 +1157,36 @@ function deletePattern(
     );
   }
 
+  $("#deletePatternModal").on("keydown", function (event) {
+    if (event.keyCode === 13) {
+      // Check if the focused element is the button
+      if (document.activeElement.id === "deletePatternModal") {
+        console.log("url", url);
+        // Simulate a click event on the button
+        $.ajax({
+          url: url,
+          type: "DELETE",
+          data: {
+            csrfmiddlewaretoken: csrftoken,
+          },
+          headers: {
+            "X-CSRFToken": csrftoken,
+          },
+          success: function (data) {
+            $modal = $("#deletePatternModal").modal("hide");
+            $("#candidate_urls_table").DataTable().ajax.reload(null, false);
+            $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+            $("#include_patterns_table").DataTable().ajax.reload(null, false);
+            $("#title_patterns_table").DataTable().ajax.reload(null, false);
+            $("#document_type_patterns_table")
+              .DataTable()
+              .ajax.reload(null, false);
+          },
+        });
+      }
+    }
+  });
+
   $("#deletePatternModalForm").on("click", "button", function (event) {
     event.preventDefault();
     var buttonId = $(this).attr("id");
