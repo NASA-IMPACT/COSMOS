@@ -238,7 +238,15 @@ color:black;
     padding: 10px;
     margin: 20px 0;
     position: relative;
+    -ms-overflow-style: none; /* Hide scrollbar IE and Edge */
+    scrollbar-width: none; /* Hide for Firefox */
 }
+
+/* Hide scrollbar on Chrome , Safari, Opera */
+.timeline::-webkit-scrollbar {
+    display: none;
+}
+
 
 .timeline-stage {
     display: flex;
@@ -265,13 +273,19 @@ color:black;
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-    
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 /* Date Label Styling */
 .timeline-stage:not(.highlight) .modified-date {
     font-size: .95em;
     margin-top: auto !important;
+}
+
+.modified-date {
+    min-height: 2em !important;
 }
 
 /* Color if not inheriting from the selected button color */

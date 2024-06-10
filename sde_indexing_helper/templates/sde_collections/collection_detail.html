@@ -73,9 +73,7 @@
                             {{ stage.label }}
                         {% endif %}
                     </div>
-                    {% if stage and stage.created_at %}
-                        <div class="modified-date">{{ stage.created_at|date:"m/d/Y" }}</div>
-                    {% endif %}
+                        <div class="modified-date"> {{ stage.created_at|date:"m/d/Y" }} </div>
                 </div>
             {% endfor %}
         </div>
