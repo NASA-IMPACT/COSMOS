@@ -571,5 +571,8 @@ height: 38px;
     justify-content: center;
 }
 
+.dropdown-menu {
+  z-index: 1030;
+}
 
 
