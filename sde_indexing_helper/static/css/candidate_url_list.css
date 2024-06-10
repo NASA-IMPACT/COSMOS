@@ -101,37 +101,7 @@
   }
   
  
-.tab-nav {
-    color: black;
-    padding-right: 25px;
-    padding-left: 25px;
-    font-weight: 500;
-}
 
-/* tab headers hover effect */
-.tab-nav:hover {
-    text-decoration: underline;
-    color: #0066CA; 
-}
-
-/* alligning tab container with the table  */
-.nav-tabs {
-    padding-left: 0px;
-}
-
-/* active tab  */
-.nav-item > .active {
-    color: #0066CA;
-    font-weight: 700;
-    border-bottom: 3px solid #FF3D57;
-    padding-bottom: 15px;
-}
-
-/* line under the tab options */
-div > .nav {
-    padding-bottom: 15px;
-    border-bottom: 1px solid #F8FAFB;
-}
 
 /* badge showing workflow status by header */
 .badge {

@@ -6,14 +6,59 @@
 {% block stylesheets %}
 {{ block.super }}
 <link href="{% static 'css/project.css' %}" rel="stylesheet">
+<link href="{% static 'css/sde_dashboard.css' %}" rel="stylesheet">
 {% endblock stylesheets %}
 
 {% block content %}
 <br>
 <h1 class="pageTitle">SDE Dashboard</h1>
+<div class="dashboardContainer">
+    <div>
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="tab-nav active tabStyle" data-toggle="tab" href="#Division-Metrics">Division Metrics</a>
+        </li>
+        <li class="nav-item">
+            <a class="tab-nav tabStyle" data-toggle="tab" href="#Candidate-URLs">Candidate URLs</a>
+        </li>
+        <li class="nav-item">
+            <a class="tab-nav tabStyle" data-toggle="tab" href="#Workflow-Status">Workflow Status</a>
+        </li>
+        <li class="nav-item">
+            <a class="tab-nav tabStyle" data-toggle="tab" href="#Curator">Curator</a>
+        </li>
+    </ul>
 
+
+    <div class="tab-content">
+        <div class="tab-pane active" id="Division-Metrics">
+            <canvas id="chart" width="1000" height="400"></canvas>
+
+            </div>
+
+            <div class="tab-pane fade" id="Candidate-URLs">
+
+                </div>
+
+
+                <div class="tab-pane fade" id="Workflow-Status">
+
+                </div>
+
+                <div class="tab-pane fade" id="Curator">
+
+                </div>
+
+            </div>
+
+
+    </div>
+</div>
 
 {% endblock content %}
 {% block javascripts %}
 <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/sde_dashboard.js' %}"></script>
 {% endblock javascripts %}
