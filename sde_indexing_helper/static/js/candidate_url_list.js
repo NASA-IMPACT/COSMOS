@@ -122,7 +122,6 @@ function initializeDataTable() {
 
               // Reorder the header columns
               var headers = lines[0].split(",");
-              console.log("headers 4", headers[4]);
               headers[4] = "New Title";
               var reorderedHeaders = [
                 headers[0],
@@ -144,26 +143,9 @@ function initializeDataTable() {
                 [`Document Type:`, `${dict[$(".dropdown-4").val()]}`.trim()],
               ];
 
-              console.log("appliedFilt", typeof appliedFilt[3][1]);
-              // Add filter information in the footer
-              const secondRowFilters = [
-                "Export of SDE Candidate URLs",
-                `"(Applied Filters: ${appliedFilt
-                  .reduce((acc, curr) => {
-                    if (
-                      curr[1] !== " undefined" &&
-                      curr[1] !== " " &&
-                      curr[1] !== "" &&
-                      curr[1] !== "undefined"
-                    ) {
-                      acc = `${acc}, ${curr[0]} ${curr[1]}`;
-                    }
-                    return acc;
-                  }, "")
-                  .slice(2)})"`,
-              ];
-
-              var appliedFiltersInfo = secondRowFilters.join("\n");
+              const filtersAreEmpty = appliedFilt.every((filter) => {
+                return filter[1] === "" || filter[1] === "undefined";
+              });
 
               // Remove the second row with the filters
               if (lines.length > 2) {
@@ -175,7 +157,30 @@ function initializeDataTable() {
                 newLine = line.replace("open_in_new", "");
                 alteredLines.push(newLine);
               });
-              return appliedFiltersInfo + "\n" + alteredLines.join("\n");
+
+              if (filtersAreEmpty) return alteredLines.join("\n");
+              else {
+                // Add filter information in the footer
+                const secondRowFilters = [
+                  "Export of SDE Candidate URLs",
+                  `"(Applied Filters: ${appliedFilt
+                    .reduce((acc, curr) => {
+                      if (
+                        curr[1] !== " undefined" &&
+                        curr[1] !== " " &&
+                        curr[1] !== "" &&
+                        curr[1] !== "undefined"
+                      ) {
+                        acc = `${acc}, ${curr[0]} ${curr[1]}`;
+                      }
+                      return acc;
+                    }, "")
+                    .slice(2)})"`,
+                ];
+
+                var appliedFiltersInfo = secondRowFilters.join("\n");
+                return appliedFiltersInfo + "\n" + alteredLines.join("\n");
+              }
             },
           },
           "spacer",
