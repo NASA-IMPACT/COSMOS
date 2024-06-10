@@ -349,7 +349,12 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
       },
-      { data: "reason", class: "text-center whiteText", sortable: false },
+      {
+        data: "reason",
+        class: "text-center whiteText",
+        sortable: false,
+        visible: false,
+      },
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
