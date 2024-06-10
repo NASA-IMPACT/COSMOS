@@ -13,6 +13,7 @@ var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
   "Multi-URL Pattern": 2,
 };
+var currentURLtoDelete;
 
 var uniqueId; //used for logic related to contents on column customization modal
 const dict = {
@@ -851,6 +852,7 @@ function handleExcludeIndividualUrlClick() {
 function handleDeleteExcludePatternButtonClick() {
   $("body").on("click", ".delete-exclude-pattern-button", function () {
     var patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/exclude-patterns/${patternRowId}/`;
     deletePattern(
       `/api/exclude-patterns/${patternRowId}/`,
       (data_type = "Exclude Pattern")
@@ -861,6 +863,7 @@ function handleDeleteExcludePatternButtonClick() {
 function handleDeleteIncludePatternButtonClick() {
   $("body").on("click", ".delete-include-pattern-button", function () {
     var patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/include-patterns/${patternRowId}/`;
     deletePattern(
       `/api/include-patterns/${patternRowId}/`,
       (data_type = "Include Pattern")
@@ -870,7 +873,8 @@ function handleDeleteIncludePatternButtonClick() {
 
 function handleDeleteTitlePatternButtonClick() {
   $("body").on("click", ".delete-title-pattern-button", function () {
-    patternRowId = $(this).data("row-id");
+    var patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/title-patterns/${patternRowId}/`;
     deletePattern(
       `/api/title-patterns/${patternRowId}/`,
       (data_type = "Title Pattern")
@@ -881,6 +885,7 @@ function handleDeleteTitlePatternButtonClick() {
 function handleDeleteDocumentTypeButtonClick() {
   $("body").on("click", ".delete-document-type-pattern-button", function () {
     patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/document-type-patterns/${patternRowId}/`;
     deletePattern(
       `/api/document-type-patterns/${patternRowId}/`,
       (data_type = "Document Type Pattern")
@@ -903,6 +908,7 @@ function handleNewTitleChange() {
     var match_pattern_type = $(this).data("match-pattern-type");
     var candidate_urls_count = $(this).data("candidate-urls-count");
     if (!title_pattern) {
+      currentURLtoDelete = `/api/title-patterns/${generated_title_id}/`;
       deletePattern(
         `/api/title-patterns/${generated_title_id}/`,
         (data_type = "Title Pattern"),
@@ -1160,8 +1166,10 @@ function deletePattern(
   $("#deletePatternModal").on("keydown", function (event) {
     if (event.keyCode === 13) {
       // Check if the focused element is the button
-      if (document.activeElement.id === "deletePatternModal") {
-        console.log("url", url);
+      if (
+        document.activeElement.id === "deletePatternModal" &&
+        url === currentURLtoDelete
+      ) {
         // Simulate a click event on the button
         $.ajax({
           url: url,
@@ -1193,7 +1201,7 @@ function deletePattern(
     if (buttonId === "dontDeletePattern") {
       $modal = $("#deletePatternModal").modal("hide");
       return;
-    } else if (buttonId === "deletePattern") {
+    } else if (buttonId === "deletePattern" && url === currentURLtoDelete) {
       $.ajax({
         url: url,
         type: "DELETE",
