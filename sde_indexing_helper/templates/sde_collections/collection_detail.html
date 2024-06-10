@@ -163,7 +163,7 @@
                             <form  class="reqUrlForm">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-sm btn-danger urlDeleteButton delete_required_url pull-left"
-                                    data-id={{ required_url.pk }}>
+                                    data-id='{"id": "{{ required_url.pk }}", "url": "{{ required_url.url }}"}'>
                                     <i class="material-icons">delete</i>
                                 </button>
                             </form>
@@ -308,7 +308,7 @@ aria-labelledby="deleteURLModal" aria-hidden="true">
         </div>
             <div class="modal-body" id="modal-body">
                 <h5 class="modal-title">Are you sure?</h5>
-                <p class="caption" id="caption"></p>
+                <p class="delete-URL-caption" id="caption"></p>
             </div>
             <div class="modal-footer">
                 <form id="deleteURLModalForm">

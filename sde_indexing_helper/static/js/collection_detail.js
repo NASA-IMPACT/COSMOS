@@ -57,8 +57,9 @@ function postDocTypeChange(collection_id, docType) {
 ///// DELETE URL CHANGE //////
 //////////////////////////////
 
-function handleDeleteURLButtonClick(dataId) {
+function handleDeleteURLButtonClick(dataId, dataURL) {
   $modal = $("#deleteURLModal").modal();
+  $(".delete-URL-caption").text(`Are you sure you want to delete ${dataURL}?`);
   $("#deleteURLModalForm").on("click", "button", function (event) {
     event.preventDefault();
     var buttonId = $(this).attr("id");
@@ -67,25 +68,18 @@ function handleDeleteURLButtonClick(dataId) {
       $modal = $("#deleteURLModal").modal("hide");
       return;
     } else if (buttonId === "deleteURL") {
-      // url delete req here
       $.ajax({
         url: "/delete-required-url/" + dataId,
-        type: "PUT",
-        data: {
-          name: inputValue,
-          csrfmiddlewaretoken: csrftoken,
-        },
+        type: "POST",
         headers: {
           "X-CSRFToken": csrftoken,
         },
         success: function (data) {
-          // console.log("Success:", data);
-          $(".collectionName").text(`${data.name}`);
-          toastr.success("Name Updated!");
+          window.location.reload();
         },
         error: function (xhr, textStatus, errorThrown) {
-          // console.log("Error:", errorThrown);
-          toastr.error("Error updating name.");
+          console.log("Error:", errorThrown);
+          toastr.error("Error deleting URL.");
         },
       });
     }
@@ -96,7 +90,7 @@ $(document).ready(function () {
   $("body").on("click", ".urlDeleteButton", function (e) {
     e.preventDefault();
     var dataId = $(this).data("id");
-    handleDeleteURLButtonClick(dataId);
+    handleDeleteURLButtonClick(dataId.id, dataId.url);
   });
 });
 
