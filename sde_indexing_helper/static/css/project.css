@@ -357,3 +357,9 @@ body {
   box-shadow: 0px 8px 16px 0px #0037FA4D;
 
 }
+
+.pageTitle{
+  font-size:56px;
+  color:white;
+  font-weight:500;
+ }

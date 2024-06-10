@@ -279,11 +279,7 @@ letter-spacing: -0.02em;
     font-weight: 500;
    }
 
-   .pageTitle{
-    font-size:56px;
-    color:white;
-    font-weight:500;
-   }
+
    
    .custom-select, .buttons-csv, .customizeColumns, .addPattern{
     border-style: solid !important;
