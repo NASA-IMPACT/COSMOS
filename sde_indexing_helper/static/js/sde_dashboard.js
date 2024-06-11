@@ -369,5 +369,77 @@ const pieChartData = {
 
   const doughnutChart = new Chart(pieChart, {
     type: 'doughnut',
-    data: pieChartData
+    data: pieChartData,
+    options: {
+
+        plugins: {
+            legend: {
+                display: true,
+                position:'bottom'
+            },
+            title: {
+                display: true,
+                text: 'Workflow Status Completion',
+                position: 'top',
+                padding: 20,
+                align: 'start',
+                color: '#A7BACD',
+                font: {
+                    family: 'sans-serif',
+                    size: 14,
+                    weight: '400',
+                },
+            },
+        },
+    }
+
   });
+
+  let timeSpentChart = document.getElementById("timeSpentChart").getContext("2d");
+
+
+const timeLabels = ["12 AM", "8 AM", "4 PM", "11 PM"];
+
+const timeSpentData = {
+    labels: timeLabels,
+    datasets: [{
+        label: 'Total time spent',
+        data: [250, 390, 400, 81],
+        fill: true,
+        borderColor: '#65B1EF',
+        tension: 0.1
+    }]
+};
+
+const stackedLine4 = new Chart(timeSpentChart, {
+    type: 'line',
+    data: timeSpentData,
+    options: {
+
+        plugins: {
+            legend: {
+                display: false
+            },
+            title: {
+                display: true,
+                text: 'Total time spent',
+                position: 'top',
+                align: 'start',
+                color: '#A7BACD',
+                font: {
+                    family: 'sans-serif',
+                    size: 14,
+                    weight: '400',
+                },
+            },
+        },
+        scales: {
+            y: {
+                stacked: true,
+                grid: {
+                    color: '#A7BACD'
+                }
+            }
+        }
+    }
+});
