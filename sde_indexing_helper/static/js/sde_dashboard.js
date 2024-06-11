@@ -213,11 +213,9 @@ const barChart = new Chart(workflowChart, {
             y: {
                 beginAtZero: true,
             },
-            x: {  // not 'xAxes: [{' anymore (not an array anymore)
+            x: { 
                 ticks: {
-                    color: "white",  // not 'fontColor:' anymore
-                    //fontSize: 14,
-
+                    color: "white", 
                     beginAtZero: true
                 }
             }
@@ -227,4 +225,149 @@ const barChart = new Chart(workflowChart, {
 });
 ///////////////////////////////////////////////////////////////
 ///////////////// Curator /////////////////////////
+let sdeChart = document.getElementById("sdeChart").getContext("2d");
 
+const stackedLine3 = new Chart(sdeChart, {
+    type: 'line',
+    data: divisionData,
+    options: {
+
+        plugins: {
+            legend: {
+                display: false
+            },
+            title: {
+                display: true,
+                text: 'Total SDE Entries',
+                position: 'top',
+                align: 'start',
+                color: '#A7BACD',
+                font: {
+                    family: 'sans-serif',
+                    size: 14,
+                    weight: '400',
+                },
+            },
+            subtitle: {
+                display: true,
+                position: 'top',
+                align: 'start',
+                padding: 10,
+                text: '3000',
+                color: '#65B1EF',
+                font: {
+                    size: 24,
+                    family: 'sans-serif',
+                    weight: '700',
+                },
+            },
+        },
+        scales: {
+            y: {
+                stacked: true,
+                grid: {
+                    color: '#A7BACD'
+                }
+            }
+        }
+    }
+});
+ASTROPHYSICS = 1, "Astrophysics"
+BIOLOGY = 2, "Biological and Physical Sciences"
+EARTH_SCIENCE = 3, "Earth Science"
+HELIOPHYSICS = 4, "Heliophysics"
+PLANETARY = 5, "Planetary Science"
+GENERAL = 6, "General"
+
+let divisionChart2 = document.getElementById("divisionChart2").getContext("2d");
+
+const division2Data = {
+    labels: ["Astrophysics", "Biological and Physical Sciences", "Earth Science",
+    "Heliophysics", "Planetary Science", "General"
+    ],
+    datasets: [{
+        label: 'Workflow Status Counts',
+        data: [25, 90, 120, 12, 56, 132],
+        backgroundColor: [
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+        ],
+        borderColor: [
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+        ],
+        borderWidth: 1
+
+    }]
+};
+
+const barChart2 = new Chart(divisionChart2, {
+    type: 'bar',
+    data: division2Data,
+    options: {
+
+        plugins: {
+            legend: {
+                display: false
+            },
+            title: {
+                display: true,
+                text: 'Division Counts',
+                position: 'top',
+                padding: 20,
+                align: 'start',
+                color: '#A7BACD',
+                font: {
+                    family: 'sans-serif',
+                    size: 14,
+                    weight: '400',
+                },
+            },
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+            },
+            x: {
+                ticks: {
+                    color: "white",
+                    beginAtZero: true
+                }
+            }
+
+        }
+    }
+});
+
+let pieChart = document.getElementById("pieChart").getContext("2d");
+
+const pieChartData = {
+    labels: [
+      'Not Started',
+      'Started',
+      'Completed'
+    ],
+    datasets: [{
+      label: 'Workflow Status Completion',
+      data: [300, 50, 100],
+      backgroundColor: [
+        '#F4C534',
+        '#09B66D',
+        '#65B1EF'
+      ],
+      hoverOffset: 4
+    }]
+  };
+
+  const doughnutChart = new Chart(pieChart, {
+    type: 'doughnut',
+    data: pieChartData
+  });
