@@ -211,6 +211,15 @@ color:black;
     border-radius: 4px;
     border: none;
     height: 29px;
+    width: 400px;
+   }
+
+   .button-wrapper {
+    justify-content: center;
+   }
+
+   .bold {
+    font-weight: 600;
    }
 
    .modal-header {
