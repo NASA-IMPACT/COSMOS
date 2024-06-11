@@ -1,7 +1,12 @@
 {% extends "layouts/base_auth.html" %}
 
 {% load i18n %}
+{% load static i18n %}
 {% load crispy_forms_tags %}
+{% block javascripts %}
+    {{ block.super }}
+     <script src="{% static 'js/signup.js' %}"></script>
+{% endblock javascripts %}
 
 {% block head_title %}{% translate "Signup" %}{% endblock %}
 
@@ -30,6 +35,14 @@
             </ul>
           </div>
         {% endif %}
+        <!-- <div id="manual-errors"></div> -->
+        <div class="alert alert-danger manual-errors" style="display:none;">
+          <ul class="signup-errors">
+                <li id="manual-errors">
+                  Passwords do not match.
+                </li>
+          </ul>
+        </div>
           {% if redirect_field_value %}
           <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
           {% endif %}
