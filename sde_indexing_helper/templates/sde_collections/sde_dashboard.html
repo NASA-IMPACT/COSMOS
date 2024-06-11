@@ -33,11 +33,29 @@
 
     <div class="tab-content">
         <div class="tab-pane active" id="Division-Metrics">
-            <canvas id="chart" width="1000" height="400"></canvas>
+            <div class="filterDiv">
+                <select  class="selectStyling divisionDropdown">
+                    <option value="0">Select Division</option>
+                    <option value="1">
+                        Astrophysics</option>
+                    <option value="2" >
+                        Biological and Physical Sciences</option>
+                    <option value="3">Earth
+                        Science</option>
+                    <option value="4">
+                        Heliophysics</option>
+                    <option value="5">
+                        Planetary Science</option>
+                    <option value="6" >General
+                    </option>
+                </select>
+            </div>
+            <canvas id="divisionChart" width="1000" height="400"></canvas>
 
             </div>
 
             <div class="tab-pane fade" id="Candidate-URLs">
+                <canvas id="urlChart" width="1000" height="400"></canvas>
 
                 </div>
 

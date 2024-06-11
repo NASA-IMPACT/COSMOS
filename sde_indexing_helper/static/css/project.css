@@ -603,3 +603,8 @@ div > .nav {
   padding-bottom: 15px;
   border-bottom: 1px solid #F8FAFB;
 }
+
+.divisionDropdown {
+  appearance: auto !important;
+  padding:10px;
+}

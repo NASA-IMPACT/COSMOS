@@ -99,9 +99,6 @@
   .select-dropdown.focus {
     box-shadow: none, 0 0 0 0.2rem rgba(76, 175, 80, 0.5);
   }
-  
- 
-
 
 /* badge showing workflow status by header */
 .badge {
