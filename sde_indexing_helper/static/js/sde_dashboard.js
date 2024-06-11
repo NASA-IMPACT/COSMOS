@@ -62,8 +62,6 @@ const stackedLine = new Chart(divisionChart, {
 });
 /////////////////////////////////////////////
 ////// candidiate urls /////////////////////
-
-
 let urlChart = document.getElementById("urlChart").getContext("2d");
 
 const urlData = {
@@ -122,3 +120,111 @@ const stackedLine2 = new Chart(urlChart, {
         }
     }
 });
+//////////////////////////////////////////////////////////////
+/////////////// Workflow status ///////////////////////////////
+let workflowChart = document.getElementById("workflowChart").getContext("2d");
+
+const workflowData = {
+    labels: ["Research in Progress", "Ready for Engineering", "Engineering in Progress", "Ready for Curation",
+        "Curation in Progress",
+        "Curated",
+        "Quality Fixed",
+        "Secret Deployment Started",
+        "Secret Deployment Failed",
+        "Ready for LRM Quality Check",
+        "Ready for Quality Check",
+        "Quality Check Failed",
+        "Ready for Public Production",
+        "Perfect and on Production",
+        "Low Priority Problems on Production",
+        "High Priority Problems on Production, only for old sources",
+        "Code Merge Pending"
+    ],
+    datasets: [{
+        label: 'Workflow Status Counts',
+        data: [651, 59, 800, 81, 56, 550, 40, 430, 7, 50, 120, 520, 13, 14, 15, 16, 17],
+        backgroundColor: [
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+        ],
+        borderColor: [
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+            '#65B1EF',
+        ],
+        borderWidth: 1
+
+    }]
+};
+
+const barChart = new Chart(workflowChart, {
+    type: 'bar',
+    data: workflowData,
+    options: {
+
+        plugins: {
+            legend: {
+                display: false
+            },
+            title: {
+                display: true,
+                text: 'Workflow Status Counts',
+                position: 'top',
+                padding: 20,
+                align: 'start',
+                color: '#A7BACD',
+                font: {
+                    family: 'sans-serif',
+                    size: 14,
+                    weight: '400',
+                },
+            },
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+            },
+            x: {  // not 'xAxes: [{' anymore (not an array anymore)
+                ticks: {
+                    color: "white",  // not 'fontColor:' anymore
+                    //fontSize: 14,
+
+                    beginAtZero: true
+                }
+            }
+
+        }
+    }
+});
+///////////////////////////////////////////////////////////////
+///////////////// Curator /////////////////////////
+

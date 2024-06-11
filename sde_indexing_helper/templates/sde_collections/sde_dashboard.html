@@ -10,6 +10,7 @@
 {% endblock stylesheets %}
 
 {% block content %}
+
 <br>
 <h1 class="pageTitle">SDE Dashboard</h1>
 <div class="dashboardContainer">
@@ -61,11 +62,23 @@
 
 
                 <div class="tab-pane fade" id="Workflow-Status">
+                    <canvas id="workflowChart" width="1000" height="400"></canvas>
 
                 </div>
 
                 <div class="tab-pane fade" id="Curator">
+          <div class="col-md-8">
+            <canvas id="sdeChart" width="800" height="200"></canvas>
+             <br />
+             <canvas id="divisionChart2" width="800" height="200"></canvas>
 
+          </div>
+          <div class="col-md-4">
+            <canvas id="pieChart" width="200" height="200"></canvas>
+             <br />
+             <canvas id="timeSpentChart" width="200" height="200"></canvas>
+
+          </div>
                 </div>
 
             </div>
