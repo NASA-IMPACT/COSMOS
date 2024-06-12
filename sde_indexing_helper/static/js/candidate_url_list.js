@@ -162,7 +162,7 @@ function initializeDataTable() {
 
               if (filtersAreEmpty) return alteredLines.join("\n");
               else {
-                // Add filter information in the footer
+                // Add filter information to the first row
                 const secondRowFilters = [
                   "Export of SDE Candidate URLs",
                   `"(Applied Filters: ${appliedFilt
