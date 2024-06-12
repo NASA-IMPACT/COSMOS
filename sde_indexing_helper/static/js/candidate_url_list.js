@@ -114,8 +114,77 @@ function initializeDataTable() {
           ],
         },
         buttons: [
-          "spacer",
-          "csv",
+          {
+            extend: "csv",
+            exportOptions: {
+              columns: [0, 11, 2, 12, 10],
+            },
+            customize: function (csv) {
+              var lines = csv.split("\n");
+
+              // Reorder the header columns
+              var headers = lines[0].split(",");
+              headers[4] = "New Title";
+              var reorderedHeaders = [
+                headers[0],
+                headers[3],
+                headers[1],
+                headers[4],
+                headers[2],
+              ];
+              lines[0] = reorderedHeaders.join(",");
+
+              const appliedFilt = [
+                [`URL:`, `${$("#candidateUrlFilter").val()}`.trim()],
+                [`Exclude:`, `${$(".dropdown-1").val()}`.trim()],
+                [
+                  `Scraped Title:`,
+                  `${$("#candidateScrapedTitleFilter").val()}`.trim(),
+                ],
+                [`New Title:`, `${$("#candidateNewTitleFilter").val()}`.trim()],
+                [`Document Type:`, `${dict[$(".dropdown-4").val()]}`.trim()],
+              ];
+
+              const filtersAreEmpty = appliedFilt.every((filter) => {
+                return filter[1] === "" || filter[1] === "undefined";
+              });
+
+              // Remove the second row with the filters
+              if (lines.length > 2) {
+                lines.splice(1, 1);
+              }
+              let alteredLines = [];
+              lines.forEach((line) => {
+                let newLine = "";
+                newLine = line.replace("open_in_new", "");
+                alteredLines.push(newLine);
+              });
+
+              if (filtersAreEmpty) return alteredLines.join("\n");
+              else {
+                // Add filter information to the first row
+                const secondRowFilters = [
+                  "Export of SDE Candidate URLs",
+                  `"(Applied Filters: ${appliedFilt
+                    .reduce((acc, curr) => {
+                      if (
+                        curr[1] !== " undefined" &&
+                        curr[1] !== " " &&
+                        curr[1] !== "" &&
+                        curr[1] !== "undefined"
+                      ) {
+                        acc = `${acc}, ${curr[0]} ${curr[1]}`;
+                      }
+                      return acc;
+                    }, "")
+                    .slice(2)})"`,
+                ];
+
+                var appliedFiltersInfo = secondRowFilters.join("\n");
+                return appliedFiltersInfo + "\n" + alteredLines.join("\n");
+              }
+            },
+          },
           "spacer",
           {
             text: "Customize Columns",
@@ -130,62 +199,6 @@ function initializeDataTable() {
     serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
-    buttons: [
-      {
-        extend: "csv",
-        exportOptions: {
-          columns: [0, 11, 2, 12, 10],
-        },
-        customize: function (csv) {
-          var lines = csv.split("\n");
-          // Reorder the header columns
-          var headers = lines[0].split(",");
-          var reorderedHeaders = [
-            headers[0],
-            headers[3],
-            headers[4],
-            headers[1],
-            headers[2],
-          ];
-          lines[0] = reorderedHeaders.join(",");
-
-          // Add filter information in the footer
-          const secondRowFilters = [
-            "Applied filters:",
-            `URL: ${$("#candidateUrlFilter").val() || "No input"}`,
-            `Exclude: ${$(".dropdown-1").val() || "No selection"}`,
-            `Scraped Title: ${
-              $("#candidateNewTitleFilter").val() || "No input"
-            }`,
-            `New Title: ${dict[$(".dropdown-5").val()] || "No input"}`,
-            `Document Type: ${
-              $("#candidateScrapedTitleFilter").val() || "No selection"
-            }`,
-          ];
-          var appliedFiltersInfo = secondRowFilters.join("\n");
-
-          // Remove the second row with the filters
-          if (lines.length > 2) {
-            lines.splice(1, 1);
-          }
-          let alteredLines = [];
-          lines.forEach((line) => {
-            let newLine = "";
-            newLine = line.replace("open_in_new", "");
-            alteredLines.push(newLine);
-          });
-          return alteredLines.join("\n") + appliedFiltersInfo;
-        },
-      },
-      "spacer",
-      {
-        text: "Customize Columns",
-        className: "customizeColumns",
-        action: function () {
-          modalContents("#candidate_urls_table");
-        },
-      },
-    ],
     rowId: "url",
     stateLoadCallback: function (settings) {
       var state = JSON.parse(
