@@ -446,3 +446,10 @@ div.dt-buttons .btn.processing:after {
    .dropdown-item:hover{
     background-color: #0066CA !important;
    }
+
+
+/* pagination position */
+div.dt-container div.dt-paging ul.pagination {
+    position: absolute;
+    right: 60px;
+}
