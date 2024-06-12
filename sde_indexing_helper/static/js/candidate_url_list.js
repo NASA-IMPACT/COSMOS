@@ -13,6 +13,8 @@ var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
   "Multi-URL Pattern": 2,
 };
+var currentURLtoDelete;
+
 var uniqueId; //used for logic related to contents on column customization modal
 const dict = {
   1: "Images",
@@ -112,8 +114,77 @@ function initializeDataTable() {
           ],
         },
         buttons: [
-          "spacer",
-          "csv",
+          {
+            extend: "csv",
+            exportOptions: {
+              columns: [0, 11, 2, 12, 10],
+            },
+            customize: function (csv) {
+              var lines = csv.split("\n");
+
+              // Reorder the header columns
+              var headers = lines[0].split(",");
+              headers[4] = "New Title";
+              var reorderedHeaders = [
+                headers[0],
+                headers[3],
+                headers[1],
+                headers[4],
+                headers[2],
+              ];
+              lines[0] = reorderedHeaders.join(",");
+
+              const appliedFilt = [
+                [`URL:`, `${$("#candidateUrlFilter").val()}`.trim()],
+                [`Exclude:`, `${$(".dropdown-1").val()}`.trim()],
+                [
+                  `Scraped Title:`,
+                  `${$("#candidateScrapedTitleFilter").val()}`.trim(),
+                ],
+                [`New Title:`, `${$("#candidateNewTitleFilter").val()}`.trim()],
+                [`Document Type:`, `${dict[$(".dropdown-4").val()]}`.trim()],
+              ];
+
+              const filtersAreEmpty = appliedFilt.every((filter) => {
+                return filter[1] === "" || filter[1] === "undefined";
+              });
+
+              // Remove the second row with the filters
+              if (lines.length > 2) {
+                lines.splice(1, 1);
+              }
+              let alteredLines = [];
+              lines.forEach((line) => {
+                let newLine = "";
+                newLine = line.replace("open_in_new", "");
+                alteredLines.push(newLine);
+              });
+
+              if (filtersAreEmpty) return alteredLines.join("\n");
+              else {
+                // Add filter information to the first row
+                const secondRowFilters = [
+                  "Export of SDE Candidate URLs",
+                  `"(Applied Filters: ${appliedFilt
+                    .reduce((acc, curr) => {
+                      if (
+                        curr[1] !== " undefined" &&
+                        curr[1] !== " " &&
+                        curr[1] !== "" &&
+                        curr[1] !== "undefined"
+                      ) {
+                        acc = `${acc}, ${curr[0]} ${curr[1]}`;
+                      }
+                      return acc;
+                    }, "")
+                    .slice(2)})"`,
+                ];
+
+                var appliedFiltersInfo = secondRowFilters.join("\n");
+                return appliedFiltersInfo + "\n" + alteredLines.join("\n");
+              }
+            },
+          },
           "spacer",
           {
             text: "Customize Columns",
@@ -128,62 +199,6 @@ function initializeDataTable() {
     serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
-    buttons: [
-      {
-        extend: "csv",
-        exportOptions: {
-          columns: [0, 11, 2, 12, 10],
-        },
-        customize: function (csv) {
-          var lines = csv.split("\n");
-          // Reorder the header columns
-          var headers = lines[0].split(",");
-          var reorderedHeaders = [
-            headers[0],
-            headers[3],
-            headers[4],
-            headers[1],
-            headers[2],
-          ];
-          lines[0] = reorderedHeaders.join(",");
-
-          // Add filter information in the footer
-          const secondRowFilters = [
-            "Applied filters:",
-            `URL: ${$("#candidateUrlFilter").val() || "No input"}`,
-            `Exclude: ${$(".dropdown-1").val() || "No selection"}`,
-            `Scraped Title: ${
-              $("#candidateNewTitleFilter").val() || "No input"
-            }`,
-            `New Title: ${dict[$(".dropdown-5").val()] || "No input"}`,
-            `Document Type: ${
-              $("#candidateScrapedTitleFilter").val() || "No selection"
-            }`,
-          ];
-          var appliedFiltersInfo = secondRowFilters.join("\n");
-
-          // Remove the second row with the filters
-          if (lines.length > 2) {
-            lines.splice(1, 1);
-          }
-          let alteredLines = [];
-          lines.forEach((line) => {
-            let newLine = "";
-            newLine = line.replace("open_in_new", "");
-            alteredLines.push(newLine);
-          });
-          return alteredLines.join("\n") + appliedFiltersInfo;
-        },
-      },
-      "spacer",
-      {
-        text: "Customize Columns",
-        className: "customizeColumns",
-        action: function () {
-          modalContents("#candidate_urls_table");
-        },
-      },
-    ],
     rowId: "url",
     stateLoadCallback: function (settings) {
       var state = JSON.parse(
@@ -849,9 +864,10 @@ function handleExcludeIndividualUrlClick() {
 
 function handleDeleteExcludePatternButtonClick() {
   $("body").on("click", ".delete-exclude-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    var patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/exclude-patterns/${patternRowId}/`;
     deletePattern(
-      `/api/exclude-patterns/${row_id}/`,
+      `/api/exclude-patterns/${patternRowId}/`,
       (data_type = "Exclude Pattern")
     );
   });
@@ -859,9 +875,10 @@ function handleDeleteExcludePatternButtonClick() {
 
 function handleDeleteIncludePatternButtonClick() {
   $("body").on("click", ".delete-include-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    var patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/include-patterns/${patternRowId}/`;
     deletePattern(
-      `/api/include-patterns/${row_id}/`,
+      `/api/include-patterns/${patternRowId}/`,
       (data_type = "Include Pattern")
     );
   });
@@ -869,9 +886,10 @@ function handleDeleteIncludePatternButtonClick() {
 
 function handleDeleteTitlePatternButtonClick() {
   $("body").on("click", ".delete-title-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    var patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/title-patterns/${patternRowId}/`;
     deletePattern(
-      `/api/title-patterns/${row_id}/`,
+      `/api/title-patterns/${patternRowId}/`,
       (data_type = "Title Pattern")
     );
   });
@@ -879,9 +897,10 @@ function handleDeleteTitlePatternButtonClick() {
 
 function handleDeleteDocumentTypeButtonClick() {
   $("body").on("click", ".delete-document-type-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/document-type-patterns/${patternRowId}/`;
     deletePattern(
-      `/api/document-type-patterns/${row_id}/`,
+      `/api/document-type-patterns/${patternRowId}/`,
       (data_type = "Document Type Pattern")
     );
   });
@@ -902,6 +921,7 @@ function handleNewTitleChange() {
     var match_pattern_type = $(this).data("match-pattern-type");
     var candidate_urls_count = $(this).data("candidate-urls-count");
     if (!title_pattern) {
+      currentURLtoDelete = `/api/title-patterns/${generated_title_id}/`;
       deletePattern(
         `/api/title-patterns/${generated_title_id}/`,
         (data_type = "Title Pattern"),
@@ -1146,10 +1166,77 @@ function deletePattern(
       `YOU ARE ATTEMPTING TO DELETE A MULTI-URL PATTERN. THIS WILL AFFECT ${candidate_urls_count} URLs. \n\nAre you sure you want to do this? Currently there is no way to delete a single URL from a Multi-URL pattern`
     );
   } else {
-    var confirmDelete = confirm(
+    $modal = $("#deletePatternModal").modal({
+      backdrop: "static",
+      keyboard: true,
+    });
+
+    $(".delete-pattern-caption").text(
       `Are you sure you want to delete this ${data_type}?`
     );
   }
+
+  $("#deletePatternModal").on("keydown", function (event) {
+    if (event.keyCode === 13) {
+      // Check if the focused element is the button
+      if (
+        document.activeElement.id === "deletePatternModal" &&
+        url === currentURLtoDelete
+      ) {
+        // Simulate a click event on the button
+        $.ajax({
+          url: url,
+          type: "DELETE",
+          data: {
+            csrfmiddlewaretoken: csrftoken,
+          },
+          headers: {
+            "X-CSRFToken": csrftoken,
+          },
+          success: function (data) {
+            $modal = $("#deletePatternModal").modal("hide");
+            $("#candidate_urls_table").DataTable().ajax.reload(null, false);
+            $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+            $("#include_patterns_table").DataTable().ajax.reload(null, false);
+            $("#title_patterns_table").DataTable().ajax.reload(null, false);
+            $("#document_type_patterns_table")
+              .DataTable()
+              .ajax.reload(null, false);
+          },
+        });
+      }
+    }
+  });
+
+  $("#deletePatternModalForm").on("click", "button", function (event) {
+    event.preventDefault();
+    var buttonId = $(this).attr("id");
+    if (buttonId === "dontDeletePattern") {
+      $modal = $("#deletePatternModal").modal("hide");
+      return;
+    } else if (buttonId === "deletePattern" && url === currentURLtoDelete) {
+      $.ajax({
+        url: url,
+        type: "DELETE",
+        data: {
+          csrfmiddlewaretoken: csrftoken,
+        },
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        success: function (data) {
+          $("#candidate_urls_table").DataTable().ajax.reload(null, false);
+          $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+          $("#include_patterns_table").DataTable().ajax.reload(null, false);
+          $("#title_patterns_table").DataTable().ajax.reload(null, false);
+          $("#document_type_patterns_table")
+            .DataTable()
+            .ajax.reload(null, false);
+        },
+      });
+    }
+  });
+
   if (!confirmDelete) {
     return;
   }

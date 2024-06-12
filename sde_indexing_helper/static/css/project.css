@@ -186,12 +186,16 @@ body {
 
 .dt-scroll{
   background-color: #15232E !important;
+  height: 100% !important;
 }
 
 .dt-scroll-body{
-  height:min-content !important;
+  height:100% !important;
 }
 
+.dtsp-searchPane .justify-content-md-center {
+  height: 198px !important;
+}
 
  .table > tbody > tr > td {
   border:none;
@@ -577,6 +581,10 @@ height: 38px;
   padding-right: 25px;
   padding-left: 25px;
   font-weight: 500;
+}
+
+.dropdown-menu {
+  z-index: 1030;
 }
 
 /* tab headers hover effect */

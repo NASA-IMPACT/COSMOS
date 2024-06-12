@@ -2,6 +2,7 @@ var collection_id;
 var newDivisionVal;
 var currentDivisionVal;
 var currentDivisonText;
+var currentUrlToDelete; 
 
 let originalValue = document.getElementById("github-link-display").textContent;
 document.getElementById("github-link-form").style.display = "none";
@@ -52,6 +53,81 @@ function postDocTypeChange(collection_id, docType) {
     },
   });
 }
+
+
+// Toast for changing workflow status
+$(document).ready(function() {
+  if (localStorage.getItem("WorkflowStatusChange")) {
+    toastr.success("Workflow Status Updated!");
+    localStorage.removeItem("WorkflowStatusChange")
+
+  }
+})
+
+//////////////////////////////
+///// DELETE URL CHANGE //////
+//////////////////////////////
+
+function handleDeleteURLButtonClick(dataId, dataURL) {
+  $modal = $("#deleteURLModal").modal();
+  $(".delete-URL-caption").text(`Are you sure you want to delete ${dataURL}?`);
+  $("#deleteURLModal").on("keydown", function (event) {
+    if (event.keyCode === 13) {
+      // Check if the focused element is the button
+      if (document.activeElement.id === "deleteURLModal") {
+        // Simulate a click event on the button
+        $.ajax({
+          url: "/delete-required-url/" + dataId,
+          type: "POST",
+          headers: {
+            "X-CSRFToken": csrftoken,
+          },
+          success: function (data) {
+            window.location.reload();
+          },
+          error: function (xhr, textStatus, errorThrown) {
+            console.log("Error:", errorThrown);
+            toastr.error("Error deleting URL.");
+          },
+        });
+      }
+    }
+  });
+
+  $("#deleteURLModalForm").on("click", "button", function (event) {
+    event.preventDefault();
+    var buttonId = $(this).attr("id");
+
+    if (buttonId === "cancelURLDeletion") {
+      $modal = $("#deleteURLModal").modal("hide");
+      return;
+    } else if (buttonId === "deleteURL" && dataId === currentUrlToDelete) {
+      $.ajax({
+        url: "/delete-required-url/" + dataId,
+        type: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        success: function (data) {
+          window.location.reload();
+        },
+        error: function (xhr, textStatus, errorThrown) {
+          console.log("Error:", errorThrown);
+          toastr.error("Error deleting URL.");
+        },
+      });
+    }
+  });
+}
+
+$(document).ready(function () {
+  $("body").on("click", ".urlDeleteButton", function (e) {
+    e.preventDefault();
+    var dataId = $(this).data("id");
+    currentUrlToDelete = dataId.id;
+    handleDeleteURLButtonClick(dataId.id, dataId.url);
+  });
+});
 
 //////////////////////////////
 ///// DIVISION CHANGE ////////
@@ -216,6 +292,59 @@ $(document).ready(function () {
   });
 });
 
+const $timeline = $("#timeline");
+
+function checkArrows() {
+  const scrollLeft = $timeline.scrollLeft();
+  const maxScrollLeft = $timeline[0].scrollWidth - $timeline[0].clientWidth;
+
+  if (scrollLeft === 0) {
+      $('#left-arrow').hide();
+  } else {
+      $('#left-arrow').show();
+  }
+
+  if (scrollLeft >= maxScrollLeft) {
+      $('#right-arrow').hide();
+  } else {
+      $('#right-arrow').show();
+  }
+}
+
+// Clicking on left right arrows to move timeline
+$(document).ready(function() {
+  $("#left-arrow").click(function() {
+      $("#timeline").scrollLeft($("#timeline").scrollLeft() - 510);
+      checkArrows();
+  });
+
+  $("#right-arrow").click(function() {
+      $("#timeline").scrollLeft($("#timeline").scrollLeft() + 510);
+      checkArrows();
+  });
+});
+
+$timeline.on("scroll", checkArrows);
+
+
+// Scroll to center the highlighted cell
+function centerHighlighted() {
+    const $timeline = $("#timeline");
+    const $highlighted = $timeline.find(".highlight");
+    
+    if ($highlighted.length) {
+        const timelineWidth = $timeline.width();
+        const highlightedOffset = $highlighted.offset().left - $timeline.offset().left;
+        const highlightedWidth = $highlighted.outerWidth(true);
+        const scrollLeft = $timeline.scrollLeft();
+        const centerPosition = highlightedOffset - (timelineWidth / 2) + (highlightedWidth / 2);
+        
+        $timeline.scrollLeft(scrollLeft + centerPosition);
+    }
+}
+
+centerHighlighted();
+
 function postWorkflowStatus(collection_id, workflow_status) {
   var url = `/api/collections/${collection_id}/`;
   $.ajax({
@@ -229,7 +358,8 @@ function postWorkflowStatus(collection_id, workflow_status) {
       "X-CSRFToken": csrftoken,
     },
     success: function (data) {
-      toastr.success("Workflow Status Updated!");
+      localStorage.setItem("WorkflowStatusChange", data.OperationStatus);
+      location.reload();
     },
   });
 }
