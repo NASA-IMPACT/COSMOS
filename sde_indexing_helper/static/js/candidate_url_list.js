@@ -13,6 +13,8 @@ var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
   "Multi-URL Pattern": 2,
 };
+var currentURLtoDelete;
+
 var uniqueId; //used for logic related to contents on column customization modal
 const dict = {
   1: "Images",
@@ -350,7 +352,12 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
       },
-      { data: "reason", class: "text-center whiteText", sortable: false },
+      {
+        data: "reason",
+        class: "text-center whiteText",
+        sortable: false,
+        visible: false,
+      },
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
@@ -369,19 +376,13 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateMatchPatternFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      exclude_patterns_table.columns(0).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateMatchPatternFilter").on("keyup", function () {
+    exclude_patterns_table.columns(0).search(this.value).draw();
+  });
 
-  $("#candidateReasonFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      exclude_patterns_table.columns(2).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateReasonFilter").on("keyup", function () {
+    exclude_patterns_table.columns(2).search(this.value).draw();
+  });
 
   var include_patterns_table = $("#include_patterns_table").DataTable({
     // scrollY: true,
@@ -455,12 +456,9 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateIncludeMatchPatternFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      include_patterns_table.columns(0).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateIncludeMatchPatternFilter").on("keyup", function () {
+    include_patterns_table.columns(0).search(this.value).draw();
+  });
 
   var title_patterns_table = $("#title_patterns_table").DataTable({
     // scrollY: true,
@@ -536,19 +534,13 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateTitleMatchPatternFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      title_patterns_table.columns(0).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateTitleMatchPatternFilter").on("keyup", function (val) {
+    title_patterns_table.columns(0).search(this.value).draw();
+  });
 
-  $("#candidateTitlePatternTypeFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      title_patterns_table.columns(2).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateTitlePatternTypeFilter").on("keyup", function (val) {
+    title_patterns_table.columns(2).search(this.value).draw();
+  });
 
   var document_type_patterns_table = $(
     "#document_type_patterns_table"
@@ -656,12 +648,9 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateDocTypeMatchPatternFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      document_type_patterns_table.columns(0).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateDocTypeMatchPatternFilter").on("keyup", function (val) {
+    document_type_patterns_table.columns(0).search(this.value).draw();
+  });
 }
 
 function handleTabsClick() {
@@ -863,9 +852,10 @@ function handleExcludeIndividualUrlClick() {
 
 function handleDeleteExcludePatternButtonClick() {
   $("body").on("click", ".delete-exclude-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    var patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/exclude-patterns/${patternRowId}/`;
     deletePattern(
-      `/api/exclude-patterns/${row_id}/`,
+      `/api/exclude-patterns/${patternRowId}/`,
       (data_type = "Exclude Pattern")
     );
   });
@@ -873,9 +863,10 @@ function handleDeleteExcludePatternButtonClick() {
 
 function handleDeleteIncludePatternButtonClick() {
   $("body").on("click", ".delete-include-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    var patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/include-patterns/${patternRowId}/`;
     deletePattern(
-      `/api/include-patterns/${row_id}/`,
+      `/api/include-patterns/${patternRowId}/`,
       (data_type = "Include Pattern")
     );
   });
@@ -883,9 +874,10 @@ function handleDeleteIncludePatternButtonClick() {
 
 function handleDeleteTitlePatternButtonClick() {
   $("body").on("click", ".delete-title-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    var patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/title-patterns/${patternRowId}/`;
     deletePattern(
-      `/api/title-patterns/${row_id}/`,
+      `/api/title-patterns/${patternRowId}/`,
       (data_type = "Title Pattern")
     );
   });
@@ -893,9 +885,10 @@ function handleDeleteTitlePatternButtonClick() {
 
 function handleDeleteDocumentTypeButtonClick() {
   $("body").on("click", ".delete-document-type-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/document-type-patterns/${patternRowId}/`;
     deletePattern(
-      `/api/document-type-patterns/${row_id}/`,
+      `/api/document-type-patterns/${patternRowId}/`,
       (data_type = "Document Type Pattern")
     );
   });
@@ -916,6 +909,7 @@ function handleNewTitleChange() {
     var match_pattern_type = $(this).data("match-pattern-type");
     var candidate_urls_count = $(this).data("candidate-urls-count");
     if (!title_pattern) {
+      currentURLtoDelete = `/api/title-patterns/${generated_title_id}/`;
       deletePattern(
         `/api/title-patterns/${generated_title_id}/`,
         (data_type = "Title Pattern"),
@@ -1160,10 +1154,77 @@ function deletePattern(
       `YOU ARE ATTEMPTING TO DELETE A MULTI-URL PATTERN. THIS WILL AFFECT ${candidate_urls_count} URLs. \n\nAre you sure you want to do this? Currently there is no way to delete a single URL from a Multi-URL pattern`
     );
   } else {
-    var confirmDelete = confirm(
+    $modal = $("#deletePatternModal").modal({
+      backdrop: "static",
+      keyboard: true,
+    });
+
+    $(".delete-pattern-caption").text(
       `Are you sure you want to delete this ${data_type}?`
     );
   }
+
+  $("#deletePatternModal").on("keydown", function (event) {
+    if (event.keyCode === 13) {
+      // Check if the focused element is the button
+      if (
+        document.activeElement.id === "deletePatternModal" &&
+        url === currentURLtoDelete
+      ) {
+        // Simulate a click event on the button
+        $.ajax({
+          url: url,
+          type: "DELETE",
+          data: {
+            csrfmiddlewaretoken: csrftoken,
+          },
+          headers: {
+            "X-CSRFToken": csrftoken,
+          },
+          success: function (data) {
+            $modal = $("#deletePatternModal").modal("hide");
+            $("#candidate_urls_table").DataTable().ajax.reload(null, false);
+            $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+            $("#include_patterns_table").DataTable().ajax.reload(null, false);
+            $("#title_patterns_table").DataTable().ajax.reload(null, false);
+            $("#document_type_patterns_table")
+              .DataTable()
+              .ajax.reload(null, false);
+          },
+        });
+      }
+    }
+  });
+
+  $("#deletePatternModalForm").on("click", "button", function (event) {
+    event.preventDefault();
+    var buttonId = $(this).attr("id");
+    if (buttonId === "dontDeletePattern") {
+      $modal = $("#deletePatternModal").modal("hide");
+      return;
+    } else if (buttonId === "deletePattern" && url === currentURLtoDelete) {
+      $.ajax({
+        url: url,
+        type: "DELETE",
+        data: {
+          csrfmiddlewaretoken: csrftoken,
+        },
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        success: function (data) {
+          $("#candidate_urls_table").DataTable().ajax.reload(null, false);
+          $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+          $("#include_patterns_table").DataTable().ajax.reload(null, false);
+          $("#title_patterns_table").DataTable().ajax.reload(null, false);
+          $("#document_type_patterns_table")
+            .DataTable()
+            .ajax.reload(null, false);
+        },
+      });
+    }
+  });
+
   if (!confirmDelete) {
     return;
   }

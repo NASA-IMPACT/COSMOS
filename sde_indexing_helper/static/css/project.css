@@ -186,12 +186,16 @@ body {
 
 .dt-scroll{
   background-color: #15232E !important;
+  height: 100% !important;
 }
 
 .dt-scroll-body{
-  height:min-content !important;
+  height:100% !important;
 }
 
+.dtsp-searchPane .justify-content-md-center {
+  height: 198px !important;
+}
 
  .table > tbody > tr > td {
   border:none;
@@ -522,7 +526,9 @@ box-shadow: 0px 8px 16px 0px #0037FA4D;
 
 .footer {
   width: 93%;
-  height: 6rem;
+  font-weight: 500;
+  padding: 0;
+  padding-top: 40px;
 }
 
 .footer-container {
@@ -532,6 +538,8 @@ box-shadow: 0px 8px 16px 0px #0037FA4D;
     justify-content: space-between;
     align-items: center;
     padding: 0;
+    padding-top: 25px;
+    padding-bottom: 65px;
 }
 
 .footer-right-side-links {
@@ -563,5 +571,8 @@ height: 38px;
     justify-content: center;
 }
 
+.dropdown-menu {
+  z-index: 1030;
+}
 
 
