@@ -102,7 +102,6 @@ function initializeDataTable() {
     pageLength: 100,
     colReorder: true,
     stateSave: true,
-    fixedHeader: true,
     layout: {
       bottomEnd: "inputPaging",
       topEnd: null,
