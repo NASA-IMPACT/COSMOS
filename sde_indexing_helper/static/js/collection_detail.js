@@ -2,6 +2,7 @@ var collection_id;
 var newDivisionVal;
 var currentDivisionVal;
 var currentDivisonText;
+var currentUrlToDelete; 
 
 let originalValue = document.getElementById("github-link-display").textContent;
 document.getElementById("github-link-form").style.display = "none";
@@ -62,6 +63,71 @@ $(document).ready(function() {
 
   }
 })
+
+//////////////////////////////
+///// DELETE URL CHANGE //////
+//////////////////////////////
+
+function handleDeleteURLButtonClick(dataId, dataURL) {
+  $modal = $("#deleteURLModal").modal();
+  $(".delete-URL-caption").text(`Are you sure you want to delete ${dataURL}?`);
+  $("#deleteURLModal").on("keydown", function (event) {
+    if (event.keyCode === 13) {
+      // Check if the focused element is the button
+      if (document.activeElement.id === "deleteURLModal") {
+        // Simulate a click event on the button
+        $.ajax({
+          url: "/delete-required-url/" + dataId,
+          type: "POST",
+          headers: {
+            "X-CSRFToken": csrftoken,
+          },
+          success: function (data) {
+            window.location.reload();
+          },
+          error: function (xhr, textStatus, errorThrown) {
+            console.log("Error:", errorThrown);
+            toastr.error("Error deleting URL.");
+          },
+        });
+      }
+    }
+  });
+
+  $("#deleteURLModalForm").on("click", "button", function (event) {
+    event.preventDefault();
+    var buttonId = $(this).attr("id");
+
+    if (buttonId === "cancelURLDeletion") {
+      $modal = $("#deleteURLModal").modal("hide");
+      return;
+    } else if (buttonId === "deleteURL" && dataId === currentUrlToDelete) {
+      $.ajax({
+        url: "/delete-required-url/" + dataId,
+        type: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        success: function (data) {
+          window.location.reload();
+        },
+        error: function (xhr, textStatus, errorThrown) {
+          console.log("Error:", errorThrown);
+          toastr.error("Error deleting URL.");
+        },
+      });
+    }
+  });
+}
+
+$(document).ready(function () {
+  $("body").on("click", ".urlDeleteButton", function (e) {
+    e.preventDefault();
+    var dataId = $(this).data("id");
+    currentUrlToDelete = dataId.id;
+    handleDeleteURLButtonClick(dataId.id, dataId.url);
+  });
+});
 
 //////////////////////////////
 ///// DIVISION CHANGE ////////
