@@ -59,8 +59,15 @@ function postDocTypeChange(collection_id, docType) {
 $(document).ready(function() {
   if (localStorage.getItem("WorkflowStatusChange")) {
     toastr.success("Workflow Status Updated!");
-    localStorage.removeItem("WorkflowStatusChange")
+    localStorage.removeItem("WorkflowStatusChange");
+  }
+})
 
+//Scroll position for comments
+$(document).ready(function() {
+  if (localStorage.getItem("commentScroll")) {
+    $(window).scrollTop(localStorage.getItem("commentScroll"));
+    localStorage.removeItem("commentScroll");
   }
 })
 
@@ -401,4 +408,7 @@ function handleWorkflowStatusSelect() {
 
 $(document).ready(function () {
   handleWorkflowStatusSelect();
+  $("button[name='comment_button']").click(function() {
+    localStorage.setItem("commentScroll", $(window).scrollTop());
+  })
 });
