@@ -269,3 +269,7 @@ margin-bottom: 0 !important;
       div.dtsp-searchPane div.dt-container div.dt-scroll-body, div.dtsp-searchPane div.dt-container div.dataTables_scrollBody, div.dtsp-searchPane div.dataTables_wrapper div.dt-scroll-body, div.dtsp-searchPane div.dataTables_wrapper div.dataTables_scrollBody {
         background-color: transparent !important;
       }
+
+      .table.dataTable.fixedHeader-floating{
+        background-color:rgb(21, 35, 46) !important;
+      }
