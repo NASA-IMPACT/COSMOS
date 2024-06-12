@@ -55,7 +55,27 @@ const stackedLine = new Chart(divisionChart, {
                 stacked: true,
                 grid: {
                     color: '#A7BACD'
-                }
+                },
+                ticks: {
+                    color: "white", 
+                    beginAtZero: true
+                },
+                title:{
+                    display:true,
+                    text: 'Number of Entries',
+                    color:'white'
+                } 
+            },
+            x: { 
+                ticks: {
+                    color: "white", 
+                    beginAtZero: true
+                },
+                title:{
+                    display:true,
+                    text: 'Months',
+                    color:'white'
+                } 
             }
         }
     }
@@ -115,7 +135,27 @@ const stackedLine2 = new Chart(urlChart, {
                 stacked: true,
                 grid: {
                     color: '#A7BACD'
-                }
+                },
+                ticks: {
+                    color: "white", 
+                    beginAtZero: true
+                },
+                title:{
+                    display:true,
+                    text: 'Number of URLs',
+                    color:'white'
+                } 
+            },
+            x: {
+                ticks: {
+                    color: "white", 
+                    beginAtZero: true
+                },
+                title:{
+                    display:true,
+                    text: 'Months',
+                    color:'white'
+                } 
             }
         }
     }
@@ -141,7 +181,7 @@ const workflowData = {
         "Code Merge Pending"
     ],
     datasets: [{
-        label: 'Workflow Status Counts',
+        label: 'Total',
         data: [651, 59, 800, 81, 56, 550, 40, 430, 7, 50, 120, 520, 13, 14, 15, 16, 17],
         backgroundColor: [
             '#65B1EF',
@@ -197,7 +237,7 @@ const barChart = new Chart(workflowChart, {
             },
             title: {
                 display: true,
-                text: 'Workflow Status Counts',
+                text: 'Workflow Status Totals',
                 position: 'top',
                 padding: 20,
                 align: 'start',
@@ -212,12 +252,26 @@ const barChart = new Chart(workflowChart, {
         scales: {
             y: {
                 beginAtZero: true,
+                ticks: {
+                    color: "white", 
+                    beginAtZero: true
+                },
+                title:{
+                    display:true,
+                    text: 'Totals',
+                    color:'white'
+                } 
             },
             x: { 
                 ticks: {
                     color: "white", 
                     beginAtZero: true
-                }
+                },
+                title:{
+                    display:true,
+                    text: 'Statuses',
+                    color:'white'
+                } 
             }
 
         }
@@ -267,17 +321,32 @@ const stackedLine3 = new Chart(sdeChart, {
                 stacked: true,
                 grid: {
                     color: '#A7BACD'
-                }
+                },
+                ticks: {
+                    color: "white", 
+                    beginAtZero: true
+                },
+                title:{
+                    display:true,
+                    text: 'Number of Entries',
+                    color:'white'
+                } 
+            },
+            x: {
+                ticks: {
+                    color: "white", 
+                    beginAtZero: true
+                },
+                title:{
+                    display:true,
+                    text: 'Months',
+                    color:'white'
+                } 
             }
         }
     }
 });
-ASTROPHYSICS = 1, "Astrophysics"
-BIOLOGY = 2, "Biological and Physical Sciences"
-EARTH_SCIENCE = 3, "Earth Science"
-HELIOPHYSICS = 4, "Heliophysics"
-PLANETARY = 5, "Planetary Science"
-GENERAL = 6, "General"
+
 
 let divisionChart2 = document.getElementById("divisionChart2").getContext("2d");
 
@@ -286,7 +355,7 @@ const division2Data = {
     "Heliophysics", "Planetary Science", "General"
     ],
     datasets: [{
-        label: 'Workflow Status Counts',
+        label: 'Total',
         data: [25, 90, 120, 12, 56, 132],
         backgroundColor: [
             '#65B1EF',
@@ -320,7 +389,7 @@ const barChart2 = new Chart(divisionChart2, {
             },
             title: {
                 display: true,
-                text: 'Division Counts',
+                text: 'Entries by Division',
                 position: 'top',
                 padding: 20,
                 align: 'start',
@@ -331,16 +400,43 @@ const barChart2 = new Chart(divisionChart2, {
                     weight: '400',
                 },
             },
+            subtitle: {
+                display: true,
+                position: 'top',
+                align: 'start',
+                padding: 10,
+                text: '4561',
+                color: '#65B1EF',
+                font: {
+                    size: 24,
+                    family: 'sans-serif',
+                    weight: '700',
+                },
+            },
         },
         scales: {
             y: {
                 beginAtZero: true,
+                ticks: {
+                    color: "white", 
+                    beginAtZero: true
+                },
+                title:{
+                    display:true,
+                    text: 'Totals',
+                    color:'white'
+                } 
             },
             x: {
                 ticks: {
                     color: "white",
                     beginAtZero: true
-                }
+                },
+                title:{
+                    display:true,
+                    text: 'Divisions',
+                    color:'white'
+                } 
             }
 
         }
@@ -352,8 +448,8 @@ let pieChart = document.getElementById("pieChart").getContext("2d");
 const pieChartData = {
     labels: [
       'Not Started',
-      'Started',
-      'Completed'
+      'In Progress',
+      'In Production'
     ],
     datasets: [{
       label: 'Workflow Status Completion',
@@ -375,7 +471,10 @@ const pieChartData = {
         plugins: {
             legend: {
                 display: true,
-                position:'bottom'
+                position:'bottom',
+                labels: {
+                    color:'white'
+                }
             },
             title: {
                 display: true,
@@ -400,25 +499,44 @@ const pieChartData = {
 
 const timeLabels = ["12 AM", "8 AM", "4 PM", "11 PM"];
 
-const timeSpentData = {
+const notStartedData = {
     labels: timeLabels,
     datasets: [{
-        label: 'Total time spent',
+        label: 'Not Started',
         data: [250, 390, 400, 81],
         fill: true,
         borderColor: '#65B1EF',
         tension: 0.1
+    },
+    {
+        label: 'In Production',
+        data: [150, 590, 20, 810],
+        fill: true,
+        borderColor: 'red',
+        tension: 0.1
+    },
+    {
+        label: 'In Progress',
+        data: [20, 293, 630, 124],
+        fill: true,
+        borderColor: 'green',
+        tension: 0.1
     }]
 };
 
+
 const stackedLine4 = new Chart(timeSpentChart, {
     type: 'line',
-    data: timeSpentData,
+    data: notStartedData,
     options: {
 
         plugins: {
             legend: {
-                display: false
+                display: true,
+                position:'bottom',
+                labels: {
+                    color:'white'
+                }
             },
             title: {
                 display: true,
@@ -438,8 +556,21 @@ const stackedLine4 = new Chart(timeSpentChart, {
                 stacked: true,
                 grid: {
                     color: '#A7BACD'
-                }
+                },
+                title:{
+                    display:true,
+                    text: 'Number of Entries',
+                    color:'white'
+                } 
+            },
+            x: {
+                title:{
+                    display:true,
+                    text: 'Time',
+                    color:'white'
+                } 
             }
         }
     }
 });
+
