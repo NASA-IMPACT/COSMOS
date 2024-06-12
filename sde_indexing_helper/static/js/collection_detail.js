@@ -137,8 +137,8 @@ $(document).ready(function () {
   $("body").on("change", "#detailDivisionDropdown", function () {
     $modal = $("#divisionChangeModal").modal();
     var selectedText = $("#detailDivisionDropdown option:selected").text();
-    $("#caption").text(
-      `Divison will be changed from ${currentDivisonText} to ${selectedText}.`
+    $("#caption").html(
+      `Divison will be changed from <span class="bold">${currentDivisonText}</span> to <span class="bold">${selectedText}</span>.`
     );
     collection_id = $(this).data("collection-id");
     newDivisionVal = $(this).val();
