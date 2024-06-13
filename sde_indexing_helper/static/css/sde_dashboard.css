@@ -1,0 +1,11 @@
+.dashboardContainer {
+    background: #15232E;
+    padding: 40px 30px;
+    border-radius: 15px;
+}
+
+.filterDiv {
+    float: right;
+    margin-top: 10px;
+}
+
