@@ -59,8 +59,15 @@ function postDocTypeChange(collection_id, docType) {
 $(document).ready(function() {
   if (localStorage.getItem("WorkflowStatusChange")) {
     toastr.success("Workflow Status Updated!");
-    localStorage.removeItem("WorkflowStatusChange")
+    localStorage.removeItem("WorkflowStatusChange");
+  }
+})
 
+//Scroll position for comments
+$(document).ready(function() {
+  if (localStorage.getItem("commentScroll")) {
+    $(window).scrollTop(localStorage.getItem("commentScroll"));
+    localStorage.removeItem("commentScroll");
   }
 })
 
@@ -137,8 +144,8 @@ $(document).ready(function () {
   $("body").on("change", "#detailDivisionDropdown", function () {
     $modal = $("#divisionChangeModal").modal();
     var selectedText = $("#detailDivisionDropdown option:selected").text();
-    $("#caption").text(
-      `Divison will be changed from ${currentDivisonText} to ${selectedText}.`
+    $("#caption").html(
+      `Divison will be changed from <span class="bold">${currentDivisonText}</span> to <span class="bold">${selectedText}</span>.`
     );
     collection_id = $(this).data("collection-id");
     newDivisionVal = $(this).val();
@@ -401,4 +408,7 @@ function handleWorkflowStatusSelect() {
 
 $(document).ready(function () {
   handleWorkflowStatusSelect();
+  $("button[name='comment_button']").click(function() {
+    localStorage.setItem("commentScroll", $(window).scrollTop());
+  })
 });
