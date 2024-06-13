@@ -4,6 +4,9 @@ var currentDivisionVal;
 var currentDivisonText;
 var currentUrlToDelete;
 
+let table = $("#workflow_history_table").DataTable({ 
+});
+
 let originalValue = document.getElementById("github-link-display").textContent;
 document.getElementById("github-link-form").style.display = "none";
 document.getElementById("cancel-github-link-button").style.display = "none";
@@ -432,3 +435,11 @@ $(document).ready(function () {
     localStorage.setItem("commentScroll", $(window).scrollTop());
   });
 });
+
+
+
+
+
+
+
+
