@@ -1480,35 +1480,90 @@ function postWorkflowStatus(collection_id, workflow_status) {
 
 function handleWorkflowStatusSelect() {
   $("body").on("click", ".workflow_status_select", function () {
+    $("#workflowStatusChangeModal").modal();
+    var collectionName = $("#collectionName").text();
     var collection_id = $(this).data("collection-id");
     var workflow_status = $(this).attr("value");
-    var workflow_status_text = $(this).text();
-    var color_choices = {
-      1: "btn-light",
-      2: "btn-danger",
-      3: "btn-warning",
-      4: "btn-info",
-      5: "btn-success",
-      6: "btn-primary",
-      7: "btn-info",
-      8: "btn-secondary",
-      9: "btn-light",
-      10: "btn-danger",
-      11: "btn-warning",
-      12: "btn-info",
-      13: "btn-success",
-      14: "btn-primary",
-      15: "btn-info",
-      16: "btn-secondary",
-    };
+    var new_workflow_status = $(this).text();
 
-    $button = $(`#workflow-status-button-${collection_id}`);
-
-    $button.text(workflow_status_text);
-    $button.removeClass(
-      "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+    $(".workflow-status-change-caption").text(
+      `Workflow status for ${collectionName} will change to ${new_workflow_status}`
     );
-    $button.addClass(color_choices[parseInt(workflow_status)]);
-    postWorkflowStatus(collection_id, workflow_status);
+
+    $("#workflowStatusChangeModalForm").on("click", "button", function (event) {
+      event.preventDefault();
+      var buttonId = $(this).attr("id");
+
+      switch (buttonId) {
+        case "cancelworkflowStatusChange":
+          $("#workflowStatusChangeModal").modal("hide");
+          break;
+        case "changeWorkflowStatus":
+          var color_choices = {
+            1: "btn-light",
+            2: "btn-danger",
+            3: "btn-warning",
+            4: "btn-info",
+            5: "btn-success",
+            6: "btn-primary",
+            7: "btn-info",
+            8: "btn-secondary",
+            9: "btn-light",
+            10: "btn-danger",
+            11: "btn-warning",
+            12: "btn-info",
+            13: "btn-success",
+            14: "btn-primary",
+            15: "btn-info",
+            16: "btn-secondary",
+          };
+
+          $button = $(`#workflow-status-button-${collection_id}`);
+
+          $button.text(new_workflow_status);
+          $button.removeClass(
+            "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+          );
+          $button.addClass(color_choices[parseInt(workflow_status)]);
+          postWorkflowStatus(collection_id, workflow_status);
+          $("#workflowStatusChangeModal").modal("hide");
+          break;
+      }
+    });
   });
 }
+
+// function handleWorkflowStatusSelect() {
+//   $("body").on("click", ".workflow_status_select", function () {
+//     var collection_id = $(this).data("collection-id");
+//     var workflow_status = $(this).attr("value");
+//     var workflow_status_text = $(this).text();
+//     var color_choices = {
+//       1: "btn-light",
+//       2: "btn-danger",
+//       3: "btn-warning",
+//       4: "btn-info",
+//       5: "btn-success",
+//       6: "btn-primary",
+//       7: "btn-info",
+//       8: "btn-secondary",
+//       9: "btn-light",
+//       10: "btn-danger",
+//       11: "btn-warning",
+//       12: "btn-info",
+//       13: "btn-success",
+//       14: "btn-primary",
+//       15: "btn-info",
+//       16: "btn-secondary",
+//     };
+
+//     $button = $(`#workflow-status-button-${collection_id}`);
+
+//     $button.text(workflow_status_text);
+//     $button.removeClass(
+//       "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+//     );
+//     $button.addClass(color_choices[parseInt(workflow_status)]);
+//     postWorkflowStatus(collection_id, workflow_status);
+//   });
+// }
