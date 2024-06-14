@@ -289,21 +289,21 @@ function initializeDataTable() {
   });
 
   $("#candidateUrlFilter").on(
-    "keyup",
+    "beforeinput",
     DataTable.util.debounce(function (val) {
       candidate_urls_table.columns(0).search(this.value).draw();
     }, 1000)
   );
 
   $("#candidateScrapedTitleFilter").on(
-    "keyup",
+    "beforeinput",
     DataTable.util.debounce(function (val) {
       candidate_urls_table.columns(2).search(this.value).draw();
     }, 1000)
   );
 
   $("#candidateNewTitleFilter").on(
-    "keyup",
+    "beforeinput",
     DataTable.util.debounce(function (val) {
       candidate_urls_table.columns(3).search(this.value).draw();
     }, 1000)
@@ -388,11 +388,11 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateMatchPatternFilter").on("keyup", function () {
+  $("#candidateMatchPatternFilter").on("beforeinput", function () {
     exclude_patterns_table.columns(0).search(this.value).draw();
   });
 
-  $("#candidateReasonFilter").on("keyup", function () {
+  $("#candidateReasonFilter").on("beforeinput", function () {
     exclude_patterns_table.columns(2).search(this.value).draw();
   });
 
@@ -468,7 +468,7 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateIncludeMatchPatternFilter").on("keyup", function () {
+  $("#candidateIncludeMatchPatternFilter").on("beforeinput", function () {
     include_patterns_table.columns(0).search(this.value).draw();
   });
 
@@ -546,11 +546,11 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateTitleMatchPatternFilter").on("keyup", function (val) {
+  $("#candidateTitleMatchPatternFilter").on("beforeinput", function (val) {
     title_patterns_table.columns(0).search(this.value).draw();
   });
 
-  $("#candidateTitlePatternTypeFilter").on("keyup", function (val) {
+  $("#candidateTitlePatternTypeFilter").on("beforeinput", function (val) {
     title_patterns_table.columns(2).search(this.value).draw();
   });
 
@@ -660,7 +660,7 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateDocTypeMatchPatternFilter").on("keyup", function (val) {
+  $("#candidateDocTypeMatchPatternFilter").on("beforeinput", function (val) {
     document_type_patterns_table.columns(0).search(this.value).draw();
   });
 }
@@ -1439,13 +1439,10 @@ $("#title_pattern_form").on("submit", function (e) {
   $("#titlePatternModal").modal("hide");
 });
 
-$(".document_type_form_select").on("click", function (e) {
+$("#document_type_pattern_form").on("submit", function (e) {
   e.preventDefault();
-  $('input[name="document_type_pattern"]').val($(this).attr("value"));
   inputs = {};
-  input_serialized = $(this)
-    .parents("#document_type_pattern_form")
-    .serializeArray();
+  input_serialized = $(this).serializeArray();
   input_serialized.forEach((field) => {
     inputs[field.name] = field.value;
   });
@@ -1458,6 +1455,12 @@ $(".document_type_form_select").on("click", function (e) {
 
   // close the modal if it is open
   $("#documentTypePatternModal").modal("hide");
+});
+
+$(".document_type_form_select").on("click", function (e) {
+  e.preventDefault();
+  $('input[name="document_type_pattern"]').val($(this).attr("value"));
+  $(".doc-dropdown").text($(this).text());
 });
 
 function postWorkflowStatus(collection_id, workflow_status) {
@@ -1480,35 +1483,54 @@ function postWorkflowStatus(collection_id, workflow_status) {
 
 function handleWorkflowStatusSelect() {
   $("body").on("click", ".workflow_status_select", function () {
+    $("#workflowStatusChangeModal").modal();
+    var collectionName = $(".urlStyle").text();
     var collection_id = $(this).data("collection-id");
     var workflow_status = $(this).attr("value");
-    var workflow_status_text = $(this).text();
-    var color_choices = {
-      1: "btn-light",
-      2: "btn-danger",
-      3: "btn-warning",
-      4: "btn-info",
-      5: "btn-success",
-      6: "btn-primary",
-      7: "btn-info",
-      8: "btn-secondary",
-      9: "btn-light",
-      10: "btn-danger",
-      11: "btn-warning",
-      12: "btn-info",
-      13: "btn-success",
-      14: "btn-primary",
-      15: "btn-info",
-      16: "btn-secondary",
-    };
+    var new_workflow_status = $(this).text();
 
-    $button = $(`#workflow-status-button-${collection_id}`);
-
-    $button.text(workflow_status_text);
-    $button.removeClass(
-      "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+    $(".workflow-status-change-caption").html(
+      `<div>Workflow status for <b class="bold">${collectionName}</b> will change to <b class="bold">${new_workflow_status}</b></div>`
     );
-    $button.addClass(color_choices[parseInt(workflow_status)]);
-    postWorkflowStatus(collection_id, workflow_status);
+    $("#workflowStatusChangeModalForm").on("click", "button", function (event) {
+      event.preventDefault();
+      var buttonId = $(this).attr("id");
+
+      switch (buttonId) {
+        case "cancelworkflowStatusChange":
+          $("#workflowStatusChangeModal").modal("hide");
+          break;
+        case "changeWorkflowStatus":
+          var color_choices = {
+            1: "btn-light",
+            2: "btn-danger",
+            3: "btn-warning",
+            4: "btn-info",
+            5: "btn-success",
+            6: "btn-primary",
+            7: "btn-info",
+            8: "btn-secondary",
+            9: "btn-light",
+            10: "btn-danger",
+            11: "btn-warning",
+            12: "btn-info",
+            13: "btn-success",
+            14: "btn-primary",
+            15: "btn-info",
+            16: "btn-secondary",
+          };
+
+          $button = $(`#workflow-status-button-${collection_id}`);
+
+          $button.text(new_workflow_status);
+          $button.removeClass(
+            "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+          );
+          $button.addClass(color_choices[parseInt(workflow_status)]);
+          postWorkflowStatus(collection_id, workflow_status);
+          $("#workflowStatusChangeModal").modal("hide");
+          break;
+      }
+    });
   });
 }

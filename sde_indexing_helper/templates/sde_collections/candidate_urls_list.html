@@ -394,6 +394,12 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         </div>
                     </div>
                 </div>
+                <div class="modal-footer">
+                    <div class="button-wrapper">
+                        <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                        <button type="submit" class="document-type-submit btn btn-primary modal-button-2">Submit</button>
+                    </div> 
+                </div>
             </form>
         </div>
     </div>
@@ -441,6 +447,30 @@ aria-labelledby="deletePatternModal" aria-hidden="true">
             </div>
     </div>
 </div>
+</div>
+
+<div class="modal" id="workflowStatusChangeModal" tabindex="-1"
+aria-labelledby="workflowStatusChangeModal" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modalHeader">
+            <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close" id="closeworkflowStatusChangeModal">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+            <div class="modal-body" id="modal-body">
+                <h5 class="modal-title">Are you sure?</h5>
+                <p class="workflow-status-change-caption" id="caption"></p>
+            </div>
+            <div class="modal-footer">
+                <form id="workflowStatusChangeModalForm">
+                    <div class="button-wrapper">
+                    <button type="submit" class="btn btn-secondary modal-button-1" id="cancelworkflowStatusChange">No</button> 
+                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="changeWorkflowStatus">Yes</button> 
+                    </div>
+                    </form>
+            </div>
+    </div>
 </div>
 
 
