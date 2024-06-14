@@ -10,7 +10,11 @@ let table = $("#workflow_history_table").DataTable({
   orderCellsTop: false,
   fixedHeader: false,
   searching:false,
-  order: []
+  order: [],
+  columnDefs: [ {
+  targets: 2,
+  orderable: false
+  } ]
 });
 
 let originalValue = document.getElementById("github-link-display").textContent;
