@@ -455,9 +455,9 @@ const pieChartData = {
       label: 'Workflow Status Completion',
       data: [300, 50, 100],
       backgroundColor: [
-        '#F4C534',
-        '#09B66D',
-        '#65B1EF'
+        '#65B1EF',
+        'green',
+        'red'
       ],
       hoverOffset: 4
     }]
@@ -561,14 +561,20 @@ const stackedLine4 = new Chart(timeSpentChart, {
                     display:true,
                     text: 'Number of Entries',
                     color:'white'
-                } 
+                } ,
+                ticks: {
+                    color: "white",
+                },
             },
             x: {
                 title:{
                     display:true,
                     text: 'Time',
                     color:'white'
-                } 
+                } ,
+                ticks: {
+                    color: "white",
+                },
             }
         }
     }
