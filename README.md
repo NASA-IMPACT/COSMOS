@@ -11,19 +11,19 @@ Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings
 
 ## Basic Commands
 
-### Building The Project
+### Building the Project
 
-    ```console
+    ```bash
     $ docker-compose -f local.yml build
     ```
 
-### Running The Necessary Containers
+### Running the necessary containers
 
-    ```console
+    ```bash
     $ docker-compose -f local.yml up
     ```
 
-### Non-docker Local Setup
+### Non-docker local setup
 
 If you want to run the project without docker, you will need the following:
 
@@ -56,15 +56,15 @@ There is a section in `config/settings/base.py` which reads environment variable
 
 </details>
 
-### How to Run
+### How to run
 
 Run `python manage.py runserver` to test if your setup worked. You might have to run an initial migration with `python manage.py migrate`.
 
 
-### Setting Up Your Users
+### Setting up your users
 
 - To create a **superuser account**, use this command:
-    ```console
+    ```bash
     $ docker-compose -f local.yml run --rm django python manage.py createsuperuser
     ```
 
@@ -73,7 +73,7 @@ Run `python manage.py runserver` to test if your setup worked. You might have to
 ### Loading fixtures
 Please note that currently loading fixtures will not create a fully working database. If you are starting the project from scratch, it is probably preferable to skip to the Loading the DB from a Backup section.
 - To load collections
-    ```console
+    ```bash
     $ docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/collections.json
     ```
 
@@ -90,7 +90,7 @@ Please note that currently loading fixtures will not create a fully working data
     $ docker-compose -f local.yml run --rm django python manage.py load_scraped_urls <config_folder_name>
     ```
 
-### Loading The DB From A Backup
+### Loading the DB from a backup
 
 - If a database backup is made available, you wouldn't have to load the fixtures or the scrapped URLs anymore. This changes a few steps necessary to get the project running.
 
@@ -101,12 +101,12 @@ Please note that currently loading fixtures will not create a fully working data
 - Step 3 : Clear Out Contenet Types Using Django Shell
 
     -- Enter the Django shell in your Docker container.
-        ```console
+        ```bash
         $ docker-compose -f local.yml run --rm django python manage.py shell
         ```
 
     -- In the Django shell, you can now delete the content types.
-        ```console
+        ```bash
         from django.contrib.contenttypes.models import ContentType
         ContentType.objects.all().delete()
         ```
@@ -118,17 +118,17 @@ Please note that currently loading fixtures will not create a fully working data
     Assuming your backup is a `.json` file from `dumpdata`, you'd use `loaddata` command to populate your database.
 
     -- If the backup file is on the local machine, make sure it's accessible to the Docker container. If the backup is outside the container, you will need to copy it inside first.
-        ```console
+        ```bash
         $ docker cp /path/to/your/backup.json container_name:/path/inside/container/backup.json
         ```
 
     -- Load the data from your backup.
-        ```console
+        ```bash
         $ docker-compose -f local.yml run --rm django python manage.py loaddata /path/inside/the/container/backup.json
         ```
 
     -- Once loaded, you may want to run migrations to ensure everything is aligned.
-        ```console
+        ```bash
         $ docker-compose -f local.yml run -rm django python manage.py migrate
         ```
 
@@ -136,14 +136,14 @@ Please note that currently loading fixtures will not create a fully working data
 ### Type checks
 
 Running type checks with mypy:
-    ```console
+    ```bash
     $ mypy sde_indexing_helper
     ```
 
 ### Test coverage
 
 To run the tests, check your test coverage, and generate an HTML coverage report:
-    ```console
+    ```bash
     $ coverage run -m pytest
     $ coverage html
     $ open htmlcov/index.html
@@ -151,7 +151,7 @@ To run the tests, check your test coverage, and generate an HTML coverage report
 
 #### Running tests with pytest
 
-    ```console
+    ```bash
     $ pytest
     ```
 
@@ -162,14 +162,14 @@ Moved to [Live reloading and SASS compilation](https://cookiecutter-django.readt
 ### Install Celery
 
 Make sure Celery is installed in your environment. To install :
-    ```console
+    ```bash
     $ pip install celery
     ```
 
 ### Install all requirements
 
 Install all packages listed in a 'requirements' file
-    ```console
+    ```bash
     pip install -r requirements/*.txt
     ```
 
@@ -179,7 +179,7 @@ This app comes with Celery.
 
 To run a celery worker:
 
-```console
+```bash
 cd sde_indexing_helper
 celery -A config.celery_app worker -l info
 ````
@@ -188,37 +188,37 @@ Please note: For Celery's import magic to work, it is important _where_ the cele
 
 To run [periodic tasks](https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html), you'll need to start the celery beat scheduler service. You can start it as a standalone process:
 
-```console
+```bash
 cd sde_indexing_helper
 celery -A config.celery_app beat
 ```
 
 or you can embed the beat service inside a worker with the `-B` option (not recommended for production use):
 
-```console
+```bash
 cd sde_indexing_helper
 celery -A config.celery_app worker -B -l info
 ```
 
-### Pre-Commit Hook Instructions
+### Pre-Commit hook instructions
 
 Hooks have to be run on every commit to automatically take care of linting and structuring.
 
 To install pre-commit package manager :
 
-    ```console
+    ```bash
     $ pip install pre-commit
     ```
 
 Install the git hook scripts :
 
-    ```console
+    ```bash
     $ pre-commit install
     ```
 
 Run against the files :
 
-    ```console
+    ```bash
     $ pre-commit run --all-files
     ```
 
@@ -243,7 +243,7 @@ See detailed [cookiecutter-django Docker documentation](http://cookiecutter-djan
 
 Documented [here](https://github.com/NASA-IMPACT/sde-indexing-helper/wiki/How-to-bring-in-Candidate-URLs-from-the-test-server).
 
-## Adding New Features/Fixes
+## Adding new features/fixes
 
 New features and bugfixes should start with a [GitHub issue](https://github.com/NASA-IMPACT/sde-indexing-helper/issues). Then on local, ensure that you have the [GitHub CLI](https://cli.github.com/). Branches are made based off of existing issues, and no other way. Use the CLI to reference your issue number, like so `gh issue develop -c <issue_number>`. This will create a local branch linked to the issue, and allow GitHub to handle all the relevant linking.
 
