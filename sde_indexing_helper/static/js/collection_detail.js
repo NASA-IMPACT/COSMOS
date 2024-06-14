@@ -379,8 +379,8 @@ function handleWorkflowStatusSelect() {
     var workflow_status = $(this).attr("value");
     var new_workflow_status = $(this).text();
 
-    $(".workflow-status-change-caption").text(
-      `Workflow status for ${collectionName} will change to ${new_workflow_status}`
+    $(".workflow-status-change-caption").html(
+      `<div>Workflow status for <span class="bold">${collectionName}</span> will change to <span class="bold">${new_workflow_status}</span></div>`
     );
 
     $("#workflowStatusChangeModalForm").on("click", "button", function (event) {
