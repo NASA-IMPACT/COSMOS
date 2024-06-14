@@ -11,23 +11,24 @@ Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings
 
 ## Basic Commands
 
-### Building The Project
+### Building the Project
 
     ```bash
     $ docker-compose -f local.yml build
     ```
 
-### Running The Necessary Containers
+### Running the necessary containers
 
     ```bash
     $ docker-compose -f local.yml up
     ```
 
-### Non-docker Local Setup
+### Non-docker local setup
 
 If you want to run the project without docker, you will need the following:
 
-- Postgres
+<details>
+<summary>Postgres</summary>
 
 Run the following commands:
 
@@ -40,7 +41,10 @@ postgres=# grant all privileges on database <some database> to <some username>;
 # This next one is optional, but it will allow the user to create databases for testing
 
 postgres=# alter role <some username> with superuser;
-```
+````
+</details>
+<details>
+<summary>Environment variables</summary>
 
 Now copy .env_sample in the root directory to .env. Note that in this setup we don't end up using the .envs/ directory, but instead we use the .env file.
 
@@ -50,9 +54,14 @@ You don't need to change any other variable, unless you want to use specific mod
 
 There is a section in `config/settings/base.py` which reads environment variables from this file. The line should look like `READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=True)`. Make sure either the default is True here (which it should already be), or run `export DJANGO_READ_DOT_ENV_FILE=True` in your terminal.
 
+</details>
+
+### How to run
+
 Run `python manage.py runserver` to test if your setup worked. You might have to run an initial migration with `python manage.py migrate`.
 
-### Setting Up Your Users
+
+### Setting up your users
 
 - To create a **superuser account**, use this command:
     ```bash
@@ -81,7 +90,7 @@ Please note that currently loading fixtures will not create a fully working data
     $ docker-compose -f local.yml run --rm django python manage.py load_scraped_urls <config_folder_name>
     ```
 
-### Loading The DB From A Backup
+### Loading the DB from a backup
 
 - If a database backup is made available, you wouldn't have to load the fixtures or the scrapped URLs anymore. This changes a few steps necessary to get the project running.
 
@@ -191,7 +200,7 @@ cd sde_indexing_helper
 celery -A config.celery_app worker -B -l info
 ```
 
-### Pre-Commit Hook Instructions
+### Pre-Commit hook instructions
 
 Hooks have to be run on every commit to automatically take care of linting and structuring.
 
@@ -234,7 +243,7 @@ See detailed [cookiecutter-django Docker documentation](http://cookiecutter-djan
 
 Documented [here](https://github.com/NASA-IMPACT/sde-indexing-helper/wiki/How-to-bring-in-Candidate-URLs-from-the-test-server).
 
-## Adding New Features/Fixes
+## Adding new features/fixes
 
 New features and bugfixes should start with a [GitHub issue](https://github.com/NASA-IMPACT/sde-indexing-helper/issues). Then on local, ensure that you have the [GitHub CLI](https://cli.github.com/). Branches are made based off of existing issues, and no other way. Use the CLI to reference your issue number, like so `gh issue develop -c <issue_number>`. This will create a local branch linked to the issue, and allow GitHub to handle all the relevant linking.
 
@@ -243,3 +252,11 @@ Once on the branch, create a PR with `gh pr create`. You can leave the PR in dra
 ## Job Creation
 
 Eventually, job creation will be done seamlessly by the webapp. Until then, edit the `config.py` file with the details of what sources you want to create jobs for, then run `generate_jobs.py`.
+
+## Code structure for the SDE_INDEXING_HELPER
+
+The frontend pages can be found in /sde_indexing_helper
+- The html for [collection_list, collection_detail, candidate_urls_list] can be found in /sde_indexing_helper/templates/sde_collections
+- The javascript that controls these pages can be found in /sde_indexing_helper/static/js
+
+The main backend files like 'views.py' can be found in /sde_collections
