@@ -1439,13 +1439,10 @@ $("#title_pattern_form").on("submit", function (e) {
   $("#titlePatternModal").modal("hide");
 });
 
-$(".document_type_form_select").on("click", function (e) {
+$("#document_type_pattern_form").on("submit", function (e) {
   e.preventDefault();
-  $('input[name="document_type_pattern"]').val($(this).attr("value"));
   inputs = {};
-  input_serialized = $(this)
-    .parents("#document_type_pattern_form")
-    .serializeArray();
+  input_serialized = $(this).serializeArray();
   input_serialized.forEach((field) => {
     inputs[field.name] = field.value;
   });
@@ -1458,6 +1455,13 @@ $(".document_type_form_select").on("click", function (e) {
 
   // close the modal if it is open
   $("#documentTypePatternModal").modal("hide");
+});
+
+$(".document_type_form_select").on("click", function (e) {
+  e.preventDefault();
+  $('input[name="document_type_pattern"]').val($(this).attr("value"));
+  $('.doc-dropdown').text($(this).text());
+  
 });
 
 function postWorkflowStatus(collection_id, workflow_status) {
