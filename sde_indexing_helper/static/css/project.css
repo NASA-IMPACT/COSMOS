@@ -617,3 +617,13 @@ div > .nav {
   appearance: auto !important;
   padding:10px;
 }
+
+.dtsp-searchPane .dtsp-subRow1 .bmd-form-group {
+  display: none;
+}
+
+
+.dtsp-topRow {
+  align-items: center !important;
+  margin: 0 !important; 
+}
