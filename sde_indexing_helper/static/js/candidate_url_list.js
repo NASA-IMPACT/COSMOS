@@ -1484,16 +1484,13 @@ function postWorkflowStatus(collection_id, workflow_status) {
 function handleWorkflowStatusSelect() {
   $("body").on("click", ".workflow_status_select", function () {
     $("#workflowStatusChangeModal").modal();
-    var collectionName = $("#collectionName").text();
+    var collectionName = $(".urlStyle").text();
     var collection_id = $(this).data("collection-id");
     var workflow_status = $(this).attr("value");
     var new_workflow_status = $(this).text();
-    // $(".workflow-status-change-caption").html(
-    //   `Workflow status for ${collectionName} will change to ${new_workflow_status}`
-    // );
 
     $(".workflow-status-change-caption").html(
-      `<div>Workflow status for <span class="bold">${collectionName}</span> will change to <span class="bold">${new_workflow_status}</span></div>`
+      `<div>Workflow status for <b class="bold">${collectionName}</b> will change to <b class="bold">${new_workflow_status}</b></div>`
     );
     $("#workflowStatusChangeModalForm").on("click", "button", function (event) {
       event.preventDefault();
