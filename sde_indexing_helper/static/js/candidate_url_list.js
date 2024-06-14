@@ -1460,8 +1460,7 @@ $("#document_type_pattern_form").on("submit", function (e) {
 $(".document_type_form_select").on("click", function (e) {
   e.preventDefault();
   $('input[name="document_type_pattern"]').val($(this).attr("value"));
-  $('.doc-dropdown').text($(this).text());
-  
+  $(".doc-dropdown").text($(this).text());
 });
 
 function postWorkflowStatus(collection_id, workflow_status) {
@@ -1489,11 +1488,13 @@ function handleWorkflowStatusSelect() {
     var collection_id = $(this).data("collection-id");
     var workflow_status = $(this).attr("value");
     var new_workflow_status = $(this).text();
+    // $(".workflow-status-change-caption").html(
+    //   `Workflow status for ${collectionName} will change to ${new_workflow_status}`
+    // );
 
-    $(".workflow-status-change-caption").text(
-      `Workflow status for ${collectionName} will change to ${new_workflow_status}`
+    $(".workflow-status-change-caption").html(
+      `<div>Workflow status for <span class="bold">${collectionName}</span> will change to <span class="bold">${new_workflow_status}</span></div>`
     );
-
     $("#workflowStatusChangeModalForm").on("click", "button", function (event) {
       event.preventDefault();
       var buttonId = $(this).attr("id");
