@@ -793,6 +793,21 @@ function getDocumentTypeColumn() {
   };
 }
 
+//template to add enter and escape functionalities to add pattern modals
+function addEnterEscapeKeypress(modalID, formID) {
+  $("body").on("keydown", function(event) {
+    let modal = $(modalID);
+    let form = $(formID)
+    if(event.key == "Escape" && modal.is(":visible")) {
+      modal.modal("hide");
+    }
+    if (event.key == "Enter" && modal.is(":visible")) {
+      form.submit();
+      modal.modal("hide");
+    }
+  })
+} 
+
 function handleHideorShowKeypress() {
   $("body").on("keydown", function () {
     //Close modal via escape
@@ -816,6 +831,14 @@ function handleHideorShowKeypress() {
   $("body").on("click", ".modal-backdrop", function () {
     $("#hideShowColumnsModal").modal("hide");
   });
+
+  //adding each modals keypress functionalities
+  addEnterEscapeKeypress("#excludePatternModal", "#exclude_pattern_form");
+  addEnterEscapeKeypress("#includePatternModal", "#include_pattern_form");
+  addEnterEscapeKeypress("#titlePatternModal", "#title_pattern_form");
+  addEnterEscapeKeypress("#documentTypePatternModal", "#document_type_pattern_form");
+
+
 }
 
 function handleHideorShowSubmitButton() {
