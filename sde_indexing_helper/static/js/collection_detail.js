@@ -9,7 +9,8 @@ let table = $("#workflow_history_table").DataTable({
   stateSave: false,
   orderCellsTop: false,
   fixedHeader: false,
-  
+  searching:false,
+  order: []
 });
 
 let originalValue = document.getElementById("github-link-display").textContent;
