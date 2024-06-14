@@ -279,12 +279,13 @@
 
         </div>
         <div class="tab-pane fade" id="workflowhistory">
-            <table class="table table-striped" id="workflow_history_table">
-                <!-- <thead>
+            <table class="table table-striped" id="workflow_history_table" style="width:100%">
+                <thead>
                     <tr class="tableHeaderRow">
                         <th class="whiteText">Workflow Status</th>
                         <th class="whiteText">Curator</th>
                         <th class="whiteText">Time Updated</th>
+                        <th></th>
                     </tr>
                 <thead>
                 <tbody>
@@ -299,9 +300,10 @@
                         <td class="whiteText">                            
                             {{ entry.curated_by }}</td>
                         <td class="whiteText">{{entry.created_at|timesince}} ago</td>
+                        <td></td>
                     </tr>
                     {% endfor %}
-                </tbody> -->
+                </tbody>
 
             </table>
         </div>
