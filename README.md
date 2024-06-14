@@ -41,7 +41,10 @@ postgres=# grant all privileges on database <some database> to <some username>;
 # This next one is optional, but it will allow the user to create databases for testing
 
 postgres=# alter role <some username> with superuser;
-```
+````
+</details>
+<details>
+<summary>Environment variables</summary>
 
 Now copy .env_sample in the root directory to .env. Note that in this setup we don't end up using the .envs/ directory, but instead we use the .env file.
 
@@ -51,9 +54,12 @@ You don't need to change any other variable, unless you want to use specific mod
 
 There is a section in `config/settings/base.py` which reads environment variables from this file. The line should look like `READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=True)`. Make sure either the default is True here (which it should already be), or run `export DJANGO_READ_DOT_ENV_FILE=True` in your terminal.
 
+</details>
+
+### How to Run
+
 Run `python manage.py runserver` to test if your setup worked. You might have to run an initial migration with `python manage.py migrate`.
 
-</details>
 
 ### Setting Up Your Users
 
