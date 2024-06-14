@@ -27,7 +27,8 @@ Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings
 
 If you want to run the project without docker, you will need the following:
 
-- Postgres
+<details>
+<summary>Postgres</summary>
 
 Run the following commands:
 
@@ -51,6 +52,8 @@ You don't need to change any other variable, unless you want to use specific mod
 There is a section in `config/settings/base.py` which reads environment variables from this file. The line should look like `READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=True)`. Make sure either the default is True here (which it should already be), or run `export DJANGO_READ_DOT_ENV_FILE=True` in your terminal.
 
 Run `python manage.py runserver` to test if your setup worked. You might have to run an initial migration with `python manage.py migrate`.
+
+</details>
 
 ### Setting Up Your Users
 
@@ -243,3 +246,4 @@ Once on the branch, create a PR with `gh pr create`. You can leave the PR in dra
 ## Job Creation
 
 Eventually, job creation will be done seamlessly by the webapp. Until then, edit the `config.py` file with the details of what sources you want to create jobs for, then run `generate_jobs.py`.
+
