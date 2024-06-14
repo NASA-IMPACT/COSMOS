@@ -4,6 +4,19 @@ var currentDivisionVal;
 var currentDivisonText;
 var currentUrlToDelete;
 
+let table = $("#workflow_history_table").DataTable({ 
+  paging: false,
+  stateSave: false,
+  orderCellsTop: false,
+  fixedHeader: false,
+  searching:false,
+  order: [],
+  columnDefs: [ {
+  targets: 2,
+  orderable: false
+  } ]
+});
+
 let originalValue = document.getElementById("github-link-display").textContent;
 document.getElementById("github-link-form").style.display = "none";
 document.getElementById("cancel-github-link-button").style.display = "none";
