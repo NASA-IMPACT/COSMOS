@@ -13,13 +13,13 @@ Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings
 
 ### Building The Project
 
-    ```bash
+    ```console
     $ docker-compose -f local.yml build
     ```
 
 ### Running The Necessary Containers
 
-    ```bash
+    ```console
     $ docker-compose -f local.yml up
     ```
 
@@ -64,7 +64,7 @@ Run `python manage.py runserver` to test if your setup worked. You might have to
 ### Setting Up Your Users
 
 - To create a **superuser account**, use this command:
-    ```bash
+    ```console
     $ docker-compose -f local.yml run --rm django python manage.py createsuperuser
     ```
 
@@ -73,7 +73,7 @@ Run `python manage.py runserver` to test if your setup worked. You might have to
 ### Loading fixtures
 Please note that currently loading fixtures will not create a fully working database. If you are starting the project from scratch, it is probably preferable to skip to the Loading the DB from a Backup section.
 - To load collections
-    ```bash
+    ```console
     $ docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/collections.json
     ```
 
@@ -101,12 +101,12 @@ Please note that currently loading fixtures will not create a fully working data
 - Step 3 : Clear Out Contenet Types Using Django Shell
 
     -- Enter the Django shell in your Docker container.
-        ```bash
+        ```console
         $ docker-compose -f local.yml run --rm django python manage.py shell
         ```
 
     -- In the Django shell, you can now delete the content types.
-        ```bash
+        ```console
         from django.contrib.contenttypes.models import ContentType
         ContentType.objects.all().delete()
         ```
@@ -118,17 +118,17 @@ Please note that currently loading fixtures will not create a fully working data
     Assuming your backup is a `.json` file from `dumpdata`, you'd use `loaddata` command to populate your database.
 
     -- If the backup file is on the local machine, make sure it's accessible to the Docker container. If the backup is outside the container, you will need to copy it inside first.
-        ```bash
+        ```console
         $ docker cp /path/to/your/backup.json container_name:/path/inside/container/backup.json
         ```
 
     -- Load the data from your backup.
-        ```bash
+        ```console
         $ docker-compose -f local.yml run --rm django python manage.py loaddata /path/inside/the/container/backup.json
         ```
 
     -- Once loaded, you may want to run migrations to ensure everything is aligned.
-        ```bash
+        ```console
         $ docker-compose -f local.yml run -rm django python manage.py migrate
         ```
 
@@ -136,14 +136,14 @@ Please note that currently loading fixtures will not create a fully working data
 ### Type checks
 
 Running type checks with mypy:
-    ```bash
+    ```console
     $ mypy sde_indexing_helper
     ```
 
 ### Test coverage
 
 To run the tests, check your test coverage, and generate an HTML coverage report:
-    ```bash
+    ```console
     $ coverage run -m pytest
     $ coverage html
     $ open htmlcov/index.html
@@ -151,7 +151,7 @@ To run the tests, check your test coverage, and generate an HTML coverage report
 
 #### Running tests with pytest
 
-    ```bash
+    ```console
     $ pytest
     ```
 
@@ -162,14 +162,14 @@ Moved to [Live reloading and SASS compilation](https://cookiecutter-django.readt
 ### Install Celery
 
 Make sure Celery is installed in your environment. To install :
-    ```bash
+    ```console
     $ pip install celery
     ```
 
 ### Install all requirements
 
 Install all packages listed in a 'requirements' file
-    ```bash
+    ```console
     pip install -r requirements/*.txt
     ```
 
@@ -179,7 +179,7 @@ This app comes with Celery.
 
 To run a celery worker:
 
-```bash
+```console
 cd sde_indexing_helper
 celery -A config.celery_app worker -l info
 ````
@@ -188,14 +188,14 @@ Please note: For Celery's import magic to work, it is important _where_ the cele
 
 To run [periodic tasks](https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html), you'll need to start the celery beat scheduler service. You can start it as a standalone process:
 
-```bash
+```console
 cd sde_indexing_helper
 celery -A config.celery_app beat
 ```
 
 or you can embed the beat service inside a worker with the `-B` option (not recommended for production use):
 
-```bash
+```console
 cd sde_indexing_helper
 celery -A config.celery_app worker -B -l info
 ```
@@ -206,19 +206,19 @@ Hooks have to be run on every commit to automatically take care of linting and s
 
 To install pre-commit package manager :
 
-    ```bash
+    ```console
     $ pip install pre-commit
     ```
 
 Install the git hook scripts :
 
-    ```bash
+    ```console
     $ pre-commit install
     ```
 
 Run against the files :
 
-    ```bash
+    ```console
     $ pre-commit run --all-files
     ```
 
@@ -259,4 +259,4 @@ The frontend pages can be found in /sde_indexing_helper
 - The html for [collection_list, collection_detail, candidate_urls_list] can be found in /sde_indexing_helper/templates/sde_collections
 - The javascript that controls these pages can be found in /sde_indexing_helper/static/js
 
-The main backend files like views.py can be found in /sde_collections
+The main backend files like 'views.py' can be found in /sde_collections
