@@ -253,3 +253,10 @@ Once on the branch, create a PR with `gh pr create`. You can leave the PR in dra
 
 Eventually, job creation will be done seamlessly by the webapp. Until then, edit the `config.py` file with the details of what sources you want to create jobs for, then run `generate_jobs.py`.
 
+## Code structure for the SDE_INDEXING_HELPER
+
+The frontend pages can be found in /sde_indexing_helper
+- The html for [collection_list, collection_detail, candidate_urls_list] can be found in /sde_indexing_helper/templates/sde_collections
+- The javascript that controls these pages can be found in /sde_indexing_helper/static/js
+
+The main backend files like views.py can be found in /sde_collections
