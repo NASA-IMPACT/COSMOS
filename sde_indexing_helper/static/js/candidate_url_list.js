@@ -289,21 +289,21 @@ function initializeDataTable() {
   });
 
   $("#candidateUrlFilter").on(
-    "keyup",
+    "beforeinput",
     DataTable.util.debounce(function (val) {
       candidate_urls_table.columns(0).search(this.value).draw();
     }, 1000)
   );
 
   $("#candidateScrapedTitleFilter").on(
-    "keyup",
+    "beforeinput",
     DataTable.util.debounce(function (val) {
       candidate_urls_table.columns(2).search(this.value).draw();
     }, 1000)
   );
 
   $("#candidateNewTitleFilter").on(
-    "keyup",
+    "beforeinput",
     DataTable.util.debounce(function (val) {
       candidate_urls_table.columns(3).search(this.value).draw();
     }, 1000)
@@ -388,11 +388,11 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateMatchPatternFilter").on("keyup", function () {
+  $("#candidateMatchPatternFilter").on("beforeinput", function () {
     exclude_patterns_table.columns(0).search(this.value).draw();
   });
 
-  $("#candidateReasonFilter").on("keyup", function () {
+  $("#candidateReasonFilter").on("beforeinput", function () {
     exclude_patterns_table.columns(2).search(this.value).draw();
   });
 
@@ -468,7 +468,7 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateIncludeMatchPatternFilter").on("keyup", function () {
+  $("#candidateIncludeMatchPatternFilter").on("beforeinput", function () {
     include_patterns_table.columns(0).search(this.value).draw();
   });
 
@@ -546,11 +546,11 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateTitleMatchPatternFilter").on("keyup", function (val) {
+  $("#candidateTitleMatchPatternFilter").on("beforeinput", function (val) {
     title_patterns_table.columns(0).search(this.value).draw();
   });
 
-  $("#candidateTitlePatternTypeFilter").on("keyup", function (val) {
+  $("#candidateTitlePatternTypeFilter").on("beforeinput", function (val) {
     title_patterns_table.columns(2).search(this.value).draw();
   });
 
@@ -660,7 +660,7 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateDocTypeMatchPatternFilter").on("keyup", function (val) {
+  $("#candidateDocTypeMatchPatternFilter").on("beforeinput", function (val) {
     document_type_patterns_table.columns(0).search(this.value).draw();
   });
 }
