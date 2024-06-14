@@ -441,11 +441,3 @@ $(document).ready(function () {
     localStorage.setItem("commentScroll", $(window).scrollTop());
   });
 });
-
-
-
-
-
-
-
-
