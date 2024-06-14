@@ -273,3 +273,12 @@ margin-bottom: 0 !important;
       .table.dataTable.fixedHeader-floating{
         background-color:rgb(21, 35, 46) !important;
       }
+
+      .custom-pane-title {
+font-size: 16px;
+font-weight: 500;
+line-height: 24px;
+letter-spacing: -0.02em;
+color: rgba(255, 255, 255, 1);
+padding-left: 9px;
+      }

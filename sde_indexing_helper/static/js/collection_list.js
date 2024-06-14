@@ -176,7 +176,7 @@ let table = $("#collection_table").DataTable({
       searchPanes: {
         dtOpts: {
           scrollY: "100%",
-        }
+        },
       },
       targets: [5],
     },
@@ -390,6 +390,33 @@ function postCurator(collection_id, curator_id) {
 
 $(document).ready(function () {
   setupClickHandlers();
+
+  // Remove the search input and add custom titles
+  var paneTitles = [
+    null,
+    null,
+    "Division",
+    "Candidate URLs",
+    "Workflow Status",
+    "Curator",
+    "Connector Type",
+  ];
+
+  $(".dtsp-searchPane").each(function (index) {
+    if ($(this).hasClass("dtsp-hidden")) {
+      return;
+    }
+    // Check if the pane title exists for the current index
+    else {
+      if (paneTitles[index]) {
+        $(this)
+          .find(".dtsp-topRow .dtsp-subRow1")
+          .prepend(
+            '<div class="custom-pane-title">' + paneTitles[index] + "</div>"
+          );
+      }
+    }
+  });
 });
 
 function setupClickHandlers() {
