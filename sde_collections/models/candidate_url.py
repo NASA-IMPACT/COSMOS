@@ -1,19 +1,19 @@
+import hashlib
+import os
 from urllib.parse import urlparse
 
 from django.db import models
 
 from .collection import Collection
 from .collection_choice_fields import DocumentTypes
-from .pattern import ExcludePattern
+from .pattern import ExcludePattern, TitlePattern
 
 
 class CandidateURLQuerySet(models.QuerySet):
     def with_exclusion_status(self):
         return self.annotate(
             excluded=models.Exists(
-                ExcludePattern.candidate_urls.through.objects.filter(
-                    candidateurl=models.OuterRef("pk")
-                )
+                ExcludePattern.candidate_urls.through.objects.filter(candidateurl=models.OuterRef("pk"))
             )
         )
 
@@ -26,10 +26,9 @@ class CandidateURLManager(models.Manager):
 class CandidateURL(models.Model):
     """A candidate URL scraped for a given collection."""
 
-    collection = models.ForeignKey(
-        Collection, on_delete=models.CASCADE, related_name="candidate_urls"
-    )
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name="candidate_urls")
     url = models.CharField("URL")
+    hash = models.CharField("Hash", max_length=32, blank=True, default="1")
     scraped_title = models.CharField(
         "Scraped Title",
         default="",
@@ -54,9 +53,7 @@ class CandidateURL(models.Model):
         blank=True,
         help_text="This is the title present on Production Server",
     )
-    level = models.IntegerField(
-        "Level", default=0, blank=True, help_text="Level in the tree. Based on /."
-    )
+    level = models.IntegerField("Level", default=0, blank=True, help_text="Level in the tree. Based on /.")
     visited = models.BooleanField(default=False)
     objects = CandidateURLManager()
     document_type = models.IntegerField(choices=DocumentTypes.choices, null=True)
@@ -89,6 +86,27 @@ class CandidateURL(models.Model):
         verbose_name_plural = "Candidate URLs"
         ordering = ["url"]
 
+    @property
+    def fileext(self) -> str:
+        # Parse the URL to get the path
+        parsed_url = urlparse(self.url)
+        path = parsed_url.path
+
+        # Check for cases where the path ends with a slash or is empty, implying a directory or default file
+        if path.endswith("/") or not path:
+            return "html"
+
+        # Extract the extension from the path
+        extension = os.path.splitext(path)[1]
+
+        # Default to .html if no extension is found
+        if not extension:
+            return "html"
+
+        if extension.startswith("."):
+            return extension[1:]
+        return extension
+
     def splits(self) -> list[tuple[str, str]]:
         """Split the path into multiple collections."""
         parts = []
@@ -109,3 +127,40 @@ class CandidateURL(models.Model):
 
     def __str__(self) -> str:
         return self.url
+
+    def save(self, *args, **kwargs):
+        # Generate the hash based on the model values
+        hash_string = f"{self.url}{self.generated_title}{self.document_type}"
+        hash_value = hashlib.md5(hash_string.encode()).hexdigest()
+
+        # Set the hash value
+        self.hash = hash_value
+
+        super().save(*args, **kwargs)
+
+
+class ResolvedTitleBase(models.Model):
+    title_pattern = models.ForeignKey(TitlePattern, on_delete=models.CASCADE)
+    candidate_url = models.OneToOneField(CandidateURL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+
+
+class ResolvedTitle(ResolvedTitleBase):
+    resolved_title = models.CharField(blank=True, default="")
+
+    class Meta:
+        verbose_name = "Resolved Title"
+        verbose_name_plural = "Resolved Titles"
+
+    def save(self, *args, **kwargs):
+        # Finds the linked candidate URL and deletes ResolvedTitleError objects linked to it
+        ResolvedTitleError.objects.filter(candidate_url=self.candidate_url).delete()
+        super().save(*args, **kwargs)
+
+
+class ResolvedTitleError(ResolvedTitleBase):
+    error_string = models.TextField(null=False, blank=False)
+    http_status_code = models.IntegerField(null=True, blank=True)

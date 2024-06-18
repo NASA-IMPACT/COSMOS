@@ -3,51 +3,77 @@
 {% load i18n %}
 {% block title %}Collections{% endblock %}
 {% block stylesheets %}
+{% load humanize %}
     {{ block.super }}
-    <link href="//cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/b-html5-2.3.6/b-print-2.3.6/cr-1.6.2/date-1.4.1/fc-4.2.2/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/rr-1.3.3/sc-2.1.1/sb-1.4.2/sp-2.1.2/sl-1.6.2/sr-1.2.2/datatables.min.css"
-          rel="stylesheet" />
+    <link href="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/collections_list.css' %}">
 {% endblock stylesheets %}
 {% block content %}
     {% csrf_token %}
     <br>
-    <h2>SDE Collections</h2>
-    <table id="collection_table" class="table table-striped">
-        <thead>
+    <h2 class="title">Welcome back!</h2>
+    <table id="collection_table" class="table table-striped" style="width:100%" >
+        <thead class="tableHeader">
             <tr>
-                <th class="text-center">Name</th>
-                <th class="text-center">URL</th>
-                <th class="text-center">Division</th>
-                <th class="text-center">Candidate URLs</th>
-                <th class="text-center">Workflow Status</th>
-                <th class="text-center">Curator</th>
-                <th class="text-center">Connector Type</th>
-                <th class="text-center">Config Folder</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Name</th>
+                <th class="text-center noBorder url-th" style="padding-right:25px !important">URL</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Division</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Candidate URLs</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Workflow Status</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Curator</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Connector Type</th>
+
+                <th class="hideDisplay"></th>
+                <th class="hideDisplay"></th>
+            </tr>
+            <tr>
+                <td class="filterRowBottom" ><input class="table_filter_row_input textBoxStyling" type="text" id="nameFilter" placeholder="Name" /></td>
+                <td class="filterRowBottom url-td"><input class="table_filter_row_input textBoxStyling" type="text" id="urlFilter" placeholder="URL" /></td>
+                <td class="filterRowBottom"><input class="table_filter_row_input textBoxStyling" type="text" id="divisionFilter" placeholder="Division" /></td>
+                <td class="filterRowBottom"></td>
+                <td class="filterRowBottom"><select id="collection-dropdown-4" class="select-dropdown selectStyling">
+                    <option value="">SELECT</option>
+                   {% for choice in workflow_status_choices %}
+                       <option value="{{ choice }}" data-collection-id={{ collection.id }}>{{ choice.label }}</option>
+                   {% endfor %}
+                </select></td>
+                <td class="filterRowBottom"><select id="collection-dropdown-5" class="select-dropdown selectStyling">
+                    <option value="">SELECT</option>
+                    {% for curator in curators %}
+                    <option  value="{{ curator.pk }}" data-collection-id={{ collection.id }}>{{ curator.username }}</option>
+                {% endfor %}
+                </select></td>
+                <td class="filterRowBottom"><input class="table_filter_row_input textBoxStyling" type="text" id="connectorTypeFilter" placeholder="Connector Type" /></td>
+                <td class="hideDisplay"></td>
+                <td class="hideDisplay"></td>
             </tr>
         </thead>
+      
         <tbody>
             {% for collection in collections %}
-                <tr>
-                    <td>
-                        <a href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }} <i class="material-icons">chevron_right</i></a>
+                <tr id={{ collection.id }}>
+                    <td class="noBorder">
+                        <a class="nameStyling" href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }} <i class="material-icons">chevron_right</i></a>
                     </td>
-                    <td>
+                    <td class="url-td whiteText noBorder">
                         {% if collection.url %}
-                            {{ collection.url }}<a target="_blank" href=" {{ collection.url }} "> <i class="material-icons">open_in_new</i></a>
+                            <div class="url-cell">
+                                <span class="url" title="{{collection.url}}">{{ collection.url }}</span>
+                                <a class="url-link" target="_blank" href=" {{ collection.url }} "> <i class="material-icons urlIcon">open_in_new</i></a></div>
                         {% endif %}
                     </td>
-                    <td>{{ collection.get_division_display }}</td>
-                    <td>
+                    <td class="whiteText noBorder">{{ collection.get_division_display }}</td>
+                    <td class="noBorder centerAlign">
                         <a href=" {% if collection.num_candidate_urls > 0 %} {% url 'sde_collections:candidate_urls' collection.pk %} {% endif %} "
-                           class="btn btn-sm {% if collection.num_candidate_urls > 0 %}btn-primary {% else %}disabled{% endif %}"
-                           role="button">{{ collection.num_candidate_urls }}</a>
+                           class="btn btn-sm {% if collection.num_candidate_urls > 0 %}btn-primary {% else %}disabled{% endif %}candidateCount"
+                           role="button">{{ collection.num_candidate_urls|intcomma }}</a>
                     </td>
-                    <td>
+                    <td class="noBorder">
                         <div class="dropdown workflow_status_dropdown"
                              data-match-pattern
                              remove_protocol
                              row
-                             url>
+                             url>                          
                             <button class="btn {{ collection.workflow_status_button_color }} btn-sm dropdown-toggle"
                                     type="button"
                                     id="workflow-status-button-{{ collection.id }}"
@@ -57,12 +83,12 @@
                             <div class="dropdown-menu"
                                  aria-labelledby="workflow-status-button-{{ collection.id }}">
                                 {% for choice in workflow_status_choices %}
-                                    <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }}>{{ choice.label }}</a>
+                                    <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
                                 {% endfor %}
                             </div>
                         </div>
                     </td>
-                    <td>
+                    <td class="noBorder">
                         <div class="dropdown curator_dropdown"
                              data-match-pattern
                              remove_protocol
@@ -77,21 +103,42 @@
                             <div class="dropdown-menu"
                                  aria-labelledby="curator-button-{{ collection.id }}">
                                 {% for curator in curators %}
-                                    <a class="dropdown-item curator_select" value="{{ curator.pk }}" data-collection-id={{ collection.id }}>{{ curator.username }}</a>
+                                    <a  key="{{ curator.pk }}" class="dropdown-item curator_select" value="{{ curator.pk }}"  data-collection-id={{ collection.id }}
+                                     >{{ curator.username }}</a>
                                 {% endfor %}
                             </div>
                         </div>
                     </td>
-                    <td>{{ collection.get_connector_display }}</td>
-                    <td>{{ collection.config_folder }}</td>
+                    <td class="whiteText noBorder">{{ collection.get_connector_display }}</td>
+                    <td class="hideDisplay">{{ collection.workflow_status }}</td>
+                    <td class="hideDisplay">{{ collection.curated_by_id }}</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <div id="hideShowColumnsModal" class="modal pr-4 pl-4 pt-4 customizeColumnContainer">
+        <div class="modalDialog">
+            <div class="modalContent">
+                <div class="modalHeader ">
+                    <h5 class="modalTitle whiteText" id="hideShowColumnsModalTitle">Customize Columns</h5>
+                    <p id="subTitle" class="whiteText">Attributes marked with a checkbox will be displayed in the table.</p>
+                </div>
+                <form id="hide_show_columns_form">
+                    <div class="modalBody whiteText" id="modalBody">
+                    </div>
+                    <div class="modalFooter customizeColumnContainer">
+                        <div type="submit" class="btn-prime hideShowSubmitButton" id="hideShowSubmitButton">Confirm</div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
 {% block javascripts %}
     <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <script src="//cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.13.4/af-2.5.3/b-2.3.6/b-colvis-2.3.6/b-html5-2.3.6/b-print-2.3.6/cr-1.6.2/date-1.4.1/fc-4.2.2/fh-3.3.2/kt-2.9.0/r-2.4.1/rg-1.3.1/rr-1.3.3/sc-2.1.1/sb-1.4.2/sp-2.1.2/sl-1.6.2/sr-1.2.2/datatables.min.js"></script>
+    <script src="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.js"></script>
     <script src="{% static 'js/collection_list.js' %}"></script>
+    <script src="{% static 'js/project.js' %}"></script>
 {% endblock javascripts %}

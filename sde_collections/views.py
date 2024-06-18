@@ -4,20 +4,22 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
 from rest_framework import generics, status, viewsets
+from rest_framework.exceptions import ValidationError
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .forms import CollectionGithubIssueForm, RequiredUrlForm
-from .models.candidate_url import CandidateURL
-from .models.collection import Collection, RequiredUrls
+from .forms import CollectionGithubIssueForm, CommentsForm, RequiredUrlForm
+from .models.candidate_url import CandidateURL, ResolvedTitle, ResolvedTitleError
+from .models.collection import Collection, Comments, RequiredUrls,WorkflowHistory
 from .models.collection_choice_fields import (
     ConnectorChoices,
     CurationStatusChoices,
@@ -32,6 +34,7 @@ from .models.pattern import (
     TitlePattern,
 )
 from .serializers import (
+    CandidateURLAPISerializer,
     CandidateURLBulkCreateSerializer,
     CandidateURLSerializer,
     CollectionReadSerializer,
@@ -40,6 +43,7 @@ from .serializers import (
     ExcludePatternSerializer,
     IncludePatternSerializer,
     TitlePatternSerializer,
+    WorkflowHistorySerializer,
 )
 from .tasks import push_to_github_task
 from .utils.health_check import generate_db_github_metadata_differences
@@ -87,9 +91,9 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         collection = self.get_object()
-
         form = RequiredUrlForm(request.POST)
         github_form = CollectionGithubIssueForm(request.POST)
+        comments_form = CommentsForm(request.POST)
 
         if "github_issue_link" in request.POST and github_form.is_valid():
             github_issue_link = github_form.cleaned_data["github_issue_link"]
@@ -99,12 +103,15 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
                 collection.github_issue_number = github_issue_number
                 collection.save()
             else:
-                github_form.add_error(
-                    "github_issue_link", "Invalid GitHub issue link format"
-                )
-                return self.render_to_response(
-                    self.get_context_data(form=form, github_form=github_form)
-                )
+                github_form.add_error("github_issue_link", "Invalid GitHub issue link format")
+                return self.render_to_response(self.get_context_data(form=form, github_form=github_form))
+            return redirect("sde_collections:detail", pk=collection.pk)
+
+        elif "comment_button" in request.POST and comments_form.is_valid():
+            comment = comments_form.save(commit=False)
+            comment.collection = collection
+            comment.user = self.request.user
+            comment.save()
             return redirect("sde_collections:detail", pk=collection.pk)
 
         else:
@@ -127,23 +134,46 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         if "form" not in context:
             context["form"] = RequiredUrlForm()
+        if "github_form" not in context:
             context["github_form"] = CollectionGithubIssueForm(
                 initial={"github_issue_link": self.get_object().github_issue_link}
             )
-        context["required_urls"] = RequiredUrls.objects.filter(
-            collection=self.get_object()
-        )
-        context["segment"] = "collection-detail"
-        return context
+        if "comments_form" not in context:
+            context["comments_form"] = CommentsForm()
+        
+        # Initialize a dictionary to hold the most recent history for each workflow status
+        timeline_history = {}
+        
+        # Get the most recent history for each workflow status
+        recent_histories = WorkflowHistory.objects.filter(collection=self.get_object()).order_by('workflow_status', '-created_at').distinct('workflow_status')
+        
+        # Populate the dictionary with the actual history objects
+        for history in recent_histories:
+            timeline_history[history.workflow_status] = history
 
+        # Add placeholders for stages with no workflow history
+        for status in WorkflowStatusChoices:
+            if status not in timeline_history:
+                timeline_history[status] = {
+                    'workflow_status': status,
+                    'created_at': None,
+                    'label': WorkflowStatusChoices(status).label,
+                }
+        
+        context['timeline_history'] = [timeline_history[status] for status in WorkflowStatusChoices]
+        context["required_urls"] = RequiredUrls.objects.filter(collection=self.get_object())
+        context["segment"] = "collection-detail"
+        context["comments"] = Comments.objects.filter(collection=self.get_object()).order_by("-created_at")
+        context["workflow_history"] = WorkflowHistory.objects.filter(collection=self.get_object()).order_by('-created_at')
+        context["workflow_status_choices"] = WorkflowStatusChoices
+
+        return context
 
 class RequiredUrlsDeleteView(LoginRequiredMixin, DeleteView):
     model = RequiredUrls
 
     def get_success_url(self, *args, **kwargs):
-        return reverse(
-            "sde_collections:detail", kwargs={"pk": self.object.collection.pk}
-        )
+        return reverse("sde_collections:detail", kwargs={"pk": self.object.collection.pk})
 
 
 class CandidateURLsListView(LoginRequiredMixin, ListView):
@@ -182,7 +212,27 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
             match_pattern_type=2
         )  # 2=regex patterns
         context["title_patterns"] = self.collection.titlepattern.all()
+        context["workflow_status_choices"] = WorkflowStatusChoices
+
         return context
+
+class SdeDashboardView(LoginRequiredMixin,ListView ):
+       
+    model = Collection
+    template_name = "sde_collections/sde_dashboard.html"
+    context_object_name = "collections"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["segment"] = "collections"
+        return context
+
 
 
 class CollectionFilterMixin:
@@ -241,6 +291,23 @@ class CandidateURLBulkCreateView(generics.ListCreateAPIView):
         collection.apply_all_patterns()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class CandidateURLAPIView(ListAPIView):
+    serializer_class = CandidateURLAPISerializer
+
+    def get(self, request, *args, **kwargs):
+        config_folder = kwargs.get("config_folder")
+        self.config_folder = config_folder
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = (
+            CandidateURL.objects.filter(collection__config_folder=self.config_folder)
+            .with_exclusion_status()
+            .filter(excluded=False)
+        )
+        return queryset
 
 
 class ExcludePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
@@ -320,19 +387,16 @@ class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
 
-
 class CollectionReadViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Collection.objects.all()
     serializer_class = CollectionReadSerializer
 
 
-class PushToGithubView(APIView):
+class PushToGithubView(APIView): 
     def post(self, request):
         collection_ids = request.POST.getlist("collection_ids[]", [])
         if len(collection_ids) == 0:
-            return Response(
-                "collection_ids can't be empty.", status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response("collection_ids can't be empty.", status=status.HTTP_400_BAD_REQUEST)
 
         push_to_github_task.delay(collection_ids)
 
@@ -340,6 +404,58 @@ class PushToGithubView(APIView):
             {"Success": "Started pushing collections to github"},
             status=status.HTTP_200_OK,
         )
+
+
+class IndexingInstructionsView(APIView):
+    """
+    Serves the name of the first curated collection to be indexed and updates collection workflow status
+    """
+
+    def get(self, request):
+        curated_collections = Collection.objects.filter(workflow_status=WorkflowStatusChoices.CURATED)
+
+        job_name = ""
+        if curated_collections.exists():
+            collection = curated_collections.first()
+            job_name = f"collection.indexer.{collection.config_folder}.xml"
+
+        return Response(
+            {
+                "job_name": job_name,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def post(self, request):
+        config_folder = request.data.get("collection")
+        indexing_status = request.data.get("status")
+
+        if not config_folder or not indexing_status:
+            raise ValidationError({"error": "Config folder name and indexing status are required."})
+
+        collection = get_object_or_404(Collection, config_folder=config_folder)
+
+        if indexing_status == "STARTED_INDEXING" and collection.workflow_status == WorkflowStatusChoices.CURATED:
+            collection.workflow_status = WorkflowStatusChoices.SECRET_DEPLOYMENT_STARTED
+            collection.save()
+
+            return Response(
+                {"message": f"Status for collection '{collection.name}' updated to Secret Deployment Started."},
+                status=status.HTTP_200_OK,
+            )
+        elif (
+            indexing_status == "FINISHED_INDEXING"
+            and collection.workflow_status == WorkflowStatusChoices.SECRET_DEPLOYMENT_STARTED
+        ):
+            collection.workflow_status = WorkflowStatusChoices.READY_FOR_LRM_QUALITY_CHECK
+            collection.save()
+
+            return Response(
+                {"message": f"Status for collection '{collection.name}' updated to Ready For LRM Quality Check."},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response({"error": "Invalid indexing or workflow status."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
@@ -354,9 +470,7 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
             self.data = generate_db_github_metadata_differences()
         else:
             # this needs to be a celery task eventually
-            self.data = generate_db_github_metadata_differences(
-                reindex_configs_from_github=True
-            )
+            self.data = generate_db_github_metadata_differences(reindex_configs_from_github=True)
 
         return super().get(request, *args, **kwargs)
 
@@ -374,12 +488,8 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
             elif field == "connector":
                 new_value = ConnectorChoices.lookup_by_text(new_value)
 
-            Collection.objects.filter(config_folder=config_folder).update(
-                **{field: new_value}
-            )
-            messages.success(
-                request, f"Successfully updated {field} of {config_folder}."
-            )
+            Collection.objects.filter(config_folder=config_folder).update(**{field: new_value})
+            messages.success(request, f"Successfully updated {field} of {config_folder}.")
         else:
             messages.error(
                 request,
@@ -393,3 +503,24 @@ class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
         context["differences"] = self.data
 
         return context
+
+
+class ResolvedTitleListView(ListView):
+    model = ResolvedTitle
+    context_object_name = "resolved_titles"
+
+
+class ResolvedTitleErrorListView(ListView):
+    model = ResolvedTitleError
+    context_object_name = "resolved_title_errors"
+
+
+class TitlesAndErrorsView(View):
+    def get(self, request, *args, **kwargs):
+        resolved_titles = ResolvedTitle.objects.select_related("title_pattern", "candidate_url").all()
+        resolved_title_errors = ResolvedTitleError.objects.select_related("title_pattern", "candidate_url").all()
+        context = {
+            "resolved_titles": resolved_titles,
+            "resolved_title_errors": resolved_title_errors,
+        }
+        return render(request, "sde_collections/titles_and_errors_list.html", context)

@@ -1,6 +1,7 @@
 """
 Base settings to build other settings files upon.
 """
+
 from pathlib import Path
 
 import environ
@@ -66,17 +67,36 @@ DJANGO_APPS = [
     "django_extensions",
 ]
 THIRD_PARTY_APPS = [
-    "crispy_forms",
-    "crispy_bootstrap5",
-    "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "allauth",
+    "corsheaders",
+    "crispy_bootstrap5",
+    "crispy_forms",
     "django_celery_beat",
-    "rest_framework",
     "rest_framework_datatables",
+    "rest_framework",
 ]
 
-LOCAL_APPS = ["sde_indexing_helper.users", "sde_collections", "feedback"]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://sde-lrm.nasa-impact.net",
+    "https://sde-qa.nasa-impact.net",
+    "https://sciencediscoveryengine.test.nasa.gov",
+    "https://sciencediscoveryengine.nasa.gov",
+    "http://sde-qa.nasa-impact.net",
+    "http://sciencediscoveryengine.test.nasa.gov",
+    "http://sciencediscoveryengine.nasa.gov",
+    "https://localhost:4200",
+    "http://localhost:4200",
+]
+
+LOCAL_APPS = [
+    "environmental_justice",
+    "sde_indexing_helper.users",
+    "sde_collections",
+    "feedback",
+]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -111,9 +131,7 @@ PASSWORD_HASHERS = [
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -132,6 +150,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 # STATIC
@@ -233,12 +252,7 @@ MANAGERS = ADMINS
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "%(levelname)s %(asctime)s %(module)s "
-            "%(process)d %(thread)d %(message)s"
-        }
-    },
+    "formatters": {"verbose": {"format": "%(levelname)s %(asctime)s %(module)s " "%(process)d %(thread)d %(message)s"}},
     "handlers": {
         "console": {
             "level": "DEBUG",
@@ -313,9 +327,7 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_datatables.renderers.DatatablesRenderer",
     ),
-    "DEFAULT_FILTER_BACKENDS": (
-        "rest_framework_datatables.filters.DatatablesFilterBackend",
-    ),
+    "DEFAULT_FILTER_BACKENDS": ("rest_framework_datatables.filters.DatatablesFilterBackend",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework_datatables.pagination.DatatablesPageNumberPagination",
     "PAGE_SIZE": 50,
     "EXCEPTION_HANDLER": "sde_indexing_helper.utils.exceptions.custom_exception_handler",
@@ -323,4 +335,7 @@ REST_FRAMEWORK = {
 
 GITHUB_ACCESS_TOKEN = env("GITHUB_ACCESS_TOKEN")
 SINEQUA_CONFIGS_GITHUB_REPO = env("SINEQUA_CONFIGS_GITHUB_REPO")
-GITHUB_BRANCH_FOR_WEBAPP = env("GITHUB_BRANCH_FOR_WEBAPP")
+SINEQUA_CONFIGS_REPO_MASTER_BRANCH = env("SINEQUA_CONFIGS_REPO_MASTER_BRANCH")
+SINEQUA_CONFIGS_REPO_DEV_BRANCH = env("SINEQUA_CONFIGS_REPO_DEV_BRANCH")
+SINEQUA_CONFIGS_REPO_WEBAPP_PR_BRANCH = env("SINEQUA_CONFIGS_REPO_WEBAPP_PR_BRANCH")
+SLACK_WEBHOOK_URL = env("SLACK_WEBHOOK_URL")

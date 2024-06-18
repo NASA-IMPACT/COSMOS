@@ -4,11 +4,19 @@ import urllib.parse
 import requests
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from model_utils import FieldTracker
 from slugify import slugify
 
 from config_generation.db_to_xml import XmlEditor
 
 from ..utils.github_helper import GitHubHandler
+from ..utils.slack_utils import (
+    STATUS_CHANGE_NOTIFICATIONS,
+    format_slack_message,
+    send_slack_message,
+)
 from .collection_choice_fields import (
     ConnectorChoices,
     CurationStatusChoices,
@@ -26,54 +34,28 @@ class Collection(models.Model):
     """Model definition for Collection."""
 
     name = models.CharField("Name", max_length=1024)
-    config_folder = models.CharField(
-        "Config Folder", max_length=2048, unique=True, editable=False
-    )
-    url = models.URLField("URL", max_length=2048, blank=True)
+    config_folder = models.CharField("Config Folder", max_length=2048, unique=True, editable=False)
+    url = models.URLField("URL", max_length=2048)
     division = models.IntegerField(choices=Divisions.choices)
     turned_on = models.BooleanField("Turned On", default=True)
-    connector = models.IntegerField(
-        choices=ConnectorChoices.choices, default=ConnectorChoices.CRAWLER2
-    )
+    connector = models.IntegerField(choices=ConnectorChoices.choices, default=ConnectorChoices.CRAWLER2)
 
-    source = models.IntegerField(
-        choices=SourceChoices.choices, default=SourceChoices.BOTH
-    )
-    update_frequency = models.IntegerField(
-        choices=UpdateFrequencies.choices, default=UpdateFrequencies.WEEKLY
-    )
-    document_type = models.IntegerField(
-        choices=DocumentTypes.choices, null=True, blank=True
-    )
-    tree_root_deprecated = models.CharField(
-        "Tree Root", max_length=1024, default="", blank=True
-    )
+    source = models.IntegerField(choices=SourceChoices.choices, default=SourceChoices.BOTH)
+    update_frequency = models.IntegerField(choices=UpdateFrequencies.choices, default=UpdateFrequencies.WEEKLY)
+    document_type = models.IntegerField(choices=DocumentTypes.choices, default=DocumentTypes.DOCUMENTATION)
+    tree_root_deprecated = models.CharField("Tree Root", max_length=1024, default="", blank=True)
     delete = models.BooleanField(default=False)
 
     # audit columns for production
-    audit_hierarchy = models.CharField(
-        "Audit Hierarchy", max_length=2048, default="", blank=True
-    )
+    audit_hierarchy = models.CharField("Audit Hierarchy", max_length=2048, default="", blank=True)
     audit_url = models.CharField("Audit URL", max_length=2048, default="", blank=True)
-    audit_mapping = models.CharField(
-        "Audit Mapping", max_length=2048, default="", blank=True
-    )
-    audit_label = models.CharField(
-        "Audit Label", max_length=2048, default="", blank=True
-    )
-    audit_query = models.CharField(
-        "Audit Query", max_length=2048, default="", blank=True
-    )
-    audit_duplicate_results = models.CharField(
-        "Audit Duplicate Results", max_length=2048, default="", blank=True
-    )
-    audit_metrics = models.CharField(
-        "Audit Metrics", max_length=2048, default="", blank=True
-    )
+    audit_mapping = models.CharField("Audit Mapping", max_length=2048, default="", blank=True)
+    audit_label = models.CharField("Audit Label", max_length=2048, default="", blank=True)
+    audit_query = models.CharField("Audit Query", max_length=2048, default="", blank=True)
+    audit_duplicate_results = models.CharField("Audit Duplicate Results", max_length=2048, default="", blank=True)
+    audit_metrics = models.CharField("Audit Metrics", max_length=2048, default="", blank=True)
 
-    cleaning_assigned_to = models.CharField(
-        "Cleaning Assigned To", max_length=128, default="", blank=True
-    )
+    cleaning_assigned_to = models.CharField("Cleaning Assigned To", max_length=128, default="", blank=True)
 
     github_issue_number = models.IntegerField("Issue Number in Github", default=0)
     notes = models.TextField("Notes", blank=True, default="")
@@ -89,9 +71,9 @@ class Collection(models.Model):
         choices=WorkflowStatusChoices.choices,
         default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
     )
-    curated_by = models.ForeignKey(
-        User, on_delete=models.DO_NOTHING, null=True, blank=True
-    )
+    tracker = FieldTracker(fields=["workflow_status"])
+
+    curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
 
     class Meta:
@@ -100,19 +82,66 @@ class Collection(models.Model):
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
 
+    def add_to_public_query(self):
+        """Add the collection to the public query."""
+        if self.workflow_status != WorkflowStatusChoices.READY_FOR_PUBLIC_PROD:
+            raise ValueError(f"{self.config_folder} is not ready for public prod, you can't add it to the public query")
+
+        gh = GitHubHandler()
+        query_path = "webservices/query-smd-primary.xml"
+        scraper_content = gh._get_file_contents(query_path)
+        scraper_editor = XmlEditor(scraper_content.decoded_content.decode("utf-8"))
+
+        collections = scraper_editor.get_tag_value("CollectionSelection", strict=True)
+        collections = collections.split(";")
+        collections.append(f"/SDE/{self.config_folder}/")
+        collections = list(set(collections))
+        collections.sort()
+        collections = ";".join(collections)
+
+        scraper_editor.update_or_add_element_value("CollectionSelection", collections)
+        scraper_content = scraper_editor.update_config_xml()
+        gh.create_or_update_file(query_path, scraper_content)
+
+    @property
+    def _scraper_config_path(self) -> str:
+        return f"sources/scrapers/{self.config_folder}/default.xml"
+
+    @property
+    def _plugin_config_path(self) -> str:
+        return f"sources/SDE/{self.config_folder}/default.xml"
+
+    @property
+    def _indexer_config_path(self) -> str:
+        return f"jobs/collection.indexer.{self.config_folder}.xml"
+
     @property
     def tree_root(self) -> str:
         return f"/{self.get_division_display()}/{self.name}/"
 
     @property
-    def server_url_test(self) -> str:
-        base_url = "https://sciencediscoveryengine.test.nasa.gov"
+    def server_url_secret_prod(self) -> str:
+        base_url = "https://sciencediscoveryengine.nasa.gov"
+        payload = {
+            "name": "secret-prod",
+            "scope": "All",
+            "text": "",
+            "advanced": {
+                "collection": f"/SDE/{self.config_folder}/",
+            },
+        }
+        encoded_payload = urllib.parse.quote(json.dumps(payload))
+        return f"{base_url}/app/secret-prod/#/search?query={encoded_payload}"
+
+    @property
+    def server_url_prod(self) -> str:
+        base_url = "https://sciencediscoveryengine.nasa.gov"
         payload = {
             "name": "query-smd-primary",
             "scope": "All",
             "text": "",
             "advanced": {
-                "collection": f"/SMD/{self.config_folder}/",
+                "collection": f"/SDE/{self.config_folder}/",
             },
         }
         encoded_payload = urllib.parse.quote(json.dumps(payload))
@@ -151,20 +180,17 @@ class Collection(models.Model):
             14: "btn-primary",
             15: "btn-info",
             16: "btn-secondary",
+            17: "btn-light",
         }
         return color_choices[self.workflow_status]
 
     def _process_exclude_list(self):
         """Process the exclude list."""
-        return [
-            pattern._process_match_pattern() for pattern in self.excludepattern.all()
-        ]
+        return [pattern._process_match_pattern() for pattern in self.excludepattern.all()]
 
     def _process_include_list(self):
         """Process the include list."""
-        return [
-            pattern._process_match_pattern() for pattern in self.includepattern.all()
-        ]
+        return [pattern._process_match_pattern() for pattern in self.includepattern.all()]
 
     def _process_title_list(self):
         """Process the title list"""
@@ -188,30 +214,57 @@ class Collection(models.Model):
             document_type_rules.append(processed_pattern)
         return document_type_rules
 
-    def create_config_xml(self):
+    def _write_to_github(self, path, content, overwrite):
+        gh = GitHubHandler()
+        if overwrite:
+            gh.create_or_update_file(path, content)
+        else:
+            gh.create_file(path, content)
+
+    def create_scraper_config(self, overwrite: bool = False):
         """
-        Reads from the model data and creates a new config folder
-        and xml file on sde-backend/sources/SDE/<config_folder>/default.xml
+        Reads from the model data and creates the initial scraper config xml file
+
+        if overwrite is True, it will overwrite the existing file
         """
 
-        original_config_string = open(
-            "config_generation/xmls/indexing_template.xml"
-        ).read()
-        editor = XmlEditor(original_config_string)
+        scraper_template = open("config_generation/xmls/webcrawler_initial_crawl.xml").read()
+        editor = XmlEditor(scraper_template)
+        scraper_config = editor.convert_template_to_scraper(self)
+        self._write_to_github(self._scraper_config_path, scraper_config, overwrite)
 
-        # add the URL
-        editor.update_or_add_element_value("Url", self.url)
+    def create_plugin_config(self, overwrite: bool = False):
+        """
+        Reads from the model data and creates the plugin config xml file that calls the api
 
-        editor.update_or_add_element_value("TreeRoot", self.tree_root)
-        if self.document_type:
-            editor.add_document_type_mapping(
-                document_type=self.get_document_type_display(), criteria=None
-            )
+        if overwrite is True, it will overwrite the existing file
+        """
 
-        updated_config_xml_string = editor.update_config_xml()
+        # there needs to be a scraper config file before creating the plugin config
+        gh = GitHubHandler()
+        scraper_exists = gh.check_file_exists(self._scraper_config_path)
+        if not scraper_exists:
+            raise ValueError(f"Scraper does not exist for the collection {self.config_folder}")
+        else:
+            scraper_content = gh._get_file_contents(self._scraper_config_path)
+            scraper_content = scraper_content.decoded_content.decode("utf-8")
+            scraper_editor = XmlEditor(scraper_content)
 
-        gh = GitHubHandler([self])
-        return gh.create_and_initialize_config_file(self, updated_config_xml_string)
+        plugin_template = open("config_generation/xmls/plugin_indexing_template.xml").read()
+        plugin_editor = XmlEditor(plugin_template)
+        plugin_config = plugin_editor.convert_template_to_plugin_indexer(scraper_editor)
+        self._write_to_github(self._plugin_config_path, plugin_config, overwrite)
+
+    def create_indexer_config(self, overwrite: bool = False):
+        """
+        Reads from the model data and creates indexer job that calls the plugin config
+
+        if overwrite is True, it will overwrite the existing file
+        """
+        indexer_template = open("config_generation/xmls/job_template.xml").read()
+        editor = XmlEditor(indexer_template)
+        indexer_config = editor.convert_template_to_indexer(self)
+        self._write_to_github(self._indexer_config_path, indexer_config, overwrite)
 
     def update_config_xml(self, original_config_string):
         """
@@ -406,8 +459,22 @@ class Collection(models.Model):
         if not self.config_folder:
             self.config_folder = self._compute_config_folder_name()
 
+        if not self._state.adding:
+            old_status = Collection.objects.get(id=self.id).workflow_status
+            new_status = self.workflow_status
+            if old_status != new_status:
+                transition = (old_status, new_status)
+                if transition in STATUS_CHANGE_NOTIFICATIONS:
+                    details = STATUS_CHANGE_NOTIFICATIONS[transition]
+                    message = format_slack_message(self.name, details, self.id)
+                    send_slack_message(message)
         # Call the parent class's save method
         super().save(*args, **kwargs)
+
+    def __init__(self, *args, **kwargs):
+        # Create a cached version of the last workflow_status to compare against
+        super().__init__(*args, **kwargs)
+        self.old_workflow_status = self.workflow_status
 
 
 class RequiredUrls(models.Model):
@@ -423,3 +490,77 @@ class RequiredUrls(models.Model):
 
     def __str__(self) -> str:
         return self.url
+
+
+class Comments(models.Model):
+    collection = models.ForeignKey("Collection", related_name="comments", on_delete=models.CASCADE)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.text
+
+
+class WorkflowHistory(models.Model):
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name="workflow_history", null=True)
+    workflow_status = models.IntegerField(
+        choices=WorkflowStatusChoices.choices,
+        default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
+    )
+    old_status = models.IntegerField(choices=WorkflowStatusChoices.choices, null=True)
+    curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.collection) + str(self.workflow_status)
+
+    @property
+    def workflow_status_button_color(self) -> str:
+        color_choices = {
+            1: "btn-light",
+            2: "btn-danger",
+            3: "btn-warning",
+            4: "btn-info",
+            5: "btn-success",
+            6: "btn-primary",
+            7: "btn-info",
+            8: "btn-secondary",
+            9: "btn-light",
+            10: "btn-danger",
+            11: "btn-warning",
+            12: "btn-info",
+            13: "btn-success",
+            14: "btn-primary",
+            15: "btn-info",
+            16: "btn-secondary",
+            17: "btn-light",
+        }
+        return color_choices[self.workflow_status]
+
+
+@receiver(post_save, sender=Collection)
+def log_workflow_history(sender, instance, created, **kwargs):
+    if instance.workflow_status != instance.old_workflow_status:
+        WorkflowHistory.objects.create(
+            collection=instance,
+            workflow_status=instance.workflow_status,
+            curated_by=instance.curated_by,
+            old_status=instance.old_workflow_status,
+        )
+
+
+@receiver(post_save, sender=Collection)
+def create_configs_on_status_change(sender, instance, created, **kwargs):
+    """
+    Creates various config files on certain workflow status changes
+    """
+
+    if "workflow_status" in instance.tracker.changed():
+        if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
+            instance.create_plugin_config(overwrite=True)
+        elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
+            instance.create_scraper_config(overwrite=False)
+            instance.create_indexer_config(overwrite=False)
+        elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_PUBLIC_PROD:
+            instance.add_to_public_query()
