@@ -58,24 +58,29 @@ STATUS_CHANGE_NOTIFICATIONS = {
             SLACK_ID_MAPPING["Xiang Li"],
             SLACK_ID_MAPPING["Shravan Vishwanathan"],
             SLACK_ID_MAPPING["Advait Yogaonkar"],
-            SLACK_ID_MAPPING["Carson Davis"],
-            SLACK_ID_MAPPING["Bishwas Praveen"],
-            SLACK_ID_MAPPING["Ashish Acharya"],
         ],
     },
-    (WorkflowStatusChoices.READY_FOR_FINAL_QUALITY_CHECK, WorkflowStatusChoices.READY_FOR_PUBLIC_PROD): {
-        "message": "{name} has passed all quality checks and is ready for public production! :trophy:",
+    (WorkflowStatusChoices.READY_FOR_FINAL_QUALITY_CHECK, WorkflowStatusChoices.QUALITY_CHECK_PERFECT): {
+        "message": "{name} has passed all quality checks and is ready for public production! :white_check_mark:",
         "tags": [
             SLACK_ID_MAPPING["Carson Davis"],
             SLACK_ID_MAPPING["Bishwas Praveen"],
             SLACK_ID_MAPPING["Ashish Acharya"],
         ],
     },
-    (WorkflowStatusChoices.READY_FOR_FINAL_QUALITY_CHECK, WorkflowStatusChoices.LOW_PRIORITY_PROBLEMS_ON_PROD): {
-        "message": "{name} is now on Public Prod and is almost perfect, with minor issues noted. Please review! :memo:",
+    (WorkflowStatusChoices.READY_FOR_FINAL_QUALITY_CHECK, WorkflowStatusChoices.QUALITY_CHECK_MINOR): {
+        "message": "{name} has passed all quality checks and is ready for public production! :white_check_mark:",
+        "tags": [
+            SLACK_ID_MAPPING["Carson Davis"],
+            SLACK_ID_MAPPING["Bishwas Praveen"],
+            SLACK_ID_MAPPING["Ashish Acharya"],
+        ],
+    },
+    (WorkflowStatusChoices.QUALITY_CHECK_PERFECT, WorkflowStatusChoices.PROD_PERFECT): {
+        "message": "{name} is now live on Public Prod! Congrats team! :sparkles:",
         "tags": [SLACK_ID_MAPPING["channel"]],
     },
-    (WorkflowStatusChoices.READY_FOR_PUBLIC_PROD, WorkflowStatusChoices.PERFECT_ON_PROD): {
+    (WorkflowStatusChoices.QUALITY_CHECK_MINOR, WorkflowStatusChoices.PROD_MINOR): {
         "message": "{name} is now live on Public Prod! Congrats team! :sparkles:",
         "tags": [SLACK_ID_MAPPING["channel"]],
     },
