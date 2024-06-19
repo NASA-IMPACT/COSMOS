@@ -31,7 +31,6 @@
     <InstanceText></InstanceText>
     <PauseTimeBeforeStartup></PauseTimeBeforeStartup>
     <StatusMaxOk></StatusMaxOk>
-    <StartIdentity></StartIdentity>
     <UseAsDefaultIdentity>true</UseAsDefaultIdentity>
     <RunJobsInParallel>false</RunJobsInParallel>
     <!-- <JobListItem>

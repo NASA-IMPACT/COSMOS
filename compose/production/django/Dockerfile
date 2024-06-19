@@ -92,6 +92,7 @@ COPY --chown=django:django . ${APP_HOME}
 
 # make django owner of the WORKDIR directory as well.
 RUN chown django:django ${APP_HOME}
+RUN chown django:django /usr/local/lib/python3.10/site-packages/django_celery_beat/
 
 USER django
 

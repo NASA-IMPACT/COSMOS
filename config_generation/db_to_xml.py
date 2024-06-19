@@ -23,12 +23,31 @@ class XmlEditor:
         """takes the path of an xml file and opens it as an ElementTree object"""
         return ET.ElementTree(ET.fromstring(xml_string))
 
-    def get_tag_value(self, tag_name: str) -> list:
+    def get_tag_value(self, tag_name: str, strict: bool = False) -> str | list[str]:
         """
-        tag_name can be either the top level tag
-        or you can get a child by saying 'parent/child'
+        Retrieves the value of the specified XML tag. If 'strict' is True, the function will
+        raise an error if more than one value is found, and it will return the single value.
+
+        Parameters:
+        - tag_name (str): Can be either the top level tag or a path specifying a child tag, e.g., 'parent/child'.
+        - strict (bool): If True, raises an error when more than one value is found, or if no values are found.
+
+        Returns:
+        - str: The text of the single XML element matching the tag_name if strict is True and exactly one match exists.
+
+        Raises:
+        - ValueError: If 'strict' is True and either no values or more than one value is found.
         """
-        return [element.text for element in self.xml_tree.findall(tag_name)]
+
+        elements = self.xml_tree.findall(tag_name)
+        if strict:
+            if len(elements) == 0:
+                raise ValueError(f"No elements found for the tag '{tag_name}'")
+            elif len(elements) > 1:
+                raise ValueError(f"Multiple elements found for the tag '{tag_name}': expected exactly one.")
+            return elements[0].text
+        else:
+            return [element.text for element in elements]
 
     def _add_declaration(self, xml_string: str):
         """adds xml declaration to xml string"""
@@ -98,38 +117,87 @@ class XmlEditor:
         some values must now be modified so it will be an effective scraper
         """
         self.update_or_add_element_value("Indexers", "")
-        self.update_or_add_element_value(
-            "Plugin", "SMD_Plugins/Sinequa.Plugin.ListCandidateUrls"
-        )
+        self.update_or_add_element_value("Plugin", "SMD_Plugins/Sinequa.Plugin.ListCandidateUrls")
         self.update_or_add_element_value("ShardIndexes", "")
         self.update_or_add_element_value("ShardingStrategy", "")
         self.update_or_add_element_value("WorkerCount", "8")
         self.update_or_add_element_value("LogLevel", "0", parent_element_name="System")
-        self.update_or_add_element_value(
-            "Simulate", "true", parent_element_name="IndexerClient"
-        )
+        self.update_or_add_element_value("Simulate", "true", parent_element_name="IndexerClient")
 
     def convert_scraper_to_indexer(self) -> None:
         # this is specialized for the production instance right now
         self.update_or_add_element_value("Indexers", "")
         self.update_or_add_element_value("Plugin", "")
-        self.update_or_add_element_value(
-            "Identity", "NodeIndexer1/identity0"
-        )  # maybe make this blank?
+        self.update_or_add_element_value("Identity", "NodeIndexer1/identity0")  # maybe make this blank?
         self.update_or_add_element_value("ShardIndexes", "")
         self.update_or_add_element_value("ShardingStrategy", "")
         self.update_or_add_element_value("WorkerCount", "8")
         self.update_or_add_element_value("LogLevel", "20", parent_element_name="System")
-        self.update_or_add_element_value(
-            "Simulate", "false", parent_element_name="IndexerClient"
-        )
+        self.update_or_add_element_value("Simulate", "false", parent_element_name="IndexerClient")
 
-    def convert_template_to_scraper(self, url: str) -> None:
+    def convert_template_to_scraper(self, collection) -> None:
         """
         assuming this class has been instantiated with the scraper_template.xml
-        the only remaining step is to add the base url to be scraped
         """
-        self.update_or_add_element_value("Url", url)
+        self.update_or_add_element_value("Url", collection.url)
+
+        self.update_or_add_element_value("TreeRoot", collection.tree_root)
+        if collection.document_type:
+            self.add_document_type_mapping(document_type=collection.get_document_type_display(), criteria=None)
+
+        scraper_config = self.update_config_xml()
+        return scraper_config
+
+    def convert_template_to_plugin_indexer(self, scraper_editor) -> None:
+        """
+        assuming this class has been instantiated with the scraper_template.xml
+        """
+
+        transfer_fields = [
+            "KeepHashFragmentInUrl",
+            "CorrectDomainCookies",
+            "IgnoreSessionCookies",
+            "DownloadImages",
+            "DownloadMedia",
+            "DownloadCss",
+            "DownloadFtp",
+            "DownloadFile",
+            "IndexJs",
+            "FollowJs",
+            "CrawlFlash",
+            "NormalizeSecureSchemesWhenTestingVisited",
+            "RetryCount",
+            "RetryPause",
+            "AddBaseHref",
+            "AddMetaContentType",
+            "NormalizeUrls",
+        ]
+
+        double_transfer_fields = [
+            ("UrlAccess", "AllowXPathCookies"),
+            ("UrlAccess", "UseBrowserForWebRequests"),
+            ("UrlAccess", "UseHttpClientForWebRequests"),
+        ]
+
+        for field in transfer_fields:
+            self.update_or_add_element_value(field, scraper_editor.get_tag_value(field, strict=True))
+
+        for parent, child in double_transfer_fields:
+            self.update_or_add_element_value(
+                f"{parent}/{child}", scraper_editor.get_tag_value(f"{parent}/{child}", strict=True)
+            )
+
+        scraper_config = self.update_config_xml()
+        return scraper_config
+
+    def convert_template_to_indexer(self, collection) -> None:
+        """
+        assuming this class has been instantiated with the indexer_template.xml
+        """
+        self.update_or_add_element_value("Collection", f"/SDE/{collection.config_folder}/")
+        indexer_config = self.update_config_xml()
+
+        return indexer_config
 
     def _mapping_exists(self, new_mapping: ET.Element):
         """
@@ -138,14 +206,8 @@ class XmlEditor:
         xml_root = self.xml_tree.getroot()
 
         for mapping in xml_root.findall("Mapping"):
-            existing_mapping = {
-                child.tag: (child.text if child.text is not None else "")
-                for child in mapping
-            }
-            new_mapping_dict = {
-                child.tag: (child.text if child.text is not None else "")
-                for child in new_mapping
-            }
+            existing_mapping = {child.tag: (child.text if child.text is not None else "") for child in mapping}
+            new_mapping_dict = {child.tag: (child.text if child.text is not None else "") for child in new_mapping}
             if existing_mapping == new_mapping_dict:
                 return True
 
@@ -165,9 +227,7 @@ class XmlEditor:
         #     "*'</Selection>", "'</Selection>"
         # )
 
-        return list(
-            set(selection, standardized_quotes)  # , standardized_quotes_less_selective)
-        )
+        return list(set(selection, standardized_quotes))  # , standardized_quotes_less_selective)
 
     def _generic_mapping(
         self,
@@ -293,14 +353,19 @@ class XmlEditor:
         includes a url or url pattern, such as
         - https://webb.nasa.gov/content/forEducators/realworld*
         - https://webb.nasa.gov/content/features/index.html
+        - *.rtf
         I'm not sure if exclusion rules override includes or if includes override
         exclusion rules.
         """
 
         xml_root = self.xml_tree.getroot()
-        ET.SubElement(
-            xml_root, "UrlIndexIncluded"
-        ).text = url_pattern  # this adds an indexing rule (doesn't overwrite)
+
+        for url_index_included in xml_root.findall("UrlIndexIncluded"):
+            if url_index_included.text == url_pattern:
+                return  # stop the function if the url pattern already exists
+
+        # add the url pattern if it doesn't already exist
+        ET.SubElement(xml_root, "UrlIndexIncluded").text = url_pattern
 
     def _find_treeroot_field(self):
         treeroot = self.xml_tree.find("TreeRoot")
@@ -336,9 +401,7 @@ class XmlEditor:
     def fetch_document_type(self):
         DOCUMENT_TYPE_COLUMN = "sourcestr56"
         try:
-            document_type_text = self.xml_tree.find(
-                f"Mapping[Name='{DOCUMENT_TYPE_COLUMN}']/Value"
-            ).text
+            document_type_text = self.xml_tree.find(f"Mapping[Name='{DOCUMENT_TYPE_COLUMN}']/Value").text
         except AttributeError:
             return None
 

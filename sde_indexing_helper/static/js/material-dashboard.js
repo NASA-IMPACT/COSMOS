@@ -1,4 +1,21 @@
-(function () {
+/*!
+
+ =========================================================
+ * Material Dashboard - v2.1.2
+ =========================================================
+
+ * Product Page: https://www.creative-tim.com/product/material-dashboard
+ * Copyright 2020 Creative Tim (http://www.creative-tim.com)
+
+ * Designed by www.invisionapp.com Coded by www.creative-tim.com
+
+ =========================================================
+
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+ */
+
+(function() {
   isWindows = navigator.platform.indexOf('Win') > -1 ? true : false;
 
   if (isWindows) {
@@ -32,7 +49,7 @@ var seq2 = 0,
   delays2 = 80,
   durations2 = 500;
 
-$(document).ready(function () {
+$(document).ready(function() {
 
   $('body').bootstrapMaterialDesign();
 
@@ -53,14 +70,14 @@ $(document).ready(function () {
   //  Activate the tooltips
   $('[rel="tooltip"]').tooltip();
 
-  $('.form-control').on("focus", function () {
+  $('.form-control').on("focus", function() {
     $(this).parent('.input-group').addClass("input-group-focus");
-  }).on("blur", function () {
+  }).on("blur", function() {
     $(this).parent(".input-group").removeClass("input-group-focus");
   });
 
   // remove class has-error for checkbox validation
-  $('input[type="checkbox"][required="true"], input[type="radio"][required="true"]').on('click', function () {
+  $('input[type="checkbox"][required="true"], input[type="radio"][required="true"]').on('click', function() {
     if ($(this).hasClass('error')) {
       $(this).closest('div').removeClass('has-error');
     }
@@ -68,20 +85,20 @@ $(document).ready(function () {
 
 });
 
-$(document).on('click', '.navbar-toggler', function () {
+$(document).on('click', '.navbar-toggler', function() {
   $toggle = $(this);
 
   if (mobile_menu_visible == 1) {
     $('html').removeClass('nav-open');
 
     $('.close-layer').remove();
-    setTimeout(function () {
+    setTimeout(function() {
       $toggle.removeClass('toggled');
     }, 400);
 
     mobile_menu_visible = 0;
   } else {
-    setTimeout(function () {
+    setTimeout(function() {
       $toggle.addClass('toggled');
     }, 430);
 
@@ -94,17 +111,17 @@ $(document).on('click', '.navbar-toggler', function () {
       $layer.appendTo(".wrapper-full-page");
     }
 
-    setTimeout(function () {
+    setTimeout(function() {
       $layer.addClass('visible');
     }, 100);
 
-    $layer.click(function () {
+    $layer.click(function() {
       $('html').removeClass('nav-open');
       mobile_menu_visible = 0;
 
       $layer.removeClass('visible');
 
-      setTimeout(function () {
+      setTimeout(function() {
         $layer.remove();
         $toggle.removeClass('toggled');
 
@@ -119,13 +136,13 @@ $(document).on('click', '.navbar-toggler', function () {
 });
 
 // activate collapse right menu when the windows is resized
-$(window).resize(function () {
+$(window).resize(function() {
   md.initSidebarsCheck();
 
   // reset the seq for charts drawing animations
   seq = seq2 = 0;
 
-  setTimeout(function () {
+  setTimeout(function() {
     md.initDashboardPageCharts();
   }, 500);
 });
@@ -137,7 +154,7 @@ md = {
     disabled_collapse_init: 0,
   },
 
-  checkSidebarImage: function () {
+  checkSidebarImage: function() {
     $sidebar = $('.sidebar');
     image_src = $sidebar.data('image');
 
@@ -147,7 +164,7 @@ md = {
     }
   },
 
-  showNotification: function (from, align) {
+  showNotification: function(from, align) {
     type = ['', 'info', 'danger', 'success', 'warning', 'rose', 'primary'];
 
     color = Math.floor((Math.random() * 6) + 1);
@@ -166,7 +183,7 @@ md = {
     });
   },
 
-  initDocumentationCharts: function () {
+  initDocumentationCharts: function() {
     if ($('#dailySalesChart').length != 0 && $('#websiteViewsChart').length != 0) {
       /* ----------==========     Daily Sales Chart initialization For Documentation    ==========---------- */
 
@@ -198,7 +215,7 @@ md = {
   },
 
 
-  initFormExtendedDatetimepickers: function () {
+  initFormExtendedDatetimepickers: function() {
     $('.datetimepicker').datetimepicker({
       icons: {
         time: "fa fa-clock-o",
@@ -247,7 +264,7 @@ md = {
   },
 
 
-  initSliders: function () {
+  initSliders: function() {
     // Sliders for demo purpose
     var slider = document.getElementById('sliderRegular');
 
@@ -272,7 +289,7 @@ md = {
     });
   },
 
-  initSidebarsCheck: function () {
+  initSidebarsCheck: function() {
     if ($(window).width() <= 991) {
       if ($sidebar.length != 0) {
         md.initRightMenu();
@@ -280,7 +297,7 @@ md = {
     }
   },
 
-  checkFullPageBackgroundImage: function () {
+  checkFullPageBackgroundImage: function() {
     $page = $('.full-page');
     image_src = $page.data('image');
 
@@ -290,7 +307,7 @@ md = {
     }
   },
 
-  initDashboardPageCharts: function () {
+  initDashboardPageCharts: function() {
 
     if ($('#dailySalesChart').length != 0 || $('#completedTasksChart').length != 0 || $('#websiteViewsChart').length != 0) {
       /* ----------==========     Daily Sales Chart initialization    ==========---------- */
@@ -377,7 +394,7 @@ md = {
         ['screen and (max-width: 640px)', {
           seriesBarDistance: 5,
           axisX: {
-            labelInterpolationFnc: function (value) {
+            labelInterpolationFnc: function(value) {
               return value[0];
             }
           }
@@ -390,9 +407,9 @@ md = {
     }
   },
 
-  initMinimizeSidebar: function () {
+  initMinimizeSidebar: function() {
 
-    $('#minimizeSidebar').click(function () {
+    $('#minimizeSidebar').click(function() {
       var $btn = $(this);
 
       if (md.misc.sidebar_mini_active == true) {
@@ -404,18 +421,18 @@ md = {
       }
 
       // we simulate the window Resize so the charts will get updated in realtime.
-      var simulateWindowResize = setInterval(function () {
+      var simulateWindowResize = setInterval(function() {
         window.dispatchEvent(new Event('resize'));
       }, 180);
 
       // we stop the simulation of Window Resize after the animations are completed
-      setTimeout(function () {
+      setTimeout(function() {
         clearInterval(simulateWindowResize);
       }, 1000);
     });
   },
 
-  checkScrollForTransparentNavbar: debounce(function () {
+  checkScrollForTransparentNavbar: debounce(function() {
     if ($(document).scrollTop() > 260) {
       if (transparent) {
         transparent = false;
@@ -430,7 +447,7 @@ md = {
   }, 17),
 
 
-  initRightMenu: debounce(function () {
+  initRightMenu: debounce(function() {
     $sidebar_wrapper = $('.sidebar-wrapper');
 
     if (!mobile_menu_initialized) {
@@ -442,17 +459,17 @@ md = {
 
       nav_content = '<ul class="nav navbar-nav nav-mobile-menu">' + nav_content + '</ul>';
 
-      // navbar_form = $('nav').find('.navbar-form').get(0).outerHTML;
+      navbar_form = $('nav').find('.navbar-form').get(0).outerHTML;
 
       $sidebar_nav = $sidebar_wrapper.find(' > .nav');
 
       // insert the navbar form before the sidebar list
       $nav_content = $(nav_content);
-      // $navbar_form = $(navbar_form);
+      $navbar_form = $(navbar_form);
       $nav_content.insertBefore($sidebar_nav);
-      // $navbar_form.insertBefore($nav_content);
+      $navbar_form.insertBefore($nav_content);
 
-      $(".sidebar-wrapper .dropdown .dropdown-menu > li > a").click(function (event) {
+      $(".sidebar-wrapper .dropdown .dropdown-menu > li > a").click(function(event) {
         event.stopPropagation();
 
       });
@@ -472,9 +489,9 @@ md = {
     }
   }, 200),
 
-  startAnimationForLineChart: function (chart) {
+  startAnimationForLineChart: function(chart) {
 
-    chart.on('draw', function (data) {
+    chart.on('draw', function(data) {
       if (data.type === 'line' || data.type === 'area') {
         data.element.animate({
           d: {
@@ -501,9 +518,9 @@ md = {
 
     seq = 0;
   },
-  startAnimationForBarChart: function (chart) {
+  startAnimationForBarChart: function(chart) {
 
-    chart.on('draw', function (data) {
+    chart.on('draw', function(data) {
       if (data.type === 'bar') {
         seq2++;
         data.element.animate({
@@ -522,7 +539,7 @@ md = {
   },
 
 
-  initFullCalendar: function () {
+  initFullCalendar: function() {
     $calendar = $('#fullCalendar');
 
     today = new Date();
@@ -531,7 +548,7 @@ md = {
     d = today.getDate();
 
     $calendar.fullCalendar({
-      viewRender: function (view, element) {
+      viewRender: function(view, element) {
         // We make sure that we activate the perfect scrollbar when the view isn't on Month
         if (view.name != 'month') {
           $(element).find('.fc-scroller').perfectScrollbar();
@@ -558,35 +575,35 @@ md = {
         }
       },
 
-      select: function (start, end) {
+      select: function(start, end) {
 
         // on select we show the Sweet Alert modal with an input
         swal({
-          title: 'Create an Event',
-          html: '<div class="form-group">' +
-            '<input class="form-control" placeholder="Event Title" id="input-field">' +
-            '</div>',
-          showCancelButton: true,
-          confirmButtonClass: 'btn btn-success',
-          cancelButtonClass: 'btn btn-danger',
-          buttonsStyling: false
-        }).then(function (result) {
+            title: 'Create an Event',
+            html: '<div class="form-group">' +
+              '<input class="form-control" placeholder="Event Title" id="input-field">' +
+              '</div>',
+            showCancelButton: true,
+            confirmButtonClass: 'btn btn-success',
+            cancelButtonClass: 'btn btn-danger',
+            buttonsStyling: false
+          }).then(function(result) {
 
-          var eventData;
-          event_title = $('#input-field').val();
+            var eventData;
+            event_title = $('#input-field').val();
 
-          if (event_title) {
-            eventData = {
-              title: event_title,
-              start: start,
-              end: end
-            };
-            $calendar.fullCalendar('renderEvent', eventData, true); // stick? = true
-          }
+            if (event_title) {
+              eventData = {
+                title: event_title,
+                start: start,
+                end: end
+              };
+              $calendar.fullCalendar('renderEvent', eventData, true); // stick? = true
+            }
 
-          $calendar.fullCalendar('unselect');
+            $calendar.fullCalendar('unselect');
 
-        })
+          })
           .catch(swal.noop);
       },
       editable: true,
@@ -595,69 +612,69 @@ md = {
 
       // color classes: [ event-blue | event-azure | event-green | event-orange | event-red ]
       events: [{
-        title: 'All Day Event',
-        start: new Date(y, m, 1),
-        className: 'event-default'
-      },
-      {
-        id: 999,
-        title: 'Repeating Event',
-        start: new Date(y, m, d - 4, 6, 0),
-        allDay: false,
-        className: 'event-rose'
-      },
-      {
-        id: 999,
-        title: 'Repeating Event',
-        start: new Date(y, m, d + 3, 6, 0),
-        allDay: false,
-        className: 'event-rose'
-      },
-      {
-        title: 'Meeting',
-        start: new Date(y, m, d - 1, 10, 30),
-        allDay: false,
-        className: 'event-green'
-      },
-      {
-        title: 'Lunch',
-        start: new Date(y, m, d + 7, 12, 0),
-        end: new Date(y, m, d + 7, 14, 0),
-        allDay: false,
-        className: 'event-red'
-      },
-      {
-        title: 'Md-pro Launch',
-        start: new Date(y, m, d - 2, 12, 0),
-        allDay: true,
-        className: 'event-azure'
-      },
-      {
-        title: 'Birthday Party',
-        start: new Date(y, m, d + 1, 19, 0),
-        end: new Date(y, m, d + 1, 22, 30),
-        allDay: false,
-        className: 'event-azure'
-      },
-      {
-        title: 'Click for Creative Tim',
-        start: new Date(y, m, 21),
-        end: new Date(y, m, 22),
-        url: 'http://www.creative-tim.com/',
-        className: 'event-orange'
-      },
-      {
-        title: 'Click for Google',
-        start: new Date(y, m, 21),
-        end: new Date(y, m, 22),
-        url: 'http://www.creative-tim.com/',
-        className: 'event-orange'
-      }
+          title: 'All Day Event',
+          start: new Date(y, m, 1),
+          className: 'event-default'
+        },
+        {
+          id: 999,
+          title: 'Repeating Event',
+          start: new Date(y, m, d - 4, 6, 0),
+          allDay: false,
+          className: 'event-rose'
+        },
+        {
+          id: 999,
+          title: 'Repeating Event',
+          start: new Date(y, m, d + 3, 6, 0),
+          allDay: false,
+          className: 'event-rose'
+        },
+        {
+          title: 'Meeting',
+          start: new Date(y, m, d - 1, 10, 30),
+          allDay: false,
+          className: 'event-green'
+        },
+        {
+          title: 'Lunch',
+          start: new Date(y, m, d + 7, 12, 0),
+          end: new Date(y, m, d + 7, 14, 0),
+          allDay: false,
+          className: 'event-red'
+        },
+        {
+          title: 'Md-pro Launch',
+          start: new Date(y, m, d - 2, 12, 0),
+          allDay: true,
+          className: 'event-azure'
+        },
+        {
+          title: 'Birthday Party',
+          start: new Date(y, m, d + 1, 19, 0),
+          end: new Date(y, m, d + 1, 22, 30),
+          allDay: false,
+          className: 'event-azure'
+        },
+        {
+          title: 'Click for Creative Tim',
+          start: new Date(y, m, 21),
+          end: new Date(y, m, 22),
+          url: 'http://www.creative-tim.com/',
+          className: 'event-orange'
+        },
+        {
+          title: 'Click for Google',
+          start: new Date(y, m, 21),
+          end: new Date(y, m, 22),
+          url: 'http://www.creative-tim.com/',
+          className: 'event-orange'
+        }
       ]
     });
   },
 
-  initVectorMap: function () {
+  initVectorMap: function() {
     var mapData = {
       "AU": 760,
       "BR": 550,
@@ -704,11 +721,11 @@ md = {
 
 function debounce(func, wait, immediate) {
   var timeout;
-  return function () {
+  return function() {
     var context = this,
       args = arguments;
     clearTimeout(timeout);
-    timeout = setTimeout(function () {
+    timeout = setTimeout(function() {
       timeout = null;
       if (!immediate) func.apply(context, args);
     }, wait);

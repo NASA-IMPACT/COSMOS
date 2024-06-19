@@ -5,20 +5,20 @@ from django.urls import include, path
 from django.views import defaults as default_views
 
 admin.site.site_header = (
-    "SDE Indexing Administration"  # default: "Django Administration"
+    "SDE Indexing Helper Administration"  # default: "Django Administration"
 )
-admin.site.index_title = "SDE Indexing"  # default: "Site administration"
-admin.site.site_title = "SDE Indexing"  # default: "Django site admin"
+admin.site.index_title = "SDE Indexing Helper"  # default: "Site administration"
+admin.site.site_title = "SDE Indexing Helper"  # default: "Django site admin"
 
 urlpatterns = [
     path("", include("sde_collections.urls", namespace="sde_collections")),
+    path("feedback/", include("feedback.urls", namespace="feedback")),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
     path("users/", include("sde_indexing_helper.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
-    path("api-auth/", include("rest_framework.urls"))
-    # Your stuff: custom urls includes go here
+    path("api-auth/", include("rest_framework.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
