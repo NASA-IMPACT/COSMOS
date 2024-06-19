@@ -1,0 +1,1708 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Sinequa>
+    <Revision>2</Revision>
+    <Description></Description>
+    <CommandType>updatecolumns</CommandType>
+    <Identity></Identity>
+    <Plugin></Plugin>
+    <System>
+        <LogLevel></LogLevel>
+        <LogInConsole>true</LogInConsole>
+    </System>
+    <Force32Bits>false</Force32Bits>
+    <StatusMaxOk></StatusMaxOk>
+    <RuntimeToRunWith></RuntimeToRunWith>
+    <Java>
+        <Server>true</Server>
+        <Xms></Xms>
+        <Xmx></Xmx>
+        <DisablePerfData>true</DisablePerfData>
+        <OtherOptions></OtherOptions>
+    </Java>
+    <SelectColumns>treepath</SelectColumns>
+    <IndexList>
+        HELIO_Repository_1,SMD_ASTRO_Repository_1,SMD_ASTRO_Repository_2,SMD_PLANETARY_Repository_1,SMD_PLANETARY_Repository_2,SMD_EARTHSCIENCE_Repository_1,SMD_GENELAB_Repository_1</IndexList>
+    <WhereClause></WhereClause>
+    <TargetIndex></TargetIndex>
+    <Simulate>false</Simulate>
+    <MaxLog>1000</MaxLog>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS LADEE UVS Calibrated Data Search/"</Value>
+        <Selection>collection='/SMD/PDS_LADEE_UVS_Calibrated_Data_Search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA Science Missions: Earth/"</Value>
+        <Selection>collection='/SMD/nasa_science_missions_earth/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/Heliophysics Data Application Programmer’s Interface (HAPI)/"</Value>
+        <Selection>collection='/SMD/HAPI_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/IPAC Table Validator/"</Value>
+        <Selection>collection='/SMD/ipac_table_validator/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Exoplanet Atmosphere Observability Table/"</Value>
+        <Selection>collection='/SMD/exoplanet_atmosphere_observability_table/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Hubble Source Catalog Search/"</Value>
+        <Selection>collection='/SMD/hubble_source_catalog_search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/MAST API Search/"</Value>
+        <Selection>collection='/SMD/mast_api_search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/KOA Program-Friendly Image Access Service/"</Value>
+        <Selection>collection='/SMD/koa_program_friendly_image_access_service/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS OMEGA Analysis Toolkit (OAT)/"</Value>
+        <Selection>collection='/SMD/PDS_OMEGA_Analysis_Toolkit_(OAT)_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Venus Data Archive/"</Value>
+        <Selection>collection='/SMD/venus_data_archive/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/PyKOA/"</Value>
+        <Selection>collection='/SMD/pykoa/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Analyst's Notebook/"</Value>
+        <Selection>collection='/SMD/PDS_Notebook_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/NExScI/"</Value>
+        <Selection>collection='/SMD/nexsci/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Biological and Physical Sciences/GeneLab Publications/"</Value>
+        <Selection>collection='/SMD/GENELAB_Publications_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Collision Induced Absorption Model/"</Value>
+        <Selection>collection='/SMD/PDS_Collision_Induced_Absorption_Model_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/KOA Contributed Datasets/"</Value>
+        <Selection>collection='/SMD/ASTRO_Contributed_Datasets_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/NED User Guides/"</Value>
+        <Selection>collection='/SMD/ASTRO_NED_User_Guides_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Data Dictionary Search/"</Value>
+        <Selection>collection='/SMD/PDS_Data_Dictionary_Search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/DIVINER RDR Query V2.0/"</Value>
+        <Selection>collection='/SMD/PDS_DIVINER_RDR_Query_V20_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/NEID Solar Radial Velocity Archive/"</Value>
+        <Selection>collection='/SMD/neid_solar_radial_velocity_archive/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/James Webb Space Telescope/"</Value>
+        <Selection>collection='/SMD/ASTRO_James_Webb_Space_Telescope_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Astropedia: Lunar and Planetary Cartographic Catalog/"</Value>
+        <Selection>
+            collection='/SMD/PDS_Astropedia_Lunar_and_Planetary_Cartographic_Catalog_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/HEASARC Tools/"</Value>
+        <Selection>collection='/SMD/ASTRO_HEASARC_Tools_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Velocity Calculator/"</Value>
+        <Selection>collection='/SMD/velocity_calculator/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Coordinate Calculator/"</Value>
+        <Selection>collection='/SMD/coordinate_calculator/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/HEASARC Browse Batch Interface/"</Value>
+        <Selection>collection='/SMD/heasarc_browse_batch_interface/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/NASA Solar System Treks/"</Value>
+        <Selection>collection='/SMD/PDS_NASA_Solar_System_Treks_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/NASA Science Solar System Exploration/"</Value>
+        <Selection>collection='/SMD/PDS_NASA_Science_Solar_System_Exploration_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Ring-Moon Systems Node Open-Source Software/"</Value>
+        <Selection>collection='/SMD/PDS_Toolkits_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Missions Archive Page/"</Value>
+        <Selection>collection='/SMD/PDS_Missions_Archive_Page_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Image Atlas/"</Value>
+        <Selection>collection='/SMD/PDS_Image_Atlas_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/IRSA Image Cutouts/"</Value>
+        <Selection>collection='/SMD/ASTRO_Image_Cutouts_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Uranus Data Archive/"</Value>
+        <Selection>collection='/SMD/PDS_Uranus_Data_Archive_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Cartography and Imaging Node Sciences Node Documentation/"</Value>
+        <Selection>collection='/SMD/PDS_PDS_Documentation_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Spitzer Tools/"</Value>
+        <Selection>collection='/SMD/ASTRO_Spitzer_Tools_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Planetary Image Locator Tool (PILOT)/"</Value>
+        <Selection>collection='/SMD/PDS_Data_Pilot_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Explicit Planetary Isentropic Coordinate (EPIC) Model/"</Value>
+        <Selection>collection='/SMD/PDS_EPIC_Model_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Mars Orbiter Data/"</Value>
+        <Selection>collection='/SMD/PDS_Mars_Orbiter_Data_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/MRO Coordinated Observation/"</Value>
+        <Selection>collection='/SMD/PDS_MRO_Coordinated_Observation_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS4 Training Documents/"</Value>
+        <Selection>collection='/SMD/PDS_PDS4_Training_Documents_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Solar System Exploration Research Virtual Institute (SSERVI)/"</Value>
+        <Selection>
+            collection='/SMD/PDS_Solar_System_Exploration_Research_Virtual_Institute_(SSERVI)_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Planetary Gravity Models/"</Value>
+        <Selection>collection='/SMD/PDS_Gravity_Models_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS4 Documents/"</Value>
+        <Selection>collection='/SMD/PDS_PDS4_Documents_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/SPICE Self-Training/"</Value>
+        <Selection>collection='/SMD/PDS_SPICE_Self-Training_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/CEOS Instruments/"</Value>
+        <Selection>collection='/SMD/CEOS_API_I/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Earth Science Suborbital Deployments/"</Value>
+        <Selection>collection='/SMD/CASEI_Deployment/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Astrophysics Documents/"</Value>
+        <Selection>collection='/SMD/ASTRO_Astrophysics_Documents_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/exo.MAST API/"</Value>
+        <Selection>collection='/SMD/ASTRO_exoMAST_API_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Venus Archive Page/"</Value>
+        <Selection>collection='/SMD/PDS_Venus_Archive_Page_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Planetary Science Tools/"</Value>
+        <Selection>collection='/SMD/PDS_Planetary_Science_Tools_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Planetary Science Data (PDS)/"</Value>
+        <Selection>collection='/SMD/PDS_API_Legacy_All/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Biological and Physical Sciences/GeneLab Github Data Processing/"</Value>
+        <Selection>collection='/SMD/GENELAB_Github_DataProcessing/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Spectral Classes of Like Stars/"</Value>
+        <Selection>collection='/SMD/spectral_classes_of_like_stars/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Planetary Image Galleries/"</Value>
+        <Selection>collection='/SMD/planetary_image_galleries/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Data Hosted on LAMBDA/"</Value>
+        <Selection>collection='/SMD/ASTRO_Data_Hosted_on_LAMBDA_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/CALDB Documentation/"</Value>
+        <Selection>collection='/SMD/ASTRO_Calibration_Documentation_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Small Bodies Node Tools, Utilities, and Interfaces/"</Value>
+        <Selection>collection='/SMD/PDS_SBN_Tools_Utilities_and_Interfaces_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/NASA Science Earth's Moon/"</Value>
+        <Selection>collection='/SMD/PDS_NASA_Science_Earths_Moon_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA Wavelength/"</Value>
+        <Selection>collection='/SMD/nasa_wavelength/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/My NASA Data/"</Value>
+        <Selection>collection='/SMD/my_nasa_data/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Mars Target Encyclopedia (MTE)/"</Value>
+        <Selection>collection='/SMD/mars_target_encyclopedia_mte/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Astrogeology Analysis Ready Data/"</Value>
+        <Selection>collection='/SMD/astrogeology_analysis_ready_data/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/Interactive Multi-Instrument Database of Solar Flares/"</Value>
+        <Selection>collection='/SMD/interactive_multiinstrument_database_of_solar_flares/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Earth Observer Publications/"</Value>
+        <Selection>collection='/SMD/earth_observer_publications/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Exoplanet Opacities Database/"</Value>
+        <Selection>collection='/SMD/exoplanet_opacities_database/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/GCN Circulars/"</Value>
+        <Selection>collection='/SMD/gcn_circulars/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Goddard Institute for Space Studies (GISS)/"</Value>
+        <Selection>collection='/SMD/goddard_institute_for_space_studies/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/IGWN Public Alerts User Guide/"</Value>
+        <Selection>collection='/SMD/igwn_public_alerts_user_guide/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA Global Climate Change/"</Value>
+        <Selection>collection='/SMD/nasa_global_climate_change/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/GISS Publication List/"</Value>
+        <Selection>collection='/SMD/giss_publication_list/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/GISS Datasets and Derived Materials/"</Value>
+        <Selection>collection='/SMD/giss_datasets_and_derived_materials/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Our Changing Planet: The View from Space/"</Value>
+        <Selection>collection='/SMD/our_changing_planet_the_view_from_space_images/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA POWER/"</Value>
+        <Selection>collection='/SMD/nasa_power/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/EMAC: Exoplanet Modeling and Analysis Center/"</Value>
+        <Selection>collection='/SMD/emac_exoplanet_modeling_and_analysis_center/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/General Coordinates Network (GCN)/"</Value>
+        <Selection>collection='/SMD/general_coordinates_network_gcn/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/GCN Missions, Instruments and Facilities/"</Value>
+        <Selection>collection='/SMD/gcn_missions_instruments_and_facilities/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Earth Science Decadal Surveys/"</Value>
+        <Selection>collection='/SMD/earth_science_decadal_surveys/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Algorithm Theoretical Basis Documents/"</Value>
+        <Selection>collection='/SMD/algorithm_theoretical_basis_documents/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/EOS Mission Page/"</Value>
+        <Selection>collection='/SMD/eos_mission_page/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/GISS Software Tools/"</Value>
+        <Selection>collection='/SMD/giss_software_tools/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA Carbon Monitoring System/"</Value>
+        <Selection>collection='/SMD/nasa_carbon_monitoring_system/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/NAVO Registry/"</Value>
+        <Selection>collection='/SMD/navo_registry/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/MAST Web Services/"</Value>
+        <Selection>collection='/SMD/mast_web_services/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/F' (F Prime)/"</Value>
+        <Selection>collection='/SMD/f_prime/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Earth Observing Dashboard/"</Value>
+        <Selection>collection='/SMD/earth_observing_dashboard/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Fire Information for Resource Management System (FIRMS)/"</Value>
+        <Selection>collection='/SMD/fire_information_for_resource_management_system_firms/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA 2023 Climate Strategy/"</Value>
+        <Selection>collection='/SMD/nasa_2023_climate_strategy/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Extinction Calculator/"</Value>
+        <Selection>collection='/SMD/extinction_calculator/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA Sea Level Change/"</Value>
+        <Selection>collection='/SMD/nasa_sea_level_change/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/High Level Science Products/"</Value>
+        <Selection>collection='/SMD/high_level_science_products/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/MAST Query/CasJobs/"</Value>
+        <Selection>collection='/SMD/mast_query_casjobs/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/exo.MAST/"</Value>
+        <Selection>collection='/SMD/exo_mast/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/MAST Portal/"</Value>
+        <Selection>collection='/SMD/mast_portal/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Virtual Observatory Information/"</Value>
+        <Selection>collection='/SMD/virtual_observatory_information/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Co-plotter/"</Value>
+        <Selection>collection='/SMD/co_plotter/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Z.MAST Search/"</Value>
+        <Selection>collection='/SMD/z_mast_search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Astroquery API Search (MAST Queries)/"</Value>
+        <Selection>collection='/SMD/astroquery_api_search_mast_queries/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Pan-STARRS Catalog/"</Value>
+        <Selection>collection='/SMD/pan_starrs_catalog/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Pan-STARRS Catalog API/"</Value>
+        <Selection>collection='/SMD/pan_starrs_catalog_api/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Archived Synthetic Data/"</Value>
+        <Selection>collection='/SMD/archived_synthetic_data/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/IRSA API/"</Value>
+        <Selection>collection='/SMD/irsa_api/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Herschel Data Search/"</Value>
+        <Selection>collection='/SMD/herschel_data_search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/SWAS Spectrum Server/"</Value>
+        <Selection>collection='/SMD/swas_spectrum_server/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/SWAS API Search/"</Value>
+        <Selection>collection='/SMD/swas_api_search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Skiff Spectral Catalog Search/"</Value>
+        <Selection>collection='/SMD/skiff_spectral_catalog_search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Space Telescope Bibliographic Search/"</Value>
+        <Selection>collection='/SMD/space_telescope_bibliographic_search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Atlas API Search/"</Value>
+        <Selection>collection='/SMD/atlas_api_search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/SSA Queries/"</Value>
+        <Selection>collection='/SMD/ssa_queries/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/VO Simple Cone Search/"</Value>
+        <Selection>collection='/SMD/vo_simple_cone_search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/IRSA VOTable Access Protocol/"</Value>
+        <Selection>collection='/SMD/irsa_votable_access_protocol/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/2MASS Interactive Image Service/"</Value>
+        <Selection>collection='/SMD/2mass_interactive_image_service/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/2MASS Image Inventory Search/"</Value>
+        <Selection>collection='/SMD/2mass_image_inventory_search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/2MASS Batch Image Service/"</Value>
+        <Selection>collection='/SMD/2mass_batch_image_service/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/2MASS API Search/"</Value>
+        <Selection>collection='/SMD/2mass_api_search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Image and Spectrum Server (Atlas)/"</Value>
+        <Selection>collection='/SMD/image_and_spectrum_server_atlas/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Galactic Dust Reddening and Extinction/"</Value>
+        <Selection>collection='/SMD/galactic_dust_reddening_and_extinction/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Background Model/"</Value>
+        <Selection>collection='/SMD/background_model/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/IRSA IDL Tools/"</Value>
+        <Selection>collection='/SMD/irsa_idl_tools/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Image Validation/"</Value>
+        <Selection>collection='/SMD/image_validation/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Object/Coordinate Lookup/"</Value>
+        <Selection>collection='/SMD/object_coordinate_lookup/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Planck Data Tools/"</Value>
+        <Selection>collection='/SMD/planck_data_tools/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Montage Mosaic Engine/"</Value>
+        <Selection>collection='/SMD/montage_mosaic_engine/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/MOST/"</Value>
+        <Selection>collection='/SMD/most/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/WISE/NEOWISE Coadder/"</Value>
+        <Selection>collection='/SMD/wise_neowise_coadder/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Scanpi/"</Value>
+        <Selection>collection='/SMD/scanpi/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/HIRES/"</Value>
+        <Selection>collection='/SMD/hires/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/HEASARC Download Scripts/"</Value>
+        <Selection>collection='/SMD/heasarc_download_scripts/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/VAO Data Discovery DataScope/"</Value>
+        <Selection>collection='/SMD/vao_datascope/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Exoplanet Follow-up Observing Program/"</Value>
+        <Selection>collection='/SMD/exoplanet_follow_up_observing_program/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/ExoFOP-K2 Campaign 9/"</Value>
+        <Selection>collection='/SMD/exofop_k2_campaign_9/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/MAST/"</Value>
+        <Selection>collection='/SMD/mast/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/NEID Archive/"</Value>
+        <Selection>collection='/SMD/neid_archive/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/LBTI Archive/"</Value>
+        <Selection>collection='/SMD/lbti_archive/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/CoRoT Exoplanet Archive-ETSS Data Sets/"</Value>
+        <Selection>collection='/SMD/corot_exoplanet_archive_etss_data_sets/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Contributed Datasets in the Exoplanet Archive/"</Value>
+        <Selection>collection='/SMD/contributed_datasets_in_the_exoplanet_archive/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Map-a-Planet (MAP) Website/"</Value>
+        <Selection>collection='/SMD/PDS_Map-a-Planet_(MAP)_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/IRSA/"</Value>
+        <Selection>collection='/SMD/irsa/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/MAVEN ACC Data Search/"</Value>
+        <Selection>collection='/SMD/PDS_MAVEN_ACC_Data_Search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Viewmaster Data - Volumes/"</Value>
+        <Selection>collection='/SMD/viewmaster_data_volumes/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Viewmaster Data - Calibrated/"</Value>
+        <Selection>collection='/SMD/viewmaster_data_calibrated/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Viewmaster Data - Previews/"</Value>
+        <Selection>collection='/SMD/viewmaster_data_previews/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Viewmaster Data - Diagrams/"</Value>
+        <Selection>collection='/SMD/viewmaster_data_diagrams/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Viewmaster Data Archives - Volumes/"</Value>
+        <Selection>collection='/SMD/viewmaster_data_archives_volumes/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Viewmaster Data Archives - Calibrated/"</Value>
+        <Selection>collection='/SMD/viewmaster_data_archives_calibrated/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Viewmaster Data Archives - Previews/"</Value>
+        <Selection>collection='/SMD/viewmaster_data_archives_previews/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Viewmaster Data Archives - Diagrams/"</Value>
+        <Selection>collection='/SMD/viewmaster_data_archives_diagrams/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Viewmaster Documents/"</Value>
+        <Selection>collection='/SMD/viewmaster_documents/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/MAST Hubble Search/"</Value>
+        <Selection>collection='/SMD/mast_hubble_search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Small Bodies Node Data by Type of Observation/"</Value>
+        <Selection>collection='/SMD/small_bodies_node_data_by_type_of_observation/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Small Bodies Node Data by Target Type/"</Value>
+        <Selection>collection='/SMD/small_bodies_node_data_by_target_type/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/FTP Access/"</Value>
+        <Selection>collection='/SMD/ftp_access/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Index/"</Value>
+        <Selection>collection='/SMD/index/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Geosciences Node Community/"</Value>
+        <Selection>collection='/SMD/pds_geosciences_node_community/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Data Set Status/"</Value>
+        <Selection>collection='/SMD/data_set_status/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Exoplanet Program Documents/"</Value>
+        <Selection>collection='/SMD/ASTRO_Exoplanet_Program_Documents_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Astromaterials Acquisition and Curation Office/"</Value>
+        <Selection>collection='/SMD/PDS_Astromaterials_Acquisition_and_Curation_Office_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/MAVEN NGIMS Data Search/"</Value>
+        <Selection>collection='/SMD/PDS_MAVEN_NGIMS_Data_Search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/MAST Documentation/"</Value>
+        <Selection>collection='/SMD/ASTRO_MAST_Documentation_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Hubble Source Catalog Search API/"</Value>
+        <Selection>collection='/SMD/ASTRO_Hubble_Source_Catalog_Search_API_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Z.MAST API/"</Value>
+        <Selection>collection='/SMD/ASTRO_ZMAST_API_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/High-Resolution Transmission Molecular Absorption Database
+            (HITRAN)/"</Value>
+        <Selection>
+            collection='/SMD/PDS_High-Resolution_Transmission_Molecular_Absorption_Database_(HITRAN)_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Reducing Keck Data/"</Value>
+        <Selection>collection='/SMD/ASTRO_Data_Reduction_Tools_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/HEASARC Software/"</Value>
+        <Selection>collection='/SMD/ASTRO_HEASARC_Software_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Exoplanet API Search/"</Value>
+        <Selection>collection='/SMD/ASTRO_API_Search_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/High-Energy Missions/"</Value>
+        <Selection>collection='/SMD/ASTRO_High-Energy_Missions_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Missions and Data/"</Value>
+        <Selection>collection='/SMD/ASTRO_Missions_and_Data_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/NASA Space Science Data Coordinated Archive (NSSDCA)/"</Value>
+        <Selection>
+            collection='/SMD/PDS_NASA_Space_Science_Data_Coordinated_Archive_(NSSDCA)_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/HIRES PRV/"</Value>
+        <Selection>collection='/SMD/ASTRO_HIRES_PRV_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/NASA Exoplanet Archive Documents/"</Value>
+        <Selection>collection='/SMD/ASTRO_NASA_Exoplanet_Archive_Documents_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Exoplanet TAP Search/"</Value>
+        <Selection>collection='/SMD/ASTRO_TAP_Search_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Java Mission-planning and Analysis for Remote Sensing (JMARS)/"</Value>
+        <Selection>
+            collection='/SMD/PDS_Java_Mission-planning_and_Analysis_for_Remote_Sensing_(JMARS)_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/NASA GSFC HEASARC/"</Value>
+        <Selection>collection='/SMD/ASTRO_NAVO_HEASARC/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Missions Website/"</Value>
+        <Selection>collection='/SMD/PDS_Missions_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Planetary Data System (PDS)/"</Value>
+        <Selection>collection='/SMD/PDS_Planetary_Data_System_(PDS)_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Astromat: Astromaterials Data System/"</Value>
+        <Selection>collection='/SMD/PDS_Astromat_Astromaterials_Data_System_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/ISIS: Integrated Software for Imagers and Spectrometers/"</Value>
+        <Selection>collection='/SMD/PDS_ISIS_Astro_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Ring-Moon Systems Node On-line Tools/"</Value>
+        <Selection>collection='/SMD/PDS_Ring-Moon_Systems_Node_On-line_Tools_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Models and Simulations Website/"</Value>
+        <Selection>collection='/SMD/PDS_Models_and_Simulations_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Mars Exploration Program/"</Value>
+        <Selection>collection='/SMD/PDS_Mars_Exploration_Program_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/NASA's Eyes/"</Value>
+        <Selection>collection='/SMD/PDS_NASAs_Eyes_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PPI Models and Simulations Data Holdings/"</Value>
+        <Selection>collection='/SMD/PDS_Annex_Data_Holdings_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Planetary Plasma Interactions Data Volumes/"</Value>
+        <Selection>collection='/SMD/PDS_Data_Volumes_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Errata/"</Value>
+        <Selection>collection='/SMD/PDS_Errata_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PPI Documents/"</Value>
+        <Selection>collection='/SMD/PDS_PPI_Documents_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Planetary Plasma Interactions Software/"</Value>
+        <Selection>collection='/SMD/PDS_PPI_Software_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Cartography and Imaging Sciences Node Annex/"</Value>
+        <Selection>collection='/SMD/PDS_PDS_Annex_Products_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Software, Tools, Tutorial, and Viewers/"</Value>
+        <Selection>collection='/SMD/PDS_Imaging_Software_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Pluto and Arrokoth Data Archive/"</Value>
+        <Selection>collection='/SMD/PDS_Pluto_and_Arrokoth_Data_Archive_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/All Data Holdings/"</Value>
+        <Selection>collection='/SMD/PDS_All_Data_Holdings_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Online Data Volumes Index/"</Value>
+        <Selection>collection='/SMD/PDS_Data_Volumes_Index_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Wind Tunnel Particle Threshold Speed Data/"</Value>
+        <Selection>collection='/SMD/PDS_Wind_Tunnel_Particle_Threshold_Speed_Data_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Near Earth Asteroid Rendezvous (NEAR) Data Archive/"</Value>
+        <Selection>collection='/SMD/PDS_Near_Earth_Asteroid_Rendezvous_(NEAR)_Data_Archive_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Atmospheric Escape Chemistry Page/"</Value>
+        <Selection>collection='/SMD/PDS_Atmospheric_Escape_Chemistry_Page_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Neptune Archive Page/"</Value>
+        <Selection>collection='/SMD/PDS_Neptune_Archive_Page_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Jupiter Data Archive/"</Value>
+        <Selection>collection='/SMD/PDS_Jupiter_Data_Archive_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Mars Lander Data/"</Value>
+        <Selection>collection='/SMD/PDS_Mars_Lander_Data_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS NEAR Shoemaker Mission to 433 Eros Website/"</Value>
+        <Selection>collection='/SMD/PDS_NEAR_Shoemaker_Mission_to_433_Eros_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Lunar Atmospheres Data Archive/"</Value>
+        <Selection>collection='/SMD/PDS_Lunar_Atmospheres_Data_Archive_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Titan Data Archive/"</Value>
+        <Selection>collection='/SMD/PDS_Titan_Data_Archive_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Saturn Data Archive/"</Value>
+        <Selection>collection='/SMD/PDS_Saturn_Data_Archive_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Outer Planets Icy Satellites Archive Page/"</Value>
+        <Selection>collection='/SMD/PDS_Outer_Planets_Icy_Satellites_Archive_Page_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Juno Archive Page/"</Value>
+        <Selection>collection='/SMD/PDS_Juno_Archive_Page_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Mercury Data Archive/"</Value>
+        <Selection>collection='/SMD/PDS_Mercury_Data_Archive_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Recently Archived Volumes/"</Value>
+        <Selection>collection='/SMD/PDS_Recently_Archived_Volumes_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Atmospheres Data Set Catalog/"</Value>
+        <Selection>collection='/SMD/PDS_PDS_Atmospheres_Data_Set_Catalog_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Object Access Library/"</Value>
+        <Selection>collection='/SMD/PDS_Object_Access_Library_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Integrated Software for Imagers and Spectrometers (ISIS)/"</Value>
+        <Selection>collection='/SMD/PDS_ISIS_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Atmospheres Current Missions/"</Value>
+        <Selection>collection='/SMD/PDS_Current_Missions_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Messenger MASCS UVVS Archive Page/"</Value>
+        <Selection>collection='/SMD/PDS_Messenger_MASCS_UVVS_Archive_Page_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Mars GCM/"</Value>
+        <Selection>collection='/SMD/PDS_Mars_GCM_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Small Bodies Image Browser/"</Value>
+        <Selection>collection='/SMD/PDS_Small_Bodies_Image_Browser_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Small Bodies Node Data by Mission/"</Value>
+        <Selection>collection='/SMD/PDS_Mission_Data_Archive_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Small Bodies Data Ferret/"</Value>
+        <Selection>collection='/SMD/PDS_Small_Bodies_Data_Ferret_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/SPICE Utility and Application Programs/"</Value>
+        <Selection>collection='/SMD/PDS_SPICE_Utility_and_Application_Programs_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Analyst's Notebook/"</Value>
+        <Selection>collection='/SMD/PDS_Analyst_Notebook_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Geosciences Node Data Holdings/"</Value>
+        <Selection>collection='/SMD/PDS_Geosciences_Data_Holdings_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Virtual Astronaut/"</Value>
+        <Selection>collection='/SMD/PDS_Virtual_Astronaut_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Orbital Data Explorer REST Service/"</Value>
+        <Selection>collection='/SMD/PDS_ODE_REST_Service_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/2001 Mars Odyssey GRS Data Node/"</Value>
+        <Selection>collection='/SMD/PDS_Odyssey_GRS_Data_Node_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/SPICE Toolkit/"</Value>
+        <Selection>collection='/SMD/PDS_SPICE_Toolkit_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/TES Data Tool/"</Value>
+        <Selection>collection='/SMD/PDS_TES_Data_Node_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Geosciences Node Spectral Library/"</Value>
+        <Selection>collection='/SMD/PDS_Geosciences_Node_Spectral_Library_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Lunar Orbiter Data Explorer/"</Value>
+        <Selection>collection='/SMD/PDS_Lunar_Orbiter_Data_Explorer_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Lunar Reconnaissance Orbiter's Lunar Orbiter Laser Altimeter
+            (LOLA) RDR Query V2.0/"</Value>
+        <Selection>collection='/SMD/PDS_LOLA_RDR_Query_V20_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/DIVINER RDR Query/"</Value>
+        <Selection>collection='/SMD/PDS_DIVINER_RDR_Query_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Mars Orbital Data Explorer/"</Value>
+        <Selection>collection='/SMD/PDS_Mars_Orbital_Data_Explorer_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Lunar Reconnaissance Orbiter's Lunar Orbiter Laser Altimeter
+            (LOLA) RDR Query/"</Value>
+        <Selection>collection='/SMD/PDS_LOLA_RDR_Query_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Tool Registry/"</Value>
+        <Selection>collection='/SMD/PDS_PDS_Tool_Registry_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Subscription Service/"</Value>
+        <Selection>collection='/SMD/PDS_Subscription_Service_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS SPICE Archives/"</Value>
+        <Selection>collection='/SMD/PDS_SPICE_Archives_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS4 JParser/"</Value>
+        <Selection>collection='/SMD/PDS_PDS4_JParser_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS4 Local Data Dictionary Tool/"</Value>
+        <Selection>collection='/SMD/PDS_PDS4_Local_Data_Dictionary_Tool_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Mercury Orbital Data Explorer/"</Value>
+        <Selection>collection='/SMD/PDS_Mercury_Orbital_Data_Explorer_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Venus Orbital Data Explorer/"</Value>
+        <Selection>collection='/SMD/PDS_Venus_Orbital_Data_Explorer_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Photojournal/"</Value>
+        <Selection>collection='/SMD/PDS_Photojournal_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/CRISM Spectral Library/"</Value>
+        <Selection>collection='/SMD/PDS_CRISM_Spectral_Library_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Operational Flight/Other Project Kernels/"</Value>
+        <Selection>collection='/SMD/PDS_Operational_Flight_Other_Project_Kernels_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Generic Kernels/"</Value>
+        <Selection>collection='/SMD/PDS_Generic_Kernels_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Data Archive Website/"</Value>
+        <Selection>collection='/SMD/PDS_Data_Archive_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Metadata Injector for PDS Labels/"</Value>
+        <Selection>collection='/SMD/PDS_Metadata_Injector_for_PDS_Labels_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS3 Standards Reference/"</Value>
+        <Selection>collection='/SMD/PDS_PDS3_Standards_Reference_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/SPICE Toolkit Documentation/"</Value>
+        <Selection>collection='/SMD/PDS_SPICE_Toolkit_Documentation_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/SPICE-enhanced Cosmographia/"</Value>
+        <Selection>collection='/SMD/PDS_SPICE-enhanced_Cosmographia_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/SPICE Tutorials/"</Value>
+        <Selection>collection='/SMD/PDS_SPICE_Tutorials_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/SPICE Programming Lessons/"</Value>
+        <Selection>collection='/SMD/PDS_SPICE_Programming_Lessons_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Data Portal/"</Value>
+        <Selection>collection='/SMD/PDS_Data_Portal_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/ARSET Applied Sciences/"</Value>
+        <Selection>collection='/SMD/ARSETAppliedSciences/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Earth Science Suborbital Campaigns/"</Value>
+        <Selection>collection='/SMD/CASEI_Campaign/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Earth Science Suborbital Platforms/"</Value>
+        <Selection>collection='/SMD/CASEI_Platform/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Earth Science Data (CMR)/"</Value>
+        <Selection>collection='/SMD/CMR_API/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Dawn Mission to Ceres Website/"</Value>
+        <Selection>collection='/SMD/PDS_Dawn_Mission_to_Ceres_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Dawn Mission to Vesta Website/"</Value>
+        <Selection>collection='/SMD/PDS_Dawn_Mission_to_Vesta_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NTRS Publication Database/"</Value>
+        <Selection>collection='/SMD/NTRS/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/Autoplot/"</Value>
+        <Selection>collection='/SMD/Autoplot_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/CEOS Missions/"</Value>
+        <Selection>collection='/SMD/CEOS_API_M/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/Community Coordinated Modeling Center (CCMC)/"</Value>
+        <Selection>collection='/SMD/CCMC_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Earth Science Suborbital Instruments/"</Value>
+        <Selection>collection='/SMD/CASEI_Instrument/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/EarthData Pathfinders/"</Value>
+        <Selection>collection='/SMD/DataPathFinder/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA Earth Observations/"</Value>
+        <Selection>collection='/SMD/NASA_Earth_Observations/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Biological and Physical Sciences/GeneLab Metadata API/"</Value>
+        <Selection>collection='/SMD/GENELAB_METADATA_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS LADEE NMS Calibrated Data Search/"</Value>
+        <Selection>collection='/SMD/PDS_LADEE_NMS_Calibrated_Data_Search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS LADEE NMS Derived Data Search/"</Value>
+        <Selection>collection='/SMD/PDS_LADEE_NMS_Derived_Data_Search/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/SPASE Data Model/"</Value>
+        <Selection>collection='/SMD/SPASE_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/Helioviewer/"</Value>
+        <Selection>collection='/SMD/Helioviewer_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Biological and Physical Sciences/GeneLab Github Training/"</Value>
+        <Selection>collection='/SMD/GENELAB_Github_Training/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/SPEDAS/"</Value>
+        <Selection>collection='/SMD/SPEDAS_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/Heliophysics Events Knowledgebase/"</Value>
+        <Selection>collection='/SMD/Helio_Events_Knowledgebase_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Biological and Physical Sciences/GeneLab Github Sample Processing/"</Value>
+        <Selection>collection='/SMD/GENELAB_Github_SampleProcessing/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/PyHC/"</Value>
+        <Selection>collection='/SMD/PyHC_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/ASTRO Finder Chart Website/"</Value>
+        <Selection>collection='/SMD/ASTRO_Finder_Chart_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/ASTRO Multi Website/"</Value>
+        <Selection>collection='/SMD/ASTRO_Multi_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Biological and Physical Sciences/LSDA Website Trial/"</Value>
+        <Selection>collection='/SMD/LSDA_Website_Trial/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Biological and Physical Sciences/LSDA Website Trial2/"</Value>
+        <Selection>collection='/SMD/LSDA_Website_Trial2/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Cassini Mission Dione (Saturn IV) Website/"</Value>
+        <Selection>collection='/SMD/PDS_Cassini_Mission_Dione_(Saturn_IV)_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Cassini Mission Enceladus (Saturn II) Website/"</Value>
+        <Selection>collection='/SMD/PDS_Cassini_Mission_Enceladus_(Saturn_II)_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Cassini Mission Iapetus (Saturn VIII) Website/"</Value>
+        <Selection>collection='/SMD/PDS_Cassini_Mission_Iapetus_(Saturn_VIII)_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Cassini Mission Mimas (Saturn I) Website/"</Value>
+        <Selection>collection='/SMD/PDS_Cassini_Mission_Mimas_(Saturn_I)_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Cassini Mission Rhea (Saturn V) Website/"</Value>
+        <Selection>collection='/SMD/PDS_Cassini_Mission_Rhea_(Saturn_V)_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Cassini Mission Saturn Small Satellites Website/"</Value>
+        <Selection>collection='/SMD/PDS_Cassini_Mission_Saturn_Small_Satellites_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Cassini Mission Tethys (Saturn III) Website/"</Value>
+        <Selection>collection='/SMD/PDS_Cassini_Mission_Tethys_(Saturn_III)_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Planck Cutout Visualization/"</Value>
+        <Selection>collection='/SMD/ASTRO_Planck_Cutout_Visualization_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/WISE Image Service/"</Value>
+        <Selection>collection='/SMD/ASTRO_WISE_Image_Service_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Airborne Inventory/"</Value>
+        <Selection>collection='/SMD/CASEI/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/CODE NASA/"</Value>
+        <Selection>collection='/SMD/CODE_NASA_API/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/ESSCOR/"</Value>
+        <Selection>collection='/SMD/ESSCOR_API/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/GCIS ARTICLE/"</Value>
+        <Selection>collection='/SMD/GCIS_ARTICLE_API/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/GCIS BOOKS/"</Value>
+        <Selection>collection='/SMD/GCIS_BOOKS_API/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/GCIS JOURNAL/"</Value>
+        <Selection>collection='/SMD/GCIS_JOURNAL_API/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/GCIS REPORTS/"</Value>
+        <Selection>collection='/SMD/GCIS_REPORTS_API/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Archive Navigator/"</Value>
+        <Selection>collection='/SMD/PDS_Archive_Navigator_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Astrogeology/"</Value>
+        <Selection>collection='/SMD/PDS_Astrogeology_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Cassini Resource Page/"</Value>
+        <Selection>collection='/SMD/PDS_Cassini_Resource_Page_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/CRISM Analysis Toolkit (CAT)/"</Value>
+        <Selection>collection='/SMD/PDS_CRISM_Analysis_Toolkit_(CAT)_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/JHelioviewer/"</Value>
+        <Selection>collection='/SMD/Helioviewer_Documentation_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Biological and Physical Sciences/Life Sciences Data Archive (LSDA)/"</Value>
+        <Selection>collection='/SMD/LSDA_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS New Horizons Encounter with Pluto Website/"</Value>
+        <Selection>collection='/SMD/PDS_New_Horizons_Encounter_with_Pluto_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Niels Bohr Institute Website/"</Value>
+        <Selection>collection='/SMD/PDS_Niels_Bohr_Institute_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS OSIRIS-REx Mission to Bennu Website/"</Value>
+        <Selection>collection='/SMD/PDS_OSIRIS-REx_Mission_to_Bennu_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS PDS Software Tools Tutorial and Viewers Website/"</Value>
+        <Selection>collection='/SMD/PDS_PDS_Software_Tools_Tutorial_and_Viewers_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Phoebe Saturn IX Website/"</Value>
+        <Selection>collection='/SMD/PDS_Phoebe_Saturn_IX_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Projection on the Web (POW) Service Website/"</Value>
+        <Selection>collection='/SMD/PDS_Projection_on_the_Web_(POW)_Service_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Rings Website/"</Value>
+        <Selection>collection='/SMD/PDS_Rings_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS SBIB 3D Website/"</Value>
+        <Selection>collection='/SMD/PDS_SBIB_3D_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Subset Tool Website/"</Value>
+        <Selection>collection='/SMD/PDS_Subset_Tool_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS USGS Pilot Website/"</Value>
+        <Selection>collection='/SMD/PDS_USGS_Pilot_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Web Chronos Website/"</Value>
+        <Selection>collection='/SMD/PDS_Web_Chronos_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/PDS Small Bodies Node Asteroid Dust Subnode/"</Value>
+        <Selection>collection='/SMD/PDS_PDS_Small_Bodies_Node_Asteroid_Dust_Subnode_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Users' Guides/"</Value>
+        <Selection>collection='/SMD/PDS_Users_Guides_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/TASKBOOK/"</Value>
+        <Selection>collection='/SMD/TASKBOOK_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Space Place/"</Value>
+        <Selection>collection='/SMD/Space_Place/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Sea Level Change/"</Value>
+        <Selection>collection='/SMD/Sea_Level_Change/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA Earth Observatory/"</Value>
+        <Selection>collection='/SMD/NASA_Earth_Observatory/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA's Black Marble/"</Value>
+        <Selection>collection='/SMD/NASA_Black_Marble/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/SERVIR Global/"</Value>
+        <Selection>collection='/SMD/SERVIR_Global/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA SPoRT/"</Value>
+        <Selection>collection='/SMD/NASA_SPoRT/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA Climate Change/"</Value>
+        <Selection>collection='/SMD/NASA_Climate_Change/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Biological and Physical Sciences/Space Biology Science Digest/"</Value>
+        <Selection>collection='/SMD/Space_Biology_Science_Digest/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Optical Constants Database/"</Value>
+        <Selection>collection='/SMD/Optical_Constants_Database/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Small Bodies Node/"</Value>
+        <Selection>collection='/SMD/Small_Bodies_Node/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/Solar Physics Group/"</Value>
+        <Selection>collection='/SMD/Solar_Physics_Group/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Planetary Science/Outer Planets Unified Search (OPUS)/"</Value>
+        <Selection>collection='/SMD/PDS_OPUS_Website/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/VEDA STAC Catalog/"</Value>
+        <Selection>collection='/SMD/VEDA_STAC_Catalog/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Commercial Smallsat Data Acquisition (CSDA) Program/"</Value>
+        <Selection>collection='/SMD/Commercial_Smallsat_Data_Acquisition_CSDA_Program/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/Space Physics Data Facility/"</Value>
+        <Selection>collection='/SMD/Space_Physics_Data_Facility/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/NASA's Heliophysics Digital Resource Library (HDRL)/"</Value>
+        <Selection>collection='/SMD/NASA_Heliophysics_Digital_Resource_Library_HDRL/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA Worldview/"</Value>
+        <Selection>collection='/SMD/NASA_Worldview/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA Techport/"</Value>
+        <Selection>collection='/SMD/NASA_Techport/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/NASA Earthdata/"</Value>
+        <Selection>collection='/SMD/NASA_Earthdata/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/Heliophysics Project Data Management Plans/"</Value>
+        <Selection>collection='/SMD/Heliophysics_Project_Data_Management_Plans/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Astrophysics/Fake Collection for Testing/"</Value>
+        <Selection>collection='/SMD/fake_collection_for_testing/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Algorithm Publication Tool/"</Value>
+        <Selection>collection='/SMD/Algorithm_Publication_Tool/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/Socioeconomic Data and Applications Center (SEDAC)/"</Value>
+        <Selection>collection='/SMD/Socioeconomic_Data_and_Applications_Center_SEDAC/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Heliophysics/Solar Data Analysis Center (SDAC)/"</Value>
+        <Selection>collection='/SMD/Solar_Data_Analysis_Center_SDAC/'</Selection>
+    </UpdateColumn>
+    <UpdateColumn>
+        <Column>treepath</Column>
+        <Value>"/Earth Science/VEDA Dashboard/"</Value>
+        <Selection>collection='/SMD/VEDA_Dashboard/'</Selection>
+    </UpdateColumn>
+
+</Sinequa>

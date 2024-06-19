@@ -1,18 +1,19 @@
 from rest_framework import serializers
 
 from .models.candidate_url import CandidateURL
-from .models.collection import Collection
+from .models.collection import Collection, WorkflowHistory
 from .models.collection_choice_fields import DocumentTypes
-from .models.pattern import DocumentTypePattern, ExcludePattern, TitlePattern
+from .models.pattern import (
+    DocumentTypePattern,
+    ExcludePattern,
+    IncludePattern,
+    TitlePattern,
+)
 
 
 class CollectionSerializer(serializers.ModelSerializer):
-    curation_status_display = serializers.CharField(
-        source="get_curation_status_display", read_only=True
-    )
-    workflow_status_display = serializers.CharField(
-        source="get_workflow_status_display", read_only=True
-    )
+    curation_status_display = serializers.CharField(source="get_curation_status_display", read_only=True)
+    workflow_status_display = serializers.CharField(source="get_workflow_status_display", read_only=True)
 
     class Meta:
         model = Collection
@@ -23,19 +24,31 @@ class CollectionSerializer(serializers.ModelSerializer):
             "curation_status_display",
             "workflow_status_display",
             "curated_by",
+            "division",
+            "document_type",
+            "name",
         )
+        extra_kwargs = {"division":{'required': False}, "document_type":{'required': False}, "name":{'required': False}}
+
         # extra_kwargs = {
         #     "name": {"required": False},
         #     "config_folder": {"required": False},
         #     "division": {"required": False},
         # }
 
+class CollectionReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Collection
+        fields = "__all__"
+
+class WorkflowHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkflowHistory
+        fields = "__all__"
 
 class CandidateURLSerializer(serializers.ModelSerializer):
     excluded = serializers.BooleanField(required=False)
-    document_type_display = serializers.CharField(
-        source="get_document_type_display", read_only=True
-    )
+    document_type_display = serializers.CharField(source="get_document_type_display", read_only=True)
     url = serializers.CharField(required=False)
     generated_title_id = serializers.SerializerMethodField(read_only=True)
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
@@ -67,6 +80,10 @@ class CandidateURLSerializer(serializers.ModelSerializer):
             "document_type",
             "document_type_display",
             "visited",
+            "test_title",
+            "production_title",
+            "present_on_test",
+            "present_on_prod",
         )
 
 
@@ -79,10 +96,43 @@ class CandidateURLBulkCreateSerializer(serializers.ModelSerializer):
         )
 
 
+class CandidateURLAPISerializer(serializers.ModelSerializer):
+    document_type = serializers.SerializerMethodField()
+    title = serializers.SerializerMethodField()
+    file_extension = serializers.SerializerMethodField()
+    tree_root = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CandidateURL
+        fields = (
+            "url",
+            "title",
+            "document_type",
+            "hash",
+            "file_extension",
+            "tree_root",
+        )
+
+    def get_document_type(self, obj):
+        if obj.document_type is not None:
+            return obj.get_document_type_display()
+        elif obj.collection.document_type is not None:
+            return obj.collection.get_document_type_display()
+        else:
+            return "Unknown"
+
+    def get_title(self, obj):
+        return obj.generated_title if obj.generated_title else obj.scraped_title
+
+    def get_file_extension(self, obj):
+        return obj.fileext
+
+    def get_tree_root(self, obj):
+        return obj.collection.tree_root
+
+
 class BasePatternSerializer(serializers.ModelSerializer):
-    match_pattern_type_display = serializers.CharField(
-        source="get_match_pattern_type_display", read_only=True
-    )
+    match_pattern_type_display = serializers.CharField(source="get_match_pattern_type_display", read_only=True)
     candidate_urls_count = serializers.SerializerMethodField(read_only=True)
 
     def get_candidate_urls_count(self, instance):
@@ -106,6 +156,12 @@ class ExcludePatternSerializer(BasePatternSerializer, serializers.ModelSerialize
         fields = BasePatternSerializer.Meta.fields + ("reason",)
 
 
+class IncludePatternSerializer(BasePatternSerializer, serializers.ModelSerializer):
+    class Meta:
+        model = IncludePattern
+        fields = BasePatternSerializer.Meta.fields
+
+
 class TitlePatternSerializer(BasePatternSerializer, serializers.ModelSerializer):
     class Meta:
         model = TitlePattern
@@ -124,9 +180,7 @@ class TitlePatternSerializer(BasePatternSerializer, serializers.ModelSerializer)
 
 
 class DocumentTypePatternSerializer(BasePatternSerializer, serializers.ModelSerializer):
-    document_type_display = serializers.CharField(
-        source="get_document_type_display", read_only=True
-    )
+    document_type_display = serializers.CharField(source="get_document_type_display", read_only=True)
     document_type = serializers.ChoiceField(
         choices=DocumentTypes.choices
         + [

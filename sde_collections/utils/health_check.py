@@ -1,12 +1,26 @@
+import json
 import re
+
+import boto3
+import botocore
+from django.conf import settings
 
 from sde_collections.models.candidate_url import CandidateURL
 from sde_collections.models.collection import (
+    Collection,
     CurationStatusChoices,
     WorkflowStatusChoices,
 )
+from sde_collections.models.collection_choice_fields import (
+    ConnectorChoices,
+    Divisions,
+    DocumentTypes,
+)
 from sde_collections.models.pattern import ExcludePattern, TitlePattern
-from sde_collections.tasks import _get_data_to_import
+from sde_collections.tasks import (
+    _get_data_to_import,
+    pull_latest_collection_metadata_from_github,
+)
 
 
 def health_check(collection, server_name: str = "production") -> dict:
@@ -173,3 +187,117 @@ def _resolve_title_pattern(pattern, title):
         multi_pattern, replace_parentheis_with_anything, regex_pattern_parenthesis
     )
     return re.match(regex_pattern, title)
+
+
+def parse_int_values(github_value, db_value, field):
+    """
+    This method parses the integer values to their corresponding labels.
+    """
+    field_dict = {
+        "division": Divisions,
+        "document_type": DocumentTypes,
+        "connector": ConnectorChoices,
+    }
+    try:
+        github_value = field_dict[field](github_value).label
+    except ValueError:
+        github_value = None
+
+    try:
+        db_value = field_dict[field](db_value).label
+    except ValueError:
+        db_value = None
+
+    return github_value, db_value
+
+
+def generate_db_github_metadata_differences(reindex_configs_from_github=False):
+    report = []
+    if reindex_configs_from_github:
+        pull_latest_collection_metadata_from_github.delay()
+        return report
+
+    # for each folder in github get the metadata from the default.xml file
+    FILENAME = "github_collections.json"
+
+    s3 = boto3.resource(
+        "s3",
+        region_name="us-east-1",
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    )
+
+    try:
+        s3.Object(settings.AWS_STORAGE_BUCKET_NAME, FILENAME).load()
+    except botocore.exceptions.ClientError as e:
+        if e.response["Error"]["Code"] == "404":
+            pull_latest_collection_metadata_from_github.delay()
+            return report
+        else:
+            raise
+    else:
+        collections = json.load(
+            s3.Object(settings.AWS_STORAGE_BUCKET_NAME, FILENAME).get()["Body"]
+        )
+
+    fields = {
+        "config_folder",
+        "name",
+        "url",
+        "division",
+        "document_type",
+        "connector",
+    }
+
+    # also fetch same metadata from the database
+    for collection in collections:
+        # fix division to be the same as in the database
+        collection["division"] = Divisions.lookup_by_text(collection["division"])
+        config_folder = collection["config_folder"]
+        try:
+            db_collection = Collection.objects.get(config_folder=config_folder)
+        except Collection.DoesNotExist:
+            report.append(
+                {
+                    "config_folder": config_folder,
+                    "field": "config_folder",
+                    "github_value": config_folder,
+                    "db_value": "DoesNotExist",
+                }
+            )
+            continue
+
+        # check if there is any difference in the metadata
+        # if there is a difference then add it to the report
+        int_fields = {"division", "document_type", "connector"}
+        for field in fields:
+            if collection[field] != getattr(db_collection, field):
+                db_value = getattr(db_collection, field)
+                if field in int_fields:
+                    collection[field], db_value = parse_int_values(
+                        collection[field], db_value, field
+                    )
+
+                report.append(
+                    {
+                        "config_folder": config_folder,
+                        "field": field,
+                        "github_value": collection[field],
+                        "db_value": db_value,
+                    }
+                )
+
+    # check if there are any collections in the database that are not in github
+    for db_collection in Collection.objects.exclude(
+        config_folder__in=[c["config_folder"] for c in collections]
+    ):
+        report.append(
+            {
+                "config_folder": db_collection.config_folder,
+                "field": "config_folder",
+                "github_value": "DoesNotExist",
+                "db_value": db_collection.config_folder,
+            }
+        )
+
+    return report

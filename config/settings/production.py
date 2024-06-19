@@ -4,7 +4,6 @@ import sentry_sdk
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
-from sentry_sdk.integrations.redis import RedisIntegration
 
 from .base import *  # noqa
 from .base import env
@@ -21,21 +20,6 @@ ALLOWED_HOSTS = env.list(
 # DATABASES
 # ------------------------------------------------------------------------------
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)  # noqa F405
-
-# CACHES
-# ------------------------------------------------------------------------------
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": env("REDIS_URL"),
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            # Mimicing memcache behavior.
-            # https://github.com/jazzband/django-redis#memcached-exceptions-behavior
-            "IGNORE_EXCEPTIONS": True,
-        },
-    }
-}
 
 # SECURITY
 # ------------------------------------------------------------------------------
@@ -187,7 +171,6 @@ integrations = [
     sentry_logging,
     DjangoIntegration(),
     CeleryIntegration(),
-    RedisIntegration(),
 ]
 sentry_sdk.init(
     dsn=SENTRY_DSN,

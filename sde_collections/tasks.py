@@ -1,23 +1,16 @@
 import json
 import os
 import shutil
-import subprocess
-import zipfile
 
 import boto3
-import botocore
+from django.apps import apps
 from django.conf import settings
 from django.core import management
 from django.core.management.commands import loaddata
-from scrapy.crawler import CrawlerProcess
-from scrapy.utils.project import get_project_settings
 
 from config import celery_app
-from scraper.scraper.spiders.base_spider import spider_factory
 
-from .models.candidate_url import CandidateURL
 from .models.collection import Collection
-from .models.collection_choice_fields import WorkflowStatusChoices
 from .sinequa_api import Api
 from .utils.github_helper import GitHubHandler
 
@@ -39,9 +32,7 @@ def _get_data_to_import(collection, server_name):
     page = 1
     while True:
         print(f"Getting page: {page}")
-        response = api.query(
-            page=page, collection_config_folder=collection.config_folder
-        )
+        response = api.query(page=page, collection_config_folder=collection.config_folder)
         if response["cursorRowCount"] == 0:
             break
 
@@ -82,9 +73,7 @@ def import_candidate_urls_from_api(server_name="test", collection_ids=[]):
         urls_file = f"{TEMP_FOLDER_NAME}/{collection.config_folder}.json"
 
         print("Getting responses from API")
-        data_to_import = _get_data_to_import(
-            server_name=server_name, collection=collection
-        )
+        data_to_import = _get_data_to_import(server_name=server_name, collection=collection)
         print(f"Got {len(data_to_import)} records for {collection.config_folder}")
 
         print("Dumping django fixture to file")
@@ -110,3 +99,37 @@ def push_to_github_task(collection_ids):
     collections = Collection.objects.filter(id__in=collection_ids)
     github_handler = GitHubHandler(collections)
     github_handler.push_to_github()
+
+
+@celery_app.task()
+def sync_with_production_webapp():
+    for collection in Collection.objects.all():
+        collection.sync_with_production_webapp()
+
+
+@celery_app.task()
+def pull_latest_collection_metadata_from_github():
+    FILENAME = "github_collections.json"
+
+    gh = GitHubHandler(collections=Collection.objects.none())
+    collections = gh.get_collections_from_github()
+
+    json.dump(collections, open(FILENAME, "w"), indent=4)
+
+    # Upload the file to S3
+    s3_bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+    s3_key = FILENAME
+    s3_client = boto3.client(
+        "s3",
+        region_name="us-east-1",
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    )
+    s3_client.upload_file(FILENAME, s3_bucket_name, s3_key)
+
+
+@celery_app.task()
+def resolve_title_pattern(title_pattern_id):
+    TitlePattern = apps.get_model("sde_collections", "TitlePattern")
+    title_pattern = TitlePattern.objects.get(id=title_pattern_id)
+    title_pattern.apply()

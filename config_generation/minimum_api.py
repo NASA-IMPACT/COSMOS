@@ -31,7 +31,7 @@ class Api:
 
         return meaningful_response
 
-    def query(self, term: str):
+    def query(self, term: str, page: int, collection_config_folder=None):
         url = f"{self.base_url}/api/v1/search.query"
         payload = {
             "app": self.app_name,
@@ -39,11 +39,16 @@ class Api:
                 "name": self.query_name,
                 "action": "search",
                 "text": term,
+                "page": page,
                 "pageSize": 1000,
                 "tab": "all",
             },
             "pretty": "true",
         }
+
+        if collection_config_folder:
+            payload["query"]["collection"] = f"/SMD/{collection_config_folder}/"
+
         response = requests.post(url, json=payload, verify=False)
 
         return self._process_response(response)

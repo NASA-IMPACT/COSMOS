@@ -1,0 +1,11 @@
+# create on the webapp
+[
+    "HAPI_API",
+    "naif",
+    "NasaEarthObservationWebsite",
+    "NAVO_HEASARC",
+    "ntrs_api",
+    "pds_rings",
+    "PDS4_API",
+    "SPASE_JSON",
+]

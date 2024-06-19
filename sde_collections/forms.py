@@ -1,6 +1,6 @@
 from django import forms
 
-from .models.collection import Collection, RequiredUrls
+from .models.collection import Collection, Comments, RequiredUrls
 
 
 class RequiredUrlForm(forms.ModelForm):
@@ -17,3 +17,9 @@ class CollectionGithubIssueForm(forms.ModelForm):
         fields = [
             "github_issue_link",
         ]
+
+
+class CommentsForm(forms.ModelForm):
+    class Meta:
+        model = Comments
+        fields = ["text"]

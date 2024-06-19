@@ -13,7 +13,10 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   # dependencies for building Python packages
   build-essential \
   # psycopg2 dependencies
-  libpq-dev
+  libpq-dev \
+  # pycurl dependencies
+  libcurl4-openssl-dev \
+  libssl-dev
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements .
@@ -36,7 +39,7 @@ ENV BUILD_ENV ${BUILD_ENVIRONMENT}
 WORKDIR ${APP_HOME}
 
 RUN addgroup --system django \
-    && adduser --system --ingroup django django
+  && adduser --system --ingroup django django
 
 
 # Install required system dependencies
@@ -45,6 +48,9 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   libpq-dev \
   # Translations dependencies
   gettext \
+  # pycurl dependencies
+  libcurl4-openssl-dev \
+  libssl-dev \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
@@ -86,6 +92,7 @@ COPY --chown=django:django . ${APP_HOME}
 
 # make django owner of the WORKDIR directory as well.
 RUN chown django:django ${APP_HOME}
+RUN chown django:django /usr/local/lib/python3.10/site-packages/django_celery_beat/
 
 USER django
 

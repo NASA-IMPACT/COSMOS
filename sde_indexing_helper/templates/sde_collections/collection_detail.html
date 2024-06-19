@@ -1,124 +1,413 @@
 {% extends "layouts/base.html" %}
 {% load static %}
+{% load i18n %}
 {% block title %}
-    {{ collection.name }}
+{% load humanize %}
+{{ collection.name }} Collection Detail
 {% endblock title %}
 {% block stylesheets %}
-    {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/collection_detail.css' %}">
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/collection_detail.css' %}">
+<link href="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.css" rel="stylesheet">
 {% endblock stylesheets %}
+{% block javascripts %}
+    {{ block.super }}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/2.0.8/features/inputPaging/dist/dataTables.inputPaging.min.js"></script>
+    <script src="{% static 'js/collection_detail.js' %}"></script>
+    <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
+{% endblock javascripts %}
+
+
 {% block content %}
-    <br>
-    <div class="row">
-        <div class="col-md-6">
+<br>
+<div class="row">
+    <div class="col-md-6 titleCol">
+        <h1 class="nameWrapper"><div class="collectionName" id="collectionName">{{ collection.name }}</div><img class="editTitle" src="../../static/images/Task.png"></img></h1>
+    </div>
+    <div class="col-md-6 buttonsCol">
+        <div>
+        <a href="{{ collection.server_url_prod }}" target="_blank" style="color:white"><button
+                class="btn buttonColor btn-sm pull-right">View on prod</button></a>
+        <a href="{{ collection.server_url_secret_prod }}" target="_blank" style="color:white"><button
+                class="btn buttonColor btn-sm pull-right">View on secret prod</button></a>
+            </div>
+                <div class="badge-container">
+                    <div class="dropdown workflow_status_dropdown"
+                    data-match-pattern
+                    remove_protocol
+                    row
+                    url>                          
+                   <button class="btn {{ collection.workflow_status_button_color }} btn-sm dropdown-toggle"
+                           type="button"
+                           id="workflow-status-button-{{ collection.id }}"
+                           data-toggle="dropdown"
+                           aria-haspopup="true"
+                           aria-expanded="false">{{ collection.get_workflow_status_display }}</button>
+                   <div class="dropdown-menu"
+                        aria-labelledby="workflow-status-button-{{ collection.id }}">
+                       {% for choice in workflow_status_choices %}
+                           <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-current="{{ choice.label }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
+                       {% endfor %}
+                   </div>
+               </div>
+                </div>
+    </div>
+</div>
 
-            <h1>{{ collection.name }}</h1>
+<div class="detailContainer">
+    <div class="timeline-container">
+        <div class="arrow" id="left-arrow">
+            <svg
+                class="arrow-svg"
+                width="6"
+                height="10"
+                viewBox="0 0 6 10"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style="transform: rotate(180deg);"
+                >
+                <path
+                    id="Icon/Arrow"
+                    d="M1.69209 0.273249C2.05245 0.624986 5.57328 4.32082 5.57328 4.32082C5.76553 4.50962 5.86208 4.75532 5.86208 5.00102C5.86208 5.24672 5.76553 5.49242 5.57328 5.6795C5.57328 5.6795 2.05245 9.37706 1.69209 9.72707C1.33173 10.0788 0.683431 10.1029 0.299795 9.72707C-0.0847026 9.35292 -0.114876 8.82962 0.299795 8.37012L3.53009 5.00102L0.299795 1.63192C-0.114876 1.17242 -0.0847026 0.648263 0.299795 0.273249C0.683431 -0.102628 1.33173 -0.0793515 1.69209 0.273249Z"
+                />
+            </svg>
         </div>
-        <div class="col-md-6">
-
-            <a href="{{ collection.server_url_test }}" target="_blank" style="color:white"><button class="btn btn-primary btn-sm pull-right">View on test server</button></a>
+        <div class="timeline" id="timeline">
+            {% for stage in timeline_history %}
+                <div class="timeline-stage 
+                {% if stage.workflow_status == collection.workflow_status %} btn highlight {{ collection.workflow_status_button_color }} {% endif %}">
+                    <div class="status-label">
+                        {% if stage.created_at %}
+                            {{ stage.get_workflow_status_display }}
+                        {% else %}
+                            {{ stage.label }}
+                        {% endif %}
+                    </div>
+                        <div class="modified-date"> {{ stage.created_at|date:"m/d/Y" }} </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="arrow" id="right-arrow">
+            <svg
+                class="arrow-svg"
+                width="6"
+                height="10"
+                viewBox="0 0 6 10"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style="transform: rotate(0deg);"
+                >
+                <path
+                    id="Icon/Arrow"
+                    d="M1.69209 0.273249C2.05245 0.624986 5.57328 4.32082 5.57328 4.32082C5.76553 4.50962 5.86208 4.75532 5.86208 5.00102C5.86208 5.24672 5.76553 5.49242 5.57328 5.6795C5.57328 5.6795 2.05245 9.37706 1.69209 9.72707C1.33173 10.0788 0.683431 10.1029 0.299795 9.72707C-0.0847026 9.35292 -0.114876 8.82962 0.299795 8.37012L3.53009 5.00102L0.299795 1.63192C-0.114876 1.17242 -0.0847026 0.648263 0.299795 0.273249C0.683431 -0.102628 1.33173 -0.0793515 1.69209 0.273249Z"
+                />
+            </svg>
         </div>
     </div>
-    <table class="table table-striped">
-        <tbody>
-            <tr>
-                <th>URL</th>
-                <td>
-                    <a target="_blank"
-                       href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{ collection.url }}</a>
-                </td>
-            </tr>
-            <tr>
-                <th>Config Folder</th>
-                <td>{{ collection.config_folder }}</td>
-            </tr>
-            <tr>
-                <th>Division</th>
-                <td>{{ collection.get_division_display }}</td>
-            </tr>
-            <tr>
-                <th>Update Frequency</th>
-                <td>{{ collection.get_update_frequency_display }}</td>
-            </tr>
-            <tr>
-                <th>Document Type</th>
-                <td>{{ collection.get_document_type_display }}</td>
-            </tr>
-            <tr>
-                <th>Tree Root</th>
-                <td>{{ collection.tree_root }}</td>
-            </tr>
-            <tr>
-                <th>Notes</th>
-                <td>{{ collection.notes }}</td>
-            </tr>
-            <tr>
-                <th>Sinequa Configuration</th>
-                <td>
-                    {% if collection.has_sinequa_config %}
-                        <a href="{{ collection.sinequa_configuration }}" target="_blank">{{ collection.sinequa_configuration }}</a>
-                    {% endif %}
-                </td>
-            </tr>
-            <tr>
-                <th>GitHub Issue Link</th>
-                <td>
-                    {% if github_form.errors %}
-                        <span class="error-message" id="github-link-error">{{ github_form.errors.github_issue_link }}</span>
-                    {% endif %}
-                    <a id="github-link-display"
-                       href="{{ collection.github_issue_link }}"
-                       target="_blank">{{ collection.github_issue_link }}</a>
-                    <form id="github-link-form"
-                          action="{% url 'sde_collections:detail' collection.pk %}"
-                          method="POST">
-                        {% csrf_token %}
-                        {{ github_form.github_issue_link }}
-                        <button type="submit" class="btn btn-sm btn-primary">Save</button>
-                    </form>
-                    <button type="submit"
-                            class="btn btn-info btn-sm"
-                            id="edit-github-link-button">
-                        <i class="material-icons">edit</i>
-                    </button>
-                    <button type="submit"
-                            class="btn btn-danger btn-sm"
-                            id="cancel-github-link-button">
-                        <i class="material-icons">cancel</i>
-                    </button>
-                </td>
-            </tr>
-            <tr>
-                <th>Candidate URLs</th>
-                <td>
-                    <a href="{% url 'sde_collections:candidate_urls' collection.id %}">View</a>
-                </td>
-            </tr>
-            <tr>
-                <th>Required URLs</th>
-                <td>
-                    {% for required_url in required_urls %}
-                        <form action="{% url 'sde_collections:delete_required_url' required_url.pk %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger delete_required_url pull-left" data-id={{ required_url.pk }}>
-                                <i class="material-icons">delete</i>
+
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="tab-nav active tabStyle" data-toggle="tab" href="#metadata">Metadata</a>
+        </li>
+        <li class="nav-item">
+            <a class="tab-nav tabStyle" data-toggle="tab" href="#workflowhistory">Workflow History</a>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+        <div class="tab-pane active" id="metadata">
+            <table class="table table-striped">
+                <tbody>
+                    <tr>
+                        <th class="detailsHeader">URL</th>
+                        <td>
+                            <a class="urlStyle underline" target="_blank" href=" {% if collection.url %}{{ collection.url }}{% endif %} ">{{collection.url }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="detailsHeader">Config Folder</th>
+                        <td class="whiteText">{{ collection.config_folder }}</td>
+                    </tr>
+                    <tr>
+                        <th class="detailsHeader">Division</th>
+                        <td>
+                            <select  class="divisionDropdown selectStyling" value="{{collection.division}}" id="detailDivisionDropdown" data-collection-id={{ collection.id }}>
+                                <option value="1" {% if collection.division == 1 %} selected="selected" {% endif %}>
+                                    Astrophysics</option>
+                                <option value="2" {% if collection.division == 2 %} selected="selected" {% endif %}>
+                                    Biological and Physical Sciences</option>
+                                <option value="3" {% if collection.division == 3 %} selected="selected" {% endif %}>Earth
+                                    Science</option>
+                                <option value="4" {% if collection.division == 4 %} selected="selected" {% endif %}>
+                                    Heliophysics</option>
+                                <option value="5" {% if collection.division == 5 %} selected="selected" {% endif %}>
+                                    Planetary Science</option>
+                                <option value="6" {% if collection.division == 6 %} selected="selected" {% endif %}>General
+                                </option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="detailsHeader">Document Type</th>
+                        <td>
+                            <select  class="divisionDropdown selectStyling" value="{{collection.document_type}}" id="detailDocTypeDropdown" data-collection-id={{ collection.id }} >
+                                <option value="1" {% if collection.document_type == 1 %} selected="selected" {% endif %}>
+                                    Images</option>
+                                <option value="2" {% if collection.document_type == 2 %} selected="selected" {% endif %}>
+                                    Data</option>
+                                <option value="3" {% if collection.document_type == 3 %} selected="selected" {% endif %}>Documentation</option>
+                                <option value="4" {% if collection.document_type == 4 %} selected="selected" {% endif %}>
+                                    Software and Tools</option>
+                                <option value="5" {% if collection.document_type == 5 %} selected="selected" {% endif %}>
+                                    Missions and Instruments</option>
+                                <option value="6" {% if collection.document_type == 6 %} selected="selected" {% endif %}>Training and Education
+                                </option>
+                            </select>
+
+                        </td>
+                        <!-- <td>{{ collection.get_document_type_display }}</td> -->
+                    </tr>
+                    <tr>
+                        <th class="detailsHeader">Update Frequency</th>
+                        <td class="whiteText">{{ collection.get_update_frequency_display }}</td>
+                    </tr>
+                    <tr>
+                        <th class="detailsHeader">Tree Root</th>
+                        <td class="urlStyle" {{ collection.tree_root }}</td>
+                    </tr>
+                    <tr>
+                        <th class="detailsHeader">Notes</th>
+                        <td class="whiteText">{{ collection.notes }}</td>
+                    </tr>
+                    <tr>
+                        <th class="detailsHeader">Sinequa Configuration</th>
+                        <td>
+                            <a class="urlStyle underline"  href="{{ collection.sinequa_configuration }}" target="_blank">{{collection.sinequa_configuration }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="detailsHeader">GitHub Issue Link</th>
+                        <td>
+                            {% if github_form.errors %}
+                            <span class="error-message whiteText" id="github-link-error">{{ github_form.errors.github_issue_link }}</span>
+                            {% endif %}
+                            <a id="github-link-display" class="urlStyle underline" href="{{ collection.github_issue_link }}" target="_blank">{{collection.github_issue_link }}</a>
+                            <form id="github-link-form" class="reqUrlForm" action="{% url 'sde_collections:detail' collection.pk %}"
+                                method="POST">
+                                {% csrf_token %}
+                                {{ github_form.github_issue_link }}
+                                <button type="submit" class="btn btn-sm buttonColor">Save</button>
+                            </form>
+                            <button type="submit" class="btn btn-sm buttonColor" id="edit-github-link-button">
+                                <i class="material-icons">edit</i>
                             </button>
-                        </form>
-                        <a href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
-                    {% empty %}
-                        <p>No required URLs yet</p>
+                            <button type="submit" class="btn btn-danger btn-sm" id="cancel-github-link-button">
+                                <i class="material-icons">cancel</i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="detailsHeader">Candidate URLs</th>
+                        <td>
+                            <a class="urlStyle underline" href="{% url 'sde_collections:candidate_urls' collection.id %}">View</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="detailsHeader">Required URLs</th>
+                        <td>
+                            {% for required_url in required_urls %}
+                            <div>
+                            <form  class="reqUrlForm">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger urlDeleteButton delete_required_url pull-left"
+                                    data-id='{"id": "{{ required_url.pk }}", "url": "{{ required_url.url }}"}'>
+                                    <i class="material-icons">delete</i>
+                                </button>
+                            </form>
+                            <a class="urlStyle" target="_blank" href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
+                            </div>
+                            {% empty %}
+                            <p class="greyText">No required URLs yet</p>
+                            {% endfor %}
+                            <form method="post" class="reqUrlForm"  action="{% url 'sde_collections:detail' collection.pk %}">
+                                {% csrf_token %}
+                                {{ form.url }}
+                                <button type="submit" class="btn btn-sm buttonColor urlSubmitButton">Add URL</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="detailsHeader">Comments</th>
+                        <td>
+                            <div id="comments-display">
+                                {% for comment in comments %}
+                                <div class="comment">
+                                    <strong>{{ comment.user.username }}</strong>
+                                    <span class="whiteText">{{ comment.created_at|date:"M. d, Y, P" }}</span>
+                                    <p class="whiteText">{{ comment.text }}</p>
+                                </div>
+                                {% empty %}
+                                <p>No comments yet</p>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="detailsHeader">Post a Comment</th>
+                        <td>
+                            <div id="comment-form-container">
+                                {% if user.is_authenticated %}
+                                <form method="post" action="{% url 'sde_collections:detail' collection.pk %}" >
+                                    {% csrf_token %}
+                                    <textarea name="text" class="form-control formBackground" required>{{ comment_form.text.value }}</textarea>
+                                    <button type="submit" name="comment_button" class="btn buttonColor">Submit</button>
+                                </form>
+                                {% else %}
+                                <p>Please log in to post comments.</p>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+        <div class="tab-pane fade" id="workflowhistory">
+            <table class="table table-striped" id="workflow_history_table" style="width:100%">
+                <thead>
+                    <tr class="tableHeaderRow">
+                        <th class="whiteText">Workflow Status</th>
+                        <th class="whiteText">Curator</th>
+                        <th class="whiteText">Time Updated</th>
+                    </tr>
+                <thead>
+                <tbody>
+                    {% for entry in workflow_history %}
+                    <tr>
+                        <td>
+                            <button class="btn {{ entry.workflow_status_button_color }} btn-sm"
+                                    type="button"
+                                    id="workflow-history-button-{{ collection.id }}"
+                                    aria-expanded="false">{{ entry.get_workflow_status_display }}</button>
+                        </td>
+                        <td class="whiteText">                            
+                            {{ entry.curated_by }}</td>
+                        <td class="whiteText">{{entry.created_at|timesince}} ago</td>
+                    </tr>
                     {% endfor %}
-                    <form method="post"
-                          action="{% url 'sde_collections:detail' collection.pk %}">
-                        {% csrf_token %}
-                        {{ form.url }}
-                        <button type="submit" class="btn btn-sm btn-primary">Add URL</button>
+                </tbody>
+
+            </table>
+        </div>
+        </div>
+      </div>
+
+      <div class="modal" id="divisionChangeModal" tabindex="-1"
+    aria-labelledby="divisionChangeModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close" id="closeDivisionModal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+                <div class="modal-body" id="modal-body">
+                    <h5 class="modal-title">Are you sure?</h5>
+                    <p class="caption" id="caption"></p>
+                </div>
+                <div class="modal-footer">
+                    <form id="divisionChangeModalForm">
+                        <div class="button-wrapper">
+                        <button type="submit" class="btn btn-secondary modal-button-1" id="cancelDivisionChange">No</button> 
+                        <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="makeDivisionChange">Yes</button> 
+                        </div>
+                        </form>
+                </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="titleChangeModal" tabindex="-1"
+aria-labelledby="titleChangeModal" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close" id="closeTitleModal">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+            <div class="modal-body" id="modal-body">
+                <h5 class="modal-title">Rename Collection</h5>
+                <p class="caption rename-collection-caption" id="titleCaption"></p>
+            </div>
+            <div class="modal-footer">
+                <form id="titleChangeModalForm">
+                        <input type="text" name="inputFieldName" id="inputFieldId" value="{{collection.name}}"> 
+                        <div class="button-wrapper">
+                            <button type="submit" class="btn btn-secondary modal-button-1" id="cancelTitleRename">Cancel</button> 
+                            <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="renameTitle">Rename</button> 
+                        </div>
+                </form>
+            </div>
+    </div>
+</div>
+</div>
+
+
+<div class="modal" id="deleteURLModal" tabindex="-1"
+aria-labelledby="deleteURLModal" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close" id="closeDeleteURLModal">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+            <div class="modal-body" id="modal-body">
+                <h5 class="modal-title">Are you sure?</h5>
+                <p class="delete-URL-caption" id="caption"></p>
+            </div>
+            <div class="modal-footer">
+                <form id="deleteURLModalForm">
+                    <div class="button-wrapper">
+                    <button type="submit" class="btn btn-secondary modal-button-1" id="cancelURLDeletion">No</button> 
+                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="deleteURL">Yes</button> 
+                    </div>
                     </form>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+            </div>
+    </div>
+</div>
+</div>
+
+<div class="modal" id="workflowStatusChangeModal" tabindex="-1"
+aria-labelledby="workflowStatusChangeModal" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close" id="closeworkflowStatusChangeModal">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+            <div class="modal-body" id="modal-body">
+                <h5 class="modal-title">Are you sure?</h5>
+                <p class="workflow-status-change-caption" id="caption"></p>
+            </div>
+            <div class="modal-footer">
+                <form id="workflowStatusChangeModalForm">
+                    <div class="button-wrapper">
+                    <button type="submit" class="btn btn-secondary modal-button-1" id="cancelworkflowStatusChange">No</button> 
+                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="changeWorkflowStatus">Yes</button> 
+                    </div>
+                    </form>
+            </div>
+    </div>
+</div>
+</div>
+
 {% endblock content %}
-{% block javascripts %}
-    <script src="{% static 'js/collection_detail.js' %}"></script>
-{% endblock javascripts %}

@@ -13,7 +13,7 @@ from sources_to_scrape import (
     turned_on_sources,
 )
 
-ROOT_PATH = "../sinequa_configs/sources/SMD/"
+ROOT_PATH = "../sinequa_configs/sources/SDE/"
 
 
 def create_xml_path(collection_name):

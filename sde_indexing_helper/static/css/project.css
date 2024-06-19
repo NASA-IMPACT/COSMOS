@@ -1,5 +1,9 @@
 /* These styles are generated from project.scss. */
 
+/* :root {
+  -primary-blue: #0066CA;
+} */
+
 .alert-debug {
   color: black;
   background-color: white;
@@ -15,4 +19,611 @@
 .container {
   max-width: 90% !important;
   /*Set your own width %; */
+}
+
+.dtsp-searchPane {
+  background: rgba(255, 255, 255, 1);
+  border-radius: 10px;
+    /* padding: 15px; */
+    padding-left:3px;
+    /* width: 18vw;  */
+}
+/* 
+.dtsp-subRowsContainer {
+  display: flex;
+  flex-direction: column-reverse !important;
+}
+
+.dtsp-subRow1, .bmd-form-group {
+  width: 100%;
+}
+
+.dtsp-subRow2 {
+  display: flex;
+  justify-content: end;
+  width: 100%;
+} */
+
+.btn.btn-secondary {
+  box-shadow: none !important;
+}
+
+#candidate_urls_table_wrapper div.dt-info:first-of-type {
+  display: inline-block;
+  /* width: 25%; */
+}
+
+#candidate_urls_table_wrapper div.dt-length, #exclude_patterns_table_wrapper div.dt-length, #include_patterns_table_wrapper div.dt-length, #document_type_patterns_table_wrapper div.dt-length, #title_patterns_table_wrapper div.dt-length{
+  display: inline-block;
+    width: 10%;
+}
+
+#candidate_urls_table_wrapper div.dt-buttons {
+  /* width: 64%;     */
+  float:right;
+  justify-content: end;
+}
+
+div.dtsp-panesContainer div.dtsp-searchPane div.dt-container, div.dtsp-panesContainer div.dtsp-searchPane div.dataTables_wrapper {
+ border:none;
+}
+
+div.dtsp-panesContainer div.dtsp-searchPane div.dt-container:hover,div.dtsp-panesContainer div.dtsp-searchPane div.dataTables_wrapper:hover {
+  border: none!important
+}
+
+.wrapper {
+  background-image: url("../images/SDE-Index-Hero.png") !important;
+  background-repeat: no-repeat; 
+    background-position: top center; 
+    background-size: cover; 
+    height: 337px;
+}
+
+
+.dtsp-clearAll, .dtsp-showAll, .dtsp-collapseAll  {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--NASA-Light-Grey, rgba(134, 151, 168, 1));
+font-size: 14px;
+font-weight: 500;
+line-height: 16.41px;
+box-shadow: none;
+border-radius: 10px;
+    padding-left: 18px;
+    padding-right: 18px;
+    margin-left: 10px !important;
+    text-transform: capitalize;
+}
+
+.dtsp-clearAll.disabled, .dtsp-showAll.disabled, .dtsp-collapseAll.disabled, .dtsp-clearAll:hover, .dtsp-showAll:hover, .dtsp-collapseAll:hover, .dtsp-clearAll:active, .dtsp-showAll:active, .dtsp-collapseAll:active, .dtsp-clearAll:focus, .dtsp-showAll:focus, .dtsp-collapseAll:focus {
+  color: rgba(255, 255, 255, 1) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+} 
+
+.dtsp-title {
+  display: none;
+}
+
+.navbar {
+  padding-top: 32px !important;
+}
+
+body {
+  background-color: #050E19;
+}
+
+.tableHeader{
+  background-color: #050E19;
+  color:white;
+  font-family: Roboto, sans-serif;
+  font-weight: 600 !important;
+}
+
+.textBoxStyling{
+ background-color: #15232E;
+ color:white;
+ border: 1px solid #3F4A58;
+}
+
+.selectStyling{
+  background-color:#A7BACD !important;
+}
+
+ .whiteText{
+  color:white !important;
+ }
+ .dt-info{
+  color:white;
+ }
+
+ .noBorder{
+  border:none !important;
+ }
+
+ .filterRowBottom{
+  border-bottom:1px solid;
+ }
+
+ .urlIcon{
+  color: #65B1EF;
+}
+
+.dt-empty{
+  color:white;
+}
+
+.nameStyling{
+  color: #65B1EF;
+  font-size:14px;
+  font-weight:500;
+}
+
+.btn-prime {
+  color: #FFFFFF;
+  background-color: #0066CA;
+  box-shadow: 0px 14px 84px 0px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  text-align: center;
+  padding: 11px 0;
+  cursor: pointer;
+  font-weight: 500;
+} 
+
+.dtsp-name{
+  color:white;
+  font-weight:400;
+}
+
+.dtsp-nameColumn{
+  background-color: #15232E;
+  border:none;
+ 
+}
+
+.dtsp-searchPane{
+  background-color: #15232E;
+}
+
+.dt-scroll{
+  background-color: #15232E !important;
+  height: 100% !important;
+}
+
+.dt-scroll-body{
+  height:100% !important;
+}
+
+.dtsp-searchPane .justify-content-md-center {
+  height: 198px !important;
+}
+
+ .table > tbody > tr > td {
+  border:none;
+}  
+
+.nameStyling:hover{
+  color:#65B1EF;
+}
+
+.greyText{
+  color: #8697A8;
+}
+
+.urlStyle{
+  color:#65B1EF !important;
+  font-weight:500;
+ }
+
+ .underline{
+  text-decoration: underline;
+ }
+
+ .tabStyle{
+  color:#8697A8 !important;
+  padding-top:10px;
+}
+
+.nav-item .active{
+  color:#65B1EF !important;
+  background-color:rgba(255, 255, 255, 0.07);
+}
+
+.buttonColor{
+  background-color:#0066CA;
+ }
+
+ .header-title{
+  font-size:16px;
+  font-weight:600;
+ }
+
+ .dt-info{
+  font-weight:900;
+  font-size:16px;
+  margin-top:15px;
+ }
+
+ .buttons-csv, .customizeColumns{
+  background: transparent !important;
+  color: #8697A8 !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  border-color: #A7BACD !important;
+ }
+
+ .dropdown-menu{
+  background-color:#15232E;
+  border:1px solid #A7BACD;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+ }
+
+ .dropdown-item{
+  color:white !important;
+ }
+
+ .dropdown-item:hover{
+  background-color:#0066CA !important;
+ }
+
+ .customizeColumnContainer{
+  background-color: #15232E !important;
+ }
+
+ .headerDescription{
+  font-family: sans-serif;
+  font-size:14px;
+ }
+ 
+.user-bubble {
+  width: 30px;
+  height: 30px;
+  background-color: #2C3542;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+ .user-icon {
+  color: #FFFFFF;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 0 0 0 !important;
+ }
+
+ .modal-content {
+  background: #15232E;
+    border: 1px solid #A7BACD;
+    color: #FFFFFF;
+    padding: 32px 32px 42px 32px;
+ }
+
+ .modal-header {
+  padding: 0;
+ }
+
+ .modal-footer {
+  border-top: none;
+  padding: 0;
+ }
+
+ .modal-close {
+  color: #FFFFFF;
+  text-shadow: none;
+ }
+
+ .modal-close span {
+  padding: 0 8px !important;
+  border-radius: 15px !important;
+  background: #3F4A58 !important;
+ }
+
+ .modal-button-1 {
+  background: transparent !important;
+    color: #8697A8 !important;
+    border: 1px solid #FFFFFF !important;
+ }
+
+ .modal-button-2 {
+  background: #0066CA !important;
+    box-shadow: none !important;
+    margin-left: 10px;
+ }
+
+ .modal-button-1, .modal-button-2 {
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+    height: 40px;
+    width: 100px;
+ }
+
+ .button-wrapper {
+  display: flex;
+  padding-top: 30px;
+ }
+
+ .modal-title {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    padding-bottom: 12px;
+ }
+
+ .modal-body {
+  padding: 0;
+ }
+
+ .hideShowSubmitButton {
+  width: 110px;
+  box-shadow: 0px 8px 16px 0px #0037FA4D;
+
+}
+
+.pageTitle{
+  font-size:56px;
+  color:white;
+  font-weight:500;
+ }
+/* base_auth.html layout css */
+
+.auth-wrapper {
+  height: 100vh;
+}
+.auth-col-1, .auth-col-2 {
+  width: 50%;
+}
+
+.auth-col-1 {
+  background-image: url("../images/Content.png") !important;
+  height: 100vh;
+  background: no-repeat;
+}
+.auth-col-2-wrapper {
+  position: relative;
+}
+
+.auth-sde-idx-helper {
+  justify-content: center;
+    display: flex;
+}
+
+.auth-col-2 {
+  padding: 0;
+  background-color: rgba(5, 14, 25, 1);
+  margin: auto;
+}
+
+.auth-content {
+  height: calc(100vh - 6rem);
+  display: flex;
+}
+
+/* LOGIN PAGE CSS */
+
+.signin {
+  padding-right: 30px;
+}
+
+.login-links {
+  padding-top: 25px;
+  display: flex;
+    justify-content: center;
+    color: var(--NASA-DM-Link, rgba(101, 177, 239, 1));
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.login-links a {
+  color: var(--NASA-DM-Link, rgba(101, 177, 239, 1));
+}
+
+#signup_form .form-label {
+  display: none;
+}
+
+#id_password_helptext {
+  display: none;
+}
+
+.login-card-wrapper {
+  width: 66%;
+}
+
+.login-card {
+  margin-top: 70px;
+  background: rgba(21, 35, 46, 1);
+  padding: 32px 32px 40px 32px;
+  border: 1px solid var(--NASA-Secondary-Blue, rgba(167, 186, 205, 1))
+}
+
+.login {
+  justify-content: center;
+    align-items: center;
+    height: 100%;
+    margin-left: 0 !important;
+}
+
+.login-title {
+font-size: 32px;
+font-weight: 600;
+line-height: 48px;
+letter-spacing: -0.03em;
+text-align: center;
+color: rgba(255, 255, 255, 1);
+padding-bottom: 30px;
+}
+
+.login-button {
+  background-color: rgba(0, 102, 202, 1) !important;
+  color: rgba(255, 255, 255, 1);
+  border: none !important;
+  width: 100%;
+font-size: 15px;
+font-weight: 500;
+line-height: 17.58px;
+border-radius: 5px;
+padding: 11px 0;
+cursor: pointer;
+box-shadow: 0px 8px 16px 0px #0037FA4D;
+
+}
+
+#div_id_login .form-label,  #div_id_password .form-label, #div_id_email .form-label{
+  display: none;
+}
+
+#placeholder {
+  color: rgba(255, 255, 255, 1);
+}
+
+.title-wrapper h4 {
+  padding-bottom: 0;
+}
+
+.title-wrapper{
+  padding-bottom: 30px;
+}
+
+.title-wrapper p {
+  margin-bottom: 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 1);
+}
+
+#id_password1_helptext ul {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 1);
+}
+
+.auth-col-2-wrapper input {
+  background: var(--NASA-Table, rgba(63, 74, 88, 1));
+  border-radius: 5px;
+  color: rgba(255, 255, 255, 1);
+  padding: 9px 14px;
+  background-image: none !important;
+}
+
+.auth-col-2-wrapper .form-control:focus {
+  background: var(--NASA-Table, rgba(63, 74, 88, 1));
+  color: rgba(255, 255, 255, 1);
+}
+
+.signup-errors {
+  margin: 0;
+}
+
+/* FOOTER CSS */
+
+.footer-wrapper {
+  position: absolute;
+    bottom: 0;
+    background: transparent;
+    width: 100%;
+    color: rgba(255, 255, 255, 1);
+    display: flex;
+    justify-content: center;
+}
+
+.footer {
+  width: 93%;
+  font-weight: 500;
+  padding: 0;
+  padding-top: 40px;
+}
+
+.footer-container {
+  border-top: 1px solid rgba(255, 255, 255, 1);
+  display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    padding-top: 25px;
+    padding-bottom: 65px;
+}
+
+.footer-right-side-links {
+  display: flex;
+    align-items: center;
+}
+
+.footer-nasa-link, .footer-nasa-link:hover, .footer-nasa-link:focus, .footer-copyright-link {
+  padding-right: 20px;
+  color: rgba(255, 255, 255, 1) !important;
+}
+
+.footer-copyright-link a,  .footer-contact-us-link:hover, .footer-contact-us-link:focus, .footer-contact-us-link  {
+  color: rgba(255, 255, 255, 1);
+}
+
+.footer-left-side-link{
+  background-image: url("../images/NASA\ Logo.svg");
+  width: 47px;
+height: 38px;
+}
+
+.footer-contact-us-link, .footer-left-side-link, .footer-nasa-link, .footer-copyright-link {
+  cursor: pointer;
+}
+
+.base-html-footer-wrapper {
+  display: flex;
+    justify-content: center;
+}
+
+.tab-nav {
+  color: black;
+  padding-right: 25px;
+  padding-left: 25px;
+  font-weight: 500;
+}
+
+.dropdown-menu {
+  z-index: 1030;
+}
+
+/* tab headers hover effect */
+.tab-nav:hover {
+  text-decoration: underline;
+  color: #0066CA; 
+}
+
+/* alligning tab container with the table  */
+.nav-tabs {
+  padding-left: 0px;
+}
+
+/* active tab  */
+.nav-item > .active {
+  color: #0066CA;
+  font-weight: 700;
+  border-bottom: 3px solid #FF3D57;
+  padding-bottom: 15px;
+}
+
+/* line under the tab options */
+div > .nav {
+  padding-bottom: 15px;
+  border-bottom: 1px solid #F8FAFB;
+}
+
+.divisionDropdown {
+  appearance: auto !important;
+  padding:10px;
+}
+
+.dtsp-searchPane .dtsp-subRow1 .bmd-form-group {
+  display: none;
+}
+
+
+.dtsp-topRow {
+  align-items: center !important;
+  margin: 0 !important; 
 }

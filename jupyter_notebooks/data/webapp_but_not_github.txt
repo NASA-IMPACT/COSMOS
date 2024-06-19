@@ -1,0 +1,56 @@
+# check if they have all required metadata
+# check if there's something in the github_but_not_webapp list
+# check for duplicate URLs and consolidate collections if possible
+# create config on the github
+# start indexing on the test server and check if it's working
+[
+    "2mass_api_search",
+    "2mass_batch_image_service",
+    "2mass_image_inventory_search",
+    "2mass_interactive_image_service",
+    "atlas_api_search",
+    "background_model",
+    "data_set_status",
+    "exofop_k2_campaign_9",
+    "exoplanet_follow_up_observing_program",
+    "ftp_access",
+    "galactic_dust_reddening_and_extinction",
+    "herschel_data_search",
+    "hires",
+    "image_and_spectrum_server_atlas",
+    "image_validation",
+    "index",
+    "irsa_api",
+    "irsa_idl_tools",
+    "irsa_votable_access_protocol",
+    "irsa",
+    "most",
+    "nasa_sea_level_change",
+    "navo_registry",
+    "object_coordinate_lookup",
+    "pds_geosciences_node_community",
+    "planck_data_tools",
+    "scanpi",
+    "small_bodies_node_data_by_target_type",
+    "small_bodies_node_data_by_type_of_observation",
+    "ssa_queries",
+    "swas_api_search",
+    "swas_spectrum_server",
+    "viewmaster_data_archives_calibrated",
+    "viewmaster_data_archives_diagrams",
+    "viewmaster_data_archives_previews",
+    "viewmaster_data_archives_volumes",
+    "viewmaster_data_calibrated",
+    "viewmaster_data_diagrams",
+    "viewmaster_data_previews",
+    "viewmaster_data_volumes",
+    "viewmaster_documents",
+    "vo_simple_cone_search",
+    "wise_neowise_coadder",
+]
+
+# most are delete=True
+# these two are not
+# exoplanet_follow_up_observing_program
+# nasa_sea_level_change
+# create configs for them on the github

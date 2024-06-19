@@ -8,40 +8,98 @@ from ..models.collection_choice_fields import CurationStatusChoices
 
 
 class GitHubHandler:
-    def __init__(self, collections, *args, **kwargs):
+    def __init__(self, collections=None, *args, **kwargs):
         self.github_token = settings.GITHUB_ACCESS_TOKEN
-        self.github_repo = settings.SINEQUA_CONFIGS_GITHUB_REPO
-        self.github_update_branch = settings.GITHUB_BRANCH_FOR_WEBAPP
         self.g = Github(self.github_token)
-        self.repo = self.g.get_repo(f"{self.github_repo}")
-        self.dev_branch = self.repo.default_branch
+        self.repo = self.g.get_repo(f"{settings.SINEQUA_CONFIGS_GITHUB_REPO}")
+        self.master_branch = settings.SINEQUA_CONFIGS_REPO_MASTER_BRANCH
+        self.dev_branch = settings.SINEQUA_CONFIGS_REPO_DEV_BRANCH
+        self.webapp_pr_branch = settings.SINEQUA_CONFIGS_REPO_WEBAPP_PR_BRANCH
         self.collections = collections
+        # if we still need operations performed on a collection list
+        # we should refactor, as this functionality should not be a
+        # part of the base GithubHandler class.
+        # maybe it should just be passed to an individual method
 
-    def _get_config_file_path(self, collection) -> str:
-        file_path = f"sources/SMD/{collection.config_folder}/default.xml"
-        return file_path
-
-    def _get_file_contents(self, collection):
+    def _get_file_contents(self, file_path, strict=True):
         """
-        Get file contents from GitHub dev or update branch
+        try to get file contents, first from the pr branch and then from the dev branch
+        if strict is True, raise an exception if the file is not found
         """
-        FILE_PATH = self._get_config_file_path(collection)
 
         try:
-            contents = self.repo.get_contents(FILE_PATH, ref=self.dev_branch)
+            contents = self.repo.get_contents(file_path, ref=self.webapp_pr_branch)
         except UnknownObjectException:
             try:
-                contents = self.repo.get_contents(
-                    FILE_PATH, ref=self.github_update_branch
-                )
+                contents = self.repo.get_contents(file_path, ref=self.dev_branch)
             except UnknownObjectException:
+                if strict:
+                    raise Exception(
+                        f"File {file_path} not found on {self.dev_branch} or {self.webapp_pr_branch} branches"
+                    )
                 return None
 
         return contents
 
-    def _update_file_contents(self, collection):
+    def check_file_exists(self, file_path):
+        """
+        Check if file exists on GitHub
+        """
+
+        if self._get_file_contents(file_path, strict=False) is None:
+            return False
+        else:
+            return True
+
+    def create_file(self, file_path, file_string, branch=None):
+        """
+        Create file contents on GitHub
+        if no branch is provided, it will default to the webapp_pr_branch
+        """
+
+        if not branch:
+            branch = self.webapp_pr_branch
+
+        if self.check_file_exists(file_path):
+            raise Exception(f"File {file_path} already exists on GitHub")
+
+        COMMIT_MESSAGE = f"Webapp: Create {file_path}"
+
+        self.repo.create_file(
+            file_path,
+            COMMIT_MESSAGE,
+            file_string,
+            branch=branch,
+        )
+
+    def create_or_update_file(self, file_path, file_string, branch=None):
         """
         Update file contents on GitHub
+        if no branch is provided, it will default to the webapp_pr_branch
+        """
+
+        if not branch:
+            branch = self.webapp_pr_branch
+
+        if self.check_file_exists(file_path):
+            contents = self._get_file_contents(file_path)
+            COMMIT_MESSAGE = f"Webapp: Update {file_path}"
+
+            self.repo.update_file(
+                contents.path,
+                COMMIT_MESSAGE,
+                file_string,
+                contents.sha,
+                branch=branch,
+            )
+        else:
+            self.create_file(file_path, file_string, branch)
+
+    def update_config_with_current_rules(self, collection):
+        """
+        DEPRECATED?
+        this runs the update_config_xml method from the collection model
+        which adds the latest rules to the xml file
         """
         contents = self._get_file_contents(collection)
         FILE_CONTENTS = contents.decoded_content.decode("utf-8")
@@ -54,7 +112,7 @@ class GitHubHandler:
             COMMIT_MESSAGE,
             updated_xml,
             contents.sha,
-            branch=self.github_update_branch,
+            branch=self.github_branch,
         )
 
     def branch_exists(self, branch_name: str) -> bool:
@@ -78,7 +136,7 @@ class GitHubHandler:
                 title=title,
                 body=body,
                 base=self.dev_branch,
-                head=self.github_update_branch,
+                head=self.github_branch,
             )
         except GithubException:  # PR exists
             print("PR exists")
@@ -88,7 +146,7 @@ class GitHubHandler:
             self.create_branch(self.github_branch)
         for collection in self.collections:
             print(f"Pushing {collection.name} to GitHub.")
-            self._update_file_contents(collection)
+            self.update_config_with_current_rules(collection)
             collection.curation_status = CurationStatusChoices.GITHUB_PR_CREATED
             collection.save()
         self.create_pull_request()
@@ -106,11 +164,64 @@ class GitHubHandler:
 
             tree_root = collection_xml.fetch_treeroot()
             document_type = collection_xml.fetch_document_type()
-            connector_type = collection_xml.fetch_connector()
 
             metadata[collection.config_folder] = {
                 "tree_root": tree_root,
                 "document_type": document_type,
-                "connector": connector_type,
             }
         return metadata
+
+    def _get_config_folder(self, collection_folder):
+        return collection_folder.removeprefix("sources/SDE/")
+
+    def _get_list_of_collections(self):
+        BASE_PATH = "sources/SDE"
+        collections = self.repo.get_contents(BASE_PATH, ref=self.dev_branch)
+        collection_folders = [
+            collection.path
+            for collection in collections
+            if ".xml" not in collection.path  # to prevent source.xml from being included
+        ]
+        return collection_folders
+
+    def _get_contents_from_path(self, path):
+        # we don't need to check if the file exists because we already did that in _get_list_of_collections
+        contents = self.repo.get_contents(path, ref=self.dev_branch)
+        FILE_CONTENTS = contents.decoded_content.decode("utf-8")
+        collection_xml = XmlEditor(FILE_CONTENTS)
+        return collection_xml
+
+    def get_collections_from_github(self, config_folders=[]):
+        # get a list of folders in sources/SDE/ from the dev branch on github
+        collection_folders = self._get_list_of_collections()
+
+        # create a dict of all collections and their metadata
+        collection_list = []
+
+        # for each folder in the list, get the metadata: config_folder, name, url, division, tree_root, document_type
+        for collection_folder in collection_folders:
+            config_folder = self._get_config_folder(collection_folder)
+            collection_xml_file_path = self._get_config_file_path(config_folder)
+            collection_xml = self._get_contents_from_path(collection_xml_file_path)
+
+            division, name = collection_xml.fetch_division_name()
+
+            if not division or not name:
+                print(f"Skipping {config_folder} because it has no division or name")
+                continue
+
+            collection_dict = {
+                "config_folder": config_folder,
+                "name": name,
+                "url": collection_xml.fetch_url(),
+                "division": division,
+                "document_type": collection_xml.fetch_document_type(),
+                "connector": collection_xml.fetch_connector(),
+            }
+            collection_list.append(collection_dict)
+
+        # return the list of collections and their metadata
+        return collection_list
+
+    def sync_rules_with_github(self, config_folders=[]):
+        pass

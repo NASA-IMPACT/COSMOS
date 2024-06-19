@@ -83,6 +83,7 @@ class XmlEditor:
         element_name: str,
         element_value: str,
         parent_element_name: str = "",
+        add_duplicate: bool = False,
     ) -> None:
         """can update the value of either a top level or secondary level value in the sinequa config
 
@@ -94,17 +95,13 @@ class XmlEditor:
         """
 
         xml_root = self.xml_tree.getroot()
-        parent_element = (
-            xml_root if not parent_element_name else xml_root.find(parent_element_name)
-        )
+        parent_element = xml_root if not parent_element_name else xml_root.find(parent_element_name)
 
         if parent_element is None:
-            raise ValueError(
-                f"Parent element '{parent_element_name}' not found in XML."
-            )
+            raise ValueError(f"Parent element '{parent_element_name}' not found in XML.")
 
         existing_element = parent_element.find(element_name)
-        if existing_element:
+        if not add_duplicate and existing_element:
             existing_element.text = element_value
         else:
             ET.SubElement(parent_element, element_name).text = element_value
