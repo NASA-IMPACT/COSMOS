@@ -32,4 +32,4 @@ SINEQUA_CONFIGS_REPO_WEBAPP_PR_BRANCH='dummy_branch'
 
 # Slack Webhook
 # ------------------------------------------------------------------------------
-SLACK_WEBHOOK_URL='https://hooks.slack.com/services/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'
+SLACK_WEBHOOK_URL=''
