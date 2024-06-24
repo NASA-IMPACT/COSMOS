@@ -13,7 +13,17 @@ var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
   "Multi-URL Pattern": 2,
 };
+var currentURLtoDelete;
+
 var uniqueId; //used for logic related to contents on column customization modal
+const dict = {
+  1: "Images",
+  2: "Data",
+  3: "Documentation",
+  4: "Software and Tools",
+  5: "Missions and Instruments",
+  6: "Training and Education",
+};
 
 //fix table allignment when changing around tabs
 $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
@@ -35,11 +45,17 @@ function modalContents(tableName) {
   var checkboxCount = $("#modalBody input[type='checkbox']").length;
 
   if (checkboxCount > 0 && tableName === uniqueId) {
-    $modal = $("#hideShowColumnsModal").modal();
+    $modal = $("#hideShowColumnsModal").modal({
+      backdrop: "static",
+      keyboard: true,
+    });
     return;
   }
 
-  $modal = $("#hideShowColumnsModal").modal();
+  $modal = $("#hideShowColumnsModal").modal({
+    backdrop: "static",
+    keyboard: true,
+  });
   var table = $(tableName).DataTable();
   if (tableName !== uniqueId) {
     $("#modalBody").html("");
@@ -61,9 +77,7 @@ function modalContents(tableName) {
       .attr("for", "checkbox_" + columnName.replace(/\s+/g, "_"))
       .text(columnName);
     var $caption = $("<p class='headerDescription'>")
-      .text(
-        candidateTableHeaderDefinitons[columnName]
-      )
+      .text(candidateTableHeaderDefinitons[columnName])
       .attr({
         id: "caption",
       });
@@ -85,29 +99,106 @@ function initializeDataTable() {
   var false_icon = '<i class="material-icons" style="color: red">close</i>';
 
   var candidate_urls_table = $("#candidate_urls_table").DataTable({
-    // scrollY: true,
-    lengthMenu: [
-      [25, 50, 100, 500],
-      ["Show 25", "Show 50", "Show 100", "Show 500"],
-    ],
     pageLength: 100,
+    colReorder: true,
     stateSave: true,
+    layout: {
+      bottomEnd: "inputPaging",
+      topEnd: null,
+      topStart: {
+        info: true,
+        pageLength: {
+          menu: [
+            [25, 50, 100, 500],
+            ["Show 25", "Show 50", "Show 100", "Show 500"],
+          ],
+        },
+        buttons: [
+          {
+            extend: "csv",
+            exportOptions: {
+              columns: [0, 11, 2, 12, 10],
+            },
+            customize: function (csv) {
+              var lines = csv.split("\n");
+
+              // Reorder the header columns
+              var headers = lines[0].split(",");
+              headers[4] = "New Title";
+              var reorderedHeaders = [
+                headers[0],
+                headers[3],
+                headers[1],
+                headers[4],
+                headers[2],
+              ];
+              lines[0] = reorderedHeaders.join(",");
+
+              const appliedFilt = [
+                [`URL:`, `${$("#candidateUrlFilter").val()}`.trim()],
+                [`Exclude:`, `${$(".dropdown-1").val()}`.trim()],
+                [
+                  `Scraped Title:`,
+                  `${$("#candidateScrapedTitleFilter").val()}`.trim(),
+                ],
+                [`New Title:`, `${$("#candidateNewTitleFilter").val()}`.trim()],
+                [`Document Type:`, `${dict[$(".dropdown-4").val()]}`.trim()],
+              ];
+
+              const filtersAreEmpty = appliedFilt.every((filter) => {
+                return filter[1] === "" || filter[1] === "undefined";
+              });
+
+              // Remove the second row with the filters
+              if (lines.length > 2) {
+                lines.splice(1, 1);
+              }
+              let alteredLines = [];
+              lines.forEach((line) => {
+                let newLine = "";
+                newLine = line.replace("open_in_new", "");
+                alteredLines.push(newLine);
+              });
+
+              if (filtersAreEmpty) return alteredLines.join("\n");
+              else {
+                // Add filter information to the first row
+                const secondRowFilters = [
+                  "Export of SDE Candidate URLs",
+                  `"(Applied Filters: ${appliedFilt
+                    .reduce((acc, curr) => {
+                      if (
+                        curr[1] !== " undefined" &&
+                        curr[1] !== " " &&
+                        curr[1] !== "" &&
+                        curr[1] !== "undefined"
+                      ) {
+                        acc = `${acc}, ${curr[0]} ${curr[1]}`;
+                      }
+                      return acc;
+                    }, "")
+                    .slice(2)})"`,
+                ];
+
+                var appliedFiltersInfo = secondRowFilters.join("\n");
+                return appliedFiltersInfo + "\n" + alteredLines.join("\n");
+              }
+            },
+          },
+          "spacer",
+          {
+            text: "Customize Columns",
+            className: "customizeColumns",
+            action: function () {
+              modalContents("#candidate_urls_table");
+            },
+          },
+        ],
+      },
+    },
     serverSide: true,
     orderCellsTop: true,
     pagingType: "input",
-    dom: "ilBrtip",
-    buttons: [
-      "spacer",
-      "csv",
-      "spacer",
-      {
-        text: "Customize Columns",
-        className: "customizeColumns",
-        action: function () {
-          modalContents("#candidate_urls_table");
-        },
-      },
-    ],
     rowId: "url",
     stateLoadCallback: function (settings) {
       var state = JSON.parse(
@@ -127,7 +218,7 @@ function initializeDataTable() {
       },
     },
     initComplete: function (data) {
-      const addDropdownSelect = [1, 4, 5];
+      const addDropdownSelect = [1, 4];
       const dict = {
         1: "Images",
         2: "Data",
@@ -159,30 +250,59 @@ function initializeDataTable() {
       { data: "match_pattern_type", visible: false, searchable: false },
       { data: "candidate_urls_count", visible: false, searchable: false },
       { data: "excluded", visible: false, searchable: false },
+      {
+        data: null,
+        render: function (data, type, row) {
+          if (!row.document_type) return "Select";
+          return dict[row.document_type];
+        },
+        visible: false,
+      },
+      {
+        data: null,
+        render: function (data, type, row) {
+          const excludedDict = {
+            true: "Yes",
+            false: "No",
+          };
+          return excludedDict[row.excluded];
+        },
+        visible: false,
+      },
+      {
+        data: null,
+        render: function (data, type, row) {
+          return row.generated_title;
+        },
+        visible: false,
+      },
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
-        $(row).attr("style", "background-color: #ab387d !important");
+        $(row).attr(
+          "style",
+          "background-color: rgba(255, 61, 87, 0.36) !important"
+        );
       }
     },
   });
 
   $("#candidateUrlFilter").on(
-    "keyup",
+    "beforeinput",
     DataTable.util.debounce(function (val) {
       candidate_urls_table.columns(0).search(this.value).draw();
     }, 1000)
   );
 
   $("#candidateScrapedTitleFilter").on(
-    "keyup",
+    "beforeinput",
     DataTable.util.debounce(function (val) {
       candidate_urls_table.columns(2).search(this.value).draw();
     }, 1000)
   );
 
   $("#candidateNewTitleFilter").on(
-    "keyup",
+    "beforeinput",
     DataTable.util.debounce(function (val) {
       candidate_urls_table.columns(3).search(this.value).draw();
     }, 1000)
@@ -190,7 +310,6 @@ function initializeDataTable() {
 
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
     // scrollY: true,
-    serverSide: true,
     dom: "lBrtip",
     buttons: [
       {
@@ -244,11 +363,16 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
       },
-      { data: "reason", class: "text-center whiteText", sortable: false },
+      {
+        data: "reason",
+        class: "text-center whiteText",
+        sortable: false,
+        visible: false,
+      },
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
+        sortable: true,
       },
       {
         data: null,
@@ -263,19 +387,13 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateMatchPatternFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      exclude_patterns_table.columns(0).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateMatchPatternFilter").on("beforeinput", function () {
+    exclude_patterns_table.columns(0).search(this.value).draw();
+  });
 
-  $("#candidateReasonFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      exclude_patterns_table.columns(2).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateReasonFilter").on("beforeinput", function () {
+    exclude_patterns_table.columns(2).search(this.value).draw();
+  });
 
   var include_patterns_table = $("#include_patterns_table").DataTable({
     // scrollY: true,
@@ -302,7 +420,6 @@ function initializeDataTable() {
     ],
     pageLength: 100,
     orderCellsTop: true,
-    serverSide: true,
     ajax: `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
     initComplete: function (data) {
       var table = $("#include_patterns_table").DataTable();
@@ -335,7 +452,7 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
+        sortable: true,
       },
       {
         data: null,
@@ -350,16 +467,12 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateIncludeMatchPatternFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      include_patterns_table.columns(0).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateIncludeMatchPatternFilter").on("beforeinput", function () {
+    include_patterns_table.columns(0).search(this.value).draw();
+  });
 
   var title_patterns_table = $("#title_patterns_table").DataTable({
     // scrollY: true,
-    serverSide: true,
     dom: "lBrtip",
     buttons: [
       {
@@ -417,7 +530,7 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
+        sortable: true,
       },
       {
         data: null,
@@ -432,19 +545,13 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateTitleMatchPatternFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      title_patterns_table.columns(0).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateTitleMatchPatternFilter").on("beforeinput", function (val) {
+    title_patterns_table.columns(0).search(this.value).draw();
+  });
 
-  $("#candidateTitlePatternTypeFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      title_patterns_table.columns(2).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateTitlePatternTypeFilter").on("beforeinput", function (val) {
+    title_patterns_table.columns(2).search(this.value).draw();
+  });
 
   var document_type_patterns_table = $(
     "#document_type_patterns_table"
@@ -467,7 +574,6 @@ function initializeDataTable() {
         },
       },
     ],
-    serverSide: true,
     lengthMenu: [
       [25, 50, 100, 500],
       ["Show 25", "Show 50", "Show 100", "Show 500"],
@@ -536,7 +642,7 @@ function initializeDataTable() {
       {
         data: "candidate_urls_count",
         class: "text-center whiteText",
-        sortable: false,
+        sortable: true,
       },
       {
         data: null,
@@ -552,12 +658,9 @@ function initializeDataTable() {
     ],
   });
 
-  $("#candidateDocTypeMatchPatternFilter").on(
-    "keyup",
-    DataTable.util.debounce(function (val) {
-      document_type_patterns_table.columns(0).search(this.value).draw();
-    }, 1000)
-  );
+  $("#candidateDocTypeMatchPatternFilter").on("beforeinput", function (val) {
+    document_type_patterns_table.columns(0).search(this.value).draw();
+  });
 }
 
 function handleTabsClick() {
@@ -581,6 +684,7 @@ function handleTabsClick() {
 
 function setupClickHandlers() {
   handleHideorShowSubmitButton();
+  handleHideorShowKeypress();
   handleAddNewPatternClick();
 
   handleDeleteDocumentTypeButtonClick();
@@ -602,11 +706,12 @@ function getURLColumn() {
   return {
     data: "url",
     render: function (data, type, row) {
-      return `<a target="_blank" href="${data}" data-url="/api/candidate-urls/${
-        row["id"]
-      }/" class="url_link"> <i class="material-icons whiteText">open_in_new</i></a> <span class="candidate_url nameStyling">${remove_protocol(
+      return `<div class="url-cell"><span class="candidate_url nameStyling">${remove_protocol(
         data
-      )}</span>`;
+      )}</span> 
+      <a target="_blank" href="${data}" data-url="/api/candidate-urls/${
+        row["id"]
+      }/" class="url-link"> <i class="material-icons url-icon">open_in_new</i></a></div>`;
     },
   };
 }
@@ -665,7 +770,7 @@ function getDocumentTypeColumn() {
       button_text = data ? dict[data] : "Select";
       button_color = data ? "btn-success" : "btn-secondary";
       return `
-            <div  data-match-pattern=${remove_protocol(
+            <div class="dropdown document_type_dropdown"  data-match-pattern=${remove_protocol(
               row["url"]
             )}>
               <button class="btn ${button_color} btn-sm dropdown-toggle selectStyling" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -682,6 +787,54 @@ function getDocumentTypeColumn() {
             </div>`;
     },
   };
+}
+
+//template to add enter and escape functionalities to add pattern modals
+function addEnterEscapeKeypress(modalID, formID) {
+  $("body").on("keydown", function(event) {
+    let modal = $(modalID);
+    let form = $(formID)
+    if(event.key == "Escape" && modal.is(":visible")) {
+      modal.modal("hide");
+    }
+    if (event.key == "Enter" && modal.is(":visible")) {
+      form.submit();
+      modal.modal("hide");
+    }
+  })
+} 
+
+function handleHideorShowKeypress() {
+  $("body").on("keydown", function () {
+    //Close modal via escape
+    if (event.key == "Escape" && $("#hideShowColumnsModal").is(":visible")) {
+      $("#hideShowColumnsModal").modal("hide");
+    }
+    //Confirm modal selections via enter
+    if (event.key == "Enter" && $("#hideShowColumnsModal").is(":visible")) {
+      var table = $(uniqueId).DataTable();
+      $("[id^='checkbox_']").each(function () {
+        var checkboxValue = $(this).val();
+        let column = table.column(checkboxValue);
+        var isChecked = $(this).is(":checked");
+        if (column.visible() === false && isChecked) column.visible(true);
+        else if (column.visible() === true && !isChecked) column.visible(false);
+      });
+      $("#hideShowColumnsModal").modal("hide");
+    }
+  });
+
+  $("body").on("click", ".modal-backdrop", function () {
+    $("#hideShowColumnsModal").modal("hide");
+  });
+
+  //adding each modals keypress functionalities
+  addEnterEscapeKeypress("#excludePatternModal", "#exclude_pattern_form");
+  addEnterEscapeKeypress("#includePatternModal", "#include_pattern_form");
+  addEnterEscapeKeypress("#titlePatternModal", "#title_pattern_form");
+  addEnterEscapeKeypress("#documentTypePatternModal", "#document_type_pattern_form");
+
+
 }
 
 function handleHideorShowSubmitButton() {
@@ -730,9 +883,10 @@ function handleExcludeIndividualUrlClick() {
 
 function handleDeleteExcludePatternButtonClick() {
   $("body").on("click", ".delete-exclude-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    var patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/exclude-patterns/${patternRowId}/`;
     deletePattern(
-      `/api/exclude-patterns/${row_id}/`,
+      `/api/exclude-patterns/${patternRowId}/`,
       (data_type = "Exclude Pattern")
     );
   });
@@ -740,9 +894,10 @@ function handleDeleteExcludePatternButtonClick() {
 
 function handleDeleteIncludePatternButtonClick() {
   $("body").on("click", ".delete-include-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    var patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/include-patterns/${patternRowId}/`;
     deletePattern(
-      `/api/include-patterns/${row_id}/`,
+      `/api/include-patterns/${patternRowId}/`,
       (data_type = "Include Pattern")
     );
   });
@@ -750,9 +905,10 @@ function handleDeleteIncludePatternButtonClick() {
 
 function handleDeleteTitlePatternButtonClick() {
   $("body").on("click", ".delete-title-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    var patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/title-patterns/${patternRowId}/`;
     deletePattern(
-      `/api/title-patterns/${row_id}/`,
+      `/api/title-patterns/${patternRowId}/`,
       (data_type = "Title Pattern")
     );
   });
@@ -760,9 +916,10 @@ function handleDeleteTitlePatternButtonClick() {
 
 function handleDeleteDocumentTypeButtonClick() {
   $("body").on("click", ".delete-document-type-pattern-button", function () {
-    row_id = $(this).data("row-id");
+    patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/document-type-patterns/${patternRowId}/`;
     deletePattern(
-      `/api/document-type-patterns/${row_id}/`,
+      `/api/document-type-patterns/${patternRowId}/`,
       (data_type = "Document Type Pattern")
     );
   });
@@ -783,6 +940,7 @@ function handleNewTitleChange() {
     var match_pattern_type = $(this).data("match-pattern-type");
     var candidate_urls_count = $(this).data("candidate-urls-count");
     if (!title_pattern) {
+      currentURLtoDelete = `/api/title-patterns/${generated_title_id}/`;
       deletePattern(
         `/api/title-patterns/${generated_title_id}/`,
         (data_type = "Title Pattern"),
@@ -846,7 +1004,10 @@ function postDocumentTypePatterns(
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
-      if (errorMessage == '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}') {
+      if (
+        errorMessage ==
+        '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}'
+      ) {
         toastr.success("Pattern already exists");
         return;
       }
@@ -860,15 +1021,16 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0, force) {
     toastr.error("Please highlight a pattern to exclude.");
     return;
   }
-  if(!force){ //If the user clicked the icon in the table, we make the change regardless
-  // if pattern exists in table already (unless another pattern overrules it)
-  var table = $("#exclude_patterns_table").DataTable();
-  var itemIdColumnData = table.column(0).data().toArray();
-  if (itemIdColumnData.includes(match_pattern)) {
-    toastr.success("Pattern already exists");
-    return;
+  if (!force) {
+    //If the user clicked the icon in the table, we make the change regardless
+    // if pattern exists in table already (unless another pattern overrules it)
+    var table = $("#exclude_patterns_table").DataTable();
+    var itemIdColumnData = table.column(0).data().toArray();
+    if (itemIdColumnData.includes(match_pattern)) {
+      toastr.success("Pattern already exists");
+      return;
+    }
   }
-}
 
   $.ajax({
     url: "/api/exclude-patterns/",
@@ -1012,10 +1174,77 @@ function deletePattern(
       `YOU ARE ATTEMPTING TO DELETE A MULTI-URL PATTERN. THIS WILL AFFECT ${candidate_urls_count} URLs. \n\nAre you sure you want to do this? Currently there is no way to delete a single URL from a Multi-URL pattern`
     );
   } else {
-    var confirmDelete = confirm(
+    $modal = $("#deletePatternModal").modal({
+      backdrop: "static",
+      keyboard: true,
+    });
+
+    $(".delete-pattern-caption").text(
       `Are you sure you want to delete this ${data_type}?`
     );
   }
+
+  $("#deletePatternModal").on("keydown", function (event) {
+    if (event.keyCode === 13) {
+      // Check if the focused element is the button
+      if (
+        document.activeElement.id === "deletePatternModal" &&
+        url === currentURLtoDelete
+      ) {
+        // Simulate a click event on the button
+        $.ajax({
+          url: url,
+          type: "DELETE",
+          data: {
+            csrfmiddlewaretoken: csrftoken,
+          },
+          headers: {
+            "X-CSRFToken": csrftoken,
+          },
+          success: function (data) {
+            $modal = $("#deletePatternModal").modal("hide");
+            $("#candidate_urls_table").DataTable().ajax.reload(null, false);
+            $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+            $("#include_patterns_table").DataTable().ajax.reload(null, false);
+            $("#title_patterns_table").DataTable().ajax.reload(null, false);
+            $("#document_type_patterns_table")
+              .DataTable()
+              .ajax.reload(null, false);
+          },
+        });
+      }
+    }
+  });
+
+  $("#deletePatternModalForm").on("click", "button", function (event) {
+    event.preventDefault();
+    var buttonId = $(this).attr("id");
+    if (buttonId === "dontDeletePattern") {
+      $modal = $("#deletePatternModal").modal("hide");
+      return;
+    } else if (buttonId === "deletePattern" && url === currentURLtoDelete) {
+      $.ajax({
+        url: url,
+        type: "DELETE",
+        data: {
+          csrfmiddlewaretoken: csrftoken,
+        },
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        success: function (data) {
+          $("#candidate_urls_table").DataTable().ajax.reload(null, false);
+          $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+          $("#include_patterns_table").DataTable().ajax.reload(null, false);
+          $("#title_patterns_table").DataTable().ajax.reload(null, false);
+          $("#document_type_patterns_table")
+            .DataTable()
+            .ajax.reload(null, false);
+        },
+      });
+    }
+  });
+
   if (!confirmDelete) {
     return;
   }
@@ -1218,13 +1447,10 @@ $("#title_pattern_form").on("submit", function (e) {
   $("#titlePatternModal").modal("hide");
 });
 
-$(".document_type_form_select").on("click", function (e) {
+$("#document_type_pattern_form").on("submit", function (e) {
   e.preventDefault();
-  $('input[name="document_type_pattern"]').val($(this).attr("value"));
   inputs = {};
-  input_serialized = $(this)
-    .parents("#document_type_pattern_form")
-    .serializeArray();
+  input_serialized = $(this).serializeArray();
   input_serialized.forEach((field) => {
     inputs[field.name] = field.value;
   });
@@ -1237,6 +1463,12 @@ $(".document_type_form_select").on("click", function (e) {
 
   // close the modal if it is open
   $("#documentTypePatternModal").modal("hide");
+});
+
+$(".document_type_form_select").on("click", function (e) {
+  e.preventDefault();
+  $('input[name="document_type_pattern"]').val($(this).attr("value"));
+  $(".doc-dropdown").text($(this).text());
 });
 
 function postWorkflowStatus(collection_id, workflow_status) {
@@ -1259,35 +1491,54 @@ function postWorkflowStatus(collection_id, workflow_status) {
 
 function handleWorkflowStatusSelect() {
   $("body").on("click", ".workflow_status_select", function () {
+    $("#workflowStatusChangeModal").modal();
+    var collectionName = $(".urlStyle").text();
     var collection_id = $(this).data("collection-id");
     var workflow_status = $(this).attr("value");
-    var workflow_status_text = $(this).text();
-    var color_choices = {
-      1: "btn-light",
-      2: "btn-danger",
-      3: "btn-warning",
-      4: "btn-info",
-      5: "btn-success",
-      6: "btn-primary",
-      7: "btn-info",
-      8: "btn-secondary",
-      9: "btn-light",
-      10: "btn-danger",
-      11: "btn-warning",
-      12: "btn-info",
-      13: "btn-success",
-      14: "btn-primary",
-      15: "btn-info",
-      16: "btn-secondary",
-    };
+    var new_workflow_status = $(this).text();
 
-    $button = $(`#workflow-status-button-${collection_id}`);
-
-    $button.text(workflow_status_text);
-    $button.removeClass(
-      "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+    $(".workflow-status-change-caption").html(
+      `<div>Workflow status for <b class="bold">${collectionName}</b> will change to <b class="bold">${new_workflow_status}</b></div>`
     );
-    $button.addClass(color_choices[parseInt(workflow_status)]);
-    postWorkflowStatus(collection_id, workflow_status);
+    $("#workflowStatusChangeModalForm").on("click", "button", function (event) {
+      event.preventDefault();
+      var buttonId = $(this).attr("id");
+
+      switch (buttonId) {
+        case "cancelworkflowStatusChange":
+          $("#workflowStatusChangeModal").modal("hide");
+          break;
+        case "changeWorkflowStatus":
+          var color_choices = {
+            1: "btn-light",
+            2: "btn-danger",
+            3: "btn-warning",
+            4: "btn-info",
+            5: "btn-success",
+            6: "btn-primary",
+            7: "btn-info",
+            8: "btn-secondary",
+            9: "btn-light",
+            10: "btn-danger",
+            11: "btn-warning",
+            12: "btn-info",
+            13: "btn-success",
+            14: "btn-primary",
+            15: "btn-info",
+            16: "btn-secondary",
+          };
+
+          $button = $(`#workflow-status-button-${collection_id}`);
+
+          $button.text(new_workflow_status);
+          $button.removeClass(
+            "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+          );
+          $button.addClass(color_choices[parseInt(workflow_status)]);
+          postWorkflowStatus(collection_id, workflow_status);
+          $("#workflowStatusChangeModal").modal("hide");
+          break;
+      }
+    });
   });
 }

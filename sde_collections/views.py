@@ -140,7 +140,27 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
             )
         if "comments_form" not in context:
             context["comments_form"] = CommentsForm()
+        
+        # Initialize a dictionary to hold the most recent history for each workflow status
+        timeline_history = {}
+        
+        # Get the most recent history for each workflow status
+        recent_histories = WorkflowHistory.objects.filter(collection=self.get_object()).order_by('workflow_status', '-created_at').distinct('workflow_status')
+        
+        # Populate the dictionary with the actual history objects
+        for history in recent_histories:
+            timeline_history[history.workflow_status] = history
 
+        # Add placeholders for stages with no workflow history
+        for status in WorkflowStatusChoices:
+            if status not in timeline_history:
+                timeline_history[status] = {
+                    'workflow_status': status,
+                    'created_at': None,
+                    'label': WorkflowStatusChoices(status).label,
+                }
+        
+        context['timeline_history'] = [timeline_history[status] for status in WorkflowStatusChoices]
         context["required_urls"] = RequiredUrls.objects.filter(collection=self.get_object())
         context["segment"] = "collection-detail"
         context["comments"] = Comments.objects.filter(collection=self.get_object()).order_by("-created_at")
@@ -195,6 +215,24 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
         context["workflow_status_choices"] = WorkflowStatusChoices
 
         return context
+
+class SdeDashboardView(LoginRequiredMixin,ListView ):
+       
+    model = Collection
+    template_name = "sde_collections/sde_dashboard.html"
+    context_object_name = "collections"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["segment"] = "collections"
+        return context
+
 
 
 class CollectionFilterMixin:
@@ -354,7 +392,7 @@ class CollectionReadViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CollectionReadSerializer
 
 
-class PushToGithubView(APIView):
+class PushToGithubView(APIView): 
     def post(self, request):
         collection_ids = request.POST.getlist("collection_ids[]", [])
         if len(collection_ids) == 0:

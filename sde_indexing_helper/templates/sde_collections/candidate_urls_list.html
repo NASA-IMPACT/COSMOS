@@ -7,6 +7,7 @@
 {% block stylesheets %}
     {{ block.super }}
     <link href="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/plug-ins/2.0.8/features/inputPaging/dist/dataTables.inputPaging.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'css/candidate_url_list.css' %}" />
     <link href="{% static 'css/project.css' %}" rel="stylesheet">
 {% endblock stylesheets %}
@@ -17,7 +18,8 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <script src="https://cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
-    <script src="//cdn.datatables.net/plug-ins/2.0.5/pagination/input.js"></script>
+    <!-- <script src="//cdn.datatables.net/plug-ins/2.0.8/pagination/input.js"></script> -->
+    <script src="https://cdn.datatables.net/plug-ins/2.0.8/features/inputPaging/dist/dataTables.inputPaging.min.js"></script>
     <script src="{% static 'js/candidate_url_list.js' %}"></script>
     <script src="{% static 'js/project.js' %}"></script>
     <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
@@ -80,6 +82,14 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         <th scope="col" class="text-center col-1"><div class="header-title">New Title</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">Document Type</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">ID</div></th>
+                        <th></th>                        
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">Document Type</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">Exclude</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">generated_title</div></th>
+
                     </tr>
                     <tr>
                         <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateUrlFilter" placeholder="URL" /></td>
@@ -89,7 +99,7 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         </select></td>
                         <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateScrapedTitleFilter" placeholder="Scraped Title" /></td>
                         <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateNewTitleFilter" placeholder="New Title" /></td>
-                        <td><select class="dropdown-5 select-dropdown selectStyling"><option value="">SELECT</option>
+                        <td><select class="dropdown-4 select-dropdown selectStyling"><option value="">SELECT</option>
                         <option value="0">None</option>
                         <option value="1">Images</option>
                         <option value="2">Data</option>
@@ -97,6 +107,13 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         <option value="4">Software and Tools</option>
                         <option value="5">Missions and Instruments</option>
                         </select></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
                         <td ></td>
                     </tr>
                 </thead>
@@ -375,6 +392,12 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         </div>
                     </div>
                 </div>
+                <div class="modal-footer">
+                    <div class="button-wrapper">
+                        <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                        <button type="submit" class="document-type-submit btn btn-primary modal-button-2">Submit</button>
+                    </div> 
+                </div>
             </form>
         </div>
     </div>
@@ -397,6 +420,57 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
         </div>
     </div>
 </div>
+
+
+<div class="modal" id="deletePatternModal" tabindex="-1"
+aria-labelledby="deletePatternModal" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modalHeader">
+            <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close" id="closeDivisionModal">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+            <div class="modal-body" id="modal-body">
+                <h5 class="modal-title">Are you sure?</h5>
+                <p class="delete-pattern-caption" id="caption"></p>
+            </div>
+            <div class="modal-footer">
+                <form id="deletePatternModalForm">
+                    <div class="button-wrapper">
+                    <button type="submit" class="btn btn-secondary modal-button-1" id="dontDeletePattern">No</button> 
+                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="deletePattern">Yes</button> 
+                    </div>
+                    </form>
+            </div>
+    </div>
+</div>
+</div>
+
+<div class="modal" id="workflowStatusChangeModal" tabindex="-1"
+aria-labelledby="workflowStatusChangeModal" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modalHeader">
+            <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close" id="closeworkflowStatusChangeModal">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+            <div class="modal-body" id="modal-body">
+                <h5 class="modal-title">Are you sure?</h5>
+                <p class="workflow-status-change-caption" id="caption"></p>
+            </div>
+            <div class="modal-footer">
+                <form id="workflowStatusChangeModalForm">
+                    <div class="button-wrapper">
+                    <button type="submit" class="btn btn-secondary modal-button-1" id="cancelworkflowStatusChange">No</button> 
+                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="changeWorkflowStatus">Yes</button> 
+                    </div>
+                    </form>
+            </div>
+    </div>
+</div>
+
 
 
 

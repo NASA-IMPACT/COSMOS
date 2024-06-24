@@ -19,6 +19,7 @@ app_name = "sde_collections"
 
 urlpatterns = [
     path("", view=views.CollectionListView.as_view(), name="list"),
+    path("sde-dashboard/", view=views.SdeDashboardView.as_view(), name="dashboard"),
     path("<int:pk>/", view=views.CollectionDetailView.as_view(), name="detail"),
     path(
         "api/collections/push_to_github/",

@@ -50,7 +50,7 @@
 
 #candidate_urls_table_wrapper div.dt-info:first-of-type {
   display: inline-block;
-  width: 25%;
+  /* width: 25%; */
 }
 
 #candidate_urls_table_wrapper div.dt-length, #exclude_patterns_table_wrapper div.dt-length, #include_patterns_table_wrapper div.dt-length, #document_type_patterns_table_wrapper div.dt-length, #title_patterns_table_wrapper div.dt-length{
@@ -59,7 +59,8 @@
 }
 
 #candidate_urls_table_wrapper div.dt-buttons {
-  width: 64%;    
+  /* width: 64%;     */
+  float:right;
   justify-content: end;
 }
 
@@ -154,7 +155,7 @@ body {
 .nameStyling{
   color: #65B1EF;
   font-size:14px;
-  font-weight:400;
+  font-weight:500;
 }
 
 .btn-prime {
@@ -185,12 +186,16 @@ body {
 
 .dt-scroll{
   background-color: #15232E !important;
+  height: 100% !important;
 }
 
 .dt-scroll-body{
-  height:min-content !important;
+  height:100% !important;
 }
 
+.dtsp-searchPane .justify-content-md-center {
+  height: 198px !important;
+}
 
  .table > tbody > tr > td {
   border:none;
@@ -206,6 +211,7 @@ body {
 
 .urlStyle{
   color:#65B1EF !important;
+  font-weight:500;
  }
 
  .underline{
@@ -234,6 +240,7 @@ body {
  .dt-info{
   font-weight:900;
   font-size:16px;
+  margin-top:15px;
  }
 
  .buttons-csv, .customizeColumns{
@@ -356,4 +363,267 @@ body {
   width: 110px;
   box-shadow: 0px 8px 16px 0px #0037FA4D;
 
+}
+
+.pageTitle{
+  font-size:56px;
+  color:white;
+  font-weight:500;
+ }
+/* base_auth.html layout css */
+
+.auth-wrapper {
+  height: 100vh;
+}
+.auth-col-1, .auth-col-2 {
+  width: 50%;
+}
+
+.auth-col-1 {
+  background-image: url("../images/Content.png") !important;
+  height: 100vh;
+  background: no-repeat;
+}
+.auth-col-2-wrapper {
+  position: relative;
+}
+
+.auth-sde-idx-helper {
+  justify-content: center;
+    display: flex;
+}
+
+.auth-col-2 {
+  padding: 0;
+  background-color: rgba(5, 14, 25, 1);
+  margin: auto;
+}
+
+.auth-content {
+  height: calc(100vh - 6rem);
+  display: flex;
+}
+
+/* LOGIN PAGE CSS */
+
+.signin {
+  padding-right: 30px;
+}
+
+.login-links {
+  padding-top: 25px;
+  display: flex;
+    justify-content: center;
+    color: var(--NASA-DM-Link, rgba(101, 177, 239, 1));
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.login-links a {
+  color: var(--NASA-DM-Link, rgba(101, 177, 239, 1));
+}
+
+#signup_form .form-label {
+  display: none;
+}
+
+#id_password_helptext {
+  display: none;
+}
+
+.login-card-wrapper {
+  width: 66%;
+}
+
+.login-card {
+  margin-top: 70px;
+  background: rgba(21, 35, 46, 1);
+  padding: 32px 32px 40px 32px;
+  border: 1px solid var(--NASA-Secondary-Blue, rgba(167, 186, 205, 1))
+}
+
+.login {
+  justify-content: center;
+    align-items: center;
+    height: 100%;
+    margin-left: 0 !important;
+}
+
+.login-title {
+font-size: 32px;
+font-weight: 600;
+line-height: 48px;
+letter-spacing: -0.03em;
+text-align: center;
+color: rgba(255, 255, 255, 1);
+padding-bottom: 30px;
+}
+
+.login-button {
+  background-color: rgba(0, 102, 202, 1) !important;
+  color: rgba(255, 255, 255, 1);
+  border: none !important;
+  width: 100%;
+font-size: 15px;
+font-weight: 500;
+line-height: 17.58px;
+border-radius: 5px;
+padding: 11px 0;
+cursor: pointer;
+box-shadow: 0px 8px 16px 0px #0037FA4D;
+
+}
+
+#div_id_login .form-label,  #div_id_password .form-label, #div_id_email .form-label{
+  display: none;
+}
+
+#placeholder {
+  color: rgba(255, 255, 255, 1);
+}
+
+.title-wrapper h4 {
+  padding-bottom: 0;
+}
+
+.title-wrapper{
+  padding-bottom: 30px;
+}
+
+.title-wrapper p {
+  margin-bottom: 0;
+  text-align: center;
+  color: rgba(255, 255, 255, 1);
+}
+
+#id_password1_helptext ul {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 1);
+}
+
+.auth-col-2-wrapper input {
+  background: var(--NASA-Table, rgba(63, 74, 88, 1));
+  border-radius: 5px;
+  color: rgba(255, 255, 255, 1);
+  padding: 9px 14px;
+  background-image: none !important;
+}
+
+.auth-col-2-wrapper .form-control:focus {
+  background: var(--NASA-Table, rgba(63, 74, 88, 1));
+  color: rgba(255, 255, 255, 1);
+}
+
+.signup-errors {
+  margin: 0;
+}
+
+/* FOOTER CSS */
+
+.footer-wrapper {
+  position: absolute;
+    bottom: 0;
+    background: transparent;
+    width: 100%;
+    color: rgba(255, 255, 255, 1);
+    display: flex;
+    justify-content: center;
+}
+
+.footer {
+  width: 93%;
+  font-weight: 500;
+  padding: 0;
+  padding-top: 40px;
+}
+
+.footer-container {
+  border-top: 1px solid rgba(255, 255, 255, 1);
+  display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    padding-top: 25px;
+    padding-bottom: 65px;
+}
+
+.footer-right-side-links {
+  display: flex;
+    align-items: center;
+}
+
+.footer-nasa-link, .footer-nasa-link:hover, .footer-nasa-link:focus, .footer-copyright-link {
+  padding-right: 20px;
+  color: rgba(255, 255, 255, 1) !important;
+}
+
+.footer-copyright-link a,  .footer-contact-us-link:hover, .footer-contact-us-link:focus, .footer-contact-us-link  {
+  color: rgba(255, 255, 255, 1);
+}
+
+.footer-left-side-link{
+  background-image: url("../images/NASA\ Logo.svg");
+  width: 47px;
+height: 38px;
+}
+
+.footer-contact-us-link, .footer-left-side-link, .footer-nasa-link, .footer-copyright-link {
+  cursor: pointer;
+}
+
+.base-html-footer-wrapper {
+  display: flex;
+    justify-content: center;
+}
+
+.tab-nav {
+  color: black;
+  padding-right: 25px;
+  padding-left: 25px;
+  font-weight: 500;
+}
+
+.dropdown-menu {
+  z-index: 1030;
+}
+
+/* tab headers hover effect */
+.tab-nav:hover {
+  text-decoration: underline;
+  color: #0066CA; 
+}
+
+/* alligning tab container with the table  */
+.nav-tabs {
+  padding-left: 0px;
+}
+
+/* active tab  */
+.nav-item > .active {
+  color: #0066CA;
+  font-weight: 700;
+  border-bottom: 3px solid #FF3D57;
+  padding-bottom: 15px;
+}
+
+/* line under the tab options */
+div > .nav {
+  padding-bottom: 15px;
+  border-bottom: 1px solid #F8FAFB;
+}
+
+.divisionDropdown {
+  appearance: auto !important;
+  padding:10px;
+}
+
+.dtsp-searchPane .dtsp-subRow1 .bmd-form-group {
+  display: none;
+}
+
+
+.dtsp-topRow {
+  align-items: center !important;
+  margin: 0 !important; 
 }

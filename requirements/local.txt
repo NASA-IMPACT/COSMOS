@@ -6,6 +6,7 @@ watchfiles==0.21.0  # https://github.com/samuelcolvin/watchfiles
 
 # Testing
 # ------------------------------------------------------------------------------
+
 mypy==1.8.0  # https://github.com/python/mypy
 django-stubs==4.2.7  # https://github.com/typeddjango/django-stubs
 pytest==8.0.0  # https://github.com/pytest-dev/pytest
@@ -15,8 +16,10 @@ types-xmltodict
 
 # Documentation
 # ------------------------------------------------------------------------------
-sphinx==7.2.6  # https://github.com/sphinx-doc/sphinx
+sphinx  # https://github.com/sphinx-doc/sphinx
 sphinx-autobuild==2021.3.14 # https://github.com/GaretJax/sphinx-autobuild
+sphinx-rtd-theme==1.2.0
+sphinx_toolbox==3.4.0
 
 # Code quality
 # ------------------------------------------------------------------------------

@@ -1,12 +1,26 @@
 {% extends "layouts/base.html" %}
 {% load static %}
+{% load i18n %}
 {% block title %}
-{{ collection.name }}
+{% load humanize %}
+{{ collection.name }} Collection Detail
 {% endblock title %}
 {% block stylesheets %}
 {{ block.super }}
 <link rel="stylesheet" href="{% static 'css/collection_detail.css' %}">
+<link href="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.css" rel="stylesheet">
 {% endblock stylesheets %}
+{% block javascripts %}
+    {{ block.super }}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/2.0.8/features/inputPaging/dist/dataTables.inputPaging.min.js"></script>
+    <script src="{% static 'js/collection_detail.js' %}"></script>
+    <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
+{% endblock javascripts %}
+
 
 {% block content %}
 <br>
@@ -36,7 +50,7 @@
                    <div class="dropdown-menu"
                         aria-labelledby="workflow-status-button-{{ collection.id }}">
                        {% for choice in workflow_status_choices %}
-                           <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
+                           <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-current="{{ choice.label }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
                        {% endfor %}
                    </div>
                </div>
@@ -45,6 +59,55 @@
 </div>
 
 <div class="detailContainer">
+    <div class="timeline-container">
+        <div class="arrow" id="left-arrow">
+            <svg
+                class="arrow-svg"
+                width="6"
+                height="10"
+                viewBox="0 0 6 10"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style="transform: rotate(180deg);"
+                >
+                <path
+                    id="Icon/Arrow"
+                    d="M1.69209 0.273249C2.05245 0.624986 5.57328 4.32082 5.57328 4.32082C5.76553 4.50962 5.86208 4.75532 5.86208 5.00102C5.86208 5.24672 5.76553 5.49242 5.57328 5.6795C5.57328 5.6795 2.05245 9.37706 1.69209 9.72707C1.33173 10.0788 0.683431 10.1029 0.299795 9.72707C-0.0847026 9.35292 -0.114876 8.82962 0.299795 8.37012L3.53009 5.00102L0.299795 1.63192C-0.114876 1.17242 -0.0847026 0.648263 0.299795 0.273249C0.683431 -0.102628 1.33173 -0.0793515 1.69209 0.273249Z"
+                />
+            </svg>
+        </div>
+        <div class="timeline" id="timeline">
+            {% for stage in timeline_history %}
+                <div class="timeline-stage 
+                {% if stage.workflow_status == collection.workflow_status %} btn highlight {{ collection.workflow_status_button_color }} {% endif %}">
+                    <div class="status-label">
+                        {% if stage.created_at %}
+                            {{ stage.get_workflow_status_display }}
+                        {% else %}
+                            {{ stage.label }}
+                        {% endif %}
+                    </div>
+                        <div class="modified-date"> {{ stage.created_at|date:"m/d/Y" }} </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="arrow" id="right-arrow">
+            <svg
+                class="arrow-svg"
+                width="6"
+                height="10"
+                viewBox="0 0 6 10"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style="transform: rotate(0deg);"
+                >
+                <path
+                    id="Icon/Arrow"
+                    d="M1.69209 0.273249C2.05245 0.624986 5.57328 4.32082 5.57328 4.32082C5.76553 4.50962 5.86208 4.75532 5.86208 5.00102C5.86208 5.24672 5.76553 5.49242 5.57328 5.6795C5.57328 5.6795 2.05245 9.37706 1.69209 9.72707C1.33173 10.0788 0.683431 10.1029 0.299795 9.72707C-0.0847026 9.35292 -0.114876 8.82962 0.299795 8.37012L3.53009 5.00102L0.299795 1.63192C-0.114876 1.17242 -0.0847026 0.648263 0.299795 0.273249C0.683431 -0.102628 1.33173 -0.0793515 1.69209 0.273249Z"
+                />
+            </svg>
+        </div>
+    </div>
 
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">
@@ -52,7 +115,7 @@
             <a class="tab-nav active tabStyle" data-toggle="tab" href="#metadata">Metadata</a>
         </li>
         <li class="nav-item">
-            <a class="tab-nav tabStyle" data-toggle="tab" href="#statustimeline">Status Timeline</a>
+            <a class="tab-nav tabStyle" data-toggle="tab" href="#workflowhistory">Workflow History</a>
         </li>
     </ul>
 
@@ -123,7 +186,7 @@
                     <tr>
                         <th class="detailsHeader">Sinequa Configuration</th>
                         <td>
-                            <a class="urlStyle underline" href="{{ collection.sinequa_configuration }}" target="_blank">{{collection.sinequa_configuration }}</a>
+                            <a class="urlStyle underline"  href="{{ collection.sinequa_configuration }}" target="_blank">{{collection.sinequa_configuration }}</a>
                         </td>
                     </tr>
                     <tr>
@@ -158,14 +221,14 @@
                         <td>
                             {% for required_url in required_urls %}
                             <div>
-                            <form  class="reqUrlForm" action="{% url 'sde_collections:delete_required_url' required_url.pk %}">
+                            <form  class="reqUrlForm">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-sm btn-danger urlDeleteButton delete_required_url pull-left"
-                                    data-id={{ required_url.pk }}>
+                                    data-id='{"id": "{{ required_url.pk }}", "url": "{{ required_url.url }}"}'>
                                     <i class="material-icons">delete</i>
                                 </button>
                             </form>
-                            <a class="urlStyle" href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
+                            <a class="urlStyle" target="_blank" href="{{ required_url.url }}">&nbsp;{{ required_url.url }}</a>
                             </div>
                             {% empty %}
                             <p class="greyText">No required URLs yet</p>
@@ -184,8 +247,8 @@
                                 {% for comment in comments %}
                                 <div class="comment">
                                     <strong>{{ comment.user.username }}</strong>
-                                    <span>{{ comment.created_at|date:"M. d, Y, P" }}</span>
-                                    <p>{{ comment.text }}</p>
+                                    <span class="whiteText">{{ comment.created_at|date:"M. d, Y, P" }}</span>
+                                    <p class="whiteText">{{ comment.text }}</p>
                                 </div>
                                 {% empty %}
                                 <p>No comments yet</p>
@@ -198,9 +261,9 @@
                         <td>
                             <div id="comment-form-container">
                                 {% if user.is_authenticated %}
-                                <form method="post" action="{% url 'sde_collections:detail' collection.pk %}">
+                                <form method="post" action="{% url 'sde_collections:detail' collection.pk %}" >
                                     {% csrf_token %}
-                                    <textarea name="text" class="form-control formBackground">{{ comment_form.text.value }}</textarea>
+                                    <textarea name="text" class="form-control formBackground" required>{{ comment_form.text.value }}</textarea>
                                     <button type="submit" name="comment_button" class="btn buttonColor">Submit</button>
                                 </form>
                                 {% else %}
@@ -213,13 +276,13 @@
             </table>
 
         </div>
-        <div class="tab-pane fade" id="statustimeline">
-            <table class="table table-striped">
+        <div class="tab-pane fade" id="workflowhistory">
+            <table class="table table-striped" id="workflow_history_table" style="width:100%">
                 <thead>
                     <tr class="tableHeaderRow">
                         <th class="whiteText">Workflow Status</th>
                         <th class="whiteText">Curator</th>
-                        <th class="whiteText">Timeframe</th>
+                        <th class="whiteText">Time Updated</th>
                     </tr>
                 <thead>
                 <tbody>
@@ -233,7 +296,7 @@
                         </td>
                         <td class="whiteText">
                             {{ entry.curated_by }}</td>
-                        <td class="whiteText">{{entry.created_at|timesince}}</td>
+                        <td class="whiteText">{{entry.created_at|timesince}} ago</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -283,10 +346,61 @@ aria-labelledby="titleChangeModal" aria-hidden="true">
             </div>
             <div class="modal-footer">
                 <form id="titleChangeModalForm">
-                        <input type="text" name="inputFieldName" id="inputFieldId">
+                        <input type="text" name="inputFieldName" id="inputFieldId" value="{{collection.name}}"> 
                         <div class="button-wrapper">
-                        <button type="submit" class="btn btn-secondary modal-button-1" id="cancelTitleRename">Cancel</button>
-                        <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="renameTitle">Rename</button>
+                            <button type="submit" class="btn btn-secondary modal-button-1" id="cancelTitleRename">Cancel</button> 
+                            <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="renameTitle">Rename</button> 
+                        </div>
+                </form>
+            </div>
+    </div>
+</div>
+</div>
+
+
+<div class="modal" id="deleteURLModal" tabindex="-1"
+aria-labelledby="deleteURLModal" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close" id="closeDeleteURLModal">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+            <div class="modal-body" id="modal-body">
+                <h5 class="modal-title">Are you sure?</h5>
+                <p class="delete-URL-caption" id="caption"></p>
+            </div>
+            <div class="modal-footer">
+                <form id="deleteURLModalForm">
+                    <div class="button-wrapper">
+                    <button type="submit" class="btn btn-secondary modal-button-1" id="cancelURLDeletion">No</button> 
+                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="deleteURL">Yes</button> 
+                    </div>
+                    </form>
+            </div>
+    </div>
+</div>
+</div>
+
+<div class="modal" id="workflowStatusChangeModal" tabindex="-1"
+aria-labelledby="workflowStatusChangeModal" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close" id="closeworkflowStatusChangeModal">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+            <div class="modal-body" id="modal-body">
+                <h5 class="modal-title">Are you sure?</h5>
+                <p class="workflow-status-change-caption" id="caption"></p>
+            </div>
+            <div class="modal-footer">
+                <form id="workflowStatusChangeModalForm">
+                    <div class="button-wrapper">
+                    <button type="submit" class="btn btn-secondary modal-button-1" id="cancelworkflowStatusChange">No</button> 
+                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="changeWorkflowStatus">Yes</button> 
                     </div>
                     </form>
             </div>
@@ -295,7 +409,3 @@ aria-labelledby="titleChangeModal" aria-hidden="true">
 </div>
 
 {% endblock content %}
-{% block javascripts %}
-<script src="{% static 'js/collection_detail.js' %}"></script>
-<script src="{% static 'js/core/bootstrap.min.js' %}"></script>
-{% endblock javascripts %}

@@ -2,6 +2,20 @@ var collection_id;
 var newDivisionVal;
 var currentDivisionVal;
 var currentDivisonText;
+var currentUrlToDelete;
+
+let table = $("#workflow_history_table").DataTable({ 
+  paging: false,
+  stateSave: false,
+  orderCellsTop: false,
+  fixedHeader: false,
+  searching:false,
+  order: [],
+  columnDefs: [ {
+  targets: 2,
+  orderable: false
+  } ]
+});
 
 let originalValue = document.getElementById("github-link-display").textContent;
 document.getElementById("github-link-form").style.display = "none";
@@ -53,6 +67,87 @@ function postDocTypeChange(collection_id, docType) {
   });
 }
 
+// Toast for changing workflow status
+$(document).ready(function () {
+  if (localStorage.getItem("WorkflowStatusChange")) {
+    toastr.success("Workflow Status Updated!");
+    localStorage.removeItem("WorkflowStatusChange");
+  }
+});
+
+//Scroll position for comments
+$(document).ready(function () {
+  if (localStorage.getItem("commentScroll")) {
+    $(window).scrollTop(localStorage.getItem("commentScroll"));
+    localStorage.removeItem("commentScroll");
+  }
+});
+
+//////////////////////////////
+///// DELETE URL CHANGE //////
+//////////////////////////////
+
+function handleDeleteURLButtonClick(dataId, dataURL) {
+  $modal = $("#deleteURLModal").modal();
+  $(".delete-URL-caption").text(`Are you sure you want to delete ${dataURL}?`);
+  $("#deleteURLModal").on("keydown", function (event) {
+    if (event.keyCode === 13) {
+      // Check if the focused element is the button
+      if (document.activeElement.id === "deleteURLModal") {
+        // Simulate a click event on the button
+        $.ajax({
+          url: "/delete-required-url/" + dataId,
+          type: "POST",
+          headers: {
+            "X-CSRFToken": csrftoken,
+          },
+          success: function (data) {
+            window.location.reload();
+          },
+          error: function (xhr, textStatus, errorThrown) {
+            console.log("Error:", errorThrown);
+            toastr.error("Error deleting URL.");
+          },
+        });
+      }
+    }
+  });
+
+  $("#deleteURLModalForm").on("click", "button", function (event) {
+    event.preventDefault();
+    var buttonId = $(this).attr("id");
+
+    if (buttonId === "cancelURLDeletion") {
+      $modal = $("#deleteURLModal").modal("hide");
+      return;
+    } else if (buttonId === "deleteURL" && dataId === currentUrlToDelete) {
+      $.ajax({
+        url: "/delete-required-url/" + dataId,
+        type: "POST",
+        headers: {
+          "X-CSRFToken": csrftoken,
+        },
+        success: function (data) {
+          window.location.reload();
+        },
+        error: function (xhr, textStatus, errorThrown) {
+          console.log("Error:", errorThrown);
+          toastr.error("Error deleting URL.");
+        },
+      });
+    }
+  });
+}
+
+$(document).ready(function () {
+  $("body").on("click", ".urlDeleteButton", function (e) {
+    e.preventDefault();
+    var dataId = $(this).data("id");
+    currentUrlToDelete = dataId.id;
+    handleDeleteURLButtonClick(dataId.id, dataId.url);
+  });
+});
+
 //////////////////////////////
 ///// DIVISION CHANGE ////////
 //////////////////////////////
@@ -61,8 +156,8 @@ $(document).ready(function () {
   $("body").on("change", "#detailDivisionDropdown", function () {
     $modal = $("#divisionChangeModal").modal();
     var selectedText = $("#detailDivisionDropdown option:selected").text();
-    $("#caption").text(
-      `Divison will be changed from ${currentDivisonText} to ${selectedText}.`
+    $("#caption").html(
+      `Divison will be changed from <span class="bold">${currentDivisonText}</span> to <span class="bold">${selectedText}</span>.`
     );
     collection_id = $(this).data("collection-id");
     newDivisionVal = $(this).val();
@@ -216,6 +311,60 @@ $(document).ready(function () {
   });
 });
 
+const $timeline = $("#timeline");
+
+function checkArrows() {
+  const scrollLeft = $timeline.scrollLeft();
+  const maxScrollLeft = $timeline[0].scrollWidth - $timeline[0].clientWidth;
+
+  if (scrollLeft === 0) {
+    $("#left-arrow").hide();
+  } else {
+    $("#left-arrow").show();
+  }
+
+  if (scrollLeft >= maxScrollLeft) {
+    $("#right-arrow").hide();
+  } else {
+    $("#right-arrow").show();
+  }
+}
+
+// Clicking on left right arrows to move timeline
+$(document).ready(function () {
+  $("#left-arrow").click(function () {
+    $("#timeline").scrollLeft($("#timeline").scrollLeft() - 510);
+    checkArrows();
+  });
+
+  $("#right-arrow").click(function () {
+    $("#timeline").scrollLeft($("#timeline").scrollLeft() + 510);
+    checkArrows();
+  });
+});
+
+$timeline.on("scroll", checkArrows);
+
+// Scroll to center the highlighted cell
+function centerHighlighted() {
+  const $timeline = $("#timeline");
+  const $highlighted = $timeline.find(".highlight");
+
+  if ($highlighted.length) {
+    const timelineWidth = $timeline.width();
+    const highlightedOffset =
+      $highlighted.offset().left - $timeline.offset().left;
+    const highlightedWidth = $highlighted.outerWidth(true);
+    const scrollLeft = $timeline.scrollLeft();
+    const centerPosition =
+      highlightedOffset - timelineWidth / 2 + highlightedWidth / 2;
+
+    $timeline.scrollLeft(scrollLeft + centerPosition);
+  }
+}
+
+centerHighlighted();
+
 function postWorkflowStatus(collection_id, workflow_status) {
   var url = `/api/collections/${collection_id}/`;
   $.ajax({
@@ -229,46 +378,70 @@ function postWorkflowStatus(collection_id, workflow_status) {
       "X-CSRFToken": csrftoken,
     },
     success: function (data) {
-      toastr.success("Workflow Status Updated!");
+      localStorage.setItem("WorkflowStatusChange", data.OperationStatus);
+      location.reload();
     },
   });
 }
 
 function handleWorkflowStatusSelect() {
   $("body").on("click", ".workflow_status_select", function () {
+    $("#workflowStatusChangeModal").modal();
+    var collectionName = $("#collectionName").text();
     var collection_id = $(this).data("collection-id");
     var workflow_status = $(this).attr("value");
-    var workflow_status_text = $(this).text();
-    var color_choices = {
-      1: "btn-light",
-      2: "btn-danger",
-      3: "btn-warning",
-      4: "btn-info",
-      5: "btn-success",
-      6: "btn-primary",
-      7: "btn-info",
-      8: "btn-secondary",
-      9: "btn-light",
-      10: "btn-danger",
-      11: "btn-warning",
-      12: "btn-info",
-      13: "btn-success",
-      14: "btn-primary",
-      15: "btn-info",
-      16: "btn-secondary",
-    };
+    var new_workflow_status = $(this).text();
 
-    $button = $(`#workflow-status-button-${collection_id}`);
-
-    $button.text(workflow_status_text);
-    $button.removeClass(
-      "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+    $(".workflow-status-change-caption").html(
+      `<div>Workflow status for <span class="bold">${collectionName}</span> will change to <span class="bold">${new_workflow_status}</span></div>`
     );
-    $button.addClass(color_choices[parseInt(workflow_status)]);
-    postWorkflowStatus(collection_id, workflow_status);
+
+    $("#workflowStatusChangeModalForm").on("click", "button", function (event) {
+      event.preventDefault();
+      var buttonId = $(this).attr("id");
+
+      switch (buttonId) {
+        case "cancelworkflowStatusChange":
+          $("#workflowStatusChangeModal").modal("hide");
+          break;
+        case "changeWorkflowStatus":
+          var color_choices = {
+            1: "btn-light",
+            2: "btn-danger",
+            3: "btn-warning",
+            4: "btn-info",
+            5: "btn-success",
+            6: "btn-primary",
+            7: "btn-info",
+            8: "btn-secondary",
+            9: "btn-light",
+            10: "btn-danger",
+            11: "btn-warning",
+            12: "btn-info",
+            13: "btn-success",
+            14: "btn-primary",
+            15: "btn-info",
+            16: "btn-secondary",
+          };
+
+          $button = $(`#workflow-status-button-${collection_id}`);
+
+          $button.text(new_workflow_status);
+          $button.removeClass(
+            "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+          );
+          $button.addClass(color_choices[parseInt(workflow_status)]);
+          postWorkflowStatus(collection_id, workflow_status);
+          $("#workflowStatusChangeModal").modal("hide");
+          break;
+      }
+    });
   });
 }
 
 $(document).ready(function () {
   handleWorkflowStatusSelect();
+  $("button[name='comment_button']").click(function () {
+    localStorage.setItem("commentScroll", $(window).scrollTop());
+  });
 });
