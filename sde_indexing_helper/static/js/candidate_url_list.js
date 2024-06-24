@@ -134,7 +134,6 @@ function initializeDataTable() {
         3: "Documentation",
         4: "Software and Tools",
         5: "Missions and Instruments",
-        6: "Training and Education",
       };
       this.api()
         .columns()
@@ -498,7 +497,6 @@ function initializeDataTable() {
                 Documentation: 3,
                 "Software and Tools": 4,
                 "Missions and Instruments": 5,
-                "Training and Education": 6,
               },
             },
           };
@@ -663,7 +661,6 @@ function getDocumentTypeColumn() {
         3: "Documentation",
         4: "Software and Tools",
         5: "Missions and Instruments",
-        6: "Training and Education",
       };
       button_text = data ? dict[data] : "Select";
       button_color = data ? "btn-success" : "btn-secondary";
@@ -681,7 +678,6 @@ function getDocumentTypeColumn() {
                 <a class="dropdown-item document_type_select" href="#" value="3">Documentation</a>
                 <a class="dropdown-item document_type_select" href="#" value="4">Software and Tools</a>
                 <a class="dropdown-item document_type_select" href="#" value="5">Missions and Instruments</a>
-                <a class="dropdown-item document_type_select" href="#" value="6">Training and Education</a>
               </div>
             </div>`;
     },
@@ -843,7 +839,7 @@ function postDocumentTypePatterns(
       newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
       $("#documentTypePatternsTab").html(
         `Document Type Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newDocumentTypePatternsCount + " new" + 
+          newDocumentTypePatternsCount + " new" +
           `</span>`
       );
     }
@@ -890,7 +886,7 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0, force) {
       newExcludePatternsCount = newExcludePatternsCount + 1;
       $("#excludePatternsTab").html(
         `Exclude Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newExcludePatternsCount + " new" + 
+          newExcludePatternsCount + " new" +
           `</span>`
       );
     }
@@ -932,7 +928,7 @@ function postIncludePatterns(match_pattern, match_pattern_type = 0) {
       newIncludePatternsCount = newIncludePatternsCount + 1;
       $("#includePatternsTab").html(
         `Include Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-          newIncludePatternsCount + " new" + 
+          newIncludePatternsCount + " new" +
           `</span>`
       );
     }
@@ -971,7 +967,7 @@ function postTitlePatterns(
               newTitlePatternsCount = newTitlePatternsCount + 1;
               $("#titlePatternsTab").html(
                 `Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-                  newTitlePatternsCount + " new" + 
+                  newTitlePatternsCount + " new" +
                   `</span>`
               );
             }
