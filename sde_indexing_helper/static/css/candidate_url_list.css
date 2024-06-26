@@ -90,11 +90,11 @@
     border-color:  #fafafa;
     font-size: 0.6875rem;
     box-shadow: 0 2px 2px 0 rgba(153, 153, 153, 0.14), 0 3px 1px -2px rgba(153, 153, 153, 0.2), 0 1px 5px 0 rgba(153, 153, 153, 0.12);  }
-  
+
   .select-dropdown:hover {
     box-shadow: 0 14px 26px -12px rgba(250, 250, 250, 0.42), 0 4px 23px 0px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(250, 250, 250, 0.2);
   }
-  
+
   .select-dropdown:focus,
   .select-dropdown.focus {
     box-shadow: none, 0 0 0 0.2rem rgba(76, 175, 80, 0.5);
@@ -194,7 +194,7 @@ letter-spacing: -0.02em;
     display: flex;
     align-items: baseline;
   }
-  
+
   .checkbox-wrapper label {
     font-weight: 600;
     font-size: 16px;
@@ -228,7 +228,7 @@ letter-spacing: -0.02em;
     width: 600px;
     color: #65B1EF;
   }
-  
+
 .title-dropdown {
     width: fit-content !important;
     margin-top:20px;
@@ -237,7 +237,7 @@ letter-spacing: -0.02em;
 .table tbody tr:nth-child(odd) {
     background-color: #050E19 !important;
    }
-  
+
    .table tbody tr:nth-child(even) {
     background-color: #3F4A58 !important;
    }
@@ -247,7 +247,7 @@ letter-spacing: -0.02em;
    }
 
 
-   
+
    .custom-select, .buttons-csv, .customizeColumns, .addPattern{
     border-style: solid !important;
     border-color: #A7BACD !important;
@@ -346,7 +346,7 @@ div.dt-buttons .btn.processing:after {
     align-items: center;
     /* justify-content: space-between; */
  }
- 
+
 .headerDiv{
     display: flex;
     justify-content: space-between;
@@ -356,6 +356,12 @@ div.dt-buttons .btn.processing:after {
     display:flex;
     align-items: center;
     justify-content: space-between;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
+    overflow-wrap: break-word;
+    min-width: 500px;
+    max-width: 500px;
  }
 
  .url-icon {
