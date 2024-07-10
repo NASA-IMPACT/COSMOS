@@ -360,8 +360,8 @@ div.dt-buttons .btn.processing:after {
     word-break: break-all;
     white-space: normal;
     overflow-wrap: break-word;
-    min-width: 550px;
-    max-width: 550px;
+    min-width: 100%;
+    max-width: 100%;
  }
 
  .url-icon {
@@ -421,4 +421,10 @@ div.dt-buttons .btn.processing:after {
 div.dt-container div.dt-paging ul.pagination {
     position: absolute;
     right: 60px;
+}
+
+.individual_title_input {
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
 }
