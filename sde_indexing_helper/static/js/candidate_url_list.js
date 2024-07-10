@@ -705,10 +705,11 @@ function setupClickHandlers() {
 function getURLColumn() {
   return {
     data: "url",
+    width: "30%",
     render: function (data, type, row) {
       return `<div class="url-cell"><span class="candidate_url nameStyling">${remove_protocol(
         data
-      )}</span> 
+      )}</span>
       <a target="_blank" href="${data}" data-url="/api/candidate-urls/${
         row["id"]
       }/" class="url-link"> <i class="material-icons url-icon">open_in_new</i></a></div>`;
@@ -719,6 +720,7 @@ function getURLColumn() {
 function getScrapedTitleColumn() {
   return {
     data: "scraped_title",
+    width: "30%",
     render: function (data, type, row) {
       return `<span class="whiteText">${data}</span>`;
     },
@@ -728,6 +730,7 @@ function getScrapedTitleColumn() {
 function getGeneratedTitleColumn() {
   return {
     data: "generated_title",
+    width: "20%",
     render: function (data, type, row) {
       return `<input type="text" class="form-control individual_title_input whiteText" value='${data}' data-generated-title-id=${
         row["generated_title_id"]
@@ -743,6 +746,7 @@ function getGeneratedTitleColumn() {
 function getExcludedColumn(true_icon, false_icon) {
   return {
     data: "excluded",
+    width: "10%",
     class: "col-1 text-center",
     render: function (data, type, row) {
       return data === true
@@ -759,6 +763,7 @@ function getExcludedColumn(true_icon, false_icon) {
 function getDocumentTypeColumn() {
   return {
     data: "document_type",
+    width: "10%",
     render: function (data, type, row) {
       var dict = {
         1: "Images",
@@ -802,7 +807,7 @@ function addEnterEscapeKeypress(modalID, formID) {
       modal.modal("hide");
     }
   })
-} 
+}
 
 function handleHideorShowKeypress() {
   $("body").on("keydown", function () {
