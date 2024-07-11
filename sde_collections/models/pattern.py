@@ -2,18 +2,9 @@ import re
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
-from django.db import models, transaction
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+from django.db import models
 
-from sde_collections.tasks import resolve_title_pattern
-
-from ..utils.title_resolver import (
-    is_valid_fstring,
-    is_valid_xpath,
-    parse_title,
-    resolve_title,
-)
+from ..utils.title_resolver import is_valid_fstring, is_valid_xpath, parse_title
 from .collection_choice_fields import DocumentTypes
 
 
@@ -170,12 +161,6 @@ class TitlePattern(BaseMatchPattern):
         ResolvedTitleError = apps.get_model("sde_collections", "ResolvedTitleError")
 
         for candidate_url in matched_urls:
-            context = {
-                "url": candidate_url.url,
-                "title": candidate_url.scraped_title,
-                "collection": self.collection.name,
-            }
-
             try:
                 # generated_title = resolve_title(self.title_pattern, context)
                 generated_title = self.title_pattern
@@ -190,6 +175,7 @@ class TitlePattern(BaseMatchPattern):
 
                 candidate_url.generated_title = generated_title
                 candidate_url.save()
+                updated_urls.append(candidate_url)
 
             except (ValueError, ValidationError) as e:
                 message = str(e)
