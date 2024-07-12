@@ -196,7 +196,15 @@ class TitlePattern(BaseMatchPattern):
         TitlePatternCandidateURL.objects.bulk_create(pattern_url_associations, ignore_conflicts=True)
 
     def unapply(self) -> None:
-        self.candidate_urls.update(generated_title="")
+        candidate_urls = self.candidate_urls.all()
+        for candidate_url in candidate_urls:
+            candidate_url.generated_title = ""
+            candidate_url.save()
+        self.candidate_urls.clear()
+
+    def delete(self, *args, **kwargs):
+        self.unapply()
+        super().delete(*args, **kwargs)
 
     class Meta:
         """Meta definition for TitlePattern."""
