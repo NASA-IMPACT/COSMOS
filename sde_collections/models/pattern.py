@@ -4,7 +4,12 @@ from django.apps import apps
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from ..utils.title_resolver import is_valid_fstring, is_valid_xpath, parse_title
+from ..utils.title_resolver import (
+    is_valid_fstring,
+    is_valid_xpath,
+    parse_title,
+    resolve_title,
+)
 from .collection_choice_fields import DocumentTypes
 
 
@@ -161,9 +166,13 @@ class TitlePattern(BaseMatchPattern):
         ResolvedTitleError = apps.get_model("sde_collections", "ResolvedTitleError")
 
         for candidate_url in matched_urls:
+            context = {
+                "url": candidate_url.url,
+                "title": candidate_url.scraped_title,
+                "collection": self.collection.name,
+            }
             try:
-                # generated_title = resolve_title(self.title_pattern, context)
-                generated_title = self.title_pattern
+                generated_title = resolve_title(self.title_pattern, context)
 
                 # check to see if the candidate url has an existing resolved title and delete it
                 ResolvedTitle.objects.filter(candidate_url=candidate_url).delete()
