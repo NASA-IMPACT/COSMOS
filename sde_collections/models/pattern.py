@@ -2,11 +2,7 @@ import re
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
-from django.db import models, transaction
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-
-from sde_collections.tasks import resolve_title_pattern
+from django.db import models
 
 from ..utils.title_resolver import (
     is_valid_fstring,
@@ -175,10 +171,8 @@ class TitlePattern(BaseMatchPattern):
                 "title": candidate_url.scraped_title,
                 "collection": self.collection.name,
             }
-
             try:
-                # generated_title = resolve_title(self.title_pattern, context)
-                generated_title = self.title_pattern
+                generated_title = resolve_title(self.title_pattern, context)
 
                 # check to see if the candidate url has an existing resolved title and delete it
                 ResolvedTitle.objects.filter(candidate_url=candidate_url).delete()
@@ -190,6 +184,7 @@ class TitlePattern(BaseMatchPattern):
 
                 candidate_url.generated_title = generated_title
                 candidate_url.save()
+                updated_urls.append(candidate_url)
 
             except (ValueError, ValidationError) as e:
                 message = str(e)
@@ -210,7 +205,15 @@ class TitlePattern(BaseMatchPattern):
         TitlePatternCandidateURL.objects.bulk_create(pattern_url_associations, ignore_conflicts=True)
 
     def unapply(self) -> None:
-        self.candidate_urls.update(generated_title="")
+        candidate_urls = self.candidate_urls.all()
+        for candidate_url in candidate_urls:
+            candidate_url.generated_title = ""
+            candidate_url.save()
+        self.candidate_urls.clear()
+
+    def delete(self, *args, **kwargs):
+        self.unapply()
+        super().delete(*args, **kwargs)
 
     class Meta:
         """Meta definition for TitlePattern."""

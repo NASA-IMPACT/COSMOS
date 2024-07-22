@@ -225,7 +225,6 @@ function initializeDataTable() {
         3: "Documentation",
         4: "Software and Tools",
         5: "Missions and Instruments",
-        6: "Training and Education",
       };
       this.api()
         .columns()
@@ -604,7 +603,6 @@ function initializeDataTable() {
                 Documentation: 3,
                 "Software and Tools": 4,
                 "Missions and Instruments": 5,
-                "Training and Education": 6,
               },
             },
           };
@@ -707,10 +705,11 @@ function setupClickHandlers() {
 function getURLColumn() {
   return {
     data: "url",
+    width: "30%",
     render: function (data, type, row) {
       return `<div class="url-cell"><span class="candidate_url nameStyling">${remove_protocol(
         data
-      )}</span> 
+      )}</span>
       <a target="_blank" href="${data}" data-url="/api/candidate-urls/${
         row["id"]
       }/" class="url-link"> <i class="material-icons url-icon">open_in_new</i></a></div>`;
@@ -721,6 +720,7 @@ function getURLColumn() {
 function getScrapedTitleColumn() {
   return {
     data: "scraped_title",
+    width: "30%",
     render: function (data, type, row) {
       return `<span class="whiteText">${data}</span>`;
     },
@@ -730,6 +730,7 @@ function getScrapedTitleColumn() {
 function getGeneratedTitleColumn() {
   return {
     data: "generated_title",
+    width: "20%",
     render: function (data, type, row) {
       return `<input type="text" class="form-control individual_title_input whiteText" value='${data}' data-generated-title-id=${
         row["generated_title_id"]
@@ -745,6 +746,7 @@ function getGeneratedTitleColumn() {
 function getExcludedColumn(true_icon, false_icon) {
   return {
     data: "excluded",
+    width: "10%",
     class: "col-1 text-center",
     render: function (data, type, row) {
       return data === true
@@ -761,6 +763,7 @@ function getExcludedColumn(true_icon, false_icon) {
 function getDocumentTypeColumn() {
   return {
     data: "document_type",
+    width: "10%",
     render: function (data, type, row) {
       var dict = {
         1: "Images",
@@ -768,7 +771,6 @@ function getDocumentTypeColumn() {
         3: "Documentation",
         4: "Software and Tools",
         5: "Missions and Instruments",
-        6: "Training and Education",
       };
       button_text = data ? dict[data] : "Select";
       button_color = data ? "btn-success" : "btn-secondary";
@@ -786,7 +788,6 @@ function getDocumentTypeColumn() {
                 <a class="dropdown-item document_type_select" href="#" value="3">Documentation</a>
                 <a class="dropdown-item document_type_select" href="#" value="4">Software and Tools</a>
                 <a class="dropdown-item document_type_select" href="#" value="5">Missions and Instruments</a>
-                <a class="dropdown-item document_type_select" href="#" value="6">Training and Education</a>
               </div>
             </div>`;
     },
@@ -806,7 +807,7 @@ function addEnterEscapeKeypress(modalID, formID) {
       modal.modal("hide");
     }
   })
-} 
+}
 
 function handleHideorShowKeypress() {
   $("body").on("keydown", function () {
@@ -997,16 +998,14 @@ function postDocumentTypePatterns(
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
-      if (currentTab === "") {
-        //Only add a notification if we are on the first tab
-        newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
-        $("#documentTypePatternsTab").html(
-          `Document Type Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-            newDocumentTypePatternsCount +
-            " new" +
-            `</span>`
-        );
-      }
+      if(currentTab === ""){ //Only add a notification if we are on the first tab
+      newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
+      $("#documentTypePatternsTab").html(
+        `Document Type Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+          newDocumentTypePatternsCount + " new" +
+          `</span>`
+      );
+    }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -1050,16 +1049,14 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0, force) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
-      if (currentTab === "") {
-        //Only add a notification if we are on the first tab
-        newExcludePatternsCount = newExcludePatternsCount + 1;
-        $("#excludePatternsTab").html(
-          `Exclude Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-            newExcludePatternsCount +
-            " new" +
-            `</span>`
-        );
-      }
+      if(currentTab === ""){ //Only add a notification if we are on the first tab
+      newExcludePatternsCount = newExcludePatternsCount + 1;
+      $("#excludePatternsTab").html(
+        `Exclude Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+          newExcludePatternsCount + " new" +
+          `</span>`
+      );
+    }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -1094,16 +1091,14 @@ function postIncludePatterns(match_pattern, match_pattern_type = 0) {
     success: function (data) {
       $("#candidate_urls_table").DataTable().ajax.reload(null, false);
       $("#include_patterns_table").DataTable().ajax.reload(null, false);
-      if (currentTab === "") {
-        //Only add a notification if we are on the first tab
-        newIncludePatternsCount = newIncludePatternsCount + 1;
-        $("#includePatternsTab").html(
-          `Include Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-            newIncludePatternsCount +
-            " new" +
-            `</span>`
-        );
-      }
+      if(currentTab === ""){ //Only add a notification if we are on the first tab
+      newIncludePatternsCount = newIncludePatternsCount + 1;
+      $("#includePatternsTab").html(
+        `Include Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+          newIncludePatternsCount + " new" +
+          `</span>`
+      );
+    }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -1122,45 +1117,40 @@ function postTitlePatterns(
     return;
   }
 
-  $.ajax({
-    url: "/api/title-patterns/",
-    type: "POST",
-    data: {
-      collection: collection_id,
-      match_pattern: match_pattern,
-      match_pattern_type: match_pattern_type,
-      title_pattern: title_pattern,
-      csrfmiddlewaretoken: csrftoken,
-    },
-    success: function (data) {
-      $("#candidate_urls_table").DataTable().ajax.reload(null, false);
-      $("#title_patterns_table").DataTable().ajax.reload(null, false);
-      if (currentTab === "") {
-        //Only add a notification if we are on the first tab
-        newTitlePatternsCount = newTitlePatternsCount + 1;
-        $("#titlePatternsTab").html(
-          `Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-            newTitlePatternsCount +
-            " new" +
-            `</span>`
-        );
-      }
-    },
-    error: function (xhr, status, error) {
-      var errorMessage = xhr.responseText;
-      if (
-        errorMessage ==
-        '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}'
-      ) {
-        toastr.success("Pattern already exists");
-        return;
-      }
-      var errorMessages = JSON.parse(errorMessage);
-      Object.entries(errorMessages.error).forEach(([key, value]) => {
-        toastr.error(value, key);
-      });
-    },
-  });
+    $.ajax({
+        url: '/api/title-patterns/',
+        type: "POST",
+        data: {
+            collection: collection_id,
+            match_pattern: match_pattern,
+            match_pattern_type: match_pattern_type,
+            title_pattern: title_pattern,
+            csrfmiddlewaretoken: csrftoken
+        },
+        success: function (data) {
+            $('#candidate_urls_table').DataTable().ajax.reload(null, false);
+            $('#title_patterns_table').DataTable().ajax.reload(null, false);
+            if(currentTab === ""){ //Only add a notification if we are on the first tab
+              newTitlePatternsCount = newTitlePatternsCount + 1;
+              $("#titlePatternsTab").html(
+                `Title Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+                  newTitlePatternsCount + " new" +
+                  `</span>`
+              );
+            }
+        },
+        error: function (xhr, status, error) {
+            var errorMessage = xhr.responseText;
+            if (errorMessage == '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}') {
+              toastr.success("Pattern already exists");
+              return;
+            }
+            var errorMessages = JSON.parse(errorMessage);
+            Object.entries(errorMessages.error).forEach(([key, value]) => {
+                toastr.error(value, key);
+            });
+        }
+    });
 }
 
 function postVisited(url) {

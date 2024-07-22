@@ -391,6 +391,9 @@ function postCurator(collection_id, curator_id) {
 $(document).ready(function () {
   setupClickHandlers();
 
+  // Clear search values and redraw table
+  clearSearchValues();
+
   // Remove the search input and add custom titles
   var paneTitles = [
     null,
@@ -423,4 +426,9 @@ function setupClickHandlers() {
   // handleCurationStatusSelect();
   handleWorkflowStatusSelect();
   handleCuratorSelect();
+}
+
+function clearSearchValues() {
+  let table = $("#collection_table").DataTable();
+  table.columns().search("").draw();
 }

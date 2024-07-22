@@ -30,7 +30,6 @@ class DocumentTypes(models.IntegerChoices):
     DOCUMENTATION = 3, "Documentation"
     SOFTWARETOOLS = 4, "Software and Tools"
     MISSIONSINSTRUMENTS = 5, "Missions and Instruments"
-    TRAININGANDEDUCATION = 6, "Training and Education"
 
     @classmethod
     def lookup_by_text(cls, text: str) -> int | None:
