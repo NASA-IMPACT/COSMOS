@@ -26,7 +26,7 @@
 <br>
 <div class="row">
     <div class="col-md-6 titleCol">
-        <h1 class="nameWrapper"><div class="collectionName" id="collectionName">{{ collection.name }}</div><img class="editTitle" src="../../static/images/Task.png"></img></h1>
+        <h1 class="nameWrapper"><div class="collectionName" id="collectionName">{{ collection.name }}</div><img class="editTitle" src="../../static/images/edit.png"></img></h1>
     </div>
     <div class="col-md-6 buttonsCol">
         <div>
@@ -78,7 +78,7 @@
         </div>
         <div class="timeline" id="timeline">
             {% for stage in timeline_history %}
-                <div class="timeline-stage 
+                <div class="timeline-stage
                 {% if stage.workflow_status == collection.workflow_status %} btn highlight {{ collection.workflow_status_button_color }} {% endif %}">
                     <div class="status-label">
                         {% if stage.created_at %}
@@ -346,10 +346,10 @@ aria-labelledby="titleChangeModal" aria-hidden="true">
             </div>
             <div class="modal-footer">
                 <form id="titleChangeModalForm">
-                        <input type="text" name="inputFieldName" id="inputFieldId" value="{{collection.name}}"> 
+                        <input type="text" name="inputFieldName" id="inputFieldId" value="{{collection.name}}">
                         <div class="button-wrapper">
-                            <button type="submit" class="btn btn-secondary modal-button-1" id="cancelTitleRename">Cancel</button> 
-                            <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="renameTitle">Rename</button> 
+                            <button type="submit" class="btn btn-secondary modal-button-1" id="cancelTitleRename">Cancel</button>
+                            <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="renameTitle">Rename</button>
                         </div>
                 </form>
             </div>
@@ -374,8 +374,8 @@ aria-labelledby="deleteURLModal" aria-hidden="true">
             <div class="modal-footer">
                 <form id="deleteURLModalForm">
                     <div class="button-wrapper">
-                    <button type="submit" class="btn btn-secondary modal-button-1" id="cancelURLDeletion">No</button> 
-                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="deleteURL">Yes</button> 
+                    <button type="submit" class="btn btn-secondary modal-button-1" id="cancelURLDeletion">No</button>
+                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="deleteURL">Yes</button>
                     </div>
                     </form>
             </div>
@@ -399,8 +399,8 @@ aria-labelledby="workflowStatusChangeModal" aria-hidden="true">
             <div class="modal-footer">
                 <form id="workflowStatusChangeModalForm">
                     <div class="button-wrapper">
-                    <button type="submit" class="btn btn-secondary modal-button-1" id="cancelworkflowStatusChange">No</button> 
-                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="changeWorkflowStatus">Yes</button> 
+                    <button type="submit" class="btn btn-secondary modal-button-1" id="cancelworkflowStatusChange">No</button>
+                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="changeWorkflowStatus">Yes</button>
                     </div>
                     </form>
             </div>
