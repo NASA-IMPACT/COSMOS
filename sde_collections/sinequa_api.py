@@ -40,7 +40,7 @@ server_configs = {
     "lrm_dev_server": {
         "app_name": "nasa-sba-smd",
         "query_name": "query-smd-primary",
-        "base_url": "http://sde-lrm.nasa-impact.net",
+        "base_url": "https://sde-lrm.nasa-impact.net",
     },
 }
 
