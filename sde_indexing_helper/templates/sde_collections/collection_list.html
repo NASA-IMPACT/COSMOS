@@ -49,12 +49,11 @@
             </tr>
         </thead>
 
-        <div class="search-container">
-            <label for="collectionSearch">Universal Search</label>
-            <input type="text" id="collectionSearch" placeholder="Type to search..." class="table_filter_row_input textBoxStyling">
-        </div>
-
         <tbody>
+            <div class="search-container">
+                <label for="collectionSearch">Universal Search</label>
+                <input type="text" id="collectionSearch" placeholder="Type to search..." class="table_filter_row_input textBoxStyling">
+            </div>
             {% for collection in collections %}
                 <tr id="{{ collection.id }}" data-config-folder="{{ collection.config_folder }}">
                     <td class="noBorder">
