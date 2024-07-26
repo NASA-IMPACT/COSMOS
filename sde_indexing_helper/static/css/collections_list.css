@@ -306,7 +306,7 @@ margin-bottom: 0 !important;
       .search-container input {
         max-width: 400px;
         padding: 5px;
-        border-radius: 8px; /* Rounded corners */
+        border-radius: 8px;
         border: 1px solid #ccc;
       }
 
