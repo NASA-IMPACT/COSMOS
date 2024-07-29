@@ -418,8 +418,9 @@ $(document).ready(function () {
         let row = $(this.node());
         let name = row.find('td').first().text().toLowerCase();
         let configFolder = row.data('config-folder').toLowerCase();
+        let url = row.find('td').eq(1).text().toLowerCase();
 
-        if (name.includes(query) || configFolder.includes(query)) {
+        if (name.includes(query) || configFolder.includes(query) || url.includes(query)) {
             row.show();
         } else {
             row.hide();
