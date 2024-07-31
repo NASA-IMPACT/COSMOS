@@ -84,7 +84,10 @@ class Collection(models.Model):
 
     def add_to_public_query(self):
         """Add the collection to the public query."""
-        if self.workflow_status != WorkflowStatusChoices.READY_FOR_PUBLIC_PROD:
+        if self.workflow_status not in [
+            WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
+            WorkflowStatusChoices.QUALITY_CHECK_MINOR,
+        ]:
             raise ValueError(f"{self.config_folder} is not ready for public prod, you can't add it to the public query")
 
         gh = GitHubHandler()
@@ -181,6 +184,12 @@ class Collection(models.Model):
             15: "btn-info",
             16: "btn-secondary",
             17: "btn-light",
+            18: "btn-success",
+            19: "btn-warning",
+            20: "btn-info",
+            21: "btn-success",
+            22: "btn-light",
+            23: "btn-light",
         }
         return color_choices[self.workflow_status]
 
@@ -562,5 +571,8 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
         elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
             instance.create_scraper_config(overwrite=False)
             instance.create_indexer_config(overwrite=False)
-        elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_PUBLIC_PROD:
+        elif instance.workflow_status in [
+            WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
+            WorkflowStatusChoices.QUALITY_CHECK_MINOR,
+        ]:
             instance.add_to_public_query()
