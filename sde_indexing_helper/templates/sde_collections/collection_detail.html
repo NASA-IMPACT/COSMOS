@@ -40,7 +40,7 @@
                     data-match-pattern
                     remove_protocol
                     row
-                    url>                          
+                    url>
                    <button class="btn {{ collection.workflow_status_button_color }} btn-sm dropdown-toggle"
                            type="button"
                            id="workflow-status-button-{{ collection.id }}"
@@ -166,8 +166,6 @@
                                     Software and Tools</option>
                                 <option value="5" {% if collection.document_type == 5 %} selected="selected" {% endif %}>
                                     Missions and Instruments</option>
-                                <option value="6" {% if collection.document_type == 6 %} selected="selected" {% endif %}>Training and Education
-                                </option>
                             </select>
 
                         </td>
@@ -296,7 +294,7 @@
                                     id="workflow-history-button-{{ collection.id }}"
                                     aria-expanded="false">{{ entry.get_workflow_status_display }}</button>
                         </td>
-                        <td class="whiteText">                            
+                        <td class="whiteText">
                             {{ entry.curated_by }}</td>
                         <td class="whiteText">{{entry.created_at|timesince}} ago</td>
                     </tr>
@@ -324,8 +322,8 @@
                 <div class="modal-footer">
                     <form id="divisionChangeModalForm">
                         <div class="button-wrapper">
-                        <button type="submit" class="btn btn-secondary modal-button-1" id="cancelDivisionChange">No</button> 
-                        <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="makeDivisionChange">Yes</button> 
+                        <button type="submit" class="btn btn-secondary modal-button-1" id="cancelDivisionChange">No</button>
+                        <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="makeDivisionChange">Yes</button>
                         </div>
                         </form>
                 </div>

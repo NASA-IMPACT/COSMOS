@@ -2,6 +2,7 @@ from typing import Any
 
 import requests
 import urllib3
+from django.conf import settings
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -39,7 +40,7 @@ server_configs = {
     "lrm_dev_server": {
         "app_name": "nasa-sba-smd",
         "query_name": "query-smd-primary",
-        "base_url": "http://sde-lrm.nasa-impact.net",
+        "base_url": "https://sde-lrm.nasa-impact.net",
     },
 }
 
@@ -50,6 +51,10 @@ class Api:
         self.app_name: str = server_configs[server_name]["app_name"]
         self.query_name: str = server_configs[server_name]["query_name"]
         self.base_url: str = server_configs[server_name]["base_url"]
+        self.xli_user = settings.XLI_USER
+        self.xli_password = settings.XLI_PASSWORD
+        self.lrm_user = settings.LRM_USER
+        self.lrm_password = settings.LRM_PASSWORD
 
     def process_response(self, url: str, payload: dict[str, Any]) -> Any:
         response = requests.post(url, headers={}, json=payload, verify=False)
@@ -63,9 +68,9 @@ class Api:
 
     def query(self, page: int, collection_config_folder: str = "") -> Any:
         if self.server_name == "lis_server":
-            url = f"{self.base_url}/api/v1/search.query?Password=admin&User=admin"
+            url = f"{self.base_url}/api/v1/search.query?Password={self.xli_password}&User={self.xli_user}"
         elif self.server_name == "lrm_dev_server":
-            url = f"{self.base_url}/api/v1/search.query?Password=QDZ8ASZagUpRCHR&User=lrmdev"
+            url = f"{self.base_url}/api/v1/search.query?Password={self.lrm_password}&User={self.lrm_user}"
         else:
             url = f"{self.base_url}/api/v1/search.query"
         payload = {

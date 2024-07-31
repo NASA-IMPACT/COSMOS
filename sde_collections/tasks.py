@@ -10,7 +10,7 @@ from django.core.management.commands import loaddata
 
 from config import celery_app
 
-from .models.collection import Collection
+from .models.collection import Collection, WorkflowStatusChoices
 from .sinequa_api import Api
 from .utils.github_helper import GitHubHandler
 
@@ -89,6 +89,14 @@ def import_candidate_urls_from_api(server_name="test", collection_ids=[]):
 
         print("Applying existing patterns; this may take a while")
         collection.apply_all_patterns()
+
+        if collection.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
+            collection.workflow_status = WorkflowStatusChoices.ENGINEERING_IN_PROGRESS
+            collection.save()
+
+        # Finally set the status to READY_FOR_CURATION
+        collection.workflow_status = WorkflowStatusChoices.READY_FOR_CURATION
+        collection.save()
 
     print("Deleting temp files")
     shutil.rmtree(TEMP_FOLDER_NAME)

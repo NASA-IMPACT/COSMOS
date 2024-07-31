@@ -1,38 +1,31 @@
-# SDE Indexing Helper
-
-Web application to keep track of collections indexed in SDE and help decide what exactly to index from each collection.
+# COSMOS: Curated Organizational System for Metadata and Science
 
 [![Built with Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/)
 [![Black code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
-## Settings
-
-Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings.html).
+COSMOS is a web application designed to manage collections indexed in NASA's Science Discovery Engine (SDE), facilitating precise content selection and allowing metadata modification before indexing.
 
 ## Basic Commands
 
 ### Building the Project
 
-    ```bash
-    $ docker-compose -f local.yml build
-    ```
+```bash
+$ docker-compose -f local.yml build
+```
 
-### Running the necessary containers
+### Running the Necessary Containers
 
-    ```bash
-    $ docker-compose -f local.yml up
-    ```
+```bash
+$ docker-compose -f local.yml up
+```
 
-### Non-docker local setup
+### Non-Docker Local Setup
 
-If you want to run the project without docker, you will need the following:
+If you prefer to run the project without Docker, follow these steps:
 
-<details>
-<summary>Postgres</summary>
+#### Postgres Setup
 
-Run the following commands:
-
-````
+```bash
 $ psql postgres
 postgres=# create database <some database>;
 postgres=# create user <some username> with password '<some password>';
@@ -41,222 +34,155 @@ postgres=# grant all privileges on database <some database> to <some username>;
 # This next one is optional, but it will allow the user to create databases for testing
 
 postgres=# alter role <some username> with superuser;
-````
-</details>
-<details>
-<summary>Environment variables</summary>
-
-Now copy .env_sample in the root directory to .env. Note that in this setup we don't end up using the .envs/ directory, but instead we use the .env file.
-
-Replace the variables in this line in the .env file: `DATABASE_URL='postgresql://<user>:<password>@localhost:5432/<database>'` with your user, password and database. Change the port if you have a different one.
-
-You don't need to change any other variable, unless you want to use specific modules (like the GitHub code will require a GitHub token etc).
-
-There is a section in `config/settings/base.py` which reads environment variables from this file. The line should look like `READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=True)`. Make sure either the default is True here (which it should already be), or run `export DJANGO_READ_DOT_ENV_FILE=True` in your terminal.
-
-</details>
-
-### How to run
-
-Run `python manage.py runserver` to test if your setup worked. You might have to run an initial migration with `python manage.py migrate`.
-
-
-### Setting up your users
-
-- To create a **superuser account**, use this command:
-    ```bash
-    $ docker-compose -f local.yml run --rm django python manage.py createsuperuser
-    ```
-
-- To create further users, go to the admin (/admin) and create them from the "Users" section.
-
-### Loading fixtures
-Please note that currently loading fixtures will not create a fully working database. If you are starting the project from scratch, it is probably preferable to skip to the Loading the DB from a Backup section.
-- To load collections
-    ```bash
-    $ docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/collections.json
-    ```
-
-### Loading scraped URLs into CandidateURLs
-
-- First make sure there is a folder in scraper/scraped_urls. There should already be an example folder.
-
-- Then create a new spider for your Collection. An example is mast_spider.py in spiders. In the future, this will be replaced by base_spider.py
-
-- Run the crawler with `scrapy crawl <name of your spider> -o scraped_urls/<config_folder>/urls.jsonl
-
-- Then run this:
-    ```bash
-    $ docker-compose -f local.yml run --rm django python manage.py load_scraped_urls <config_folder_name>
-    ```
-
-### Loading the DB from a backup
-
-- If a database backup is made available, you wouldn't have to load the fixtures or the scrapped URLs anymore. This changes a few steps necessary to get the project running.
-
-- Step 1 : Build the project (Documented Above)
-
-- Step 2 : Run the necessary containers (Documented Above)
-
-- Step 3 : Clear Out Contenet Types Using Django Shell
-
-    -- Enter the Django shell in your Docker container.
-        ```bash
-        $ docker-compose -f local.yml run --rm django python manage.py shell
-        ```
-
-    -- In the Django shell, you can now delete the content types.
-        ```bash
-        from django.contrib.contenttypes.models import ContentType
-        ContentType.objects.all().delete()
-        ```
-
-    -- Exit the shell.
-
-- Step 4 : Load Your Backup Database
-
-    Assuming your backup is a `.json` file from `dumpdata`, you'd use `loaddata` command to populate your database.
-
-    -- If the backup file is on the local machine, make sure it's accessible to the Docker container. If the backup is outside the container, you will need to copy it inside first.
-        ```bash
-        $ docker cp /path/to/your/backup.json container_name:/path/inside/container/backup.json
-        ```
-
-    -- Load the data from your backup.
-        ```bash
-        $ docker-compose -f local.yml run --rm django python manage.py loaddata /path/inside/the/container/backup.json
-        ```
-
-    -- Once loaded, you may want to run migrations to ensure everything is aligned.
-        ```bash
-        $ docker-compose -f local.yml run -rm django python manage.py migrate
-        ```
-
-
-### Type checks
-
-Running type checks with mypy:
-    ```bash
-    $ mypy sde_indexing_helper
-    ```
-
-### Test coverage
-
-To run the tests, check your test coverage, and generate an HTML coverage report:
-    ```bash
-    $ coverage run -m pytest
-    $ coverage html
-    $ open htmlcov/index.html
-    ```
-
-#### Running tests with pytest
-
-    ```bash
-    $ pytest
-    ```
-
-### Live reloading and Sass CSS compilation
-
-Moved to [Live reloading and SASS compilation](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally.html#sass-compilation-live-reloading).
-
-### Install Celery
-
-Make sure Celery is installed in your environment. To install :
-    ```bash
-    $ pip install celery
-    ```
-
-### Install all requirements
-
-Install all packages listed in a 'requirements' file
-    ```bash
-    pip install -r requirements/*.txt
-    ```
-
-### Celery
-
-This app comes with Celery.
-
-To run a celery worker:
-
-```bash
-cd sde_indexing_helper
-celery -A config.celery_app worker -l info
-````
-
-Please note: For Celery's import magic to work, it is important _where_ the celery commands are run. If you are in the same folder with _manage.py_, you should be right.
-
-To run [periodic tasks](https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html), you'll need to start the celery beat scheduler service. You can start it as a standalone process:
-
-```bash
-cd sde_indexing_helper
-celery -A config.celery_app beat
 ```
 
-or you can embed the beat service inside a worker with the `-B` option (not recommended for production use):
+#### Environment Variables
 
-```bash
-cd sde_indexing_helper
-celery -A config.celery_app worker -B -l info
+Copy `.env_sample` to `.env` and update the `DATABASE_URL` variable with your Postgres credentials.
+
+```plaintext
+DATABASE_URL='postgresql://<user>:<password>@localhost:5432/<database>'
 ```
 
-### Pre-Commit hook instructions
+Ensure `READ_DOT_ENV_FILE` is set to `True` in `config/settings/base.py`.
 
-Hooks have to be run on every commit to automatically take care of linting and structuring.
+### Running the Application
 
-To install pre-commit package manager :
+```bash
+$ python manage.py runserver
+```
 
-    ```bash
-    $ pip install pre-commit
-    ```
+Run initial migration if necessary:
 
-Install the git hook scripts :
+```bash
+$ python manage.py migrate
+```
 
-    ```bash
-    $ pre-commit install
-    ```
+### Setting Up Users
 
-Run against the files :
+#### Creating a Superuser Account
 
-    ```bash
-    $ pre-commit run --all-files
-    ```
+```bash
+$ docker-compose -f local.yml run --rm django python manage.py createsuperuser
+```
 
-    It's usually a good idea to run the hooks against all of the files when adding new hooks (usually `pre-commit` will only run on the chnages files during git hooks).
+#### Creating Additional Users
 
-### Sentry
+Create additional users through the admin interface (/admin).
 
-Sentry is an error logging aggregator service. You can sign up for a free account at <https://sentry.io/signup/?code=cookiecutter> or download and host it yourself.
-The system is set up with reasonable defaults, including 404 logging and integration with the WSGI application.
+### Loading Fixtures
 
-You must set the DSN url in production.
+To load collections:
+
+```bash
+$ docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/collections.json
+```
+
+### Loading the Database from a Backup
+
+1. Build the project and run the necessary containers (as documented above).
+2. Clear out content types using the Django shell:
+
+```bash
+$ docker-compose -f local.yml run --rm django python manage.py shell
+>>> from django.contrib.contenttypes.models import ContentType
+>>> ContentType.objects.all().delete()
+>>> exit()
+```
+
+3. Load your backup database:
+
+```bash
+$ docker cp /path/to/your/backup.json container_name:/path/inside/container/backup.json
+$ docker-compose -f local.yml run --rm django python manage.py loaddata /path/inside/the/container/backup.json
+$ docker-compose -f local.yml run --rm django python manage.py migrate
+```
+
+## Additional Commands
+
+### Type Checks
+
+```bash
+$ mypy sde_indexing_helper
+```
+
+### Test Coverage
+
+To run tests and check coverage:
+
+```bash
+$ coverage run -m pytest
+$ coverage html
+$ open htmlcov/index.html
+```
+
+#### Running Tests with Pytest
+
+```bash
+$ pytest
+```
+
+### Live Reloading and Sass CSS Compilation
+
+Refer to the [Cookiecutter Django documentation](https://cookiecutter-django.readthedocs.io/en/latest/developing-locally.html#sass-compilation-live-reloading).
+
+### Installing Celery
+
+```bash
+$ pip install celery
+```
+
+### Running a Celery Worker
+
+```bash
+$ cd sde_indexing_helper
+$ celery -A config.celery_app worker -l info
+```
+
+Please note: For Celery's import magic to work, it is important where the celery commands are run. If you are in the same folder with manage.py, you should be right.
+
+### Running Celery Beat Scheduler
+
+```bash
+$ cd sde_indexing_helper
+$ celery -A config.celery_app beat
+```
+
+### Pre-Commit Hook Instructions
+
+To install pre-commit hooks:
+
+```bash
+$ pip install pre-commit
+$ pre-commit install
+$ pre-commit run --all-files
+```
+
+### Sentry Setup
+
+Sign up for a free account at [Sentry](https://sentry.io/signup/?code=cookiecutter) and set the DSN URL in production.
 
 ## Deployment
 
-The following details how to deploy this application.
+Refer to the detailed [Cookiecutter Django Docker documentation](http://cookiecutter-django.readthedocs.io/en/latest/deployment-with-docker.html).
 
-### Docker
-
-See detailed [cookiecutter-django Docker documentation](http://cookiecutter-django.readthedocs.io/en/latest/deployment-with-docker.html).
-
-### How to import candidate URLs from the test server
+## Importing Candidate URLs from the Test Server
 
 Documented [here](https://github.com/NASA-IMPACT/sde-indexing-helper/wiki/How-to-bring-in-Candidate-URLs-from-the-test-server).
 
-## Adding new features/fixes
+## Adding New Features/Fixes
 
-New features and bugfixes should start with a [GitHub issue](https://github.com/NASA-IMPACT/sde-indexing-helper/issues). Then on local, ensure that you have the [GitHub CLI](https://cli.github.com/). Branches are made based off of existing issues, and no other way. Use the CLI to reference your issue number, like so `gh issue develop -c <issue_number>`. This will create a local branch linked to the issue, and allow GitHub to handle all the relevant linking.
-
-Once on the branch, create a PR with `gh pr create`. You can leave the PR in draft if it's still WIP. When done, take it out of draft with `gh pr ready`.
+1. Start with a [GitHub issue](https://github.com/NASA-IMPACT/sde-indexing-helper/issues).
+2. Use the GitHub CLI to create branches and pull requests (`gh issue develop -c <issue_number>`).
 
 ## Job Creation
 
 Eventually, job creation will be done seamlessly by the webapp. Until then, edit the `config.py` file with the details of what sources you want to create jobs for, then run `generate_jobs.py`.
 
-## Code structure for the SDE_INDEXING_HELPER
+## Code Structure for SDE_INDEXING_HELPER
 
-The frontend pages can be found in /sde_indexing_helper
-- The html for [collection_list, collection_detail, candidate_urls_list] can be found in /sde_indexing_helper/templates/sde_collections
-- The javascript that controls these pages can be found in /sde_indexing_helper/static/js
-
-The main backend files like 'views.py' can be found in /sde_collections
+- Frontend pages:
+  - HTML: `/sde_indexing_helper/templates/`
+  - JavaScript: `/sde_indexing_helper/static/js`
+  - CSS: `/sde_indexing_helper/static/css`
+  - Images: `/sde_indexing_helper/static/images`
