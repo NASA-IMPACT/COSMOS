@@ -17,50 +17,54 @@ SECRET_DEPLOYMENT_FAILED = 9, "Secret Deployment Failed"
 READY_FOR_LRM_QUALITY_CHECK = 10, "Ready for LRM Quality Check"
 READY_FOR_FINAL_QUALITY_CHECK = 11, "Ready for Quality Check"
 QUALITY_CHECK_FAILED = 12, "Quality Check Failed"
-READY_FOR_PUBLIC_PROD = 13, "Ready for Public Production"
-PERFECT_ON_PROD = 14, "Perfect and on Production"
-LOW_PRIORITY_PROBLEMS_ON_PROD = 15, "Low Priority Problems on Production"
-HIGH_PRIORITY_PROBLEMS_ON_PROD = 16, "High Priority Problems on Production, only for old sources"
+QUALITY_CHECK_PERFECT = 13, "Ready for Public Production"
+PROD_PERFECT = 14, "Perfect and on Production"
+PROD_MINOR = 15, "Low Priority Problems on Production"
+PROD_MAJOR = 16, "High Priority Problems on Production, only for old sources"
 MERGE_PENDING = 17, "Code Merge Pending"
 
 perfect = [
-    # "WIND_Spacecraft",
-    # "gamma_ray_data_tools_core_package",
-    # "land_processes_distributed_active_archive_center",
-    # "mdscc_deep_space_network",
-    # "HelioAnalytics",
-    # "nasa_infrared_telescope_facility_irtf",
-    # "gmao_fluid",
-    # "starchild_a_learning_center_for_young_astronomers",
-    # "voyager_Cosmic_Ray_Subsystem",
-    "ldas_land_data_assimilatin_system",
-    "ppi_node",
+    "Van_Allen_Probes",
+    "gamma_ray_data_tools_github",
+    "hawc_observatory",
+    "activate_aerosol_cloud_meteorology_interactions_over_the_western_atlantic_experiment",
+    "nasa_visible_earth",
+    "global_sulfur_dioxide_monitoring",
+    "Voyager_Cosmic_Ray_Subsystem",
+    "stereo_at_gsfc",
+    "nasa_applied_sciences",
+    "cosmic_data_stories",
+    "solar_terrestrial_probes_program",
+    "atmospheric_imaging_assembly",
+    "treasure_map",
+    "incus_investigation_of_convective_updrafts",
+    "airmoss_airborne_microwave_observatory_of_subcanopy_and_subsurface_at_jpl",
+    "cii_hosted_payload_opportunity_online_database",
+    "act_america_atmospheric_carbon_and_transport_america",
+    "astropy",
+    "pds_website",
+    "astrophysics_source_code_library",
 ]
 
 low_priority = [
-    "nasa_applied_sciences",
-    "parker_solar_probe",
-    "virtual_wave_observatory",
-    "explorer_program_acquisition",
-    "lisa_consortium",
-    "astropy",
-    "fermi_at_gsfc",
-    "microobservatory_robotic_telescope_network",
+    "nasa_arcgis_online",
+    "physics_of_the_cosmos",
+    "dscovr_epic_earth_polychromatic_imaging_camera",
 ]
 
 for config in perfect:
     print(config)
     collection = Collection.objects.get(config_folder=config)
-    collection.workflow_status = WorkflowStatusChoices.PERFECT_ON_PROD
+    collection.workflow_status = WorkflowStatusChoices.PROD_PERFECT
     collection.save()
 
 for config in low_priority:
     print(config)
     collection = Collection.objects.get(config_folder=config)
-    collection.workflow_status = WorkflowStatusChoices.LOW_PRIORITY_PROBLEMS_ON_PROD
+    collection.workflow_status = WorkflowStatusChoices.PROD_MINOR
     collection.save()
 
 # for config in perfect:
 #     collection = Collection.objects.get(config_folder=config)
-#     collection.workflow_status = WorkflowStatusChoices.PERFECT_ON_PROD
+#     collection.workflow_status = WorkflowStatusChoices.PROD_PERFECT
 #     collection.save()
