@@ -19,7 +19,7 @@ from ..utils.slack_utils import (
     format_slack_message,
     send_slack_message,
 )
-from sde_collections.models.candidate_url import CandidateURL
+from .candidate_url import CandidateURL
 from .collection_choice_fields import (
     ConnectorChoices,
     CurationStatusChoices,
