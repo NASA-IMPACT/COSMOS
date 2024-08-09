@@ -18,6 +18,5 @@
         <DisablePerfData>true</DisablePerfData>
         <OtherOptions></OtherOptions>
     </Java>
-    <Engines>@Engine_1,@Engine_2,@Engine_3</Engines>
     <IsSqlPattern>false</IsSqlPattern>
 </Sinequa>
