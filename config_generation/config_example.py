@@ -61,7 +61,7 @@ SERVER_INFO = {
 # Job Creation Config
 collection_list: list[str] = sources_to_index_test_grid_20240809  # python list
 date = "20240809"
-source = "sde"
+source = "SDE"
 server = "test"
 
 # auto assigned
