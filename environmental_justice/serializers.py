@@ -7,7 +7,6 @@ class EnvironmentalJusticeRowSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = EnvironmentalJusticeRow
         fields = [
-            "destination_server",
             "dataset",
             "description",
             "description_simplified",
