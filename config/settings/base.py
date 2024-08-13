@@ -76,6 +76,7 @@ THIRD_PARTY_APPS = [
     "django_celery_beat",
     "rest_framework_datatables",
     "rest_framework",
+    "django_filters",
 ]
 
 CORS_ALLOWED_ORIGINS = [
