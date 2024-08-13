@@ -78,7 +78,26 @@ To load collections:
 $ docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/collections.json
 ```
 
-### Loading the Database from a Backup
+### Manually Creating and Loading a ContentTypeless Backup
+Navigate to the server running prod, then to the project folder. Run the following command to create a backup:
+
+```bash
+docker-compose -f production.yml run --rm --user root django python manage.py dumpdata --natural-foreign --natural-primary --exclude=contenttypes --exclude=auth.Permission --indent 2 --output /app/backups/prod_backup-20240812.json
+```
+This will have saved the backup in a folder outside of the docker container. Now you can copy it to your local machine. 
+
+```bash
+mv ~/prod_backup-20240812.json <project_path>/prod_backup-20240812.json
+scp sde:/home/ec2-user/sde_indexing_helper/backups/prod_backup-20240812.json prod_backup-20240812.json
+```
+
+Finally, load the backup into your local database:
+
+```bash
+docker-compose -f local.yml run --rm django python manage.py loaddata prod_backup-20240812.json
+```
+
+### Loading the Database from an Arbitrary Backup
 
 1. Build the project and run the necessary containers (as documented above).
 2. Clear out content types using the Django shell:

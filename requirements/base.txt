@@ -21,11 +21,12 @@ crispy-bootstrap5==2023.10  # https://github.com/django-crispy-forms/crispy-boot
 # project-specific
 beautifulsoup4==4.12.3
 boto3==1.34.31
+django-cors-headers==4.3.1
+django-filter==24.3
 djangorestframework-datatables==0.7.0
 djangorestframework==3.14.0
+lxml==4.9.2
 PyGithub==2.2.0
 tqdm==4.66.3
-xmltodict==0.13.0
-django-cors-headers==4.3.1
 unidecode==1.3.8
-lxml==4.9.2
+xmltodict==0.13.0

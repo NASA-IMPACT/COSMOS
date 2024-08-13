@@ -6,11 +6,18 @@ class EnvironmentalJusticeRow(models.Model):
     Environmental Justice data from the spreadsheet
     """
 
+    class DestinationServerChoices(models.TextChoices):
+        DEV = "dev", "Development"
+        TEST = "test", "Testing"
+        PROD = "prod", "Production"
+
+    destination_server = models.CharField(
+        "Destination Server", max_length=10, choices=DestinationServerChoices.choices, default="", blank=True
+    )
+
     dataset = models.CharField("Dataset", blank=True, default="")
     description = models.CharField("Description", blank=True, default="")
-    description_simplified = models.CharField(
-        "Description Simplified", blank=True, default=""
-    )
+    description_simplified = models.CharField("Description Simplified", blank=True, default="")
     indicators = models.CharField("Indicators", blank=True, default="")
     intended_use = models.CharField("Intended Use", blank=True, default="")
     latency = models.CharField("Latency", blank=True, default="")
@@ -21,15 +28,11 @@ class EnvironmentalJusticeRow(models.Model):
 
     # fields that needs cleaning
     format = models.CharField("Format", blank=True, default="")
-    geographic_coverage = models.CharField(
-        "Geographic Coverage", blank=True, default=""
-    )
+    geographic_coverage = models.CharField("Geographic Coverage", blank=True, default="")
     data_visualization = models.CharField("Data Visualization", blank=True, default="")
     spatial_resolution = models.CharField("Spatial Resolution", blank=True, default="")
     temporal_extent = models.CharField("Temporal Extent", blank=True, default="")
-    temporal_resolution = models.CharField(
-        "Temporal Resolution", blank=True, default=""
-    )
+    temporal_resolution = models.CharField("Temporal Resolution", blank=True, default="")
 
     sde_link = models.CharField("SDE Link", default="", blank=True)
 

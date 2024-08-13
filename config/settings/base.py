@@ -74,9 +74,20 @@ THIRD_PARTY_APPS = [
     "crispy_bootstrap5",
     "crispy_forms",
     "django_celery_beat",
+    "django_filters",
     "rest_framework_datatables",
     "rest_framework",
 ]
+
+LOCAL_APPS = [
+    "environmental_justice",
+    "feedback",
+    "sde_collections",
+    "sde_indexing_helper.users",
+]
+
+# https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -90,15 +101,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://localhost:4200",
     "http://localhost:4200",
 ]
-
-LOCAL_APPS = [
-    "environmental_justice",
-    "sde_indexing_helper.users",
-    "sde_collections",
-    "feedback",
-]
-# https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
-INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 # MIGRATIONS
 # ------------------------------------------------------------------------------
