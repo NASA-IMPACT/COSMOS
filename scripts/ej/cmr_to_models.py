@@ -82,7 +82,7 @@ for dataset in ej_dump:
             dataset.get("umm", {}).get("ProcessingLevel", {}).get("Id", "advanced analysis")
         ),
         source_link=generate_source_link(dataset.get("umm", {}).get("DOI", {})),
-        indicators=dataset["indicators"],  # Not provided in the data
+        indicators=dataset["indicators"],
         geographic_coverage="",  # Not provided in the data
         data_visualization="",  # dataset.get("umm", {}).get("RelatedUrls", [{}])[0].get("URL", ""),
         latency="",  # Not provided in the data
