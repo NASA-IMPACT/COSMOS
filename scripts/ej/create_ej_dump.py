@@ -1,6 +1,7 @@
 """
 inferences are supplied by the classification model. the contact point is Bishwas
 cmr is supplied by running https://github.com/NASA-IMPACT/llm-app-EJ-classifier/blob/develop/scripts/data_processing/download_cmr.py
+move to the serve like this: scp scripts/ej/ej_dump_20240814_143036.json  sde:/home/ec2-user/sde_indexing_helper/backups/
 """
 
 import json
