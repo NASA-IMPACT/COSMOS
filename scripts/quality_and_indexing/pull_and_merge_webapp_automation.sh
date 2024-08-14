@@ -7,7 +7,7 @@ cd "../../sinequa_configs"
 
 # Ensure the script only runs if pointing to the correct remote
 REPO_URL="git@github.com:NASA-IMPACT/sde-backend.git"
-CURRENT_URL=$(git config --get remote.origin.url)
+CURRENT_URL=$(git -C "$REPO_DIR" config --get remote.origin.url)
 
 if [ "$CURRENT_URL" != "$REPO_URL" ]; then
   echo "Error: This script can only be run in the repository with the remote URL '$REPO_URL'."
@@ -67,6 +67,8 @@ git merge webapp_config_generation -m "Merge webapp_config_generation into dev b
 # Push the changes to dev
 echo "Pushing changes to dev..."
 git push origin dev
+
+git checkout master
 
 # Return to the original directory
 cd -
