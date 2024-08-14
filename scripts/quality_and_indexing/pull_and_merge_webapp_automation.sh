@@ -7,7 +7,7 @@ cd "../../sinequa_configs"
 
 # Ensure the script only runs if pointing to the correct remote
 REPO_URL="git@github.com:NASA-IMPACT/sde-backend.git"
-CURRENT_URL=$(git -C "$REPO_DIR" config --get remote.origin.url)
+CURRENT_URL=$(git config --get remote.origin.url)
 
 if [ "$CURRENT_URL" != "$REPO_URL" ]; then
   echo "Error: This script can only be run in the repository with the remote URL '$REPO_URL'."
@@ -43,5 +43,32 @@ git push origin webapp_config_generation
 
 echo "Operation completed successfully!"
 
+### Begin merge of webapp into dev ###
+# Check the diff between webapp_config_generation and dev branches, and filter only files outside the allowed directories
+DIFF=$(git diff --name-only webapp_config_generation dev | grep -vE 'jobs/|sources/' || true)
+
+if [ -n "$DIFF" ]; then
+  echo "The following changes were found outside of the allowed directories:"
+  echo "$DIFF"
+  echo "Please resolve these changes on GitHub before proceeding."
+  exit 1
+else
+  echo "All changes are within the allowed directories. Proceeding with the merge."
+fi
+
+# Checkout dev branch again
+echo "Checking out dev branch..."
+git checkout dev
+
+# Merge webapp_config_generation into dev
+echo "Merging webapp_config_generation into dev..."
+git merge webapp_config_generation -m "Merge webapp_config_generation into dev branch"
+
+# Push the changes to dev
+echo "Pushing changes to dev..."
+git push origin dev
+
 # Return to the original directory
 cd -
+
+echo "webapp_automation and dev merges comleted successfully!"
