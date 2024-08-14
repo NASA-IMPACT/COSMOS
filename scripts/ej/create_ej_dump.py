@@ -40,10 +40,25 @@ cmr_dict = {dataset["meta"]["concept-id"]: dataset for dataset in cmr}
 
 predicted_cmr = []
 
+authorized_classifications = [
+    "Climate Change",
+    "Disasters",
+    "Extreme Heat",
+    "Food Availability",
+    "Health & Air Quality",
+    "Human Dimensions",
+    "Urban Flooding",
+    "Water Availability",
+]
+
+
 for inference in inferences:
     classifications = process_classifications(inference)
     if classifications == ["Not EJ"]:
         continue
+
+    # Filter classifications to keep only those in the authorized list
+    classifications = [cls for cls in classifications if cls in authorized_classifications]
 
     cmr_dataset = cmr_dict.get(inference["concept-id"])
     if cmr_dataset:
