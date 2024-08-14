@@ -65,10 +65,10 @@ def categorize_processing_level(level):
     elif level in advanced_analysis_levels:
         return "advanced analysis"
     else:
-        return "unknown"
+        return "advanced analysis"
 
 
-ej_dump = json.load(open("scripts/ej/ej_dump_20240814_143036.json"))
+ej_dump = json.load(open("backups/ej_dump_20240814_143036.json"))
 for dataset in ej_dump:
     ej_row = EnvironmentalJusticeRow(
         destination_server=EnvironmentalJusticeRow.DestinationServerChoices.DEV,
@@ -78,7 +78,9 @@ for dataset in ej_dump:
         limitations=dataset.get("umm", {}).get("AccessConstraints", {}).get("Description", ""),
         format=dataset.get("meta", {}).get("format", ""),
         temporal_extent=", ".join(dataset.get("umm", {}).get("TemporalExtents", [{}])[0].get("SingleDateTimes", [])),
-        intended_use=categorize_processing_level(dataset.get("umm", {}).get("ProcessingLevel", {}).get("Id", "")),
+        intended_use=categorize_processing_level(
+            dataset.get("umm", {}).get("ProcessingLevel", {}).get("Id", "advanced analysis")
+        ),
         source_link=generate_source_link(dataset.get("umm", {}).get("DOI", {})),
         indicators=dataset["indicators"],  # Not provided in the data
         geographic_coverage="",  # Not provided in the data
