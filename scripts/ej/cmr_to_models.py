@@ -68,7 +68,10 @@ def categorize_processing_level(level):
         return "advanced analysis"
 
 
-ej_dump = json.load(open("backups/ej_dump_20240814_143036.json"))
+# remove existing data
+EnvironmentalJusticeRow.objects.filter(destination_server=EnvironmentalJusticeRow.DestinationServerChoices.DEV).delete()
+
+ej_dump = json.load(open("backups/ej_dump_20240815_112916.json"))
 for dataset in ej_dump:
     ej_row = EnvironmentalJusticeRow(
         destination_server=EnvironmentalJusticeRow.DestinationServerChoices.DEV,
