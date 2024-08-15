@@ -33,3 +33,7 @@ SINEQUA_CONFIGS_REPO_WEBAPP_PR_BRANCH='dummy_branch'
 # Slack Webhook
 # ------------------------------------------------------------------------------
 SLACK_WEBHOOK_URL=''
+LRM_USER=''
+LRM_PASSWORD=''
+XLI_USER=''
+XLI_PASSWORD=''
