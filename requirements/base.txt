@@ -3,7 +3,7 @@ pytz==2023.4  # https://github.com/stub42/pytz
 python-slugify==8.0.4  # https://github.com/un33k/python-slugify
 Pillow==10.2.0  # https://github.com/python-pillow/Pillow
 argon2-cffi==23.1.0  # https://github.com/hynek/argon2_cffi
-celery==5.3.6  # pyup: < 6.0  # https://github.com/celery/celery
+celery[sqs]==5.3.6  # pyup: < 6.0  # https://github.com/celery/celery
 django-celery-beat==2.6.0  # https://github.com/celery/django-celery-beat
 flower==2.0.1  # https://github.com/mher/flower
 ipython==8.21.0
