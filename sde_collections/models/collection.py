@@ -8,6 +8,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from model_utils import FieldTracker
 from slugify import slugify
+from django.db import models
+from django.db.models import Q
 
 from config_generation.db_to_xml import XmlEditor
 
@@ -17,6 +19,7 @@ from ..utils.slack_utils import (
     format_slack_message,
     send_slack_message,
 )
+from .candidate_url import CandidateURL
 from .collection_choice_fields import (
     ConnectorChoices,
     CurationStatusChoices,
@@ -105,6 +108,10 @@ class Collection(models.Model):
         scraper_editor.update_or_add_element_value("CollectionSelection", collections)
         scraper_content = scraper_editor.update_config_xml()
         gh.create_or_update_file(query_path, scraper_content)
+
+    @property
+    def included_urls_count(self):
+        return CandidateURL.objects.filter(collection=self, excluded=False).count()
 
     @property
     def _scraper_config_path(self) -> str:
