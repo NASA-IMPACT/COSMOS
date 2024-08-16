@@ -8,6 +8,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from model_utils import FieldTracker
 from slugify import slugify
+from django.db import models
+from django.db.models import Q
 
 from config_generation.db_to_xml import XmlEditor
 
@@ -17,6 +19,7 @@ from ..utils.slack_utils import (
     format_slack_message,
     send_slack_message,
 )
+from .candidate_url import CandidateURL
 from .collection_choice_fields import (
     ConnectorChoices,
     CurationStatusChoices,
@@ -84,7 +87,10 @@ class Collection(models.Model):
 
     def add_to_public_query(self):
         """Add the collection to the public query."""
-        if self.workflow_status != WorkflowStatusChoices.READY_FOR_PUBLIC_PROD:
+        if self.workflow_status not in [
+            WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
+            WorkflowStatusChoices.QUALITY_CHECK_MINOR,
+        ]:
             raise ValueError(f"{self.config_folder} is not ready for public prod, you can't add it to the public query")
 
         gh = GitHubHandler()
@@ -102,6 +108,10 @@ class Collection(models.Model):
         scraper_editor.update_or_add_element_value("CollectionSelection", collections)
         scraper_content = scraper_editor.update_config_xml()
         gh.create_or_update_file(query_path, scraper_content)
+
+    @property
+    def included_urls_count(self):
+        return CandidateURL.objects.filter(collection=self, excluded=False).count()
 
     @property
     def _scraper_config_path(self) -> str:
@@ -181,6 +191,12 @@ class Collection(models.Model):
             15: "btn-info",
             16: "btn-secondary",
             17: "btn-light",
+            18: "btn-success",
+            19: "btn-warning",
+            20: "btn-info",
+            21: "btn-success",
+            22: "btn-light",
+            23: "btn-light",
         }
         return color_choices[self.workflow_status]
 
@@ -535,6 +551,12 @@ class WorkflowHistory(models.Model):
             15: "btn-info",
             16: "btn-secondary",
             17: "btn-light",
+            18: "btn-success",
+            19: "btn-warning",
+            20: "btn-info",
+            21: "btn-success",
+            22: "btn-light",
+            23: "btn-light",
         }
         return color_choices[self.workflow_status]
 
@@ -562,5 +584,8 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
         elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
             instance.create_scraper_config(overwrite=False)
             instance.create_indexer_config(overwrite=False)
-        elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_PUBLIC_PROD:
+        elif instance.workflow_status in [
+            WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
+            WorkflowStatusChoices.QUALITY_CHECK_MINOR,
+        ]:
             instance.add_to_public_query()

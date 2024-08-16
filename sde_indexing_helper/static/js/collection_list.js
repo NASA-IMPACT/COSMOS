@@ -391,6 +391,9 @@ function postCurator(collection_id, curator_id) {
 $(document).ready(function () {
   setupClickHandlers();
 
+  // Clear search values and redraw table
+  clearSearchValues();
+
   // Remove the search input and add custom titles
   var paneTitles = [
     null,
@@ -401,6 +404,29 @@ $(document).ready(function () {
     "Curator",
     "Connector Type",
   ];
+
+  // Event listener for the collection search input
+  $('#collectionSearch').on('keyup', function () {
+    // Get the search query
+    let query = $(this).val().toLowerCase();
+
+    // Clear previous search
+    table.search('').columns().search('');
+
+    // Filter the table based on the query in the collection name and config folder data attribute
+    table.rows().every(function () {
+        let row = $(this.node());
+        let name = row.find('td').first().text().toLowerCase();
+        let configFolder = row.data('config-folder').toLowerCase();
+        let url = row.find('td').eq(1).text().toLowerCase();
+
+        if (name.includes(query) || configFolder.includes(query) || url.includes(query)) {
+            row.show();
+        } else {
+            row.hide();
+        }
+    });
+  });
 
   $(".dtsp-searchPane").each(function (index) {
     if ($(this).hasClass("dtsp-hidden")) {
@@ -423,4 +449,9 @@ function setupClickHandlers() {
   // handleCurationStatusSelect();
   handleWorkflowStatusSelect();
   handleCuratorSelect();
+}
+
+function clearSearchValues() {
+  let table = $("#collection_table").DataTable();
+  table.columns().search("").draw();
 }

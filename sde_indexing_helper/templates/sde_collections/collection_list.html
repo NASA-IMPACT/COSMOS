@@ -48,10 +48,14 @@
                 <td class="hideDisplay"></td>
             </tr>
         </thead>
-      
+
         <tbody>
+            <div class="search-container">
+                <label for="collectionSearch">Universal Search</label>
+                <input type="text" id="collectionSearch" placeholder="Type to search..." class="table_filter_row_input textBoxStyling">
+            </div>
             {% for collection in collections %}
-                <tr id={{ collection.id }}>
+                <tr id="{{ collection.id }}" data-config-folder="{{ collection.config_folder }}">
                     <td class="noBorder">
                         <a class="nameStyling" href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }} <i class="material-icons">chevron_right</i></a>
                     </td>
@@ -73,7 +77,7 @@
                              data-match-pattern
                              remove_protocol
                              row
-                             url>                          
+                             url>
                             <button class="btn {{ collection.workflow_status_button_color }} btn-sm dropdown-toggle"
                                     type="button"
                                     id="workflow-status-button-{{ collection.id }}"

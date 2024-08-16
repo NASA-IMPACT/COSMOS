@@ -1,5 +1,3 @@
-version: "3"
-
 volumes:
   sde_indexing_helper_local_postgres_data: {}
   sde_indexing_helper_local_postgres_data_backups: {}
