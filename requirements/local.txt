@@ -19,7 +19,7 @@ types-xmltodict
 sphinx  # https://github.com/sphinx-doc/sphinx
 sphinx-autobuild==2021.3.14 # https://github.com/GaretJax/sphinx-autobuild
 sphinx-rtd-theme==1.2.0
-sphinx_toolbox==3.4.0
+sphinx_toolbox==3.8.0
 
 # Code quality
 # ------------------------------------------------------------------------------
