@@ -19,7 +19,6 @@ from ..utils.slack_utils import (
     format_slack_message,
     send_slack_message,
 )
-from .candidate_url import CandidateURL
 from .collection_choice_fields import (
     ConnectorChoices,
     CurationStatusChoices,
@@ -111,7 +110,7 @@ class Collection(models.Model):
 
     @property
     def included_urls_count(self):
-        return CandidateURL.objects.filter(collection=self, excluded=False).count()
+        return self.candidate_urls.filter(excluded=False).count()
 
     @property
     def _scraper_config_path(self) -> str:
