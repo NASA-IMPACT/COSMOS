@@ -6,8 +6,8 @@ from environmental_justice.views import EnvironmentalJusticeRowViewSet
 from . import views
 
 router = routers.DefaultRouter()
-router.register(r"collections", views.CollectionViewSet)
-router.register(r"collections-read", views.CollectionReadViewSet)
+router.register(r"collections", views.CollectionViewSet, basename="collection")
+router.register(r"collections-read", views.CollectionReadViewSet, basename="collection-read")
 router.register(r"candidate-urls", views.CandidateURLViewSet)
 router.register(r"exclude-patterns", views.ExcludePatternViewSet)
 router.register(r"include-patterns", views.IncludePatternViewSet)
