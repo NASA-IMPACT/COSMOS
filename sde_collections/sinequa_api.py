@@ -42,6 +42,11 @@ server_configs = {
         "query_name": "query-smd-primary",
         "base_url": "https://sde-lrm.nasa-impact.net",
     },
+    "lrm_qa_server": {
+        "app_name": "nasa-sba-smd",
+        "query_name": "query-smd-primary",
+        "base_url": "https://sde-qa.nasa-impact.net",
+    },
 }
 
 
@@ -55,6 +60,8 @@ class Api:
         self.xli_password = settings.XLI_PASSWORD
         self.lrm_user = settings.LRM_USER
         self.lrm_password = settings.LRM_PASSWORD
+        self.lrm_qa_user = settings.LRM_QA_USER
+        self.lrm_qa_password = settings.LRM_QA_PASSWORD
 
     def process_response(self, url: str, payload: dict[str, Any]) -> Any:
         response = requests.post(url, headers={}, json=payload, verify=False)
@@ -71,6 +78,8 @@ class Api:
             url = f"{self.base_url}/api/v1/search.query?Password={self.xli_password}&User={self.xli_user}"
         elif self.server_name == "lrm_dev_server":
             url = f"{self.base_url}/api/v1/search.query?Password={self.lrm_password}&User={self.lrm_user}"
+        elif self.server_name == "lrm_qa_server":
+            url = f"{self.base_url}/api/v1/search.query?Password={self.lrm_qa_password}&User={self.lrm_qa_user}"
         else:
             url = f"{self.base_url}/api/v1/search.query"
         payload = {
