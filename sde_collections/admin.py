@@ -3,8 +3,8 @@ import csv
 from django.contrib import admin, messages
 from django.http import HttpResponse
 
-from .models.collection import Collection, WorkflowHistory
 from .models.candidate_url import CandidateURL, ResolvedTitle
+from .models.collection import Collection, WorkflowHistory
 from .models.pattern import IncludePattern, TitlePattern
 from .tasks import import_candidate_urls_from_api
 
@@ -143,6 +143,11 @@ def import_candidate_urls_lrm_dev_server(modeladmin, request, queryset):
     import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lrm_dev_server")
 
 
+@admin.action(description="Import candidate URLs from LRM QA Server")
+def import_candidate_urls_lrm_qa_server(modeladmin, request, queryset):
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lrm_qa_server")
+
+
 class ExportCsvMixin:
     def export_as_csv(self, request, queryset):
         meta = self.model._meta
@@ -231,6 +236,7 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         import_candidate_urls_secret_production,
         import_candidate_urls_lis_server,
         import_candidate_urls_lrm_dev_server,
+        import_candidate_urls_lrm_qa_server,
     ]
     ordering = ("cleaning_order",)
 
@@ -275,6 +281,7 @@ class TitlePatternAdmin(admin.ModelAdmin):
         "collection",
     )
 
+
 class WorkflowHistoryAdmin(admin.ModelAdmin):
     list_display = ("collection", "old_status", "workflow_status", "created_at")
     search_fields = ["collection__name"]
@@ -283,6 +290,7 @@ class WorkflowHistoryAdmin(admin.ModelAdmin):
 
 class ResolvedTitleAdmin(admin.ModelAdmin):
     list_display = ["title_pattern", "candidate_url", "resolved_title", "created_at"]
+
 
 admin.site.register(WorkflowHistory, WorkflowHistoryAdmin)
 admin.site.register(CandidateURL, CandidateURLAdmin)
