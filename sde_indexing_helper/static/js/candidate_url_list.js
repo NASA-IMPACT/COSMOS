@@ -474,6 +474,8 @@ function initializeDataTable() {
   var title_patterns_table = $("#title_patterns_table").DataTable({
     // scrollY: true,
     dom: "lBrtip",
+    serverSide: true,
+    paging: true,
     buttons: [
       {
         text: "Add Pattern",
@@ -491,10 +493,10 @@ function initializeDataTable() {
       },
     ],
     lengthMenu: [
-      [25, 50, 100, 500],
-      ["Show 25", "Show 50", "Show 100", "Show 500"],
+      [25, 50, 100, 500, -1],
+      ["Show 25", "Show 50", "Show 100", "Show 500", "Show All"],
     ],
-    pageLength: 100,
+    pageLength: 50,
     orderCellsTop: true,
     ajax: `/api/title-patterns/?format=datatables&collection_id=${collection_id}`,
     initComplete: function (data) {
