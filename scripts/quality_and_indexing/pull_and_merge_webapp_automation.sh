@@ -15,17 +15,17 @@ if [ "$CURRENT_URL" != "$REPO_URL" ]; then
   exit 1
 fi
 
-# Checkout and pull master
-echo "Checking out master branch..."
-git checkout master
-echo "Pulling latest changes from master..."
-git pull origin master
+# Checkout and pull production
+echo "Checking out production branch..."
+git checkout production
+echo "Pulling latest changes from production..."
+git pull origin production
 
-# Checkout and pull dev
-echo "Checking out dev branch..."
-git checkout dev
-echo "Pulling latest changes from dev..."
-git pull origin dev
+# Checkout and pull staging
+echo "Checking out staging branch..."
+git checkout staging
+echo "Pulling latest changes from staging..."
+git pull origin staging
 
 # Checkout and pull webapp_config_generation
 echo "Checking out webapp_config_generation branch..."
@@ -33,9 +33,9 @@ git checkout webapp_config_generation
 echo "Pulling latest changes from webapp_config_generation..."
 git pull origin webapp_config_generation
 
-# Merge dev into webapp_config_generation
-echo "Merging dev into webapp_config_generation..."
-git merge -X theirs dev -m "Merge dev into webapp_config_generation branch - auto-resolved conflicts by taking dev changes"
+# Merge staging into webapp_config_generation
+echo "Merging staging into webapp_config_generation..."
+git merge -X theirs staging -m "Merge staging into webapp_config_generation branch - auto-resolved conflicts by taking staging changes"
 
 # Push the changes to webapp_config_generation
 echo "Pushing changes to webapp_config_generation..."
@@ -43,9 +43,9 @@ git push origin webapp_config_generation
 
 echo "Operation completed successfully!"
 
-### Begin merge of webapp into dev ###
-# Check the diff between webapp_config_generation and dev branches, and filter only files outside the allowed directories
-DIFF=$(git diff --name-only webapp_config_generation dev | grep -vE 'jobs/|sources/' || true)
+### Begin merge of webapp into staging ###
+# Check the diff between webapp_config_generation and staging branches, and filter only files outside the allowed directories
+DIFF=$(git diff --name-only webapp_config_generation staging | grep -vE 'jobs/|sources/' || true)
 
 if [ -n "$DIFF" ]; then
   echo "The following changes were found outside of the allowed directories:"
@@ -56,21 +56,21 @@ else
   echo "All changes are within the allowed directories. Proceeding with the merge."
 fi
 
-# Checkout dev branch again
-echo "Checking out dev branch..."
-git checkout dev
+# Checkout staging branch again
+echo "Checking out staging branch..."
+git checkout staging
 
-# Merge webapp_config_generation into dev
-echo "Merging webapp_config_generation into dev..."
-git merge webapp_config_generation -m "Merge webapp_config_generation into dev branch"
+# Merge webapp_config_generation into staging
+echo "Merging webapp_config_generation into staging..."
+git merge webapp_config_generation -m "Merge webapp_config_generation into staging branch"
 
-# Push the changes to dev
-echo "Pushing changes to dev..."
-git push origin dev
+# Push the changes to staging
+echo "Pushing changes to staging..."
+git push origin staging
 
-git checkout master
+git checkout production
 
 # Return to the original directory
 cd -
 
-echo "webapp_automation and dev merges comleted successfully!"
+echo "webapp_automation and staging merges comleted successfully!"

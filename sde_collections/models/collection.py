@@ -371,7 +371,9 @@ class Collection(models.Model):
 
     @property
     def sinequa_configuration(self) -> str:
-        return f"https://github.com/NASA-IMPACT/sde-backend/blob/master/sources/SDE/{self.config_folder}/default.xml"
+        return (
+            f"https://github.com/NASA-IMPACT/sde-backend/blob/production/sources/SDE/{self.config_folder}/default.xml"
+        )
 
     @property
     def github_issue_link(self) -> str:
