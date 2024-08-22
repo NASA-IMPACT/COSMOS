@@ -1,3 +1,7 @@
+"""
+you need to run this script in the root of the repository that from which the file was deleted, in this case the root of the sinequa_configs repository.
+"""
+
 import subprocess
 
 
