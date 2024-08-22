@@ -1,7 +1,3 @@
-"""
-you need to run this script in the root of the repository that from which the file was deleted, in this case the root of the sinequa_configs repository.
-"""
-
 import subprocess
 
 
@@ -15,51 +11,57 @@ def get_git_log():
     return result.stdout
 
 
-def parse_git_log(log_output, target_file):
+def parse_git_log(log_output, target_files):
     # Split the log output into lines
     lines = log_output.splitlines()
 
     # Variables to hold the current commit hash, message, and file path
     current_commit = None
-    current_message = None
-    deleted_files = []
+    deleted_files_info = []
 
     # Iterate through each line of the log output
     for line in lines:
         if line.startswith("D"):
             # If the line starts with D, it's a deleted file path
             file_path = line[1:].strip()
-            if target_file in file_path:
-                deleted_files.append((current_commit, current_message, file_path))
+            if any(target in file_path for target in target_files):
+                deleted_files_info.append((current_commit, file_path))
         else:
             # Otherwise, it's a commit hash and message
             parts = line.split(" ", 1)
             if len(parts) == 2:
                 current_commit = parts[0]
-                current_message = parts[1]
 
-    return deleted_files
+    return deleted_files_info
+
+
+def restore_files(deleted_files_info):
+    # Iterate over the list of deleted files and restore them
+    for commit_hash, file_path in deleted_files_info:
+        try:
+            print(f"Restoring {file_path} from commit {commit_hash}")
+            subprocess.run(["git", "checkout", f"{commit_hash}^", "--", file_path], check=True)
+            print(f"Restored {file_path}")
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to restore {file_path}: {e}")
 
 
 def main():
-    # The target file or path pattern to search for
-    target_file = "solar_and_heliospheric_observatory_soho/default.xml"
+    # List of possible files to restore
+    target_files = [
+        "solar_and_heliospheric_observatory_soho/default.xml",
+        "another_possible_path/default.xml",
+        # Add more files as needed
+    ]
 
     # Get the git log output
     log_output = get_git_log()
 
-    # Parse the git log for the target file
-    deleted_files = parse_git_log(log_output, target_file)
+    # Parse the git log for the target files
+    deleted_files_info = parse_git_log(log_output, target_files)
 
-    # Print the results
-    if deleted_files:
-        for commit_hash, message, file_path in deleted_files:
-            print(f"Commit: {commit_hash}")
-            print(f"Message: {message}")
-            print(f"Deleted File: {file_path}")
-            print("-" * 40)
-    else:
-        print(f"No deletions found for {target_file}")
+    # Restore the files to the working directory
+    restore_files(deleted_files_info)
 
 
 if __name__ == "__main__":
