@@ -44,9 +44,7 @@ with zipfile.ZipFile(zip_file_path, "w") as zip_file:
 
 # Upload the zip file to S3
 s3_bucket_name = env("DJANGO_AWS_STORAGE_BUCKET_NAME")
-s3_key = (
-    "scraped_urls_all/all_data.zip"  # Provide the desired S3 key for the uploaded file
-)
+s3_key = "scraped_urls_all/all_data.zip"  # Provide the desired S3 key for the uploaded file
 s3_client = boto3.client(
     "s3",
     region_name="us-east-1",

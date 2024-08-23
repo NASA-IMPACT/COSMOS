@@ -22,9 +22,7 @@ def create_xml_path(collection_name):
 
 def get_turned_on_sources():
     # remove sources that were just scraped
-    turned_on_remaining_sources = [
-        source for source in turned_on_sources if source not in already_scraped_sources
-    ]
+    turned_on_remaining_sources = [source for source in turned_on_sources if source not in already_scraped_sources]
 
     # filter all sources to only webcrawler sources
     turned_on_remaining_webcrawlers = []
@@ -68,8 +66,5 @@ def get_sources_20230605():
     folders = get_all_config_folder_names()
     folders = folders + interrupted_sources
     return [
-        folder
-        for folder in folders
-        if folder not in sources_with_documents_20230605
-        and is_collection_crawler(folder)
+        folder for folder in folders if folder not in sources_with_documents_20230605 and is_collection_crawler(folder)
     ]

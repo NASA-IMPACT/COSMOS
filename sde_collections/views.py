@@ -225,7 +225,6 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
 
 
 class SdeDashboardView(LoginRequiredMixin, ListView):
-
     model = Collection
     template_name = "sde_collections/sde_dashboard.html"
     context_object_name = "collections"

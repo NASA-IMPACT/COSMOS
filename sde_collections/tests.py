@@ -8,18 +8,14 @@ from .tasks import import_candidate_urls_from_api, push_to_github_task
 class CreateExcludePatternTestCase(TestCase):
     def test_create_exclude_pattern(self):
         factory = APIRequestFactory()
-        response = factory.post(
-            "/api/create-exclude-pattern", {"title": "new idea"}, format="json"
-        )
+        response = factory.post("/api/create-exclude-pattern", {"title": "new idea"}, format="json")
         self.assertCountEqual(response, "hey")
 
 
 class CreateIncludePatternTestCase(TestCase):
     def test_create_include_pattern(self):
         factory = APIRequestFactory()
-        response = factory.post(
-            "/api/create-include-pattern", {"title": "new idea"}, format="json"
-        )
+        response = factory.post("/api/create-include-pattern", {"title": "new idea"}, format="json")
         self.assertCountEqual(response, "hey")
 
 

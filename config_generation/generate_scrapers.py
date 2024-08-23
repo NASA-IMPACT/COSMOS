@@ -17,9 +17,7 @@ def get_or_create_folder(scraper_folder_name="scraping_configs"):
     this gets that folder path
     """
 
-    scraper_folder_path = os.path.join(
-        os.path.dirname(os.getcwd()), scraper_folder_name
-    )
+    scraper_folder_path = os.path.join(os.path.dirname(os.getcwd()), scraper_folder_name)
     # creates the folder if it doesn't already exist
     create_folder(scraper_folder_path)
 
@@ -32,18 +30,14 @@ def get_scraper_folder(scraper_folder_name="scraping_configs"):
     this gets that folder path
     """
 
-    scraper_folder_path = os.path.join(
-        os.path.dirname(os.getcwd()), scraper_folder_name
-    )
+    scraper_folder_path = os.path.join(os.path.dirname(os.getcwd()), scraper_folder_name)
     # creates the folder if it doesn't already exist
     create_folder(scraper_folder_path)
 
     return scraper_folder_path
 
 
-def generate_brand_new_scraper(
-    source_name, url, scraper_template_path="xmls/scraper_template.xml"
-):
+def generate_brand_new_scraper(source_name, url, scraper_template_path="xmls/scraper_template.xml"):
     """
 
     Args:

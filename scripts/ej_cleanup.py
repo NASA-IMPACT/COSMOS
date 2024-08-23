@@ -16,8 +16,7 @@ sheet_dict = {
 }
 
 dataframes = {
-    sheet_id: pd.read_excel(FILENAME, sheet_name=sheet_name, header=1)
-    for sheet_id, sheet_name in sheet_dict.items()
+    sheet_id: pd.read_excel(FILENAME, sheet_name=sheet_name, header=1) for sheet_id, sheet_name in sheet_dict.items()
 }
 
 standard_columns = [

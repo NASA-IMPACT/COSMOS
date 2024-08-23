@@ -28,7 +28,11 @@ class CollectionSerializer(serializers.ModelSerializer):
             "document_type",
             "name",
         )
-        extra_kwargs = {"division":{'required': False}, "document_type":{'required': False}, "name":{'required': False}}
+        extra_kwargs = {
+            "division": {"required": False},
+            "document_type": {"required": False},
+            "name": {"required": False},
+        }
 
         # extra_kwargs = {
         #     "name": {"required": False},
@@ -36,15 +40,18 @@ class CollectionSerializer(serializers.ModelSerializer):
         #     "division": {"required": False},
         # }
 
+
 class CollectionReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
         fields = "__all__"
 
+
 class WorkflowHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkflowHistory
         fields = "__all__"
+
 
 class CandidateURLSerializer(serializers.ModelSerializer):
     excluded = serializers.BooleanField(required=False)

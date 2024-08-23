@@ -2,7 +2,13 @@
 
 from db_to_xml_file_based import XmlEditor
 
-from config import batch_delete_name, collection_list, indexes_to_delete_from, source, engines
+from config import (
+    batch_delete_name,
+    collection_list,
+    engines,
+    indexes_to_delete_from,
+    source,
+)
 
 COMMAND_FILES_PATH = "../sinequa_configs/commands/"
 DELETE_COMMAND_TEMPLATE_PATH = "xmls/delete_template.xml"

@@ -20,9 +20,7 @@ server_configs: dict[str, dict[str, str]] = {
 
 class Api:
     def __init__(self, server_name: str) -> None:
-        self.headers: dict[str, str] = {
-            "Authorization": f"Bearer {tokens[server_name]}"
-        }
+        self.headers: dict[str, str] = {"Authorization": f"Bearer {tokens[server_name]}"}
         self.app_name: str = server_configs[server_name]["app_name"]
         self.query_name: str = server_configs[server_name]["query_name"]
         self.base_url: str = server_configs[server_name]["base_url"]
@@ -53,15 +51,11 @@ class Api:
 
         return self.process_response(url, payload)
 
-    def sql(
-        self, source: str, collection: str = "", fetch_all: bool = False
-    ) -> dict[str, Any]:
+    def sql(self, source: str, collection: str = "", fetch_all: bool = False) -> dict[str, Any]:
         url = f"{self.base_url}/api/v1/engine.sql"
 
         collection_name = f"/{source}/{collection}/"
-        sql_command_all = (
-            "select url1,title,collection from @@ScienceMissionDirectorate"
-        )
+        sql_command_all = "select url1,title,collection from @@ScienceMissionDirectorate"
         if fetch_all:
             sql_command = sql_command_all
         else:

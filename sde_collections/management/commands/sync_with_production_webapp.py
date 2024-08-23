@@ -9,8 +9,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         sync_with_production_webapp()
 
-        self.stdout.write(
-            self.style.SUCCESS(
-                "Successfully loaded collections from the webapp production."
-            )
-        )
+        self.stdout.write(self.style.SUCCESS("Successfully loaded collections from the webapp production."))
