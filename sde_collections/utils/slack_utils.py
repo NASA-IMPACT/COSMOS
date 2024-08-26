@@ -90,7 +90,7 @@ STATUS_CHANGE_NOTIFICATIONS = {
 def format_slack_message(name, details, collection_id):
     message_template = details["message"]
     tags = " ".join([f"<{user}>" for user in details["tags"]])
-    link = f"https://sde-indexing-helper.nasa-impact.net/{collection_id}/"
+    link = f"https://sde-indexing-helper.nasa-impact.net/{collection_id}/"  # noqa: E231
     linked_name = f"<{link}|{name}>"
     return tags + " " + message_template.format(name=linked_name)
 
@@ -101,5 +101,5 @@ def send_slack_message(message):
     response = requests.post(webhook_url, json=payload)
     if response.status_code != 200:
         raise ValueError(
-            f"Request to Slack returned an error {response.status_code}, the response is:\n{response.text}"
+            f"Request to Slack returned an error {response.status_code}, the response is:\n{response.text}"  # noqa: E231, E501
         )

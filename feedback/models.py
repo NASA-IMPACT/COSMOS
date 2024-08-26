@@ -33,7 +33,7 @@ class Feedback(models.Model):
         Returns a formatted notification message containing details from this Feedback instance.
         """
         notification_message = (
-            f"<!here> New Feedback Received : \n"
+            f"<!here> New Feedback Received : \n"  # noqa: E203
             f"Name: {self.name}\n"
             f"Email: {self.email}\n"
             f"Subject: {self.subject}\n"

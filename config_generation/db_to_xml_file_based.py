@@ -98,7 +98,7 @@ class XmlEditor:
         parent_element = xml_root if not parent_element_name else xml_root.find(parent_element_name)
 
         if parent_element is None:
-            raise ValueError(f"Parent element '{parent_element_name}' not found in XML.")
+            raise ValueError(f"Parent element '{parent_element_name}' not found in XML.")  # noqa: E713
 
         existing_element = parent_element.find(element_name)
         if not add_duplicate and existing_element:

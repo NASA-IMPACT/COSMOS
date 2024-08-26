@@ -4,7 +4,6 @@ import urllib.parse
 import requests
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from model_utils import FieldTracker
@@ -130,7 +129,7 @@ class Collection(models.Model):
 
     @property
     def server_url_secret_prod(self) -> str:
-        base_url = "https://sciencediscoveryengine.nasa.gov"
+        base_url = "https://sciencediscoveryengine.nasa.gov"  # noqa: E231
         payload = {
             "name": "secret-prod",
             "scope": "All",
@@ -144,7 +143,7 @@ class Collection(models.Model):
 
     @property
     def server_url_prod(self) -> str:
-        base_url = "https://sciencediscoveryengine.nasa.gov"
+        base_url = "https://sciencediscoveryengine.nasa.gov"  # noqa: E231
         payload = {
             "name": "query-smd-primary",
             "scope": "All",
@@ -371,13 +370,12 @@ class Collection(models.Model):
 
     @property
     def sinequa_configuration(self) -> str:
-        return (
-            f"https://github.com/NASA-IMPACT/sde-backend/blob/production/sources/SDE/{self.config_folder}/default.xml"
-        )
+        URL = f"https://github.com/NASA-IMPACT/sde-backend/blob/production/sources/SDE/{self.config_folder}/default.xml"  # noqa: E231, E501
+        return URL
 
     @property
     def github_issue_link(self) -> str:
-        return f"https://github.com/NASA-IMPACT/sde-project/issues/{self.github_issue_number}"
+        return f"https://github.com/NASA-IMPACT/sde-project/issues/{self.github_issue_number}"  # noqa: E231
 
     @classmethod
     def _fetch_json_results(cls, url):

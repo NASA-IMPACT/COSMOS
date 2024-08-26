@@ -143,7 +143,7 @@ def validate_title_pattern(title_pattern_string):
 
         if element_type == "xpath":
             if not is_valid_xpath(element_value):
-                raise ValidationError(f"'xpath:{element_value}' is not a valid xpath.")
+                raise ValidationError(f"'xpath:{element_value}' is not a valid xpath.")  # noqa: E231
         elif element_type == "brace":
             try:
                 is_valid_fstring(element_value)
