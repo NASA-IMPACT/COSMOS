@@ -68,6 +68,9 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
         <li class="nav-item">
             <a class="tab-nav tabStyle" id="documentTypePatternsTab" data-toggle="tab" href="#Document-Type-Patterns">Document Type Patterns</a>
         </li>
+        <li class="nav-item">
+            <a class="tab-nav tabStyle" id="divisionPatternsTab" data-toggle="tab" href="#Division-Patterns">Division By URL Patterns</a>
+        </li>
     </ul>
 
     <!-- Tab panes -->
@@ -81,8 +84,9 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         <th scope="col" class="text-center col-1"><div class="header-title">Scraped Title</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">New Title</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">Document Type</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">Division By URL</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">ID</div></th>
-                        <th></th>                        
+                        <th></th>
                         <th></th>
                         <th></th>
                         <th></th>
@@ -106,6 +110,14 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         <option value="3">Documentation</option>
                         <option value="4">Software and Tools</option>
                         <option value="5">Missions and Instruments</option>
+                        </select></td>
+                        <td><select class="dropdown-5 select-dropdown selectStyling"><option value="">SELECT</option>
+                        <option value="0">None</option>
+                        <option value="1">Astrophysics</option>
+                        <option value="2">Biological and Physical Sciences</option>
+                        <option value="3">Earth Science</option>
+                        <option value="4">Heliophysics</option>
+                        <option value="5">Planetary Science</option>
                         </select></td>
                         <td ></td>
                         <td ></td>
@@ -260,6 +272,39 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                 </thead>
             </table>
         </div>
+        <div class="tab-pane fade" id="Division-Patterns">
+            <table class="table" id="division_patterns_table" style="width:100%">
+                <thead class="tableHeader">
+                    <tr>
+                        <th scope="col" class="text-center col-1"><strong>Match Pattern</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Match Pattern Type</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Division</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Affected URLs</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Actions</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>ID</strong></th>
+                    </tr>
+                    <tr>
+                        <td><input type="text" class="table_filter_row_input textBoxStyling" id="candidateDivisionMatchPatternFilter" placeholder="Match Pattern" /></td>
+                        <td><select id="division-patterns-dropdown-1" class="select-dropdown selectStyling">
+                            <option value="">SELECT</option>
+                            <option value="Individual URL Pattern">Individual URL Pattern</option>
+                            <option value="Multi-URL Pattern">Multi-URL Pattern</option>
+                        </select></td>
+                        <td><select id="division-patterns-dropdown-2" class="select-dropdown selectStyling">
+                            <option value="">SELECT</option>
+                            <option value="1">Astrophysics</option>
+                            <option value="2">Biological and Physical Sciences</option>
+                            <option value="3">Earth Science</option>
+                            <option value="4">Heliophysics</option>
+                            <option value="5">Planetary Science</option>
+                        </select></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </thead>
+            </table>
+        </div>
 
     </div>
 </div>
@@ -273,6 +318,7 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
     <li data-action="include-pattern" class="list-group-item">Create Include Pattern</li>
     <li data-action="title-pattern" class="list-group-item">Create Title Pattern</li>
     <li data-action="document-type-pattern" class="list-group-item">Create Document Type Pattern</li>
+    <li data-action="division-pattern" class="list-group-item">Create Division Pattern</li>
 </ul>
 <div class="modal fade" id="excludePatternModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
     aria-labelledby="excludePatternModalLabel" aria-hidden="true">
@@ -396,12 +442,57 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                     <div class="button-wrapper">
                         <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
                         <button type="submit" class="document-type-submit btn btn-primary modal-button-2">Submit</button>
-                    </div> 
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 </div>
+<div class="modal fade" id="divisionPatternModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="divisionPatternModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="divisionPatternModalLabel">Division Pattern Form</h5>
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="division_pattern_form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="division_match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
+                        <input type="text" class="form-control" id="division_match_pattern_input" required name="match_pattern">
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input type="hidden" name="division_pattern" class="form-control"
+                                aria-label="Division" id="division_input_field">
+                            <div class="input-group-append division-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle division-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Division</button>
+                                <div class="division-form dropdown-menu">
+                                    <a class="dropdown-item division_form_select" value="1">Astrophysics</a>
+                                    <a class="dropdown-item division_form_select" value="2">Biological and Physical Sciences</a>
+                                    <a class="dropdown-item division_form_select" value="3">Earth Science</a>
+                                    <a class="dropdown-item division_form_select" value="4">Heliophysics</a>
+                                    <a class="dropdown-item division_form_select" value="5">Planetary Science</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="button-wrapper">
+                        <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 <div id="hideShowColumnsModal" class="modal pr-4 pl-4 pt-4 customizeColumnContainer">
     <div class="modalDialog">
@@ -438,8 +529,8 @@ aria-labelledby="deletePatternModal" aria-hidden="true">
             <div class="modal-footer">
                 <form id="deletePatternModalForm">
                     <div class="button-wrapper">
-                    <button type="submit" class="btn btn-secondary modal-button-1" id="dontDeletePattern">No</button> 
-                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="deletePattern">Yes</button> 
+                    <button type="submit" class="btn btn-secondary modal-button-1" id="dontDeletePattern">No</button>
+                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="deletePattern">Yes</button>
                     </div>
                     </form>
             </div>
@@ -463,8 +554,8 @@ aria-labelledby="workflowStatusChangeModal" aria-hidden="true">
             <div class="modal-footer">
                 <form id="workflowStatusChangeModalForm">
                     <div class="button-wrapper">
-                    <button type="submit" class="btn btn-secondary modal-button-1" id="cancelworkflowStatusChange">No</button> 
-                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="changeWorkflowStatus">Yes</button> 
+                    <button type="submit" class="btn btn-secondary modal-button-1" id="cancelworkflowStatusChange">No</button>
+                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="changeWorkflowStatus">Yes</button>
                     </div>
                     </form>
             </div>
