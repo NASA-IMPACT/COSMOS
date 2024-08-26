@@ -5,7 +5,7 @@ from django.http import HttpResponse
 
 from .models.candidate_url import CandidateURL, ResolvedTitle
 from .models.collection import Collection, WorkflowHistory
-from .models.pattern import IncludePattern, TitlePattern
+from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
 from .tasks import import_candidate_urls_from_api
 
 
@@ -191,6 +191,7 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
                     "update_frequency",
                     "source",
                     "turned_on",
+                    "is_multi_division",
                 ),
             },
         ),
@@ -221,9 +222,10 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         "url",
         "division",
         "new_collection",
+        "is_multi_division",
     )
     readonly_fields = ("config_folder",)
-    list_filter = ("division", "curation_status", "workflow_status", "turned_on")
+    list_filter = ("division", "curation_status", "workflow_status", "turned_on", "is_multi_division")
     search_fields = ("name", "url", "config_folder")
     actions = [
         generate_deployment_message,
@@ -292,8 +294,14 @@ class ResolvedTitleAdmin(admin.ModelAdmin):
     list_display = ["title_pattern", "candidate_url", "resolved_title", "created_at"]
 
 
+class DivisionPatternAdmin(admin.ModelAdmin):
+    list_display = ("collection", "match_pattern", "division")
+    search_fields = ("match_pattern", "division")
+
+
 admin.site.register(WorkflowHistory, WorkflowHistoryAdmin)
 admin.site.register(CandidateURL, CandidateURLAdmin)
 admin.site.register(TitlePattern, TitlePatternAdmin)
 admin.site.register(IncludePattern)
 admin.site.register(ResolvedTitle, ResolvedTitleAdmin)
+admin.site.register(DivisionPattern, DivisionPatternAdmin)
