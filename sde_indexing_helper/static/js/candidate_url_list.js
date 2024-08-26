@@ -8,6 +8,8 @@ var newIncludePatternsCount = 0;
 var newExcludePatternsCount = 0;
 var newTitlePatternsCount = 0;
 var newDocumentTypePatternsCount = 0;
+var newDivisionPatternsCount = 0;
+// var is_multi_division = "{{ is_multi_division|lower }}";
 var currentTab = ""; //blank for the first tab
 var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
@@ -23,6 +25,14 @@ const dict = {
   4: "Software and Tools",
   5: "Missions and Instruments",
   6: "Training and Education",
+};
+
+const divisionDict = {
+  1: "Astrophysics",
+  2: "Biological and Physical Sciences",
+  3: "Earth Science",
+  4: "Heliophysics",
+  5: "Planetary Science",
 };
 
 //fix table allignment when changing around tabs
@@ -130,6 +140,7 @@ function initializeDataTable() {
                 headers[3],
                 headers[1],
                 headers[4],
+                headers[5],
                 headers[2],
               ];
               lines[0] = reorderedHeaders.join(",");
@@ -143,6 +154,7 @@ function initializeDataTable() {
                 ],
                 [`New Title:`, `${$("#candidateNewTitleFilter").val()}`.trim()],
                 [`Document Type:`, `${dict[$(".dropdown-4").val()]}`.trim()],
+                [`Division By URL:`, `${dict[$(".dropdown-5").val()]}`.trim()],
               ];
 
               const filtersAreEmpty = appliedFilt.every((filter) => {
@@ -218,7 +230,7 @@ function initializeDataTable() {
       },
     },
     initComplete: function (data) {
-      const addDropdownSelect = [1, 4];
+      const addDropdownSelect = [1, 4, 5];
       const dict = {
         1: "Images",
         2: "Data",
@@ -245,6 +257,7 @@ function initializeDataTable() {
       getScrapedTitleColumn(),
       getGeneratedTitleColumn(),
       getDocumentTypeColumn(),
+      getDivisionColumn(),
       { data: "id", visible: false, searchable: false },
       { data: "generated_title_id", visible: false, searchable: false },
       { data: "match_pattern_type", visible: false, searchable: false },
@@ -665,6 +678,107 @@ function initializeDataTable() {
   });
 }
 
+var division_patterns_table = $("#division_patterns_table").DataTable({
+  dom: "lBrtip",
+  buttons: [
+      {
+          text: "Add Pattern",
+          className: "addPattern",
+          action: function () {
+              $modal = $("#divisionPatternModal").modal();
+          },
+      },
+      {
+          text: "Customize Columns",
+          className: "customizeColumns",
+          action: function () {
+              modalContents("#division_patterns_table");
+          },
+      },
+  ],
+  lengthMenu: [
+      [25, 50, 100, 500],
+      ["Show 25", "Show 50", "Show 100", "Show 500"],
+  ],
+  orderCellsTop: true,
+  pageLength: 100,
+  ajax: `/api/division-patterns/?format=datatables&collection_id=${collection_id}`,
+  initComplete: function (data) {
+      this.api()
+          .columns()
+          .every(function (index) {
+              var table = $("#division_patterns_table").DataTable();
+
+              let addDropdownSelect = {
+                  1: {
+                      columnToSearch: 6,
+                      matchPattern: {
+                          "Individual URL Pattern": 1,
+                          "Multi-URL Pattern": 2,
+                      },
+                  },
+                  2: {
+                      columnToSearch: 7,
+                      matchPattern: {
+                          "Astrophysics": 1,
+                          "Biological and Physical Sciences": 2,
+                          "Earth Science": 3,
+                          "Heliophysics": 4,
+                          "Planetary Science": 5,
+                      },
+                  },
+              };
+
+              let column = this;
+              if (column.data().length === 0) {
+                  $(`#division-patterns-dropdown-${index}`).prop("disabled", true);
+              } else if (index in addDropdownSelect) {
+                  $("#division-patterns-dropdown-" + index).on("change", function () {
+                      let col = addDropdownSelect[index].columnToSearch;
+                      let searchInput =
+                          addDropdownSelect[index].matchPattern[$(this).val()];
+                      if ($(this).val() === "" || $(this).val() === undefined)
+                          table.columns(col).search("").draw();
+                      else {
+                          table.columns(col).search(searchInput).draw();
+                      }
+                  });
+              }
+          });
+  },
+
+  columns: [
+      { data: "match_pattern", class: "whiteText" },
+      {
+          data: "match_pattern_type_display",
+          class: "text-center whiteText",
+          sortable: false,
+      },
+      { data: "division_display", class: "whiteText" },
+      {
+          data: "candidate_urls_count",
+          class: "text-center whiteText",
+          sortable: true,
+      },
+      {
+          data: null,
+          sortable: false,
+          class: "text-center",
+          render: function (data, type, row) {
+              return `<button class="btn btn-danger btn-sm delete-division-pattern-button" data-row-id="${row["id"]}"><i class="material-icons">delete</i></button >`;
+          },
+      },
+      { data: "id", visible: false, searchable: false },
+      { data: "match_pattern_type", visible: false },
+      { data: "division", visible: false },
+  ],
+});
+
+$("#candidateDivisionMatchPatternFilter").on("beforeinput", function (val) {
+  division_patterns_table.columns(0).search(this.value).draw();
+});
+
+
 function handleTabsClick() {
   $("#includePatternsTab").on("click", function () {
     newIncludePatternsCount = 0;
@@ -682,6 +796,10 @@ function handleTabsClick() {
     newDocumentTypePatternsCount = 0;
     $("#documentTypePatternsTab").html(`Document Type Patterns`);
   });
+  $("#divisionPatternsTab").on("click", function () {
+    newDivisionPatternsCount = 0;
+    $("#divisionPatternsTab").html(`Division Patterns`);
+  });
 }
 
 function setupClickHandlers() {
@@ -693,8 +811,10 @@ function setupClickHandlers() {
   handleDeleteExcludePatternButtonClick();
   handleDeleteIncludePatternButtonClick();
   handleDeleteTitlePatternButtonClick();
+  handleDeleteDivisionButtonClick();
 
   handleDocumentTypeSelect();
+  handleDivisionSelect();
   handleExcludeIndividualUrlClick();
   handleNewTitleChange();
 
@@ -702,6 +822,122 @@ function setupClickHandlers() {
   handleTabsClick();
 
   handleWorkflowStatusSelect();
+}
+
+function getDivisionColumn() {
+  return {
+    data: "division",
+    width: "10%",
+    render: function (data, type, row) {
+      let button_text = data ? divisionDict[data] : "Select";
+      let button_color = data ? "btn-success" : "btn-secondary";
+      return `
+        <div class="dropdown document_type_dropdown" data-match-pattern=${remove_protocol(row["url"])}>
+          <button class="btn ${button_color} btn-sm dropdown-toggle selectStyling" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            ${button_text}
+          </button>
+          <div class="dropdown-menu">
+            <a class="dropdown-item division_select" href="#" value="0">None</a>
+            ${Object.entries(divisionDict).map(([value, name]) => {
+              return `<a class="dropdown-item division_select" href="#" value="${value}">${name}</a>`;
+            }).join('')}
+          </div>
+        </div>`;
+    },
+  };
+}
+
+
+function handleDivisionSelect() {
+  $("body").on("click", ".division_select", function () {
+    var match_pattern = $(this).closest(".document_type_dropdown").data("match-pattern");
+    var division = $(this).attr("value");
+    postDivisionPatterns(match_pattern, 1, division);
+  });
+}
+
+function postDivision(urlId, division) {
+  $.ajax({
+    url: `/api/assign-division/${urlId}/`,
+    type: "POST",
+    data: {
+      division: division,
+      csrfmiddlewaretoken: csrftoken,
+    },
+    success: function (data) {
+      $('#candidate_urls_table').DataTable().ajax.reload(null, false);
+      toastr.success("Division assigned successfully!");
+    },
+    error: function (xhr, status, error) {
+      var errorMessage = xhr.responseText;
+      toastr.error("Error assigning division: " + errorMessage);
+    },
+  });
+}
+
+$("#division_pattern_form").on("submit", function (e) {
+  e.preventDefault();
+  inputs = {};
+  input_serialized = $(this).serializeArray();
+  input_serialized.forEach((field) => {
+      inputs[field.name] = field.value;
+  });
+
+  console.log("Form Inputs:", inputs);  // Debugging line to check inputs
+
+  postDivisionPatterns(inputs.match_pattern, 2, inputs.division_pattern);
+
+  // Close the modal if it is open
+  $("#divisionPatternModal").modal("hide");
+});
+
+$(".division_form_select").on("click", function (e) {
+  e.preventDefault();
+  $('input[name="division_pattern"]').val($(this).attr("value"));
+  $(".division-dropdown").text($(this).text());
+});
+
+
+function postDivisionPatterns(match_pattern, match_pattern_type, division) {
+  if (!match_pattern) {
+      toastr.error("Please highlight a pattern to add division.");
+      return;
+  }
+
+  $.ajax({
+      url: "/api/division-patterns/",
+      type: "POST",
+      data: {
+          collection: collection_id,
+          match_pattern: match_pattern,
+          match_pattern_type: match_pattern_type,
+          division: division,
+          csrfmiddlewaretoken: csrftoken,
+      },
+      success: function (data) {
+          $("#candidate_urls_table").DataTable().ajax.reload(null, false);
+          $("#division_patterns_table").DataTable().ajax.reload(null, false);
+          if (currentTab === "") { // Only add a notification if we are on the first tab
+              newDivisionPatternsCount = newDivisionPatternsCount + 1;
+              $("#divisionPatternsTab").html(
+                  `Division Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+                  newDivisionPatternsCount + " new" +
+                  `</span>`
+              );
+          }
+      },
+      error: function (xhr, status, error) {
+          var errorMessage = xhr.responseText;
+          if (
+              errorMessage ==
+              '{"error":{"non_field_errors":["The fields collection, match_pattern must make a unique set."]},"status_code":400}'
+          ) {
+              toastr.success("Pattern already exists");
+              return;
+          }
+          toastr.error(errorMessage);
+      },
+  });
 }
 
 function getURLColumn() {
@@ -840,7 +1076,7 @@ function handleHideorShowKeypress() {
   addEnterEscapeKeypress("#includePatternModal", "#include_pattern_form");
   addEnterEscapeKeypress("#titlePatternModal", "#title_pattern_form");
   addEnterEscapeKeypress("#documentTypePatternModal", "#document_type_pattern_form");
-
+  addEnterEscapeKeypress("#divisionPatternModal", "#division_pattern_form");
 
 }
 
@@ -928,6 +1164,17 @@ function handleDeleteDocumentTypeButtonClick() {
     deletePattern(
       `/api/document-type-patterns/${patternRowId}/`,
       (data_type = "Document Type Pattern")
+    );
+  });
+}
+
+function handleDeleteDivisionButtonClick() {
+  $("body").on("click", ".delete-division-pattern-button", function () {
+    var patternRowId = $(this).data("row-id");
+    currentURLtoDelete = `/api/division-patterns/${patternRowId}/`;
+    deletePattern(
+      `/api/division-patterns/${patternRowId}/`,
+      "Division Pattern"
     );
   });
 }
@@ -1214,9 +1461,8 @@ function deletePattern(
             $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
             $("#include_patterns_table").DataTable().ajax.reload(null, false);
             $("#title_patterns_table").DataTable().ajax.reload(null, false);
-            $("#document_type_patterns_table")
-              .DataTable()
-              .ajax.reload(null, false);
+            $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
+            $("#division_patterns_table").DataTable().ajax.reload(null, false);
           },
         });
       }
@@ -1244,9 +1490,8 @@ function deletePattern(
           $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
           $("#include_patterns_table").DataTable().ajax.reload(null, false);
           $("#title_patterns_table").DataTable().ajax.reload(null, false);
-          $("#document_type_patterns_table")
-            .DataTable()
-            .ajax.reload(null, false);
+          $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
+          $("#division_patterns_table").DataTable().ajax.reload(null, false);
         },
       });
     }
@@ -1270,6 +1515,7 @@ function deletePattern(
       $("#include_patterns_table").DataTable().ajax.reload(null, false);
       $("#title_patterns_table").DataTable().ajax.reload(null, false);
       $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
+      $("#division_patterns_table").DataTable().ajax.reload(null, false);
     },
   });
 }
@@ -1338,13 +1584,14 @@ $(document).bind("mousedown", function (e) {
 });
 
 function get_selection() {
-  var text = "hey";
+  var text = "";
   if (window.getSelection) {
     text = window.getSelection().toString();
   } else if (document.selection && document.selection.type != "Control") {
     text = document.selection.createRange().text;
   }
 
+  console.log("Selected Text:", text); // Debugging line to check selected text
   return text;
 }
 
@@ -1356,6 +1603,11 @@ function title_pattern_form(selected_text) {
 function document_type_pattern_form(selected_text) {
   $modal = $("#documentTypePatternModal").modal();
   $modal.find("#match_pattern_input").val(selected_text);
+}
+
+function division_pattern_form(selected_text) {
+  $modal = $("#divisionPatternModal").modal();
+  $modal.find("#division_match_pattern_input").val(selected_text); // Updated to match the HTML ID
 }
 
 // If the menu element is clicked
@@ -1373,6 +1625,9 @@ $(".custom-menu li").click(function () {
       break;
     case "include-pattern":
       postIncludePatterns(selected_text.trim(), (match_pattern_type = 2));
+      break;
+    case "division-pattern":
+      division_pattern_form(selected_text.trim());
       break;
   }
 
