@@ -8,8 +8,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from model_utils import FieldTracker
 from slugify import slugify
-from django.db import models
-from django.db.models import Q
 
 from config_generation.db_to_xml import XmlEditor
 
@@ -47,6 +45,7 @@ class Collection(models.Model):
     document_type = models.IntegerField(choices=DocumentTypes.choices, default=DocumentTypes.DOCUMENTATION)
     tree_root_deprecated = models.CharField("Tree Root", max_length=1024, default="", blank=True)
     delete = models.BooleanField(default=False)
+    is_multi_division = models.BooleanField("Is Multi-Division?", default=False)
 
     # audit columns for production
     audit_hierarchy = models.CharField("Audit Hierarchy", max_length=2048, default="", blank=True)
