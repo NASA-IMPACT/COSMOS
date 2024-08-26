@@ -46,8 +46,8 @@ with open("output_file.html", "w") as output_file:
         output_file.write("<ul>\n")
         for item in value:
             output_file.write(
-                f'<li><a href="{PROTOCOL}://{BASE_URL}{key}/{item}" target=_blank>{item}</a></li>\n'
-            )  # noqa: E231
+                f'<li><a href="{PROTOCOL}://{BASE_URL}{key}/{item}" target=_blank>{item}</a></li>\n'  # noqa: E231
+            )
         output_file.write("</ul>\n")
         output_file.write("</li>\n")
     output_file.write("</ul>\n")
