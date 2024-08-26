@@ -1,6 +1,7 @@
 """
 Module for all Form Tests.
 """
+
 from django.utils.translation import gettext_lazy as _
 
 from sde_indexing_helper.users.forms import UserAdminCreationForm

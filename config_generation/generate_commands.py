@@ -2,6 +2,7 @@
 sometimes spot fixes need to be run on a list of collections
 this file provides a quick framework to generate a batch of commands based on an input json
 """
+
 from db_to_xml_file_based import XmlEditor
 from generate_jobs import ParallelJobCreator
 
