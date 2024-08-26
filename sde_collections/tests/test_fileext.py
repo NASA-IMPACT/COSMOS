@@ -7,12 +7,8 @@ from ..models.collection import Collection
 class CandidateURLsTestCase(TestCase):
     def setUp(self):
         # Set up non-modified objects used by all test methods
-        collection = Collection.objects.create(
-            config_folder="test_folder", name="Test Collection", division=1
-        )
-        CandidateURL.objects.create(
-            url="https://example.com/something.jpg", collection=collection
-        )
+        collection = Collection.objects.create(config_folder="test_folder", name="Test Collection", division=1)
+        CandidateURL.objects.create(url="https://example.com/something.jpg", collection=collection)
 
         # Test cases
         self.urls = {
@@ -30,9 +26,7 @@ class CandidateURLsTestCase(TestCase):
         self.candidate_urls = []
 
         for url in self.urls:
-            self.candidate_urls.append(
-                CandidateURL.objects.create(url=url, collection=collection)
-            )
+            self.candidate_urls.append(CandidateURL.objects.create(url=url, collection=collection))
 
     def test_url_content(self):
         for candidate_url in self.candidate_urls:

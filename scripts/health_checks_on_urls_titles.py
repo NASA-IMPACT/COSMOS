@@ -18,43 +18,27 @@ def _health_check_on_urls_titles(server_name: str):
 
     api = Api(server_name=server_name)
 
-    collection_config_folders = [
-        collection.config_folder for collection in Collection.objects.all()
-    ]
+    collection_config_folders = [collection.config_folder for collection in Collection.objects.all()]
 
     for collection_config_folder in collection_config_folders:
         page = 1
         urls_server_info_dict = {}
         while True:
-            response = api.query(
-                page=page, collection_config_folder=collection_config_folder
-            )
-            if (
-                response.get("cursorRowCount", 0) == 0
-            ):  # Safeguard against missing 'cursorRowCount'
+            response = api.query(page=page, collection_config_folder=collection_config_folder)
+            if response.get("cursorRowCount", 0) == 0:  # Safeguard against missing 'cursorRowCount'
                 break
-            for record in response.get(
-                "records", []
-            ):  # Safeguard against missing 'records'
+            for record in response.get("records", []):  # Safeguard against missing 'records'
                 url = record.get(url_field)
                 title = record.get("title")
                 if url and title:  # Ensure both url and title are present
                     urls_server_info_dict[url] = {"title": title}
             page += 1
-        print(
-            f"Finished collecting URLs from {server_name} server for config folder {collection_config_folder}"
-        )
+        print(f"Finished collecting URLs from {server_name} server for config folder {collection_config_folder}")
 
-        collection_object = Collection.objects.filter(
-            config_folder=collection_config_folder
-        )
-        candidate_urls_objects = CandidateURL.objects.filter(
-            collection=collection_object[0]
-        )
+        collection_object = Collection.objects.filter(config_folder=collection_config_folder)
+        candidate_urls_objects = CandidateURL.objects.filter(collection=collection_object[0])
         for candidate_urls_object in candidate_urls_objects:
-            is_present_on_server = (
-                candidate_urls_object.url in urls_server_info_dict.keys()
-            )
+            is_present_on_server = candidate_urls_object.url in urls_server_info_dict.keys()
             if getattr(candidate_urls_object, status_field) != is_present_on_server:
                 setattr(candidate_urls_object, status_field, is_present_on_server)
             try:
@@ -66,9 +50,7 @@ def _health_check_on_urls_titles(server_name: str):
             except TypeError:
                 setattr(candidate_urls_object, title_field, "Unavailable")
             candidate_urls_object.save()
-        print(
-            f"Finished updating urls within collection config folder {collection_config_folder}"
-        )
+        print(f"Finished updating urls within collection config folder {collection_config_folder}")
 
 
 if __name__ == "__main__":

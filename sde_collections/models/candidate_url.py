@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from django.db import models
 
 from .collection import Collection
-from .collection_choice_fields import DocumentTypes
+from .collection_choice_fields import Divisions, DocumentTypes
 from .pattern import ExcludePattern, TitlePattern
 
 
@@ -57,6 +57,7 @@ class CandidateURL(models.Model):
     visited = models.BooleanField(default=False)
     objects = CandidateURLManager()
     document_type = models.IntegerField(choices=DocumentTypes.choices, null=True)
+    division = models.IntegerField(choices=Divisions.choices, null=True)
     inferenced_by = models.CharField(
         "Inferenced By",
         default="",

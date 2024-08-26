@@ -44,17 +44,13 @@ for collection in COLLECTIONS_TO_UPLOAD:
     # Create JSON file
     print("Creating JSON dump...")
     json_data = json.dumps(bulk_data)
-    file_path = (
-        f"{TEMP_FOLDER_NAME}/{collection}/urls.json"  # Provide the desired file path
-    )
+    file_path = f"{TEMP_FOLDER_NAME}/{collection}/urls.json"  # Provide the desired file path
     with open(file_path, "w") as file:
         file.write(json_data)
 
     # Zip the JSON file
     print("Creating zip file...")
-    zip_file_path = (
-        f"{TEMP_FOLDER_NAME}/{collection}.zip"  # Provide the desired zip file path
-    )
+    zip_file_path = f"{TEMP_FOLDER_NAME}/{collection}.zip"  # Provide the desired zip file path
     with zipfile.ZipFile(zip_file_path, "w") as zip_file:
         zip_file.write(file_path, os.path.basename(file_path))
 

@@ -3,7 +3,6 @@ import importlib
 import numpy as np
 import pandas as pd
 import torch
-
 from Document_Classifier_inference.encoder import Encoder
 from Document_Classifier_inference.model import ModelBert
 from Document_Classifier_inference.preprocessing import Preprocessor
@@ -21,16 +20,10 @@ class TestPredictor:
         self.dataframe = pd.DataFrame()  # columns=['text','class']
         self.config = config
         self.classes = self.config["classes"]
-        transformers = importlib.import_module(
-            self.config["model_parameters"]["module_name"]
-        )
-        tokenizer_class = getattr(
-            transformers, self.config["model_parameters"]["model"]
-        )
+        transformers = importlib.import_module(self.config["model_parameters"]["module_name"])
+        tokenizer_class = getattr(transformers, self.config["model_parameters"]["model"])
         # Load the tokenizer and model
-        self.tokenizer = tokenizer_class.from_pretrained(
-            self.config["model_parameters"]["model_type"]
-        )
+        self.tokenizer = tokenizer_class.from_pretrained(self.config["model_parameters"]["model_type"])
         self.pdf_lists = []
 
     @classmethod
@@ -106,12 +99,8 @@ class TestPredictor:
         module_name = self.config["model_parameters"]["module_name"]
         transformers = importlib.import_module(module_name)
         # Dynamically get the model class from transformers module
-        tokenizer_class = getattr(
-            transformers, self.config["model_parameters"]["tokenizer"]
-        )
-        tokenizer = tokenizer_class.from_pretrained(
-            self.config["model_parameters"]["model_type"]
-        )
+        tokenizer_class = getattr(transformers, self.config["model_parameters"]["tokenizer"])
+        tokenizer = tokenizer_class.from_pretrained(self.config["model_parameters"]["model_type"])
         input_ids, attention_masks = [], []
         for sent in sentence:
             encoded_dict = tokenizer.encode_plus(
@@ -164,7 +153,5 @@ class TestPredictor:
         # To get predictions for all urls
         preds_position = [np.argmax(arr).tolist() for arr in predictions]
         # Respective categories for all the urls
-        categories = [
-            self.convert_labels_to_class(position) for position in preds_position
-        ]
+        categories = [self.convert_labels_to_class(position) for position in preds_position]
         return categories

@@ -28,7 +28,7 @@
     padding-left:3px;
     /* width: 18vw;  */
 }
-/* 
+/*
 .dtsp-subRowsContainer {
   display: flex;
   flex-direction: column-reverse !important;
@@ -74,9 +74,9 @@ div.dtsp-panesContainer div.dtsp-searchPane div.dt-container:hover,div.dtsp-pane
 
 .wrapper {
   background-image: url("../images/SDE-Index-Hero.png") !important;
-  background-repeat: no-repeat; 
-    background-position: top center; 
-    background-size: cover; 
+  background-repeat: no-repeat;
+    background-position: top center;
+    background-size: cover;
     height: 337px;
 }
 
@@ -98,7 +98,7 @@ border-radius: 10px;
 .dtsp-clearAll.disabled, .dtsp-showAll.disabled, .dtsp-collapseAll.disabled, .dtsp-clearAll:hover, .dtsp-showAll:hover, .dtsp-collapseAll:hover, .dtsp-clearAll:active, .dtsp-showAll:active, .dtsp-collapseAll:active, .dtsp-clearAll:focus, .dtsp-showAll:focus, .dtsp-collapseAll:focus {
   color: rgba(255, 255, 255, 1) !important;
   background: rgba(255, 255, 255, 0.07) !important;
-} 
+}
 
 .dtsp-title {
   display: none;
@@ -167,7 +167,7 @@ body {
   padding: 11px 0;
   cursor: pointer;
   font-weight: 500;
-} 
+}
 
 .dtsp-name{
   color:white;
@@ -177,7 +177,7 @@ body {
 .dtsp-nameColumn{
   background-color: #15232E;
   border:none;
- 
+
 }
 
 .dtsp-searchPane{
@@ -199,7 +199,7 @@ body {
 
  .table > tbody > tr > td {
   border:none;
-}  
+}
 
 .nameStyling:hover{
   color:#65B1EF;
@@ -275,7 +275,7 @@ body {
   font-family: sans-serif;
   font-size:14px;
  }
- 
+
 .user-bubble {
   width: 30px;
   height: 30px;
@@ -591,7 +591,7 @@ height: 38px;
 /* tab headers hover effect */
 .tab-nav:hover {
   text-decoration: underline;
-  color: #0066CA; 
+  color: #0066CA;
 }
 
 /* alligning tab container with the table  */
@@ -625,5 +625,5 @@ div > .nav {
 
 .dtsp-topRow {
   align-items: center !important;
-  margin: 0 !important; 
+  margin: 0 !important;
 }

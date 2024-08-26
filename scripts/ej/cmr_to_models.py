@@ -4,10 +4,9 @@ this script is then run via the dm shell on the COSMOS server to populate the da
 """
 
 import json
+import urllib.parse
 
 from environmental_justice.models import EnvironmentalJusticeRow
-
-import urllib.parse
 
 
 def generate_source_link(doi_field):
@@ -33,7 +32,6 @@ def sinequa_id_to_url(sinequa_id: str) -> str:
 
 
 def categorize_processing_level(level):
-
     advanced_analysis_levels = {"0", "Level 0", "NA", "Not Provided", "Not provided"}
 
     basic_analysis_levels = {

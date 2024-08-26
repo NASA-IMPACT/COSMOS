@@ -4,9 +4,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views import defaults as default_views
 
-admin.site.site_header = (
-    "SDE Indexing Helper Administration"  # default: "Django Administration"
-)
+admin.site.site_header = "SDE Indexing Helper Administration"  # default: "Django Administration"
 admin.site.index_title = "SDE Indexing Helper"  # default: "Site administration"
 admin.site.site_title = "SDE Indexing Helper"  # default: "Django site admin"
 

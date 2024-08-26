@@ -334,7 +334,7 @@ div.dt-buttons .btn.processing:after {
     -webkit-animation: dtb-spinner 1500ms infinite linear;
 }
 
-.document_type_dropdown, .dropdown-toggle {
+.document_type_dropdown, .division_dropdown, .dropdown-toggle {
     width: 100%;
     display: flex;
     justify-content: center;

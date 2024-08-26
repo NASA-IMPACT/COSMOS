@@ -53,18 +53,14 @@ class Api:
 
         return self._process_response(response)
 
-    def sql(
-        self, source: str = "SMD", collection: str = "", fetch_all: bool = False
-    ) -> dict[str, Any]:
+    def sql(self, source: str = "SMD", collection: str = "", fetch_all: bool = False) -> dict[str, Any]:
         if not self.token:
             raise ValueError("you must have a token to use the SQL endpoint")
 
         url = f"{self.base_url}/api/v1/engine.sql"
 
         collection_name = f"/{source}/{collection}/"
-        sql_command_all = (
-            "select url1,title,collection from @@ScienceMissionDirectorate"
-        )
+        sql_command_all = "select url1,title,collection from @@ScienceMissionDirectorate"
         if fetch_all:
             sql_command = sql_command_all
         else:

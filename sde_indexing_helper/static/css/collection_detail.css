@@ -47,7 +47,7 @@
 /* tab headers hover effect */
 .tab-nav:hover {
     text-decoration: underline;
-    color: #0066CA; 
+    color: #0066CA;
 }
 
 /* alligning tab container with the table  */
@@ -131,7 +131,7 @@ div > .nav {
   .table tbody tr:nth-child(odd) {
     background-color: #15232E !important;
    }
-  
+
    .table tbody tr:nth-child(even) {
     background-color: #3F4A58 !important;
    }
@@ -151,7 +151,7 @@ div > .nav {
     color:#65B1EF;
    }
 
-  
+
 
    .formBackground{
     background-color:#A7BACD;
@@ -270,7 +270,7 @@ color:black;
     background-color: #3F4A58;
     font-size: .85em;
     border-right: 1px solid #15232E;
-    
+
 }
 
 /* Stage Label Stylings */
@@ -299,7 +299,7 @@ color:black;
 /* Color if not inheriting from the selected button color */
 .timeline-stage:not(.highlight) .status-label,
 .timeline-stage:not(.highlight) .modified-date {
-    color: #8697A8;  
+    color: #8697A8;
 }
 
 /* Overwrite button inheritance for unwanted stylings */

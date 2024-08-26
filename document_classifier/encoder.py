@@ -72,12 +72,7 @@ class Encoder:
 
         """
 
-        keywords = (
-            self.image_keyword
-            + self.software_keyword
-            + self.mission_keyword
-            + self.training_keyword
-        )
+        keywords = self.image_keyword + self.software_keyword + self.mission_keyword + self.training_keyword
         software_count, mission_count, image_count, training_count = 0, 0, 0, 0
         word_positions = {}
         start = -1
@@ -103,12 +98,7 @@ class Encoder:
                 training_count = training_count + 1
                 word_positions[word].append((start, end))
 
-        if (
-            software_count == 0
-            and mission_count == 0
-            and image_count == 0
-            and training_count == 0
-        ):
+        if software_count == 0 and mission_count == 0 and image_count == 0 and training_count == 0:
             mid = int(len(text) / 2)
             start_pos = mid - 512
             end_pos = mid + 512  # in terms of characters

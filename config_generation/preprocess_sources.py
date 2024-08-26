@@ -47,12 +47,4 @@ for collection_name in turned_on_remaining_webcrawlers:
 print(len(turned_on_sources))  # 139
 print(len(turned_on_remaining_webcrawlers))  # 114
 print(len(remove_top_limitation_sources))  # 5
-print(
-    len(
-        [
-            s
-            for s in remove_top_limitation_sources
-            if s in turned_on_remaining_webcrawlers
-        ]
-    )
-)  # 5
+print(len([s for s in remove_top_limitation_sources if s in turned_on_remaining_webcrawlers]))  # 5

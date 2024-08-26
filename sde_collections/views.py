@@ -28,6 +28,7 @@ from .models.collection_choice_fields import (
     WorkflowStatusChoices,
 )
 from .models.pattern import (
+    DivisionPattern,
     DocumentTypePattern,
     ExcludePattern,
     IncludePattern,
@@ -39,11 +40,11 @@ from .serializers import (
     CandidateURLSerializer,
     CollectionReadSerializer,
     CollectionSerializer,
+    DivisionPatternSerializer,
     DocumentTypePatternSerializer,
     ExcludePatternSerializer,
     IncludePatternSerializer,
     TitlePatternSerializer,
-    WorkflowHistorySerializer,
 )
 from .tasks import push_to_github_task
 from .utils.health_check import generate_db_github_metadata_differences
@@ -156,15 +157,15 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
             timeline_history[history.workflow_status] = history
 
         # Add placeholders for stages with no workflow history
-        for status in WorkflowStatusChoices:
-            if status not in timeline_history:
-                timeline_history[status] = {
-                    "workflow_status": status,
+        for workflow_status in WorkflowStatusChoices:
+            if workflow_status not in timeline_history:
+                timeline_history[workflow_status] = {
+                    "workflow_status": workflow_status,
                     "created_at": None,
-                    "label": WorkflowStatusChoices(status).label,
+                    "label": WorkflowStatusChoices(workflow_status).label,
                 }
 
-        context["timeline_history"] = [timeline_history[status] for status in WorkflowStatusChoices]
+        context["timeline_history"] = [timeline_history[workflow_status] for workflow_status in WorkflowStatusChoices]
         context["required_urls"] = RequiredUrls.objects.filter(collection=self.get_object())
         context["segment"] = "collection-detail"
         context["comments"] = Comments.objects.filter(collection=self.get_object()).order_by("-created_at")
@@ -220,12 +221,12 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
         )  # 2=regex patterns
         context["title_patterns"] = self.collection.titlepattern.all()
         context["workflow_status_choices"] = WorkflowStatusChoices
+        context["is_multi_division"] = self.collection.is_multi_division
 
         return context
 
 
 class SdeDashboardView(LoginRequiredMixin, ListView):
-
     model = Collection
     template_name = "sde_collections/sde_dashboard.html"
     context_object_name = "collections"
@@ -272,6 +273,15 @@ class CandidateURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             if is_excluded:
                 queryset = self._filter_by_is_excluded(queryset, is_excluded)
         return queryset.order_by("url")
+
+    def update_division(self, request, pk=None):
+        candidate_url = get_object_or_404(CandidateURL, pk=pk)
+        division = request.data.get("division")
+        if division:
+            candidate_url.division = division
+            candidate_url.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "Division is required."})
 
 
 class CandidateURLBulkCreateView(generics.ListCreateAPIView):
@@ -385,6 +395,21 @@ class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
                 return Response(status=status.HTTP_200_OK)
             except DocumentTypePattern.DoesNotExist:
                 return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class DivisionPatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
+    queryset = DivisionPattern.objects.all()
+    serializer_class = DivisionPatternSerializer
+
+    def get_queryset(self):
+        return super().get_queryset().order_by("match_pattern")
+
+    def create(self, request, *args, **kwargs):
+        division = request.POST.get("division")
+        if division:
+            return super().create(request, *args, **kwargs)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "Division is required."})
 
 
 class CollectionViewSet(viewsets.ModelViewSet):

@@ -58,16 +58,14 @@ class ModelBert:
         tokenizer_class = getattr(transformers, self.config["model"])
         # Load the tokenizer and model
         self.tokenizer = tokenizer_class.from_pretrained(self.config["model_type"])
-        self.model = model_class.from_pretrained(
-            self.config["model_type"], num_labels=self.config["num_labels"]
-        ).to(self.device)
+        self.model = model_class.from_pretrained(self.config["model_type"], num_labels=self.config["num_labels"]).to(
+            self.device
+        )
         return self.model, self.tokenizer
 
     def load_model(self):
         """This function loads the models and processes the data for evaluation"""
-        self.state_dict = torch.load(
-            self.config["saved_model_name"], map_location=self.device
-        )
+        self.state_dict = torch.load(self.config["saved_model_name"], map_location=self.device)
         model1, _ = self.make_model()
         model1.load_state_dict(self.state_dict)
         return model1

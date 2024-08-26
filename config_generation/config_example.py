@@ -1,6 +1,4 @@
-from sources_to_scrape import (
-    sources_to_index_test_grid_20240809,
-)
+from sources_to_scrape import sources_to_index_test_grid_20240809
 
 tokens: dict[str, str] = {
     "test_server": "token here",
