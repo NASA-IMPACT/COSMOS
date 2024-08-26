@@ -154,7 +154,7 @@ class ExportCsvMixin:
         field_names = [field.name for field in meta.fields]
 
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = f"attachment; filename={meta}.csv"
+        response["Content-Disposition"] = f"attachment; filename={meta}.csv"  # noqa: E702
         writer = csv.writer(response)
 
         writer.writerow(field_names)

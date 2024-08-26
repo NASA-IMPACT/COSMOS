@@ -32,7 +32,7 @@ def is_valid_fstring(pattern: str) -> bool:
             if node.value.id not in context:
                 variables_allowed = ", ".join([key for key in context.keys()])
                 raise ValueError(
-                    f"Variable '{node.value.id}' not allowed in f-string pattern."
+                    f"Variable '{node.value.id}' not allowed in f-string pattern."  # noqa: E713
                     f" Allowed variables are: {variables_allowed}"
                 )
 
