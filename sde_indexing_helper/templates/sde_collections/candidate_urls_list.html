@@ -11,20 +11,6 @@
     <link rel="stylesheet" href="{% static 'css/candidate_url_list.css' %}" />
     <link href="{% static 'css/project.css' %}" rel="stylesheet">
 {% endblock stylesheets %}
-{% block javascripts %}
-    {{ block.super }}
-    <script>var collection_id = "{{ collection.id }}";</script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <script src="https://cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
-    <!-- <script src="//cdn.datatables.net/plug-ins/2.0.8/pagination/input.js"></script> -->
-    <script src="https://cdn.datatables.net/plug-ins/2.0.8/features/inputPaging/dist/dataTables.inputPaging.min.js"></script>
-    <script src="{% static 'js/candidate_url_list.js' %}"></script>
-    <script src="{% static 'js/project.js' %}"></script>
-    <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
-{% endblock javascripts %}
-
 {% block content %}
 {% csrf_token %}
 <div class="headerDiv">
@@ -68,9 +54,11 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
         <li class="nav-item">
             <a class="tab-nav tabStyle" id="documentTypePatternsTab" data-toggle="tab" href="#Document-Type-Patterns">Document Type Patterns</a>
         </li>
+        {% if is_multi_division %}
         <li class="nav-item">
-            <a class="tab-nav tabStyle" id="divisionPatternsTab" data-toggle="tab" href="#Division-Patterns">Division By URL Patterns</a>
+            <a class="tab-nav tabStyle" id="divisionPatternsTab" data-toggle="tab" href="#Division-Patterns">Division Patterns</a>
         </li>
+        {% endif %}
     </ul>
 
     <!-- Tab panes -->
@@ -84,15 +72,17 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         <th scope="col" class="text-center col-1"><div class="header-title">Scraped Title</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">New Title</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">Document Type</div></th>
-                        <th scope="col" class="text-center col-1"><div class="header-title">Division By URL</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">ID</div></th>
                         <th></th>
                         <th></th>
                         <th></th>
                         <th></th>
-                        <th scope="col" class="text-center col-1"><div class="header-title">Document Type</div></th>
+                        <!-- <th scope="col" class="text-center col-1"><div class="header-title">Document Type</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">Exclude</div></th>
-                        <th scope="col" class="text-center col-1"><div class="header-title">generated_title</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">generated_title</div></th> -->
+                        <!-- {% if is_multi_division %} -->
+                        <!-- <th scope="col" class="text-center col-1"><div class="header-title">Division</div></th> -->
+                        <!-- {% endif %} -->
 
                     </tr>
                     <tr>
@@ -562,7 +552,18 @@ aria-labelledby="workflowStatusChangeModal" aria-hidden="true">
     </div>
 </div>
 
-
-
-
 {% endblock content %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script>var collection_id = "{{ collection.id }}";</script>
+    <script>var is_multi_division = "{{ is_multi_division|lower }}";</script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
+    <script src="//cdn.datatables.net/plug-ins/2.0.8/features/inputPaging/dist/dataTables.inputPaging.min.js"></script>
+    <script src="{% static 'js/candidate_url_list.js' %}"></script>
+    <script src="{% static 'js/project.js' %}"></script>
+    <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
+{% endblock javascripts %}
