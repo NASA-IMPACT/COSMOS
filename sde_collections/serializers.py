@@ -2,8 +2,9 @@ from rest_framework import serializers
 
 from .models.candidate_url import CandidateURL
 from .models.collection import Collection, WorkflowHistory
-from .models.collection_choice_fields import DocumentTypes
+from .models.collection_choice_fields import Divisions, DocumentTypes
 from .models.pattern import (
+    DivisionPattern,
     DocumentTypePattern,
     ExcludePattern,
     IncludePattern,
@@ -56,6 +57,7 @@ class WorkflowHistorySerializer(serializers.ModelSerializer):
 class CandidateURLSerializer(serializers.ModelSerializer):
     excluded = serializers.BooleanField(required=False)
     document_type_display = serializers.CharField(source="get_document_type_display", read_only=True)
+    division_display = serializers.CharField(source="get_division_display", read_only=True)
     url = serializers.CharField(required=False)
     generated_title_id = serializers.SerializerMethodField(read_only=True)
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
@@ -86,6 +88,8 @@ class CandidateURLSerializer(serializers.ModelSerializer):
             "candidate_urls_count",
             "document_type",
             "document_type_display",
+            "division",
+            "division_display",
             "visited",
             "test_title",
             "production_title",
@@ -135,7 +139,13 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
         return obj.fileext
 
     def get_tree_root(self, obj):
-        return obj.collection.tree_root
+        if obj.collection.is_multi_division:
+            if obj.division:
+                return f"/{obj.get_division_display()}/{obj.collection.config_folder}"
+            else:
+                return f"/{obj.collection.get_division_display()}/{obj.collection.config_folder}"
+        else:
+            return obj.collection.tree_root
 
 
 class BasePatternSerializer(serializers.ModelSerializer):
@@ -210,5 +220,28 @@ class DocumentTypePatternSerializer(BasePatternSerializer, serializers.ModelSeri
             )
             title_pattern.delete()
         except DocumentTypePattern.DoesNotExist:
+            pass
+        return value
+
+
+class DivisionPatternSerializer(BasePatternSerializer, serializers.ModelSerializer):
+    division_display = serializers.CharField(source="get_division_display", read_only=True)
+    division = serializers.ChoiceField(choices=Divisions.choices)
+
+    class Meta:
+        model = DivisionPattern
+        fields = BasePatternSerializer.Meta.fields + (
+            "division",
+            "division_display",
+        )
+
+    def validate_match_pattern(self, value):
+        try:
+            division_pattern = DivisionPattern.objects.get(
+                match_pattern=value,
+                match_pattern_type=DivisionPattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
+            )
+            division_pattern.delete()
+        except DivisionPattern.DoesNotExist:
             pass
         return value
