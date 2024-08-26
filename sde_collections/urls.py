@@ -13,6 +13,7 @@ router.register(r"exclude-patterns", views.ExcludePatternViewSet)
 router.register(r"include-patterns", views.IncludePatternViewSet)
 router.register(r"title-patterns", views.TitlePatternViewSet)
 router.register(r"document-type-patterns", views.DocumentTypePatternViewSet)
+router.register(r"division-patterns", views.DivisionPatternViewSet)
 router.register(r"environmental-justice", EnvironmentalJusticeRowViewSet)
 
 app_name = "sde_collections"
@@ -31,6 +32,7 @@ urlpatterns = [
         views.IndexingInstructionsView.as_view(),
         name="indexing_instructions",
     ),
+    path("api/assign-division/<int:pk>/", views.CandidateURLViewSet.as_view({"post": "update_division"})),
     path(
         "delete-required-url/<int:pk>",
         view=views.RequiredUrlsDeleteView.as_view(),
