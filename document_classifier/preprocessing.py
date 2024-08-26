@@ -4,7 +4,6 @@ import re
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-
 from Document_Classifier_inference.async_scraper import get_text_table, scraper
 
 
@@ -64,9 +63,7 @@ class Preprocessor:
                 text = get_text_table(soup)
                 text = re.sub(r"\W+", " ", text)
                 if text == "" or text is None:
-                    soup, text = asyncio.get_event_loop().run_until_complete(
-                        scraper(each_url)
-                    )
+                    soup, text = asyncio.get_event_loop().run_until_complete(scraper(each_url))
                 result = soup.find("header")
                 if result:
                     result.extract()  # removing header element from the HTML code
@@ -102,7 +99,5 @@ class Preprocessor:
               lists of urls with pdf reponse, and lists of urls with image response.
         """
         self.remove_header_footer()
-        self.data["soup"] = self.data["soup"].apply(
-            lambda x: re.sub(r"\W+", " ", get_text_table(x).strip())
-        )
+        self.data["soup"] = self.data["soup"].apply(lambda x: re.sub(r"\W+", " ", get_text_table(x).strip()))
         return self.data, self.pdf_lists, self.image_lists

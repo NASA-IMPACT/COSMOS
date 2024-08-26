@@ -36,15 +36,11 @@ def health_check(collection, server_name: str = "production") -> dict:
     candidate_urls_sinequa = _fetch_candidate_urls(collection, server_name)
 
     # check for title patterns
-    title_pattern_report = _health_check_title_pattern(
-        collection, candidate_urls_sinequa
-    )
+    title_pattern_report = _health_check_title_pattern(collection, candidate_urls_sinequa)
     health_check_report.extend(title_pattern_report)
 
     # check for exclude patterns
-    exclude_pattern_report = _health_check_exclude_pattern(
-        collection, candidate_urls_sinequa
-    )
+    exclude_pattern_report = _health_check_exclude_pattern(collection, candidate_urls_sinequa)
     health_check_report.extend(exclude_pattern_report)
 
     return health_check_report
@@ -57,9 +53,7 @@ def _fetch_candidate_urls(collection, server_name):
     candidate_urls_sinequa = {}
     for candidate_url in candidate_urls_remote:
         url = candidate_url["fields"]["url"]
-        candidate_urls_sinequa[url] = CandidateURL(
-            url=url, scraped_title=candidate_url["fields"]["scraped_title"]
-        )
+        candidate_urls_sinequa[url] = CandidateURL(url=url, scraped_title=candidate_url["fields"]["scraped_title"])
     return candidate_urls_sinequa
 
 
@@ -73,9 +67,7 @@ def _health_check_title_pattern(collection, candidate_urls_sinequa):
     title_pattern_report = []
 
     # now get Title Patterns in indexer db
-    title_patterns_local = TitlePattern.objects.all().filter(
-        collection_id=collection_id
-    )
+    title_patterns_local = TitlePattern.objects.all().filter(collection_id=collection_id)
 
     # check if title patterns are porperly reflected in sinequa's response
     for title_pattern in title_patterns_local:
@@ -94,12 +86,8 @@ def _health_check_title_pattern(collection, candidate_urls_sinequa):
                         "id": collection_id,
                         "collection_name": collection_name,
                         "config_folder": collection_config_folder,
-                        "curation_status": CurationStatusChoices.get_status_string(
-                            curation_status
-                        ),
-                        "workflow_status": WorkflowStatusChoices.get_status_string(
-                            workflow_status
-                        ),
+                        "curation_status": CurationStatusChoices.get_status_string(curation_status),
+                        "workflow_status": WorkflowStatusChoices.get_status_string(workflow_status),
                         "pattern_name": "Title Pattern",
                         "pattern": pattern,
                         "scraped_title": matched_title,
@@ -120,9 +108,7 @@ def _health_check_exclude_pattern(collection, candidate_urls_sinequa):
     exclude_pattern_report = []
 
     # Perform exclude pattern check here
-    exclude_patterns_local = ExcludePattern.objects.all().filter(
-        collection_id=collection_id
-    )
+    exclude_patterns_local = ExcludePattern.objects.all().filter(collection_id=collection_id)
 
     def create_exclude_pattern_report(match_pattern, url):
         return {
@@ -143,22 +129,16 @@ def _health_check_exclude_pattern(collection, candidate_urls_sinequa):
         if match_pattern.find("http://") == -1:
             url = f"http://{match_pattern}"
             if url in candidate_urls_sinequa:
-                exclude_pattern_report.append(
-                    create_exclude_pattern_report(match_pattern, url)
-                )
+                exclude_pattern_report.append(create_exclude_pattern_report(match_pattern, url))
 
         if match_pattern.find("https://") == -1:
             url = f"https://{match_pattern}"
             if url in candidate_urls_sinequa:
-                exclude_pattern_report.append(
-                    create_exclude_pattern_report(match_pattern, url)
-                )
+                exclude_pattern_report.append(create_exclude_pattern_report(match_pattern, url))
         else:
             url = match_pattern  # assuming it has either https or http
             if url in candidate_urls_sinequa:
-                exclude_pattern_report.append(
-                    create_exclude_pattern_report(match_pattern, url)
-                )
+                exclude_pattern_report.append(create_exclude_pattern_report(match_pattern, url))
 
     return exclude_pattern_report
 
@@ -180,12 +160,8 @@ def _resolve_title_pattern(pattern, title):
     def replace_parentheis_with_anything(match):
         return r"\S+"
 
-    regex_pattern_parenthesis = re.sub(
-        parentheis_pattern, replace_parentheis_with_anything, pattern_with_whitespace
-    )
-    regex_pattern = re.sub(
-        multi_pattern, replace_parentheis_with_anything, regex_pattern_parenthesis
-    )
+    regex_pattern_parenthesis = re.sub(parentheis_pattern, replace_parentheis_with_anything, pattern_with_whitespace)
+    regex_pattern = re.sub(multi_pattern, replace_parentheis_with_anything, regex_pattern_parenthesis)
     return re.match(regex_pattern, title)
 
 
@@ -236,9 +212,7 @@ def generate_db_github_metadata_differences(reindex_configs_from_github=False):
         else:
             raise
     else:
-        collections = json.load(
-            s3.Object(settings.AWS_STORAGE_BUCKET_NAME, FILENAME).get()["Body"]
-        )
+        collections = json.load(s3.Object(settings.AWS_STORAGE_BUCKET_NAME, FILENAME).get()["Body"])
 
     fields = {
         "config_folder",
@@ -274,9 +248,7 @@ def generate_db_github_metadata_differences(reindex_configs_from_github=False):
             if collection[field] != getattr(db_collection, field):
                 db_value = getattr(db_collection, field)
                 if field in int_fields:
-                    collection[field], db_value = parse_int_values(
-                        collection[field], db_value, field
-                    )
+                    collection[field], db_value = parse_int_values(collection[field], db_value, field)
 
                 report.append(
                     {
@@ -288,9 +260,7 @@ def generate_db_github_metadata_differences(reindex_configs_from_github=False):
                 )
 
     # check if there are any collections in the database that are not in github
-    for db_collection in Collection.objects.exclude(
-        config_folder__in=[c["config_folder"] for c in collections]
-    ):
+    for db_collection in Collection.objects.exclude(config_folder__in=[c["config_folder"] for c in collections]):
         report.append(
             {
                 "config_folder": db_collection.config_folder,

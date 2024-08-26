@@ -57,25 +57,25 @@ const stackedLine = new Chart(divisionChart, {
                     color: '#A7BACD'
                 },
                 ticks: {
-                    color: "white", 
+                    color: "white",
                     beginAtZero: true
                 },
                 title:{
                     display:true,
                     text: 'Number of Entries',
                     color:'white'
-                } 
+                }
             },
-            x: { 
+            x: {
                 ticks: {
-                    color: "white", 
+                    color: "white",
                     beginAtZero: true
                 },
                 title:{
                     display:true,
                     text: 'Months',
                     color:'white'
-                } 
+                }
             }
         }
     }
@@ -137,25 +137,25 @@ const stackedLine2 = new Chart(urlChart, {
                     color: '#A7BACD'
                 },
                 ticks: {
-                    color: "white", 
+                    color: "white",
                     beginAtZero: true
                 },
                 title:{
                     display:true,
                     text: 'Number of URLs',
                     color:'white'
-                } 
+                }
             },
             x: {
                 ticks: {
-                    color: "white", 
+                    color: "white",
                     beginAtZero: true
                 },
                 title:{
                     display:true,
                     text: 'Months',
                     color:'white'
-                } 
+                }
             }
         }
     }
@@ -253,25 +253,25 @@ const barChart = new Chart(workflowChart, {
             y: {
                 beginAtZero: true,
                 ticks: {
-                    color: "white", 
+                    color: "white",
                     beginAtZero: true
                 },
                 title:{
                     display:true,
                     text: 'Totals',
                     color:'white'
-                } 
+                }
             },
-            x: { 
+            x: {
                 ticks: {
-                    color: "white", 
+                    color: "white",
                     beginAtZero: true
                 },
                 title:{
                     display:true,
                     text: 'Statuses',
                     color:'white'
-                } 
+                }
             }
 
         }
@@ -323,25 +323,25 @@ const stackedLine3 = new Chart(sdeChart, {
                     color: '#A7BACD'
                 },
                 ticks: {
-                    color: "white", 
+                    color: "white",
                     beginAtZero: true
                 },
                 title:{
                     display:true,
                     text: 'Number of Entries',
                     color:'white'
-                } 
+                }
             },
             x: {
                 ticks: {
-                    color: "white", 
+                    color: "white",
                     beginAtZero: true
                 },
                 title:{
                     display:true,
                     text: 'Months',
                     color:'white'
-                } 
+                }
             }
         }
     }
@@ -418,14 +418,14 @@ const barChart2 = new Chart(divisionChart2, {
             y: {
                 beginAtZero: true,
                 ticks: {
-                    color: "white", 
+                    color: "white",
                     beginAtZero: true
                 },
                 title:{
                     display:true,
                     text: 'Totals',
                     color:'white'
-                } 
+                }
             },
             x: {
                 ticks: {
@@ -436,7 +436,7 @@ const barChart2 = new Chart(divisionChart2, {
                     display:true,
                     text: 'Divisions',
                     color:'white'
-                } 
+                }
             }
 
         }
@@ -579,4 +579,3 @@ const stackedLine4 = new Chart(timeSpentChart, {
         }
     }
 });
-

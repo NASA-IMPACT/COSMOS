@@ -9,6 +9,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         import_candidate_urls_from_api()
 
-        self.stdout.write(
-            self.style.SUCCESS("Successfully loaded urls from the test server")
-        )
+        self.stdout.write(self.style.SUCCESS("Successfully loaded urls from the test server"))

@@ -16,9 +16,7 @@ FINISHED_STATUSES = [
 
 # currently, the existing automated github branch needs to be deleted
 def bulk_push(statuses_to_push=FINISHED_STATUSES):
-    collections = Collection.objects.filter(
-        curation_status__in=statuses_to_push
-    ).exclude(name__icontains="fake")
+    collections = Collection.objects.filter(curation_status__in=statuses_to_push).exclude(name__icontains="fake")
 
     gh = GitHubHandler(collections)
     gh.push_to_github()

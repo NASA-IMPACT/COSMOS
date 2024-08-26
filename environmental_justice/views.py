@@ -1,5 +1,5 @@
-from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets
 
 from .models import EnvironmentalJusticeRow
 from .serializers import EnvironmentalJusticeRowSerializer

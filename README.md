@@ -84,7 +84,7 @@ Navigate to the server running prod, then to the project folder. Run the followi
 ```bash
 docker-compose -f production.yml run --rm --user root django python manage.py dumpdata --natural-foreign --natural-primary --exclude=contenttypes --exclude=auth.Permission --indent 2 --output /app/backups/prod_backup-20240812.json
 ```
-This will have saved the backup in a folder outside of the docker container. Now you can copy it to your local machine. 
+This will have saved the backup in a folder outside of the docker container. Now you can copy it to your local machine.
 
 ```bash
 mv ~/prod_backup-20240812.json <project_path>/prod_backup-20240812.json

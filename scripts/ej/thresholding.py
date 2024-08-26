@@ -1,4 +1,8 @@
-from create_ej_dump import load_json_file, create_cmr_dict, update_cmr_with_classifications
+from create_ej_dump import (
+    create_cmr_dict,
+    load_json_file,
+    update_cmr_with_classifications,
+)
 
 inferences = load_json_file("cmr-inference.json")
 cmr = load_json_file("cmr_collections_umm_20240807_142146.json")

@@ -12,12 +12,7 @@ I'm pleased to announce that we have successfully moved several key collections
 to our production environment as part of our latest deployment! :tada:\n
 Collections Now Live in Prod:\n"""
 
-    message_middle = "\n\n".join(
-        [
-            f"- {collection.name} | {collection.server_url_prod}"
-            for collection in collections
-        ]
-    )
+    message_middle = "\n\n".join([f"- {collection.name} | {collection.server_url_prod}" for collection in collections])
 
     message_end = """
 If you find something needs changing, please let us know.

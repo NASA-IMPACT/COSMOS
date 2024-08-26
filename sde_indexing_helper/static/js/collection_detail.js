@@ -4,7 +4,7 @@ var currentDivisionVal;
 var currentDivisonText;
 var currentUrlToDelete;
 
-let table = $("#workflow_history_table").DataTable({ 
+let table = $("#workflow_history_table").DataTable({
   paging: false,
   stateSave: false,
   orderCellsTop: false,

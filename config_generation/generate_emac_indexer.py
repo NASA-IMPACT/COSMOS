@@ -71,9 +71,7 @@ editor.update_or_add_element_value("visibility", "publicCollection")
 editor.update_or_add_element_value("Description", f"Webcrawler for the {name}")
 editor.update_or_add_element_value("Url", url)
 editor.update_or_add_element_value("TreeRoot", tree_root)
-editor.update_or_add_element_value(
-    "ShardIndexes", "@SMD_ASTRO_Repository_1,@SMD_ASTRO_Repository_2"
-)
+editor.update_or_add_element_value("ShardIndexes", "@SMD_ASTRO_Repository_1,@SMD_ASTRO_Repository_2")
 editor.update_or_add_element_value("ShardingStrategy", "Balanced")
 
 # rule adding
