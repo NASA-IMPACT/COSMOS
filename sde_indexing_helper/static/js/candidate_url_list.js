@@ -9,7 +9,6 @@ var newExcludePatternsCount = 0;
 var newTitlePatternsCount = 0;
 var newDocumentTypePatternsCount = 0;
 var newDivisionPatternsCount = 0;
-// var is_multi_division = "{{ is_multi_division|lower }}";
 var currentTab = ""; //blank for the first tab
 var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
@@ -257,38 +256,40 @@ function initializeDataTable() {
       getScrapedTitleColumn(),
       getGeneratedTitleColumn(),
       getDocumentTypeColumn(),
-      getDivisionColumn(),
+      //getDivisionColumn(),
       { data: "id", visible: false, searchable: false },
       { data: "generated_title_id", visible: false, searchable: false },
       { data: "match_pattern_type", visible: false, searchable: false },
       { data: "candidate_urls_count", visible: false, searchable: false },
       { data: "excluded", visible: false, searchable: false },
-      {
-        data: null,
-        render: function (data, type, row) {
-          if (!row.document_type) return "Select";
-          return dict[row.document_type];
-        },
-        visible: false,
-      },
-      {
-        data: null,
-        render: function (data, type, row) {
-          const excludedDict = {
-            true: "Yes",
-            false: "No",
-          };
-          return excludedDict[row.excluded];
-        },
-        visible: false,
-      },
-      {
-        data: null,
-        render: function (data, type, row) {
-          return row.generated_title;
-        },
-        visible: false,
-      },
+      // {
+      //   data: null,
+      //   render: function (data, type, row) {
+      //     if (!row.document_type) return "Select";
+      //     return dict[row.document_type];
+      //   },
+      //   visible: false,
+      // },
+      // {
+      //   data: null,
+      //   render: function (data, type, row) {
+      //     const excludedDict = {
+      //       true: "Yes",
+      //       false: "No",
+      //     };
+      //     return excludedDict[row.excluded];
+      //   },
+      //   visible: false,
+      // },
+      // {
+      //   data: null,
+      //   render: function (data, type, row) {
+      //     return row.generated_title;
+      //   },
+      //   visible: false,
+      // },
+      // ...(is_multi_division === 'true' ? [getDivisionColumn()] : []),
+      // getDivisionColumn(),
     ],
     createdRow: function (row, data, dataIndex) {
       if (data["excluded"]) {
