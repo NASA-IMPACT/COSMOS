@@ -1,0 +1,51 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
+          aws-region: aws-region-1
+
+      # - name: Login to AWS ECR
+      #   id: ecr-login
+      #   uses: aws-actions/amazon-ecr-login@v1
+      #   with:
+      #     region: us-west-2
+
+      # - name: Build and push Docker image to ECR
+      #   env:
+      #     ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+      #     ECR_REPOSITORY: cosmos
+      #     IMAGE_TAG: latest
+      #   run: |
+      #     docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+      #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      # - name: Deploy to EC2
+      #   uses: appleboy/ssh-action@v0.1.7
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ${{ secrets.EC2_USER }}
+      #     key: ${{ secrets.EC2_KEY }}
+      #     port: 22
+      #     script: |
+      #       docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      #       docker stop your_container_name || true
+      #       docker rm your_container_name || true
+      #       docker run -d --name your_container_name -p 80:8000 $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
