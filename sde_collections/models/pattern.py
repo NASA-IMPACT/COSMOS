@@ -10,7 +10,7 @@ from ..utils.title_resolver import (
     parse_title,
     resolve_title,
 )
-from .collection_choice_fields import DocumentTypes
+from .collection_choice_fields import Divisions, DocumentTypes
 
 
 class BaseMatchPattern(models.Model):
@@ -247,6 +247,29 @@ class DocumentTypePattern(BaseMatchPattern):
 
         verbose_name = "Document Type Pattern"
         verbose_name_plural = "Document Type Patterns"
+        unique_together = ("collection", "match_pattern")
+
+
+class DivisionPattern(BaseMatchPattern):
+    division = models.IntegerField(choices=Divisions.choices)
+
+    def apply(self) -> None:
+        matched_urls = self.matched_urls()
+        matched_urls.update(division=self.division)
+        candidate_url_ids = list(matched_urls.values_list("id", flat=True))
+        self.candidate_urls.through.objects.bulk_create(
+            objs=[
+                DivisionPattern.candidate_urls.through(candidateurl_id=candidate_url_id, divisionpattern_id=self.id)
+                for candidate_url_id in candidate_url_ids
+            ]
+        )
+
+    def unapply(self) -> None:
+        self.candidate_urls.update(division=None)
+
+    class Meta:
+        verbose_name = "Division Pattern"
+        verbose_name_plural = "Division Patterns"
         unique_together = ("collection", "match_pattern")
 
 
