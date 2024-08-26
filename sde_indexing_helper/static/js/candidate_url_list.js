@@ -829,7 +829,7 @@ function getDivisionColumn() {
   return {
     data: "division",
     width: "10%",
-    visible: ((is_multi_division)? 'true' : 'false'), searchable: is_multi_division,
+    visible: (is_multi_division === "true"), searchable: is_multi_division,
     render: function (data, type, row) {
       let button_text = data ? divisionDict[data] : "Select";
       let button_color = data ? "btn-success" : "btn-secondary";
