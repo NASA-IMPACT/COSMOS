@@ -19,11 +19,11 @@ docker-compose -f local.yml up postgres
 2. Find the container ID using `docker ps`, then enter the PostgreSQL container to execute commands.
 
 ```
-$ docker ps                               
-CONTAINER ID   IMAGE                                     COMMAND                  
+$ docker ps
+CONTAINER ID   IMAGE                                     COMMAND
 23d33f22cc43   sde_indexing_helper_production_postgres   "docker-entrypoint.s…"
 
-$ docker exec -it 23d33f22cc43 bash   
+$ docker exec -it 23d33f22cc43 bash
 ```
 
 3. Create a connection to the database.
@@ -32,7 +32,7 @@ $ docker exec -it 23d33f22cc43 bash
 psql -U VnUvMKBSdkoFIETgLongnxYHrYVJKufn -d sde_indexing_helper
 ```
 
-4. Ensure that the database `sde_indexing_helper` is empty. 
+4. Ensure that the database `sde_indexing_helper` is empty.
 
 ```
 sde_indexing_helper-# \c
