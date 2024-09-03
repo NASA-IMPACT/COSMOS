@@ -29,10 +29,14 @@ $ docker exec -it 23d33f22cc43 bash
 3. Create a connection to the database.
 
 ```
-psql -U VnUvMKBSdkoFIETgLongnxYHrYVJKufn -d sde_indexing_helper
+psql -U <POSTGRES_USER> -d <POSTGRES_DB>
 ```
 
-4. Ensure that the database `sde_indexing_helper` is empty.
+**Note**:
+- For local deployment, refer to the `.envs/.local/.postgres` file for the `POSTGRES_USER` and `POSTGRES_DB` variables.
+- For production deployment, refer to the `.envs/.production/.postgres` file.
+
+4. Ensure that the database `<POSTGRES_DB>` is empty. Here's an example:
 
 ```
 sde_indexing_helper-# \c
@@ -44,8 +48,8 @@ Did not find any relations.
 If the database is not empty, delete its contents to create a fresh database:
 
 ```
-sde_indexing_helper=# \c postgres
-You are now connected to database "postgres" as user "VnUvMKBSdkoFIETgLongnxYHrYVJKufn".
+sde_indexing_helper=# \c postgres      //connect to a different database before dropping
+You are now connected to database "postgres" as user "VnUvMKBSdk....".
 postgres=# DROP DATABASE sde_indexing_helper;
 DROP DATABASE
 postgres=# CREATE DATABASE sde_indexing_helper;
@@ -62,13 +66,13 @@ docker cp /local/path/backup.sql 23d33f22cc43:/
 6. Import the SQL dump into the PostgreSQL container.
 
 ```
-psql -U VnUvMKBSdkoFIETgLongnxYHrYVJKufn -d sde_indexing_helper -f backup.sql
+psql -U <POSTGRES_USER> -d <POSTGRES_DB> -f backup.sql
 ```
 
 **Note**: To create a SQL dump of your PostgreSQL database, use the following command:
 
 ```
-pg_dump -U VnUvMKBSdkoFIETgLongnxYHrYVJKufn -W -F p -f backup.sql sde_indexing_helper
+pg_dump -U <POSTGRES_USER> -W -F p -f backup.sql <POSTGRES_DB>
 ```
 
 7. Bring up all containers at once, and create a superuser account for logging in.

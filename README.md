@@ -116,6 +116,10 @@ $ docker cp /path/to/your/backup.json container_name:/path/inside/container/back
 $ docker-compose -f local.yml run --rm django python manage.py loaddata /path/inside/the/container/backup.json
 $ docker-compose -f local.yml run --rm django python manage.py migrate
 ```
+### Restoring the Database from a SQL Dump
+If the JSON file is particularly large (>1.5GB), Docker might struggle with this method. In such cases, you can use SQL dump and restore commands as an alternative, as described [here](./SQLDumpRestoration.md).
+
+
 
 ## Additional Commands
 
@@ -191,8 +195,7 @@ Documented [here](https://github.com/NASA-IMPACT/sde-indexing-helper/wiki/How-to
 
 ## Adding New Features/Fixes
 
-1. Start with a [GitHub issue](https://github.com/NASA-IMPACT/sde-indexing-helper/issues).
-2. Use the GitHub CLI to create branches and pull requests (`gh issue develop -c <issue_number>`).
+We welcome contributions to improve the project! Before you begin, please take a moment to review our [Contributing Guidelines](./CONTRIBUTING.md). These guidelines will help you understand the process for submitting new features, bug fixes, and other improvements.
 
 ## Job Creation
 
