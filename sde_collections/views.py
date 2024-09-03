@@ -65,7 +65,7 @@ class CollectionListView(LoginRequiredMixin, ListView):
         return (
             super()
             .get_queryset()
-            .filter(delete=False)
+            .filter(deleteable=False)
             .annotate(num_candidate_urls=models.Count("candidate_urls"))
             .order_by("-num_candidate_urls")
         )
