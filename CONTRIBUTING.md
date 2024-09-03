@@ -66,4 +66,4 @@ After pushing the branch, create a pull request using the `gh pr create` command
     This command will create a pull request from your branch into the base branch specified.
 
 2. **Review and Merge**:
-Once the pull request is created, you can review it on GitHub and merge it if everything looks good.
+Once the pull request is created, we will review it on GitHub and merge it if everything looks good. If any changes are required, we might ask you to make adjustments before the merge.
