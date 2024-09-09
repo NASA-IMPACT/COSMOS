@@ -3,7 +3,7 @@
     <JobType>collection</JobType>
     <Description></Description>
     <IdentityOverride></IdentityOverride>
-    <CollectionOverride>_ForceReindexation</CollectionOverride>
+    <CollectionOverride></CollectionOverride>
     <Trigger>
         <Enabled>false</Enabled>
         <TriggerType></TriggerType>

@@ -8,7 +8,7 @@
     <domain></domain>
     <Revision>1</Revision>
     <visibility></visibility>
-    <ForceReindexation>true</ForceReindexation>
+    <ForceReindexation>false</ForceReindexation>
     <Plugin>SMD_Plugins/Sinequa.Plugin.WebCrawler_Index_URLList</Plugin>
     <WorkerCount>6</WorkerCount>
     <MaxWorkerPerHost></MaxWorkerPerHost>
