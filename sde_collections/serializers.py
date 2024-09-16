@@ -141,9 +141,9 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
     def get_tree_root(self, obj):
         if obj.collection.is_multi_division:
             if obj.division:
-                return f"/{obj.get_division_display()}/{obj.collection.config_folder}"
+                return f"/{obj.get_division_display()}/{obj.collection.name}/"
             else:
-                return f"/{obj.collection.get_division_display()}/{obj.collection.config_folder}"
+                return f"/{obj.collection.get_division_display()}/{obj.collection.name}/"
         else:
             return obj.collection.tree_root
 
