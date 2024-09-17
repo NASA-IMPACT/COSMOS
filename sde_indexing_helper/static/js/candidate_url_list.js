@@ -387,6 +387,14 @@ function initializeDataTable() {
         data: "candidate_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return `<div style="display: flex; align-items: center; justify-content: center;">
+                    <span style="min-width: 50px; text-align: right; padding-right: 10px;">${data}</span>
+                    <button type="button" class="btn btn-sm view-affected-urls" data-row-id="${row.id}">
+                      <i class="fa fa-eye"></i>
+                    </button>
+                  </div>`;
+        },
       },
       {
         data: null,
@@ -813,6 +821,7 @@ function setupClickHandlers() {
   handleDeleteIncludePatternButtonClick();
   handleDeleteTitlePatternButtonClick();
   handleDeleteDivisionButtonClick();
+  handleShowAffectedURLsListButtonClick();
 
   handleDocumentTypeSelect();
   handleDivisionSelect();
@@ -1125,6 +1134,14 @@ function handleExcludeIndividualUrlClick() {
     );
   });
 }
+
+function handleShowAffectedURLsListButtonClick() {
+  $("body").on("click", ".view-affected-urls", function () {
+    var matchPatternId = $(this).data("row-id");
+    console.log(matchPatternId);
+  });
+}
+
 
 function handleDeleteExcludePatternButtonClick() {
   $("body").on("click", ".delete-exclude-pattern-button", function () {
