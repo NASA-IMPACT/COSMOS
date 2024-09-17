@@ -1139,6 +1139,9 @@ function handleShowAffectedURLsListButtonClick() {
   $("body").on("click", ".view-affected-urls", function () {
     var matchPatternId = $(this).data("row-id");
     console.log(matchPatternId);
+
+      // Redirect to the new page that will display the URLs
+      window.open(`/exclude-pattern/${matchPatternId}/`, '_blank');
   });
 }
 

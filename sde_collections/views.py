@@ -225,6 +225,32 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
 
         return context
 
+class AffectedURLsListView(LoginRequiredMixin, ListView):
+    """
+    Display a list of URLs affected by a match pattern
+    """
+
+    model = CandidateURL
+    template_name = "sde_collections/affected_urls.html"
+    context_object_name = "affected_urls"
+    paginate_by = 100
+
+    def get_queryset(self):
+        self.pattern = ExcludePattern.objects.get(id=self.kwargs["id"])
+        queryset = self.pattern.matched_urls()
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["pattern"] = self.pattern
+
+        # affected_urls = self.pattern.matched_urls()
+        # for url in affected_urls:
+        #     print(url.collection)
+        # Your affected_urls is a list of CandidateURL model objects.
+
+        return context
+
 
 class SdeDashboardView(LoginRequiredMixin, ListView):
     model = Collection
