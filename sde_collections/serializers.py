@@ -125,7 +125,7 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
         )
 
     def get_document_type(self, obj):
-        if obj.document_type is not None:
+        if obj.document_type and obj.document_type != 0:
             return obj.get_document_type_display()
         elif obj.collection.document_type is not None:
             return obj.collection.get_document_type_display()
