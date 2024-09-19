@@ -464,3 +464,19 @@ body {
     background-color: #333;
     color: #f5f5f5;
 }
+
+/* Optional styles for the Include URL button */
+.include-url-btn {
+    background-color: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.include-url-btn .cross-mark {
+    color: red;
+}
+
+.include-url-btn .tick-mark {
+    color: green;
+}

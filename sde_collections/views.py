@@ -233,7 +233,7 @@ class AffectedURLsListView(LoginRequiredMixin, ListView):
     model = CandidateURL
     template_name = "sde_collections/affected_urls.html"
     context_object_name = "affected_urls"
-    paginate_by = 100
+    # paginate_by = 100
 
     def get_queryset(self):
         self.pattern = ExcludePattern.objects.get(id=self.kwargs["id"])
@@ -243,6 +243,10 @@ class AffectedURLsListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["pattern"] = self.pattern
+        context["url_count"] = self.pattern.matched_urls().count()
+        context["collection"] = self.pattern.collection
+
+        # print(self.pattern.collection.id)
 
         # affected_urls = self.pattern.matched_urls()
         # for url in affected_urls:
