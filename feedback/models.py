@@ -8,6 +8,7 @@ class Feedback(models.Model):
     name = models.CharField(max_length=150)
     email = models.EmailField()
     subject = models.CharField(max_length=400)
+    category = models.TextField(default="", blank=True)
     comments = models.TextField()
     source = models.CharField(max_length=50, default="SDE", blank=True)
     created_at = models.DateTimeField(null=True, blank=True)
@@ -37,6 +38,7 @@ class Feedback(models.Model):
             f"Name: {self.name}\n"
             f"Email: {self.email}\n"
             f"Subject: {self.subject}\n"
+            f"Feedback Category: {self.category}\n"
             f"Comments: {self.comments}\n"
             f"Source: {self.source}\n"
             f"Received on: {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}"
