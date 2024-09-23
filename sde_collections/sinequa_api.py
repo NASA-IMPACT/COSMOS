@@ -38,13 +38,13 @@ server_configs = {
         "base_url": "http://sde-xli.nasa-impact.net",
     },
     "lrm_dev_server": {
-        "app_name": "nasa-sba-smd",
-        "query_name": "query-smd-primary",
+        "app_name": "sde-init-check",
+        "query_name": "query-init-check",
         "base_url": "https://sde-lrm.nasa-impact.net",
     },
     "lrm_qa_server": {
-        "app_name": "nasa-sba-smd",
-        "query_name": "query-smd-primary",
+        "app_name": "sde-init-check",
+        "query_name": "query-init-check",
         "base_url": "https://sde-qa.nasa-impact.net",
     },
 }
