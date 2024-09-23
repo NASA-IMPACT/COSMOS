@@ -51,6 +51,8 @@ from .utils.health_check import generate_db_github_metadata_differences
 
 User = get_user_model()
 
+from django.db.models import BooleanField, Case, Value, When, Q
+
 
 class CollectionListView(LoginRequiredMixin, ListView):
     """
@@ -235,9 +237,34 @@ class AffectedURLsListView(LoginRequiredMixin, ListView):
     context_object_name = "affected_urls"
     # paginate_by = 100
 
+    # def get_queryset(self):
+    #     self.pattern = ExcludePattern.objects.get(id=self.kwargs["id"])
+    #     queryset = self.pattern.matched_urls()
+    #     return queryset
+
     def get_queryset(self):
+        # Get the exclude pattern based on the ID from the URL kwargs
         self.pattern = ExcludePattern.objects.get(id=self.kwargs["id"])
-        queryset = self.pattern.matched_urls()
+        
+        # Get excluded URLs
+        excluded_urls = self.pattern.matched_urls().annotate(is_included=Value(False, output_field=BooleanField()))
+
+        # Get included URLs for the same collection
+        include_patterns = IncludePattern.objects.filter(collection=self.pattern.collection)
+        included_urls = CandidateURL.objects.filter(
+            collection=self.pattern.collection,
+            id__in=include_patterns.values_list('candidate_urls__id', flat=True)
+        ).distinct()
+
+        # Annotate excluded URLs with is_included if they are also in included_urls
+        queryset = excluded_urls.annotate(
+            is_included=Case(
+                When(id__in=included_urls.values('id'), then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField()
+            )
+        )
+
         return queryset
 
     def get_context_data(self, **kwargs):

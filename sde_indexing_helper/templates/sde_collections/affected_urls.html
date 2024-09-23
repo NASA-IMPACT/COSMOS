@@ -25,25 +25,36 @@ Affected URLs
 
     <div class="container mt-4">
         <!-- Table to display the URLs -->
-        <table id="urlsTable" class="table table-striped table-bordered" style="width:100%">
+        <table id="affectedURLsTable" class="table table-striped table-bordered" style="width:100%">
             <thead class="tableHeader">
                 <tr>
                     <th scope="col" class="text-center col-1">#</th>
-                    <th scope="col" class="text-center col-8">URL</th>
-                    <th scope="col" class="text-center col-2">Include URL</th> <!-- New Column -->
+                    <th scope="col" class="text-center col-2">URL</th>
+                    <!-- <th scope="col" class="text-center col-4">Is Included?</th> -->
+                    <th scope="col" class="text-center col-3">Include URL</th> <!-- New Column -->
                 </tr>
             </thead>
             <tbody>
                 {% for url in affected_urls %}
                     <tr>
+                        <!-- <td class="col-3 text-center">
+                            <a class="exclude_individual_url" value="astrobiology.nasa.gov/about/">
+                                <i class="material-icons" style="color: red">close</i></a>
+                        </td> -->
                         <td class="text-center">{{ forloop.counter }}</td>
                         <td>
                             <a href="{{ url.url }}" target="_blank">{{ url.url }}</a>
-                        </td>                        
-                        <td class="text-center">
-                            <button type="button" class="btn include-url-btn" data-url-id="{{ url.id }}" value = "{{url.url}}">
-                                <span class="cross-mark">&#10060;</span>  <!-- Default Cross Mark -->
-                            </button>
+                        </td>  
+                        <!-- <td> {{ url.is_included }} </td>                       -->
+                        <td class="col-3 text-center data-sort="0">
+                            <a class="include-url-btn" data-url-id="{{ url.id }}" value = "{{url.url}}">
+                            {% if url.is_included %}
+                                <i class="material-icons tick-mark" style="color: green">check</i></a>
+                                <!-- <span class="tick-mark">&#10004;</span>  Tick Mark if included -->
+                            {% else %}
+                            <i class="material-icons cross-mark" style="color: red">close</i></a>
+                                <!-- <span class="cross-mark">&#10060;</span>  Cross Mark if not included -->
+                            {% endif %}
                         </td>
                     </tr>
                 {% empty %}
