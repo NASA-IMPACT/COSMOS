@@ -94,7 +94,7 @@ class Api:
         }
 
         if collection_config_folder:
-            if self.server_name == "lis_server":
+            if self.server_name in ["lis_server", "lrm_dev_server", "lrm_qa_server"]:
                 payload["query"]["advanced"]["collection"] = f"/scrapers/{collection_config_folder}/"
             else:
                 payload["query"]["advanced"]["collection"] = f"/SDE/{collection_config_folder}/"
