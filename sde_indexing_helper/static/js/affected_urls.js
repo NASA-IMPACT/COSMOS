@@ -14,6 +14,7 @@ function initializeDataTable() {
       pageLength: 100,
       colReorder: true,
       stateSave: true,
+      searching: true,
       layout: {
         bottomEnd: "inputPaging",
         topEnd: null,
@@ -43,10 +44,18 @@ function initializeDataTable() {
     // }
 
   })
+
+  $("#affectedURLsFilter").on(
+    "beforeinput",
+    DataTable.util.debounce(function (val) {
+        affected_urls_table.columns(1).search(this.value).draw();
+    }, 1000)
+  );
 }
 
 function setupClickHandlers() {
     handleIncludeIndividualUrlClick();
+    handleExcludeIndividualUrlClick();
   }
 
 function handleIncludeIndividualUrlClick() {
@@ -65,10 +74,6 @@ function handleIncludeIndividualUrlClick() {
             parentCol3.setAttribute('data-sort', '1'); // Set data-sort to '1' for the check-mark
         }
 
-        // // Change to tick mark
-        // i.classList.remove('cross-mark');
-        // i.innerHTML = '&#10004;';  // Tick mark
-        // then add that URL to the includeURLs list
         match_pattern = remove_protocol($(this).attr("value")) ;
         match_pattern_type = INDIVIDUAL_URL;
         console.log(match_pattern);
@@ -77,20 +82,6 @@ function handleIncludeIndividualUrlClick() {
             match_pattern_type = match_pattern_type,
             true
           );
-        
-        // const row = $(this).closest('tr'); // Get the closest table row
-        // const rowId = $("#affectedURLsTable").DataTable().row(row).index();
-        // console.log(rowId);
-        // deleteRowById(rowId);
-
-        //Along with this, remove this pattern from the exclude_patterns
-        // First, check if similar kind of pattern is available in the exclude_pattern table
-        // If yes, this run this block of code.
-        // postExcludePatterns(
-        //     match_pattern = match_pattern,
-        //     match_pattern_type = match_pattern_type,
-        //     true
-        //   );
 
     
     } else {
@@ -133,26 +124,73 @@ function handleIncludeIndividualUrlClick() {
     });
   }
 
-  function handleExcludeIndividualUrlClick() {
-    // exclude that URL
-    // check in the include patterns if similar URL is present
-    // if yes then delete that URL in the 
 
+  function handleExcludeIndividualUrlClick() {
+    $("body").on("click", ".exclude-url-btn", function () {
+
+    const i = this.querySelector('i');
+    if (i.classList.contains('cross-mark')) {
+        // Change to tick mark
+        i.classList.remove('cross-mark');
+        i.classList.add('tick-mark'); // Add the tick-mark class
+        i.style.color = 'green'; // Change color to green
+        i.textContent = 'check'; // Set the text to "check"
+        let parentCol3 = i.closest('.col-3');
+        // Change the data-sort attribute of the parent element
+        if (parentCol3) {
+            parentCol3.setAttribute('data-sort', '1'); // Set data-sort to '1' for the check-mark
+        }
+
+        match_pattern = remove_protocol($(this).attr("value")) ;
+        match_pattern_type = INDIVIDUAL_URL;
+        console.log(match_pattern);
+        postExcludePatterns(
+            match_pattern = match_pattern,
+            match_pattern_type = match_pattern_type,
+            true
+          );
+
+    
+    } else {
+        // Handle the functionality of including that URL again (maybe delete that exclude pattern which was just created)
+        var url = $(this).attr("value");
+        console.log("url", url);
+        getCorrespondingExcludePattern(url).then(function(patternId) {
+            if (patternId !== null) {
+                console.log('Pattern ID:', patternId);
+                currentURLtoDelete = `/api/exclude-patterns/${patternId}/`;
+                deletePattern(
+                  currentURLtoDelete,
+                  (data_type = "Exclude Pattern")
+                );
+                
+                // Change back to cross mark
+                i.classList.remove('tick-mark');
+                i.classList.add('cross-mark'); // Add the cross-mark class
+                i.style.color = 'red'; // Change color to red
+                i.textContent = 'close'; // Set the text to "close"
+                let parentCol3 = i.closest('.col-3');
+                // Change the data-sort attribute of the parent element
+                if (parentCol3) {
+                    parentCol3.setAttribute('data-sort', '0'); // Set data-sort to '0' for the cross-mark
+                }
+
+                console.log("URL removed from the exclude pattern")
+
+
+            } else {
+                console.log('No matching pattern found.');
+            }
+        }).catch(function(error) {
+            console.error("Error occurred:", error);
+        });
+    
+    }
+
+    });
   }
 
 function postIncludePatterns(match_pattern, match_pattern_type = 0) {
-  if (!match_pattern) {
-    toastr.error("Please highlight a pattern to include.");
-    return;
-  }
-
-  // if pattern exists in table already
-  // var table = $("#include_patterns_table").DataTable();
-  // var itemIdColumnData = table.column(0).data().toArray();
-  // if (itemIdColumnData.includes(match_pattern)) {
-  //   toastr.success("Pattern already exists");
-  //   return;
-  // }
 
   $.ajax({
     url: "/api/include-patterns/",
@@ -165,16 +203,6 @@ function postIncludePatterns(match_pattern, match_pattern_type = 0) {
     },
     success: function (data) {
       console.log("Success on adding to the Included URLs");
-  //     $("#candidate_urls_table").DataTable().ajax.reload(null, false);
-  //     $("#include_patterns_table").DataTable().ajax.reload(null, false);
-  //     if(currentTab === ""){ //Only add a notification if we are on the first tab
-  //     newIncludePatternsCount = newIncludePatternsCount + 1;
-  //     $("#includePatternsTab").html(
-  //       `Include Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-  //         newIncludePatternsCount + " new" +
-  //         `</span>`
-  //     );
-  //   }
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -193,21 +221,6 @@ function remove_protocol(url) {
 
 
 function postExcludePatterns(match_pattern, match_pattern_type = 0, force) {
-//   if (!match_pattern) {
-//     toastr.error("Please highlight a pattern to exclude.");
-//     return;
-//   }
-//   if (!force) {
-//     //If the user clicked the icon in the table, we make the change regardless
-//     // if pattern exists in table already (unless another pattern overrules it)
-//     var table = $("#exclude_patterns_table").DataTable();
-//     var itemIdColumnData = table.column(0).data().toArray();
-//     if (itemIdColumnData.includes(match_pattern)) {
-//       toastr.success("Pattern already exists");
-//       return;
-//     }
-//   }
-
   $.ajax({
     url: "/api/exclude-patterns/",
     type: "POST",
@@ -218,17 +231,7 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0, force) {
       csrfmiddlewaretoken: csrftoken,
     },
     success: function (data) {
-    console.log("Success on removing from Excluded URLs");
-    //   $("#candidate_urls_table").DataTable().ajax.reload(null, false);
-    //   $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
-    //   if(currentTab === ""){ //Only add a notification if we are on the first tab
-    //   newExcludePatternsCount = newExcludePatternsCount + 1;
-    //   $("#excludePatternsTab").html(
-    //     `Exclude Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-    //       newExcludePatternsCount + " new" +
-    //       `</span>`
-    //   );
-    // }
+    console.log("Success on adding to the Excluded URLs");
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -289,6 +292,26 @@ function getCorrespondingIncludePattern(url) {
         return null; // Return null if no pattern matches
     }).catch(function(error) {
         console.error("Error fetching include patterns:", error);
+        return null;
+    });
+}
+
+function getCorrespondingExcludePattern(url) {
+    return $.ajax({
+        url: `/api/exclude-patterns/?format=datatables&collection_id=${collection_id}`,
+        method: 'GET',
+        dataType: 'json'
+    }).then(function(response) {
+        // Iterate through the 'data' array to find a matching pattern
+        for (let i = 0; i < response.data.length; i++) {
+            let pattern = response.data[i].match_pattern;
+            if ( pattern === remove_protocol(url)) {
+                return response.data[i].id; // Return the first matching pattern id
+            }
+        }
+        return null; // Return null if no pattern matches
+    }).catch(function(error) {
+        console.error("Error fetching exclude patterns:", error);
         return null;
     });
 }

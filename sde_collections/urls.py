@@ -49,6 +49,21 @@ urlpatterns = [
         name="affected_urls",
     ),
     path(
+        "include-pattern/<int:id>/",
+        view=views.AffectedURLsListView.as_view(),
+        name="affected_urls",
+    ),
+    path(
+        "title-pattern/<int:id>/",
+        view=views.AffectedURLsListView.as_view(),
+        name="affected_urls",
+    ),
+    path(
+        "document-type-pattern/<int:id>/",
+        view=views.AffectedURLsListView.as_view(),
+        name="affected_urls",
+    ),
+    path(
         "consolidate/",
         view=views.WebappGitHubConsolidationView.as_view(),
         name="consolidate_db_and_github_configs",

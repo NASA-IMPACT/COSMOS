@@ -11,6 +11,14 @@ from .pattern import ExcludePattern, TitlePattern
 
 class CandidateURLQuerySet(models.QuerySet):
     def with_exclusion_status(self):
+        # currently this is only handling the exclude_patterns
+        # need to add functionality of including include_patterns
+        # exclude=false
+        # if some_include_pattern exists which matches this url:
+        #     then exclude = false
+        # else
+        #     if some_exclude_pattern exists which matches this url:
+        #         exclude = true
         return self.annotate(
             excluded=models.Exists(
                 ExcludePattern.candidate_urls.through.objects.filter(candidateurl=models.OuterRef("pk"))

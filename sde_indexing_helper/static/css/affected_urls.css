@@ -480,3 +480,7 @@ body {
 .include-url-btn .tick-mark {
     color: green;
 }
+
+.cross-mark, .tick-mark {
+    cursor: pointer; /* Show hand cursor */
+}
