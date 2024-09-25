@@ -4,7 +4,6 @@ var MULTI_URL_PATTERN = 2;
 collection_id = getCollectionId();
 
 $(document).ready(function () {
-    // handleAjaxStartAndStop();
     initializeDataTable();
     setupClickHandlers();
 });
@@ -14,7 +13,6 @@ function initializeDataTable() {
       pageLength: 100,
       colReorder: true,
       stateSave: true,
-      searching: true,
       layout: {
         bottomEnd: "inputPaging",
         topEnd: null,
@@ -32,16 +30,6 @@ function initializeDataTable() {
       pagingType: "input",
       rowId: "url"
   },
-    // createdRow: function (row, data, dataIndex) {
-    //     // Assuming the 'Include URL' column is at index 3
-    //     let includeUrlCell = $(row).find('td').eq(2);
-
-    //     // Check if the cell has the cross-mark
-    //     if (includeUrlCell.find('i.cross-mark').length > 0) {
-    //         // Highlight the row if it contains a cross-mark
-    //         $(row).css('background-color', 'rgba(255, 61, 87, 0.36)'); // Light red background
-    //     }
-    // }
 
   })
 
@@ -85,7 +73,6 @@ function handleIncludeIndividualUrlClick() {
 
     
     } else {
-        // Handle the functionality of excluding that URL again (maybe delete that include pattern which was just created)
         var url = $(this).attr("value");
         console.log("url", url);
         getCorrespondingIncludePattern(url).then(function(patternId) {
@@ -240,21 +227,6 @@ function postExcludePatterns(match_pattern, match_pattern_type = 0, force) {
   });
 }
 
-function deleteRowById(rowId) {
-    // Find the DataTable instance
-    var affected_urls_table = $("#affectedURLsTable").DataTable();
-  
-    // Find the row with ID 1
-    var rowToDelete = affected_urls_table.row(rowId); // Adjust based on 0-indexing
-  
-    if (rowToDelete.length) {
-      rowToDelete.remove(); // Remove the row
-      affected_urls_table.draw(); // Redraw the table
-    } else {
-      console.log("Row not found.");
-    }
-  }
-
 function deletePattern(
   url,
   data_type,
@@ -273,6 +245,10 @@ function deletePattern(
         success: function (data) {
           console.log("Successfully deleted.")
         },
+        error: function (xhr, status, error) {
+            var errorMessage = xhr.responseText;
+            toastr.error(errorMessage);
+        },      
       });
 }
 

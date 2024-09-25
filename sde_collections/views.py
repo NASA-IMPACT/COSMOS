@@ -239,53 +239,21 @@ class AffectedURLsListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
 
         if 'exclude-pattern' in self.request.path:
-            print("Going with exclude patterns......")
-            # Get the exclude pattern based on the ID from the URL kwargs
             self.pattern = ExcludePattern.objects.get(id=self.kwargs["id"])
-            
-            # Get excluded URLs
-            excluded_urls = self.pattern.matched_urls().annotate(is_included=Value(False, output_field=BooleanField()))
-
-            # Get included URLs for the same collection
-            include_patterns = IncludePattern.objects.filter(collection=self.pattern.collection)
-            included_urls = CandidateURL.objects.filter(
-                collection=self.pattern.collection,
-                id__in=include_patterns.values_list('candidate_urls__id', flat=True)
-            ).distinct()
-
-            # Annotate excluded URLs with is_included if they are also in included_urls
-            queryset = excluded_urls.annotate(
-                is_included=Case(
-                    When(id__in=included_urls.values('id'), then=Value(True)),
-                    default=Value(False),
-                    output_field=BooleanField()
-                )
-            )
-
+            self.pattern_type = "Exclude"
         elif 'include-pattern' in self.request.path:
-            print("Going with include patterns......")
-            # Get the include pattern based on the ID from the URL kwargs
             self.pattern = IncludePattern.objects.get(id=self.kwargs["id"])
-
-            # Get included URLs for the pattern
-            included_urls = self.pattern.matched_urls().annotate(is_excluded=Value(False, output_field=BooleanField()))
-
-            # Get excluded URLs for the same collection
-            exclude_patterns = ExcludePattern.objects.filter(collection=self.pattern.collection)
-            excluded_urls = CandidateURL.objects.filter(
-                collection=self.pattern.collection,
-                id__in=exclude_patterns.values_list('candidate_urls__id', flat=True)
-            ).distinct()
-
-            # Annotate included URLs with is_excluded if they are also in excluded_urls
-            queryset = included_urls.annotate(
-                is_excluded=Case(
-                    When(id__in=excluded_urls.values('id'), then=Value(True)),
-                    default=Value(False),
-                    output_field=BooleanField()
-                )
-            )
-
+            self.pattern_type = "Include"
+        elif 'title-pattern' in self.request.path:
+            self.pattern = TitlePattern.objects.get(id=self.kwargs["id"])
+            self.pattern_type = "Title"
+        elif 'document-type-pattern' in self.request.path:
+            self.pattern = DocumentTypePattern.objects.get(id=self.kwargs["id"])
+            self.pattern_type = "Document Type"
+        else:
+            return super().get_queryset()
+    
+        queryset = self.pattern.matched_urls()
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -293,18 +261,9 @@ class AffectedURLsListView(LoginRequiredMixin, ListView):
         context["pattern"] = self.pattern
         context["url_count"] = self.pattern.matched_urls().count()
         context["collection"] = self.pattern.collection
-        context["pattern_type"] = "Exclude" if 'exclude-pattern' in self.request.path else "Include"
-
-
-        # print(self.pattern.collection.id)
-
-        # affected_urls = self.pattern.matched_urls()
-        # for url in affected_urls:
-        #     print(url.collection)
-        # Your affected_urls is a list of CandidateURL model objects.
+        context["pattern_type"] = self.pattern_type
 
         return context
-
 
 class SdeDashboardView(LoginRequiredMixin, ListView):
     model = Collection
