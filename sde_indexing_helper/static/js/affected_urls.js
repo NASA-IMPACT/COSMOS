@@ -38,3 +38,7 @@ function initializeDataTable() {
     }, 1000)
   );
 }
+
+function getCollectionId() {
+  return collection_id;
+}
