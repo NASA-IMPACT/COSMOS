@@ -1163,37 +1163,24 @@ function handleExcludeIndividualUrlClick() {
 function handleShowAffectedURLsListButtonClick() {
   $("body").on("click", ".view-exclude-pattern-urls", function () {
     var matchPatternId = $(this).data("row-id");
-    console.log(matchPatternId);
-
-      // Redirect to the new page that will display the URLs
-      window.open(`/exclude-pattern/${matchPatternId}/`, '_blank');
+    window.open(`/exclude-pattern/${matchPatternId}/`, '_blank');
   });
 
   $("body").on("click", ".view-include-pattern-urls", function () {
     var matchPatternId = $(this).data("row-id");
-    console.log(matchPatternId);
-
-      // Redirect to the new page that will display the URLs
-      window.open(`/include-pattern/${matchPatternId}/`, '_blank');
+    window.open(`/include-pattern/${matchPatternId}/`, '_blank');
   });
 
   $("body").on("click", ".view-title-pattern-urls", function () {
     var matchPatternId = $(this).data("row-id");
-    console.log(matchPatternId);
-
-      // Redirect to the new page that will display the URLs
-      window.open(`/title-pattern/${matchPatternId}/`, '_blank');
+    window.open(`/title-pattern/${matchPatternId}/`, '_blank');
   });
 
   $("body").on("click", ".view-document-type-pattern-urls", function () {
     var matchPatternId = $(this).data("row-id");
-    console.log(matchPatternId);
-
-      // Redirect to the new page that will display the URLs
-      window.open(`/document-type-pattern/${matchPatternId}/`, '_blank');
+    window.open(`/document-type-pattern/${matchPatternId}/`, '_blank');
   });
 }
-
 
 function handleDeleteExcludePatternButtonClick() {
   $("body").on("click", ".delete-exclude-pattern-button", function () {

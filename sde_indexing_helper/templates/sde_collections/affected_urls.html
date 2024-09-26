@@ -33,13 +33,6 @@ Affected URLs for {{pattern_type}} Pattern
                 <tr>
                     <th scope="col" class="text-center col-1">#</th>
                     <th scope="col" class="text-center col-2">URL</th>
-                    <!-- <th scope="col" class="text-center col-3">
-                        {% if pattern_type == "Include" %}
-                            Exclude URL
-                        {% elif pattern_type == "Exclude" %}
-                            Include URL
-                        {% endif %}
-                    </th> -->
                 </tr>
                 <tr class="filter-row">
                     <td> </td>
@@ -56,23 +49,6 @@ Affected URLs for {{pattern_type}} Pattern
                                     <i class="material-icons url-icon">open_in_new</i></a> 
                                 </div>
                         </td>  
-                        <!-- <td class="col-3 text-center data-sort="0">
-                            {% if pattern_type == "Exclude" %}
-                                <a class="include-url-btn" data-url-id="{{ url.id }}" value = "{{url.url}}">
-                                {% if url.is_included %}
-                                    <i class="material-icons tick-mark" style="color: green">check</i></a>
-                                {% else %}
-                                <i class="material-icons cross-mark" style="color: red">close</i></a>
-                                {% endif %}
-                            {% elif pattern_type == "Include" %}
-                                <a class="exclude-url-btn" data-url-id="{{ url.id }}" value = "{{url.url}}">
-                                {% if url.is_excluded %}
-                                    <i class="material-icons tick-mark" style="color: green">check</i></a>
-                                {% else %}
-                                <i class="material-icons cross-mark" style="color: red">close</i></a>
-                                {% endif %}
-                            {% endif %}
-                        </td> -->
                     </tr>
                 {% empty %}
                     <tr>
