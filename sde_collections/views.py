@@ -227,44 +227,44 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
 
         return context
 
-class AffectedURLsListView(LoginRequiredMixin, ListView):
+class BaseAffectedURLsListView(LoginRequiredMixin, ListView):
     """
-    Display a list of URLs affected by a match pattern
+    Base view for displaying a list of URLs affected by a match pattern
     """
-
     model = CandidateURL
     template_name = "sde_collections/affected_urls.html"
     context_object_name = "affected_urls"
+    pattern_model = None
+    pattern_type = None
 
     def get_queryset(self):
-
-        if 'exclude-pattern' in self.request.path:
-            self.pattern = ExcludePattern.objects.get(id=self.kwargs["id"])
-            self.pattern_type = "Exclude"
-        elif 'include-pattern' in self.request.path:
-            self.pattern = IncludePattern.objects.get(id=self.kwargs["id"])
-            self.pattern_type = "Include"
-        elif 'title-pattern' in self.request.path:
-            self.pattern = TitlePattern.objects.get(id=self.kwargs["id"])
-            self.pattern_type = "Title"
-        elif 'document-type-pattern' in self.request.path:
-            self.pattern = DocumentTypePattern.objects.get(id=self.kwargs["id"])
-            self.pattern_type = "Document Type"
-        else:
-            return super().get_queryset()
-    
-        queryset = self.pattern.matched_urls()
-        return queryset
+        self.pattern = self.pattern_model.objects.get(id=self.kwargs["id"])
+        return self.pattern.matched_urls()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["pattern"] = self.pattern
-        context["url_count"] = self.pattern.matched_urls().count()
+        context["url_count"] = self.get_queryset().count()
         context["collection"] = self.pattern.collection
         context["pattern_type"] = self.pattern_type
-
         return context
 
+class ExcludePatternAffectedURLsListView(BaseAffectedURLsListView):
+    pattern_model = ExcludePattern
+    pattern_type = "Exclude"
+
+class IncludePatternAffectedURLsListView(BaseAffectedURLsListView):
+    pattern_model = IncludePattern
+    pattern_type = "Include"
+
+class TitlePatternAffectedURLsListView(BaseAffectedURLsListView):
+    pattern_model = TitlePattern
+    pattern_type = "Title"
+
+class DocumentTypePatternAffectedURLsListView(BaseAffectedURLsListView):
+    pattern_model = DocumentTypePattern
+    pattern_type = "Document Type"
+    
 class SdeDashboardView(LoginRequiredMixin, ListView):
     model = Collection
     template_name = "sde_collections/sde_dashboard.html"

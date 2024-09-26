@@ -45,22 +45,22 @@ urlpatterns = [
     ),
     path(
         "exclude-pattern/<int:id>/",
-        view=views.AffectedURLsListView.as_view(),
+        view=views.ExcludePatternAffectedURLsListView.as_view(),
         name="affected_urls",
     ),
     path(
         "include-pattern/<int:id>/",
-        view=views.AffectedURLsListView.as_view(),
+        view=views.IncludePatternAffectedURLsListView.as_view(),
         name="affected_urls",
     ),
     path(
         "title-pattern/<int:id>/",
-        view=views.AffectedURLsListView.as_view(),
+        view=views.TitlePatternAffectedURLsListView.as_view(),
         name="affected_urls",
     ),
     path(
         "document-type-pattern/<int:id>/",
-        view=views.AffectedURLsListView.as_view(),
+        view=views.DocumentTypePatternAffectedURLsListView.as_view(),
         name="affected_urls",
     ),
     path(
