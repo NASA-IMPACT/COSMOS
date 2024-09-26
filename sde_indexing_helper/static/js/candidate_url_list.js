@@ -388,12 +388,16 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
         render: function (data, type, row) {
-          return `<div style="display: flex; align-items: center; justify-content: center;">
-                    <span style="min-width: 50px; text-align: right; padding-right: 10px;">${data}</span>
-                    <button type="button" class="btn btn-sm view-exclude-pattern-urls" data-row-id="${row.id}">
-                      <i class="fa fa-eye"></i>
-                    </button>
-                  </div>`;
+          return `
+            <div style="display: flex; align-items: center; justify-content: center;">
+              <span style="min-width: 50px; text-align: right; padding-right: 10px;">
+                ${data}
+              </span>
+              <button type="button" class="btn btn-sm view-exclude-pattern-urls" data-row-id="${row.id}">
+                <i class="fa fa-eye"></i>
+              </button>
+            </div>
+          `;
         },
       },
       {
@@ -476,12 +480,16 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
         render: function (data, type, row) {
-          return `<div style="display: flex; align-items: center; justify-content: center;">
-                    <span style="min-width: 50px; text-align: right; padding-right: 10px;">${data}</span>
-                    <button type="button" class="btn btn-sm view-include-pattern-urls" data-row-id="${row.id}">
-                      <i class="fa fa-eye"></i>
-                    </button>
-                  </div>`;
+          return `
+            <div style="display: flex; align-items: center; justify-content: center;">
+              <span style="min-width: 50px; text-align: right; padding-right: 10px;">
+                ${data}
+              </span>
+              <button type="button" class="btn btn-sm view-include-pattern-urls" data-row-id="${row.id}">
+                <i class="fa fa-eye"></i>
+              </button>
+            </div>
+          `;
         },
       },
       {
@@ -564,12 +572,16 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
         render: function (data, type, row) {
-          return `<div style="display: flex; align-items: center; justify-content: center;">
-                    <span style="min-width: 50px; text-align: right; padding-right: 10px;">${data}</span>
-                    <button type="button" class="btn btn-sm view-title-pattern-urls" data-row-id="${row.id}">
-                      <i class="fa fa-eye"></i>
-                    </button>
-                  </div>`;
+          return `
+            <div style="display: flex; align-items: center; justify-content: center;">
+              <span style="min-width: 50px; text-align: right; padding-right: 10px;">
+                ${data}
+              </span>
+              <button type="button" class="btn btn-sm view-title-pattern-urls" data-row-id="${row.id}">
+                <i class="fa fa-eye"></i>
+              </button>
+            </div>
+          `;
         },
       },
       {
@@ -684,12 +696,16 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
         render: function (data, type, row) {
-          return `<div style="display: flex; align-items: center; justify-content: center;">
-                    <span style="min-width: 50px; text-align: right; padding-right: 10px;">${data}</span>
-                    <button type="button" class="btn btn-sm view-document-type-pattern-urls" data-row-id="${row.id}">
-                      <i class="fa fa-eye"></i>
-                    </button>
-                  </div>`;
+          return `
+            <div style="display: flex; align-items: center; justify-content: center;">
+              <span style="min-width: 50px; text-align: right; padding-right: 10px;">
+                ${data}
+              </span>
+              <button type="button" class="btn btn-sm view-document-type-pattern-urls" data-row-id="${row.id}">
+                <i class="fa fa-eye"></i>
+              </button>
+            </div>
+          `;
         },
       },
 
