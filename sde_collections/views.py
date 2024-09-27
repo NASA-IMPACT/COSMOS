@@ -51,9 +51,6 @@ from .utils.health_check import generate_db_github_metadata_differences
 
 User = get_user_model()
 
-from django.db.models import BooleanField, Case, Q, Value, When
-
-
 class CollectionListView(LoginRequiredMixin, ListView):
     """
     Display a list of collections in the system
