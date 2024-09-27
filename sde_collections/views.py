@@ -51,7 +51,7 @@ from .utils.health_check import generate_db_github_metadata_differences
 
 User = get_user_model()
 
-from django.db.models import BooleanField, Case, Value, When, Q
+from django.db.models import BooleanField, Case, Q, Value, When
 
 
 class CollectionListView(LoginRequiredMixin, ListView):
@@ -227,10 +227,12 @@ class CandidateURLsListView(LoginRequiredMixin, ListView):
 
         return context
 
+
 class BaseAffectedURLsListView(LoginRequiredMixin, ListView):
     """
     Base view for displaying a list of URLs affected by a match pattern
     """
+
     model = CandidateURL
     template_name = "sde_collections/affected_urls.html"
     context_object_name = "affected_urls"
@@ -249,22 +251,27 @@ class BaseAffectedURLsListView(LoginRequiredMixin, ListView):
         context["pattern_type"] = self.pattern_type
         return context
 
+
 class ExcludePatternAffectedURLsListView(BaseAffectedURLsListView):
     pattern_model = ExcludePattern
     pattern_type = "Exclude"
+
 
 class IncludePatternAffectedURLsListView(BaseAffectedURLsListView):
     pattern_model = IncludePattern
     pattern_type = "Include"
 
+
 class TitlePatternAffectedURLsListView(BaseAffectedURLsListView):
     pattern_model = TitlePattern
     pattern_type = "Title"
 
+
 class DocumentTypePatternAffectedURLsListView(BaseAffectedURLsListView):
     pattern_model = DocumentTypePattern
     pattern_type = "Document Type"
-    
+
+
 class SdeDashboardView(LoginRequiredMixin, ListView):
     model = Collection
     template_name = "sde_collections/sde_dashboard.html"
