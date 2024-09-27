@@ -29,6 +29,11 @@ function initializeDataTable() {
       pagingType: "input",
       rowId: "url",
     },
+    columnDefs: [
+      { orderable: true, targets: "_all" },
+      { orderable: false, targets: "filter-row" },
+    ],
+    orderCellsTop: true,
   });
 
   $("#affectedURLsFilter").on(
