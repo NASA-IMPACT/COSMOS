@@ -51,6 +51,7 @@ from .utils.health_check import generate_db_github_metadata_differences
 
 User = get_user_model()
 
+
 class CollectionListView(LoginRequiredMixin, ListView):
     """
     Display a list of collections in the system
