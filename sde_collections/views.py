@@ -254,6 +254,30 @@ class ExcludePatternAffectedURLsListView(BaseAffectedURLsListView):
     pattern_model = ExcludePattern
     pattern_type = "Exclude"
 
+    def get_queryset(self):
+        self.pattern = self.pattern_model.objects.get(id=self.kwargs["id"])
+        queryset = self.pattern.matched_urls()
+        
+        # Subquery to get the match_pattern and id of the IncludePattern
+        include_pattern_subquery = IncludePattern.objects.filter(
+            candidate_urls=models.OuterRef("pk")
+        ).values('match_pattern', 'id')[:1]
+
+        # Annotate with inclusion status, match_pattern, and id of the IncludePattern
+        queryset = queryset.annotate(
+            included=models.Exists(include_pattern_subquery),
+            included_by_pattern=models.Subquery(
+                include_pattern_subquery.values('match_pattern'),
+                output_field=models.CharField()
+            ),
+            match_pattern_id=models.Subquery(
+                include_pattern_subquery.values('id'),
+                output_field=models.IntegerField()
+            )
+        )
+        
+        return queryset
+
 
 class IncludePatternAffectedURLsListView(BaseAffectedURLsListView):
     pattern_model = IncludePattern
@@ -362,8 +386,8 @@ class CandidateURLAPIView(ListAPIView):
     def get_queryset(self):
         queryset = (
             CandidateURL.objects.filter(collection__config_folder=self.config_folder)
-            .with_exclusion_status()
-            .filter(excluded=False)
+            .with_exclusion_and_inclusion_status()
+            .filter(models.Q(excluded=False) | models.Q(included=True))
         )
         return queryset
 

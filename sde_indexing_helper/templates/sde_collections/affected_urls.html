@@ -31,12 +31,18 @@ Affected URLs for {{pattern_type}} Pattern
         <table id="affectedURLsTable" class="table" style="width:100%">
             <thead class="tableHeader">
                 <tr>
-                    <th scope="col" class="text-center col-1">#</th>
-                    <th scope="col" class="text-center col-2">URL</th>
+                    <th scope="col" class="text-center col-2">#</th>
+                    <th scope="col" class="text-center">URL</th>
+                    {% if pattern_type == "Exclude" %}
+                    <th scope="col" class="text-center" style="width: 10%;">Include URL</th>
+                    {% endif %}
                 </tr>
                 <tr class="filter-row">
                     <td> </td>
                     <td ><input type="text" class="table_filter_row_input textBoxStyling" id="affectedURLsFilter" placeholder="URL" /></td>
+                    {% if pattern_type == "Exclude" %}
+                    <td></td>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -49,6 +55,16 @@ Affected URLs for {{pattern_type}} Pattern
                                     <i class="material-icons url-icon">open_in_new</i></a>
                                 </div>
                         </td>
+                        {% if pattern_type == "Exclude" %}
+                        <td class="col-3 text-center data-sort="0">
+                            <a class="include-url-btn" data-url-id="{{ url.id }}" value = "{{url.url}}" included_by_pattern = "{{url.included_by_pattern}}" match_pattern_id = "{{ url.match_pattern_id}}">
+                                {% if url.included %}
+                                    <i class="material-icons tick-mark" style="color: green">check</i></a>
+                                {% else %}
+                                <i class="material-icons cross-mark" style="color: red">close</i></a>
+                                {% endif %}
+                        </td>
+                        {% endif %}
                     </tr>
                 {% empty %}
                     <tr>
@@ -58,6 +74,34 @@ Affected URLs for {{pattern_type}} Pattern
             </tbody>
         </table>
     </div>
+
+    <div class="modal fade" id="includePatternModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="includePatternModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="includePatternModalLabel">Include Pattern Form</h5>
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="include_pattern_form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="match_pattern_input" class="form-label">Match Pattern</label>
+                        <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="button-wrapper">
+                    <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                </div></div>
+            </form>
+        </div>
+        </div>
+    </div>
+
     </div>
 {% endblock content %}
 

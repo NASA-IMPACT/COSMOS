@@ -55,12 +55,34 @@
     padding: 11px 15px;
 }
 
+.addPattern {
+    background-color: #0066CA !important;
+    border-color: #0066CA !important;
+    color: #fff !important;
+}
+
+#match_pattern_input {
+    background: #3F4A58;
+    border-radius: 4px;
+}
+
+.asterik {
+    color: #C3001A;
+}
 .customizeColumns {
     margin-left: 10px !important;
 }
 
 .form-control:read-only {
     background-image: none;
+}
+
+.form-control {
+    color: white;
+}
+
+.form-control:focus {
+    color: white;
 }
 
 .dt-container div.dt-length label {
@@ -174,4 +196,46 @@ body {
 .table tbody tr td a:hover {
     color: #f5f5f5;
     /* Hover effect for links */
+}
+
+/* Optional styles for the Include URL button */
+.include-url-btn {
+    background-color: transparent;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+.modalTitle {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 36px;
+    letter-spacing: -0.03em;
+}
+
+#hideShowColumnsModal {
+    position: fixed;
+    top: 0;
+    right: 0 !important;
+    left: unset !important;
+    background: #FFFFFF;
+    width: 30vw;
+    z-index: 2000;
+}
+
+.modalFooter {
+    position: sticky;
+    bottom: 0;
+    position: sticky;
+    bottom: 0;
+    padding: 10px 0;
+    background: #FFFFFF;
+}
+
+.modal-body .bmd-label-static {
+    top: -20px !important;
+}
+
+.modal-header {
+    margin-bottom: 40px;
 }
