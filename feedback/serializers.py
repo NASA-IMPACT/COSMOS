@@ -10,6 +10,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
             "name",
             "email",
             "subject",
+            "category",
             "comments",
             "source",
             "created_at",
