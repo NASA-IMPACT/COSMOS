@@ -17,7 +17,7 @@ class CandidateURLQuerySet(models.QuerySet):
             ),
             included=models.Exists(
                 IncludePattern.candidate_urls.through.objects.filter(candidateurl=models.OuterRef("pk"))
-            )
+            ),
         )
 
 
