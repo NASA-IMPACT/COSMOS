@@ -315,11 +315,12 @@ class CandidateURLAPIView(ListAPIView):
         self.config_folder = config_folder
         return super().get(request, *args, **kwargs)
 
+    # return the urls that are either not excluded or specifically included
     def get_queryset(self):
         queryset = (
             CandidateURL.objects.filter(collection__config_folder=self.config_folder)
-            .with_exclusion_status()
-            .filter(excluded=False)
+            .with_exclusion_and_inclusion_status()
+            .filter(models.Q(excluded=False) | models.Q(included=True))
         )
         return queryset
 

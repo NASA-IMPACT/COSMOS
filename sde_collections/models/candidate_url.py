@@ -6,21 +6,24 @@ from django.db import models
 
 from .collection import Collection
 from .collection_choice_fields import Divisions, DocumentTypes
-from .pattern import ExcludePattern, TitlePattern
+from .pattern import ExcludePattern, IncludePattern, TitlePattern
 
 
 class CandidateURLQuerySet(models.QuerySet):
-    def with_exclusion_status(self):
+    def with_exclusion_and_inclusion_status(self):
         return self.annotate(
             excluded=models.Exists(
                 ExcludePattern.candidate_urls.through.objects.filter(candidateurl=models.OuterRef("pk"))
-            )
+            ),
+            included=models.Exists(
+                IncludePattern.candidate_urls.through.objects.filter(candidateurl=models.OuterRef("pk"))
+            ),
         )
 
 
 class CandidateURLManager(models.Manager):
     def get_queryset(self):
-        return CandidateURLQuerySet(self.model, using=self._db).with_exclusion_status()
+        return CandidateURLQuerySet(self.model, using=self._db).with_exclusion_and_inclusion_status()
 
 
 class CandidateURL(models.Model):
