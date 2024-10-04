@@ -41,6 +41,6 @@ pytest-django==4.8.0  # https://github.com/pytest-dev/pytest-django
 
 # Redis
 
-redis==5.0.1  # https://github.com/redis/redis-py
+redis==5.1.1  # https://github.com/redis/redis-py
 hiredis==2.3.2  # https://github.com/redis/hiredis-py
 django-redis==5.4.0  # https://github.com/jazzband/django-redis
