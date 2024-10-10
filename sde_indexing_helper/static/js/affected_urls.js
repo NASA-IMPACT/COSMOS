@@ -1,10 +1,20 @@
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 var INDIVIDUAL_URL = 1;
 var MULTI_URL_PATTERN = 2;
-collection_id = getCollectionId();
+// collection_id = getCollectionId();
 
 $(document).ready(function () {
   initializeDataTable();
+  // Conditionally add the button based on patternType
+  if (patternType == "Exclude" ) {
+    $("#affectedURLsTable").DataTable().button().add(0, {
+      text: "Add Include Pattern",
+      className: "addPattern",
+      action: function () {
+        $modal = $("#includePatternModal").modal();
+      },
+    });
+  }
   setupClickHandlers();
 });
 
@@ -17,22 +27,14 @@ function initializeDataTable() {
       bottomEnd: "inputPaging",
       topEnd: null,
       topStart: {
-        info: true,
+        // info: true,
         pageLength: {
           menu: [
             [25, 50, 100, 500],
             ["Show 25", "Show 50", "Show 100", "Show 500"],
           ],
         },
-        buttons: [
-          {
-            text: "Add Pattern",
-            className: "addPattern",
-            action: function () {
-              $modal = $("#includePatternModal").modal();
-            },
-          },
-        ],
+        buttons: [],
       },
       serverSide: true,
       orderCellsTop: true,
@@ -127,9 +129,9 @@ function initializeDataTable() {
 //   );
 // }
 
-function getCollectionId() {
-  return collection_id;
-}
+// function getCollectionId() {
+//   return collection_id;
+// }
 
 function setupClickHandlers() {
   handleHideorShowSubmitButton();
