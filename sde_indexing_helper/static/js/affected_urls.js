@@ -4,6 +4,7 @@ var MULTI_URL_PATTERN = 2;
 // collection_id = getCollectionId();
 
 $(document).ready(function () {
+  // handleAjaxStartAndStop();
   initializeDataTable();
   // Conditionally add the button based on patternType
   if (patternType == "Exclude" ) {
@@ -18,16 +19,20 @@ $(document).ready(function () {
   setupClickHandlers();
 });
 
+function handleAjaxStartAndStop() {
+  $(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
+}
+
 function initializeDataTable() {
   var affected_urls_table = $("#affectedURLsTable").DataTable({
     pageLength: 100,
     colReorder: true,
-    stateSave: true,
+    // stateSave: true,
     layout: {
       bottomEnd: "inputPaging",
       topEnd: null,
       topStart: {
-        // info: true,
+        info: true,
         pageLength: {
           menu: [
             [25, 50, 100, 500],
@@ -46,6 +51,37 @@ function initializeDataTable() {
       { orderable: false, targets: "filter-row" },
     ],
     orderCellsTop: true,
+    ajax: {
+      url: (function() {
+        let url = null;
+        if (patternType === "Exclude") {
+          url = `/api/exclude-pattern-affected-urls/?format=datatables&pattern_id=${pattern_id}`;
+        } else if (patternType === "Include") {
+          url = `/api/include-pattern-affected-urls/?format=datatables&pattern_id=${pattern_id}`;
+        } else if (patternType === "Title") {
+          url = `/api/title-pattern-affected-urls/?format=datatables&pattern_id=${pattern_id}`;
+        } else if (patternType === "Document Type") {
+          url = `/api/documenttype-pattern-affected-urls/?format=datatables&pattern_id=${pattern_id}`;
+        }
+        return url;
+      })(),
+      data: function (d) {
+        // d.is_excluded = $("#filter-checkbox").is(":checked") ? false : null;
+      },
+    },
+    columns: [
+      {
+        data: null, // No data source, we will generate the number
+        render: function (data, type, row, meta) {
+          return meta.row + 1; // Return the serial number starting from 1
+        },
+        searchable: false, // Not searchable
+        class: "whiteText text-center" // Add any class you need
+      },
+        getURLColumn(),
+      // Conditionally add the excluded column based on patternType
+      ...(patternType === "Exclude" ? [getIncludeURLColumn()] : [])    ]
+
   });
 
   $("#affectedURLsFilter").on(
@@ -54,6 +90,35 @@ function initializeDataTable() {
       affected_urls_table.columns(1).search(this.value).draw();
     }, 1000)
   );
+}
+
+function getURLColumn() {
+  return {
+    data: "url",
+    width: "30%",
+    render: function (data, type, row) {
+      return `<div class="url-cell"><span class="candidate_url nameStyling">${data}</span>
+              <a target="_blank" href=${data} data-url="/api/candidate-urls/${row["id"]}/" class="url-link">
+              <i class="material-icons url-icon">open_in_new</i></a>
+              </div>`;
+    },
+  };
+}
+
+function getIncludeURLColumn() {
+  return {
+    data: "url",
+    width: "30%",
+    //<td class="col-3 text-center data-sort="0">
+    render: function (data, type, row) {
+      return `<a class="include-url-btn" data-url-id=${row["id"]} value=${data} included_by_pattern='${row["included_by_pattern"]}' match_pattern_id='${row["match_pattern_id"]}'>
+              ${row["included"] ? 
+                '<i class="material-icons tick-mark" style="color: green">check</i>' : 
+                '<i class="material-icons cross-mark" style="color: red">close</i>'}
+              </a>`;
+    },
+    class: "col-3 text-center data-sort=\"0\""
+  };
 }
 
 // var pattern_type = "Exclude";
@@ -353,8 +418,13 @@ $("#include_pattern_form").on("submit", function (e) {
         postIncludePatterns(
           (match_pattern = inputs.match_pattern),
           (match_pattern_type = 2)
-        );
-      }
+        ).then(() => {
+            // Reload the DataTable after the successful postIncludePatterns call
+            $("#affectedURLsTable").DataTable().ajax.reload(null, false);
+        }).catch((error) => {
+            console.error("Error posting include patterns:", error);
+        });
+        }
     },
     error: function(xhr, status, error) {
       toastr.error("An error occurred while checking existing patterns");
@@ -364,4 +434,3 @@ $("#include_pattern_form").on("submit", function (e) {
   // close the modal if it is open
   $("#includePatternModal").modal("hide");
 });
-

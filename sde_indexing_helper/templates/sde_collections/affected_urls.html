@@ -45,7 +45,7 @@ Affected URLs for {{pattern_type}} Pattern
                     {% endif %}
                 </tr>
             </thead>
-            <tbody>
+            <!-- <tbody>
                 {% for url in affected_urls %}
                     <tr>
                         <td class="text-center">{{ forloop.counter }}</td>
@@ -71,7 +71,7 @@ Affected URLs for {{pattern_type}} Pattern
                         <td colspan="3" class="text-center">No URLs were affected by this pattern.</td>
                     </tr>
                 {% endfor %}
-            </tbody>
+            </tbody> -->
         </table>
     </div>
 
@@ -110,6 +110,7 @@ Affected URLs for {{pattern_type}} Pattern
     <script>
     var collection_id = "{{ collection.id }}";
     var patternType = "{{ pattern_type }}";
+    var pattern_id = "{{ pattern_id }}";
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n" crossorigin="anonymous"></script>

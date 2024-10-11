@@ -38,6 +38,7 @@ from .serializers import (
     CandidateURLAPISerializer,
     CandidateURLBulkCreateSerializer,
     CandidateURLSerializer,
+    AffectedURLSerializer,
     CollectionReadSerializer,
     CollectionSerializer,
     DivisionPatternSerializer,
@@ -239,11 +240,17 @@ class BaseAffectedURLsListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         self.pattern = self.pattern_model.objects.get(id=self.kwargs["id"])
+        queryset = self.pattern.matched_urls()
+        # print(list(queryset))
+        for url in queryset:
+            print(url.id)
         return self.pattern.matched_urls()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["pattern"] = self.pattern
+        context["pattern_id"] = self.kwargs["id"]
+        print(context["pattern_id"])
         context["url_count"] = self.get_queryset().count()
         context["collection"] = self.pattern.collection
         context["pattern_type"] = self.pattern_type
@@ -622,3 +629,60 @@ class TitlesAndErrorsView(View):
             "resolved_title_errors": resolved_title_errors,
         }
         return render(request, "sde_collections/titles_and_errors_list.html", context)
+
+
+class BaseAffectedURLsViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
+    queryset = CandidateURL.objects.all()
+    serializer_class = AffectedURLSerializer
+    pattern_model = None
+    pattern_type = None
+
+    def get_queryset(self):
+        # queryset = super().get_queryset()
+        pattern_id = self.request.GET.get("pattern_id")
+        self.pattern = self.pattern_model.objects.get(id=pattern_id)
+        queryset = self.pattern.matched_urls()
+        print("The length is ", len(queryset))
+        return queryset
+    
+class IncludePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
+    pattern_model = IncludePattern
+    pattern_type = "Include"
+
+class ExcludePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
+    pattern_model = ExcludePattern
+    pattern_type = "Exclude"
+    
+    def get_queryset(self):
+        pattern_id = self.request.GET.get("pattern_id")
+        self.pattern = self.pattern_model.objects.get(id=pattern_id)
+        queryset = self.pattern.matched_urls()
+        
+        # Subquery to get the match_pattern and id of the IncludePattern
+        include_pattern_subquery = IncludePattern.objects.filter(
+            candidate_urls=models.OuterRef("pk")
+        ).values('match_pattern', 'id')[:1]
+
+        # Annotate with inclusion status, match_pattern, and id of the IncludePattern
+        queryset = queryset.annotate(
+            included=models.Exists(include_pattern_subquery),
+            included_by_pattern=models.Subquery(
+                include_pattern_subquery.values('match_pattern'),
+                output_field=models.CharField()
+            ),
+            match_pattern_id=models.Subquery(
+                include_pattern_subquery.values('id'),
+                output_field=models.IntegerField()
+            )
+        )
+        
+        return queryset
+
+    
+class TitlePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
+    pattern_model = TitlePattern
+    pattern_type = "Title"
+    
+class DocumentTypePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
+    pattern_model = DocumentTypePattern
+    pattern_type = "Document Type"

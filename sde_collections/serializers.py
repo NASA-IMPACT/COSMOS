@@ -97,6 +97,56 @@ class CandidateURLSerializer(serializers.ModelSerializer):
             "present_on_prod",
         )
 
+class AffectedURLSerializer(serializers.ModelSerializer):
+    excluded = serializers.BooleanField(required=False)
+    document_type_display = serializers.CharField(source="get_document_type_display", read_only=True)
+    division_display = serializers.CharField(source="get_division_display", read_only=True)
+    url = serializers.CharField(required=False)
+    generated_title_id = serializers.SerializerMethodField(read_only=True)
+    match_pattern_type = serializers.SerializerMethodField(read_only=True)
+    candidate_urls_count = serializers.SerializerMethodField(read_only=True)
+    
+    # New fields for annotated parameters
+    included = serializers.BooleanField(read_only=True)  # Assuming it's a boolean
+    included_by_pattern = serializers.CharField(read_only=True)  # Assuming it's a string
+    match_pattern_id = serializers.IntegerField(read_only=True)  # Assuming it's an integer
+
+    def get_candidate_urls_count(self, obj):
+        titlepattern = obj.titlepattern_urls.last()
+        return titlepattern.candidate_urls.count() if titlepattern else 0
+
+    def get_generated_title_id(self, obj):
+        titlepattern = obj.titlepattern_urls.last()
+        return titlepattern.id if titlepattern else None
+
+    def get_match_pattern_type(self, obj):
+        titlepattern = obj.titlepattern_urls.last()
+        return titlepattern.match_pattern_type if titlepattern else None
+
+    class Meta:
+        model = CandidateURL
+        fields = (
+            "id",
+            "excluded",
+            "url",
+            "scraped_title",
+            "generated_title",
+            "generated_title_id",
+            "match_pattern_type",
+            "candidate_urls_count",
+            "document_type",
+            "document_type_display",
+            "division",
+            "division_display",
+            "visited",
+            "test_title",
+            "production_title",
+            "present_on_test",
+            "present_on_prod",
+            "included",  # New field
+            "included_by_pattern",  # New field
+            "match_pattern_id",  # New field
+        )
 
 class CandidateURLBulkCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -245,3 +295,22 @@ class DivisionPatternSerializer(BasePatternSerializer, serializers.ModelSerializ
         except DivisionPattern.DoesNotExist:
             pass
         return value
+
+
+class BaseAffectedURLSerializer(serializers.ModelSerializer):
+    match_pattern_type_display = serializers.CharField(source="get_match_pattern_type_display", read_only=True)
+    candidate_urls_count = serializers.SerializerMethodField(read_only=True)
+
+    def get_candidate_urls_count(self, instance):
+        return instance.candidate_urls.count()
+
+    class Meta:
+        fields = (
+            "id",
+            "collection",
+            "match_pattern",
+            "match_pattern_type",
+            "match_pattern_type_display",
+            "candidate_urls_count",
+        )
+        abstract = True
