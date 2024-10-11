@@ -239,3 +239,13 @@ body {
 .modal-header {
     margin-bottom: 40px;
 }
+
+.row .col-md-auto {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dt-buttons {
+    margin-left: auto;
+}
