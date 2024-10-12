@@ -27,11 +27,10 @@ Affected URLs for {{pattern_type}} Pattern
     </h3>
 
     <div class="container mt-4">
-        <!-- Table to display the URLs -->
         <table id="affectedURLsTable" class="table" style="width:100%">
             <thead class="tableHeader">
                 <tr>
-                    <th scope="col" class="text-center col-2">#</th>
+                    <th scope="col" class="text-center col-2">ID</th>
                     <th scope="col" class="text-center">URL</th>
                     {% if pattern_type == "Exclude" %}
                     <th scope="col" class="text-center" style="width: 10%;">Include URL</th>
@@ -45,33 +44,6 @@ Affected URLs for {{pattern_type}} Pattern
                     {% endif %}
                 </tr>
             </thead>
-            <!-- <tbody>
-                {% for url in affected_urls %}
-                    <tr>
-                        <td class="text-center">{{ forloop.counter }}</td>
-                        <td>
-                            <div class="url-cell"><span class="candidate_url nameStyling">{{ url.url }}</span>
-                                <a target="_blank" href="{{ url.url }}" data-url="/api/candidate-urls/{{url.id}}/" class="url-link">
-                                    <i class="material-icons url-icon">open_in_new</i></a>
-                                </div>
-                        </td>
-                        {% if pattern_type == "Exclude" %}
-                        <td class="col-3 text-center data-sort="0">
-                            <a class="include-url-btn" data-url-id="{{ url.id }}" value = "{{url.url}}" included_by_pattern = "{{url.included_by_pattern}}" match_pattern_id = "{{ url.match_pattern_id}}">
-                                {% if url.included %}
-                                    <i class="material-icons tick-mark" style="color: green">check</i></a>
-                                {% else %}
-                                <i class="material-icons cross-mark" style="color: red">close</i></a>
-                                {% endif %}
-                        </td>
-                        {% endif %}
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="3" class="text-center">No URLs were affected by this pattern.</td>
-                    </tr>
-                {% endfor %}
-            </tbody> -->
         </table>
     </div>
 

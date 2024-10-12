@@ -6,14 +6,17 @@ $(document).ready(function () {
   handleAjaxStartAndStop();
   initializeDataTable();
   // Conditionally add the button based on patternType
-  if (patternType == "Exclude" ) {
-    $("#affectedURLsTable").DataTable().button().add(0, {
-      text: "Add Include Pattern",
-      className: "addPattern",
-      action: function () {
-        $modal = $("#includePatternModal").modal();
-      },
-    });
+  if (patternType == "Exclude") {
+    $("#affectedURLsTable")
+      .DataTable()
+      .button()
+      .add(0, {
+        text: "Add Include Pattern",
+        className: "addPattern",
+        action: function () {
+          $modal = $("#includePatternModal").modal();
+        },
+      });
   }
   setupClickHandlers();
 });
@@ -28,6 +31,11 @@ function initializeDataTable() {
     pageLength: 100,
     colReorder: true,
     stateSave: true,
+    serverSide: true,
+    orderCellsTop: true,
+    pagingType: "input",
+    paging: true,
+    rowId: "url",
     layout: {
       bottomEnd: "inputPaging",
       topEnd: null,
@@ -41,21 +49,14 @@ function initializeDataTable() {
         },
         buttons: [],
       },
-      serverSide: true,
-      orderCellsTop: true,
-      pagingType: "input",
-      paging: true,
-      rowId: "url",
     },
     columnDefs: [
       { orderable: true, targets: "_all" },
       { orderable: false, targets: "filter-row" },
     ],
     orderCellsTop: true,
-    // ajax: `/api/exclude-pattern-affected-urls/?format=datatables&pattern_id=${pattern_id}`,
-    // ajax: `/api/candidate-urls/?format=datatables&collection_id=${collection_id}&length=1000`,
     ajax: {
-      url: (function() {
+      url: (function () {
         let url = null;
         if (patternType === "Exclude") {
           url = `/api/exclude-pattern-affected-urls/?format=datatables&pattern_id=${pattern_id}`;
@@ -68,35 +69,26 @@ function initializeDataTable() {
         }
         return url;
       })(),
-      data: function (d) {
-        console.log(d);
-        // d.is_excluded = $("#filter-checkbox").is(":checked") ? false : null;
-      },
-      complete: function(xhr, status) {
-        console.log(xhr.responseText); // Log the response from the server
-      }
-    
+      data: function (d) {},
+      complete: function (xhr, status) {},
     },
-    createdRow: function(row, data, dataIndex) {
+    createdRow: function (row, data, dataIndex) {
       // Set data-sort attribute based on the included property
-      const dataSortValue = data.included ? '1' : '0';
-      $(row).find('td').eq(2).attr('data-sort', dataSortValue);
+      const dataSortValue = data.included ? "1" : "0";
+      $(row).find("td").eq(2).attr("data-sort", dataSortValue);
+      if (patternType === "Exclude" && data["included"]) {
+        $(row).attr(
+          "style",
+          "background-color: rgba(255, 61, 87, 0.26) !important"
+        );
+      }
     },
 
     columns: [
-      {
-        data: null, // No data source, we will generate the number
-        render: function (data, type, row, meta) {
-          return meta.row + 1; // Return the serial number starting from 1
-        },
-        searchable: false, // Not searchable
-        class: "whiteText text-center" // Add any class you need
-      },
-        getURLColumn(),
-      // Conditionally add the excluded column based on patternType
-      ...(patternType === "Exclude" ? [getIncludeURLColumn()] : [])
-        ]
-
+      { data: "id", searchable: false, class: "whiteText text-center" },
+      getURLColumn(),
+      ...getConditionalColumns(patternType),
+    ],
   });
 
   $("#affectedURLsFilter").on(
@@ -122,17 +114,36 @@ function getURLColumn() {
 
 function getIncludeURLColumn() {
   return {
-    data: "url",
+    data: "included",
     width: "30%",
     render: function (data, type, row) {
-      return `<a class="include-url-btn" data-url-id=${row["id"]} value=${data} included_by_pattern='${row["included_by_pattern"]}' match_pattern_id='${row["match_pattern_id"]}'>
-              ${row["included"] ? 
-                '<i class="material-icons tick-mark" style="color: green">check</i>' : 
-                '<i class="material-icons cross-mark" style="color: red">close</i>'}
+      return `<a class="include-url-btn" data-url-id=${row["id"]} value=${
+        row["url"]
+      } included_by_pattern='${row["included_by_pattern"]}' match_pattern_id='${
+        row["match_pattern_id"]
+      }'>
+              ${
+                data
+                  ? '<i class="material-icons tick-mark" style="color: green">check</i>'
+                  : '<i class="material-icons cross-mark" style="color: red">close</i>'
+              }
               </a>`;
     },
-    class: "col-3 text-center"
+    class: "col-3 text-center",
   };
+}
+
+function getConditionalColumns(patternType) {
+  // add these columns if patternType is "Exclude"
+  if (patternType === "Exclude") {
+    return [
+      getIncludeURLColumn(),
+      { data: "included_by_pattern", visible: false, searchable: false },
+      { data: "match_pattern_id", visible: false, searchable: false },
+      { data: "excluded", visible: false, searchable: false },
+    ];
+  }
+  return [];
 }
 
 function setupClickHandlers() {
@@ -142,7 +153,6 @@ function setupClickHandlers() {
 }
 
 function handleIncludeIndividualUrlClick() {
-
   $("#affectedURLsTable").on("click", ".include-url-btn", function () {
     const inclusion_status = this.querySelector("i");
     if (inclusion_status.classList.contains("cross-mark")) {
@@ -164,7 +174,7 @@ function handleIncludeIndividualUrlClick() {
 
       if (included_by_pattern === remove_protocol(url)) {
         currentURLtoDelete = `/api/include-patterns/${match_pattern_id}/`;
-        deletePattern(currentURLtoDelete, (data_type = "Include Pattern"))
+        deletePattern(currentURLtoDelete, (data_type = "Include Pattern"));
         toastr.success("URL excluded successfully");
       } else {
         toastr.error(
@@ -214,25 +224,25 @@ function deletePattern(
   candidate_urls_count = null
 ) {
   return new Promise((resolve, reject) => {
-  $.ajax({
-    url: url,
-    type: "DELETE",
-    data: {
-      csrfmiddlewaretoken: csrftoken,
-    },
-    headers: {
-      "X-CSRFToken": csrftoken,
-    },
-    success: function (data) {
-      // refresh the table after a pattern is deleted
-      $("#affectedURLsTable").DataTable().ajax.reload(null, false);
-    },
-    error: function (xhr, status, error) {
-      var errorMessage = xhr.responseText;
-      toastr.error(errorMessage);
-    },
+    $.ajax({
+      url: url,
+      type: "DELETE",
+      data: {
+        csrfmiddlewaretoken: csrftoken,
+      },
+      headers: {
+        "X-CSRFToken": csrftoken,
+      },
+      success: function (data) {
+        // refresh the table after a pattern is deleted
+        $("#affectedURLsTable").DataTable().ajax.reload(null, false);
+      },
+      error: function (xhr, status, error) {
+        var errorMessage = xhr.responseText;
+        toastr.error(errorMessage);
+      },
+    });
   });
-});
 }
 
 function handleHideorShowKeypress() {
@@ -300,15 +310,14 @@ $("#include_pattern_form").on("submit", function (e) {
   input_serialized = $(this).serializeArray();
   $.ajax({
     url: `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
-    type: 'GET',
-    success: function(response) {
-      var existingPatterns = response.data.map(item => item.match_pattern);
+    type: "GET",
+    success: function (response) {
+      var existingPatterns = response.data.map((item) => item.match_pattern);
       if (existingPatterns.includes(input_serialized[0].value)) {
         toastr.warning("Pattern already exists");
         $("#includePatternModal").modal("hide");
         return;
-      }
-      else {
+      } else {
         // if pattern does not exist, create a new pattern
         inputs = {};
         input_serialized.forEach((field) => {
@@ -318,17 +327,19 @@ $("#include_pattern_form").on("submit", function (e) {
         postIncludePatterns(
           (match_pattern = inputs.match_pattern),
           (match_pattern_type = 2)
-        ).then(() => {
+        )
+          .then(() => {
             // Reload the DataTable after the successful postIncludePatterns call
             $("#affectedURLsTable").DataTable().ajax.reload(null, false);
-        }).catch((error) => {
-          toastr.error("Error posting include patterns:", error);
-        });
-        }
+          })
+          .catch((error) => {
+            toastr.error("Error posting include patterns:", error);
+          });
+      }
     },
-    error: function(xhr, status, error) {
+    error: function (xhr, status, error) {
       toastr.error("An error occurred while checking existing patterns");
-    }
+    },
   });
 
   // close the modal if it is open
