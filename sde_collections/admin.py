@@ -7,9 +7,7 @@ from .models.candidate_url import CandidateURL, ResolvedTitle
 from .models.collection import Collection, WorkflowHistory
 from .models.curated_url import CuratedUrl
 from .models.delta_url import DeltaUrl
-from .models.dump_url import DumpUrl
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
-from .models.url import Url
 from .tasks import import_candidate_urls_from_api
 
 
@@ -303,20 +301,6 @@ class DivisionPatternAdmin(admin.ModelAdmin):
     search_fields = ("match_pattern", "division")
 
 
-class UrlAdmin(admin.ModelAdmin):
-    """Admin View for Url"""
-
-    list_display = ("url", "scraped_title", "collection")
-    list_filter = ("collection",)
-
-
-class DumpUrlAdmin(admin.ModelAdmin):
-    """Admin View for DumpUrl"""
-
-    list_display = ("url", "scraped_title", "collection")
-    list_filter = ("collection",)
-
-
 class CuratedUrlAdmin(admin.ModelAdmin):
     """Admin View for CuratedUrl"""
 
@@ -337,7 +321,5 @@ admin.site.register(TitlePattern, TitlePatternAdmin)
 admin.site.register(IncludePattern)
 admin.site.register(ResolvedTitle, ResolvedTitleAdmin)
 admin.site.register(DivisionPattern, DivisionPatternAdmin)
-admin.site.register(Url, UrlAdmin)
 admin.site.register(DeltaUrl, DeltaUrlAdmin)
-admin.site.register(DumpUrl, DumpUrlAdmin)
 admin.site.register(CuratedUrl, CuratedUrlAdmin)
