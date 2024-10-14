@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models.candidate_url import CandidateURL
 from .models.collection import Collection, WorkflowHistory
 from .models.collection_choice_fields import Divisions, DocumentTypes
+from .models.curated_url import CuratedUrl
 from .models.pattern import (
     DivisionPattern,
     DocumentTypePattern,
@@ -107,19 +108,18 @@ class CandidateURLBulkCreateSerializer(serializers.ModelSerializer):
         )
 
 
-class CandidateURLAPISerializer(serializers.ModelSerializer):
+class CuratedUrlAPISerializer(serializers.ModelSerializer):
     document_type = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
     file_extension = serializers.SerializerMethodField()
     tree_root = serializers.SerializerMethodField()
 
     class Meta:
-        model = CandidateURL
+        model = CuratedUrl
         fields = (
             "url",
             "title",
             "document_type",
-            "hash",
             "file_extension",
             "tree_root",
         )
