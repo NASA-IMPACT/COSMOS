@@ -116,12 +116,16 @@ class Collection(models.Model):
         return f"sources/scrapers/{self.config_folder}/default.xml"
 
     @property
-    def _plugin_config_path(self) -> str:
+    def _indexer_config_path(self) -> str:
         return f"sources/SDE/{self.config_folder}/default.xml"
 
     @property
-    def _indexer_config_path(self) -> str:
+    def _indexer_job_path(self) -> str:
         return f"jobs/collection.indexer.{self.config_folder}.xml"
+
+    @property
+    def _scraper_job_path(self) -> str:
+        return f"jobs/collection.indexer.scrapers.{self.config_folder}.xml"
 
     @property
     def tree_root(self) -> str:
@@ -242,12 +246,12 @@ class Collection(models.Model):
         if overwrite is True, it will overwrite the existing file
         """
 
-        scraper_template = open("config_generation/xmls/webcrawler_initial_crawl.xml").read()
+        scraper_template = open("config_generation/xmls/scraper_template.xml").read()
         editor = XmlEditor(scraper_template)
         scraper_config = editor.convert_template_to_scraper(self)
         self._write_to_github(self._scraper_config_path, scraper_config, overwrite)
 
-    def create_plugin_config(self, overwrite: bool = False):
+    def create_indexer_config(self, overwrite: bool = False):
         """
         Reads from the model data and creates the plugin config xml file that calls the api
 
@@ -264,12 +268,24 @@ class Collection(models.Model):
             scraper_content = scraper_content.decoded_content.decode("utf-8")
             scraper_editor = XmlEditor(scraper_content)
 
-        plugin_template = open("config_generation/xmls/plugin_indexing_template.xml").read()
-        plugin_editor = XmlEditor(plugin_template)
-        plugin_config = plugin_editor.convert_template_to_plugin_indexer(scraper_editor)
-        self._write_to_github(self._plugin_config_path, plugin_config, overwrite)
+        indexer_template = open("config_generation/xmls/indexer_template.xml").read()
+        indexer_editor = XmlEditor(indexer_template)
+        indexer_config = indexer_editor.convert_template_to_indexer(scraper_editor)
+        self._write_to_github(self._indexer_config_path, indexer_config, overwrite)
 
-    def create_indexer_config(self, overwrite: bool = False):
+    def create_scraper_job(self, overwrite: bool = False):
+        """
+        Reads from the model data and creates the initial scraper job xml file
+
+        if overwrite is True, it will overwrite the existing file
+        """
+
+        scraper_job_template = open("config_generation/xmls/job_template.xml").read()
+        editor = XmlEditor(scraper_job_template)
+        scraper_job = editor.convert_template_to_job(self, "scrapers")
+        self._write_to_github(self._scraper_job_path, scraper_job, overwrite)
+
+    def create_indexer_job(self, overwrite: bool = False):
         """
         Reads from the model data and creates indexer job that calls the plugin config
 
@@ -277,8 +293,8 @@ class Collection(models.Model):
         """
         indexer_template = open("config_generation/xmls/job_template.xml").read()
         editor = XmlEditor(indexer_template)
-        indexer_config = editor.convert_template_to_indexer(self)
-        self._write_to_github(self._indexer_config_path, indexer_config, overwrite)
+        indexer_job = editor.convert_template_to_job(self, "SDE")
+        self._write_to_github(self._indexer_job_path, indexer_job, overwrite)
 
     def update_config_xml(self, original_config_string):
         """
@@ -579,10 +595,11 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
 
     if "workflow_status" in instance.tracker.changed():
         if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
-            instance.create_plugin_config(overwrite=True)
+            instance.create_indexer_config(overwrite=True)
+            instance.create_indexer_job(overwrite=False)
         elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
             instance.create_scraper_config(overwrite=False)
-            instance.create_indexer_config(overwrite=False)
+            instance.create_scraper_job(overwrite=False)
         elif instance.workflow_status in [
             WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
             WorkflowStatusChoices.QUALITY_CHECK_MINOR,
