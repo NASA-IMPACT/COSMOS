@@ -116,7 +116,7 @@ class Collection(models.Model):
         return f"sources/scrapers/{self.config_folder}/default.xml"
 
     @property
-    def _plugin_config_path(self) -> str:
+    def _indexer_config_path(self) -> str:
         return f"sources/SDE/{self.config_folder}/default.xml"
 
     @property
@@ -125,7 +125,7 @@ class Collection(models.Model):
 
     @property
     def _scraper_job_path(self) -> str:
-        return f"jobs/collection.scrapers.{self.config_folder}.xml"
+        return f"jobs/collection.indexer.scrapers.{self.config_folder}.xml"
 
     @property
     def tree_root(self) -> str:
@@ -271,7 +271,7 @@ class Collection(models.Model):
         indexer_template = open("config_generation/xmls/indexer_template.xml").read()
         indexer_editor = XmlEditor(indexer_template)
         indexer_config = indexer_editor.convert_template_to_indexer(scraper_editor)
-        self._write_to_github(self._plugin_config_path, indexer_config, overwrite)
+        self._write_to_github(self._indexer_config_path, indexer_config, overwrite)
 
     def create_scraper_job(self, overwrite: bool = False):
         """

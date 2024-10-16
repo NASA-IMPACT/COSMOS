@@ -39,7 +39,7 @@ class ParallelJobCreator:
         if source == "SDE":
             return f"collection.indexer.{collection_name}.xml"
         else:
-            return f"collection.{source}.{collection_name}.xml"
+            return f"collection.indexer.{source}.{collection_name}.xml"
 
     def _create_joblist_name(self, index):
         """
