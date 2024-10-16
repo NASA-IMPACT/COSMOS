@@ -293,7 +293,7 @@ class Collection(models.Model):
         """
         indexer_template = open("config_generation/xmls/job_template.xml").read()
         editor = XmlEditor(indexer_template)
-        indexer_job = editor.convert_template_to_job(self, "indexer")
+        indexer_job = editor.convert_template_to_job(self, "SDE")
         self._write_to_github(self._indexer_job_path, indexer_job, overwrite)
 
     def update_config_xml(self, original_config_string):
