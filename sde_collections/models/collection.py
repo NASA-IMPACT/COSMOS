@@ -246,7 +246,7 @@ class Collection(models.Model):
         if overwrite is True, it will overwrite the existing file
         """
 
-        scraper_template = open("config_generation/xmls/initial_config_template.xml").read()
+        scraper_template = open("config_generation/xmls/scraper_template.xml").read()
         editor = XmlEditor(scraper_template)
         scraper_config = editor.convert_template_to_scraper(self)
         self._write_to_github(self._scraper_config_path, scraper_config, overwrite)
@@ -268,10 +268,10 @@ class Collection(models.Model):
             scraper_content = scraper_content.decoded_content.decode("utf-8")
             scraper_editor = XmlEditor(scraper_content)
 
-        plugin_template = open("config_generation/xmls/final_config_template.xml").read()
-        plugin_editor = XmlEditor(plugin_template)
-        plugin_config = plugin_editor.convert_template_to_indexer(scraper_editor)
-        self._write_to_github(self._plugin_config_path, plugin_config, overwrite)
+        indexer_template = open("config_generation/xmls/indexer_template.xml").read()
+        indexer_editor = XmlEditor(indexer_template)
+        indexer_config = indexer_editor.convert_template_to_indexer(scraper_editor)
+        self._write_to_github(self._plugin_config_path, indexer_config, overwrite)
 
     def create_scraper_job(self, overwrite: bool = False):
         """
