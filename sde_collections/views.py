@@ -27,6 +27,7 @@ from .models.collection_choice_fields import (
     DocumentTypes,
     WorkflowStatusChoices,
 )
+from .models.curated_url import CuratedUrl
 from .models.pattern import (
     DivisionPattern,
     DocumentTypePattern,
@@ -35,11 +36,11 @@ from .models.pattern import (
     TitlePattern,
 )
 from .serializers import (
-    CandidateURLAPISerializer,
     CandidateURLBulkCreateSerializer,
     CandidateURLSerializer,
     CollectionReadSerializer,
     CollectionSerializer,
+    CuratedUrlAPISerializer,
     DivisionPatternSerializer,
     DocumentTypePatternSerializer,
     ExcludePatternSerializer,
@@ -307,8 +308,8 @@ class CandidateURLBulkCreateView(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class CandidateURLAPIView(ListAPIView):
-    serializer_class = CandidateURLAPISerializer
+class CuratedURLAPIView(ListAPIView):
+    serializer_class = CuratedUrlAPISerializer
 
     def get(self, request, *args, **kwargs):
         config_folder = kwargs.get("config_folder")
@@ -317,7 +318,7 @@ class CandidateURLAPIView(ListAPIView):
 
     def get_queryset(self):
         queryset = (
-            CandidateURL.objects.filter(collection__config_folder=self.config_folder)
+            CuratedUrl.objects.filter(collection__config_folder=self.config_folder)
             .with_exclusion_status()
             .filter(excluded=False)
         )
