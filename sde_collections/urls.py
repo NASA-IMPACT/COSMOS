@@ -44,6 +44,26 @@ urlpatterns = [
         name="candidate_urls",
     ),
     path(
+        "exclude-pattern/<int:id>/",
+        view=views.ExcludePatternAffectedURLsListView.as_view(),
+        name="affected_urls",
+    ),
+    path(
+        "include-pattern/<int:id>/",
+        view=views.IncludePatternAffectedURLsListView.as_view(),
+        name="affected_urls",
+    ),
+    path(
+        "title-pattern/<int:id>/",
+        view=views.TitlePatternAffectedURLsListView.as_view(),
+        name="affected_urls",
+    ),
+    path(
+        "document-type-pattern/<int:id>/",
+        view=views.DocumentTypePatternAffectedURLsListView.as_view(),
+        name="affected_urls",
+    ),
+    path(
         "consolidate/",
         view=views.WebappGitHubConsolidationView.as_view(),
         name="consolidate_db_and_github_configs",
