@@ -30,14 +30,14 @@ Affected URLs for {{pattern_type}} Pattern
         <table id="affectedURLsTable" class="table" style="width:100%">
             <thead class="tableHeader">
                 <tr>
-                    <th scope="col" class="text-center col-2">ID</th>
+                    <!-- <th scope="col" class="text-center col-2">ID</th> -->
                     <th scope="col" class="text-center">URL</th>
                     {% if pattern_type == "Exclude" %}
                     <th scope="col" class="text-center" style="width: 10%;">Include URL</th>
                     {% endif %}
                 </tr>
                 <tr class="filter-row">
-                    <td> </td>
+                    <!-- <td> </td> -->
                     <td ><input type="text" class="table_filter_row_input textBoxStyling" id="affectedURLsFilter" placeholder="URL" /></td>
                     {% if pattern_type == "Exclude" %}
                     <td></td>
@@ -47,6 +47,10 @@ Affected URLs for {{pattern_type}} Pattern
         </table>
     </div>
 
+    <ul class="custom-menu list-group">
+        <li data-action="include-pattern" class="list-group-item">Create Include Pattern</li>
+    </ul>
+    
     <div class="modal fade" id="includePatternModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
     aria-labelledby="includePatternModalLabel" aria-hidden="true">
     <div class="modal-dialog">

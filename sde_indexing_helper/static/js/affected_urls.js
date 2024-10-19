@@ -1,6 +1,7 @@
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
 var INDIVIDUAL_URL = 1;
 var MULTI_URL_PATTERN = 2;
+var selected_text = "";
 
 $(document).ready(function () {
   handleAjaxStartAndStop();
@@ -85,16 +86,16 @@ function initializeDataTable() {
     },
 
     columns: [
-      { data: "id", searchable: false, class: "whiteText text-center" },
       getURLColumn(),
       ...getConditionalColumns(patternType),
+      { data: "id", visible: false, searchable: false },
     ],
   });
 
   $("#affectedURLsFilter").on(
     "beforeinput",
     DataTable.util.debounce(function (val) {
-      affected_urls_table.columns(1).search(this.value).draw();
+      affected_urls_table.columns(0).search(this.value).draw();
     }, 1000)
   );
 }
@@ -172,7 +173,7 @@ function handleIncludeIndividualUrlClick() {
       var included_by_pattern = $(this).attr("included_by_pattern");
       var match_pattern_id = $(this).attr("match_pattern_id");
 
-      if (included_by_pattern === remove_protocol(url)) {
+      if (remove_protocol(included_by_pattern) === remove_protocol(url)) {
         currentURLtoDelete = `/api/include-patterns/${match_pattern_id}/`;
         deletePattern(currentURLtoDelete, (data_type = "Include Pattern"));
         toastr.success("URL excluded successfully");
@@ -344,4 +345,58 @@ $("#include_pattern_form").on("submit", function (e) {
 
   // close the modal if it is open
   $("#includePatternModal").modal("hide");
+});
+
+// Trigger action when the contexmenu is about to be shown
+$("body").on("contextmenu", ".candidate_url", function (event) {
+  // Avoid the real one
+  event.preventDefault();
+
+  // Show contextmenu
+  $(".custom-menu")
+    .finish()
+    .toggle(100)
+    // In the right position (the mouse)
+    .css({
+      top: event.pageY + "px",
+      left: event.pageX - 80 + "px",
+    });
+});
+
+// If the document is clicked somewhere
+$(document).bind("mousedown", function (e) {
+  selected_text = get_selection();
+
+  // If the clicked element is not the menu
+  if (!$(e.target).parents(".custom-menu").length > 0) {
+    // Hide it
+    $(".custom-menu").hide(100);
+  }
+});
+
+function get_selection() {
+  var text = "";
+  if (window.getSelection) {
+    text = window.getSelection().toString();
+  } else if (document.selection && document.selection.type != "Control") {
+    text = document.selection.createRange().text;
+  }
+
+  return text;
+}
+
+// If the menu element is clicked
+$(".custom-menu li").click(function () {
+  postIncludePatterns(
+    remove_protocol(selected_text.trim()),
+    (match_pattern_type = MULTI_URL_PATTERN)
+  )
+    .then(() => {
+      $("#affectedURLsTable").DataTable().ajax.reload(null, false);
+    })
+    .catch((error) => {
+      toastr.error("Error posting include patterns:", error);
+    });
+
+  $(".custom-menu").hide(100);
 });

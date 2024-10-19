@@ -107,9 +107,9 @@ class AffectedURLSerializer(serializers.ModelSerializer):
     candidate_urls_count = serializers.SerializerMethodField(read_only=True)
     
     # New fields for annotated parameters
-    included = serializers.BooleanField(read_only=True)  # Assuming it's a boolean
-    included_by_pattern = serializers.CharField(read_only=True)  # Assuming it's a string
-    match_pattern_id = serializers.IntegerField(read_only=True)  # Assuming it's an integer
+    included = serializers.BooleanField(read_only=True)
+    included_by_pattern = serializers.CharField(read_only=True)
+    match_pattern_id = serializers.IntegerField(read_only=True)
 
     def get_candidate_urls_count(self, obj):
         titlepattern = obj.titlepattern_urls.last()
