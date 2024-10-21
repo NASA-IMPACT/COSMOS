@@ -387,16 +387,32 @@ function get_selection() {
 
 // If the menu element is clicked
 $(".custom-menu li").click(function () {
-  postIncludePatterns(
-    remove_protocol(selected_text.trim()),
-    (match_pattern_type = MULTI_URL_PATTERN)
-  )
-    .then(() => {
-      $("#affectedURLsTable").DataTable().ajax.reload(null, false);
-    })
-    .catch((error) => {
-      toastr.error("Error posting include patterns:", error);
-    });
-
-  $(".custom-menu").hide(100);
+  // Check if the include pattern already exists
+  $.ajax({
+    url: `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
+    type: "GET",
+    success: function (response) {
+      var existingPatterns = response.data.map((item) => item.match_pattern);
+      if (existingPatterns.includes(selected_text.trim())) {
+        toastr.warning("Pattern already exists");
+        $(".custom-menu").hide(100);
+        return;
+      } else {
+        postIncludePatterns(
+          remove_protocol(selected_text.trim()),
+          (match_pattern_type = MULTI_URL_PATTERN)
+        )
+          .then(() => {
+            $("#affectedURLsTable").DataTable().ajax.reload(null, false);
+          })
+          .catch((error) => {
+            toastr.error("Error posting include patterns:", error);
+          });
+        $(".custom-menu").hide(100);
+      }
+    },
+    error: function (xhr, status, error) {
+      toastr.error("An error occurred while checking existing patterns");
+    },
+  });
 });
