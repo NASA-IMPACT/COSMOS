@@ -35,10 +35,10 @@ from .models.pattern import (
     TitlePattern,
 )
 from .serializers import (
+    AffectedURLSerializer,
     CandidateURLAPISerializer,
     CandidateURLBulkCreateSerializer,
     CandidateURLSerializer,
-    AffectedURLSerializer,
     CollectionReadSerializer,
     CollectionSerializer,
     DivisionPatternSerializer,

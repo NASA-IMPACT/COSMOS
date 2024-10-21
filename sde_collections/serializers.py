@@ -97,6 +97,7 @@ class CandidateURLSerializer(serializers.ModelSerializer):
             "present_on_prod",
         )
 
+
 class AffectedURLSerializer(serializers.ModelSerializer):
     excluded = serializers.BooleanField(required=False)
     document_type_display = serializers.CharField(source="get_document_type_display", read_only=True)
@@ -105,7 +106,7 @@ class AffectedURLSerializer(serializers.ModelSerializer):
     generated_title_id = serializers.SerializerMethodField(read_only=True)
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
     candidate_urls_count = serializers.SerializerMethodField(read_only=True)
-    
+
     # New fields for annotated parameters
     included = serializers.BooleanField(read_only=True)
     included_by_pattern = serializers.CharField(read_only=True)
@@ -147,6 +148,7 @@ class AffectedURLSerializer(serializers.ModelSerializer):
             "included_by_pattern",  # New field
             "match_pattern_id",  # New field
         )
+
 
 class CandidateURLBulkCreateSerializer(serializers.ModelSerializer):
     class Meta:

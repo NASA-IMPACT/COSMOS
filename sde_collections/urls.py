@@ -9,10 +9,20 @@ router = routers.DefaultRouter()
 router.register(r"collections", views.CollectionViewSet, basename="collection")
 router.register(r"collections-read", views.CollectionReadViewSet, basename="collection-read")
 router.register(r"candidate-urls", views.CandidateURLViewSet)
-router.register(r"include-pattern-affected-urls", views.IncludePatternAffectedURLsViewSet, basename="include-pattern-affected-urls")
-router.register(r"exclude-pattern-affected-urls", views.ExcludePatternAffectedURLsViewSet, basename="exclude-pattern-affected-urls")
-router.register(r"title-pattern-affected-urls", views.TitlePatternAffectedURLsViewSet, basename="title-pattern-affected-urls")
-router.register(r"documenttype-pattern-affected-urls", views.DocumentTypePatternAffectedURLsViewSet, basename="documenttype-pattern-affected-urls")
+router.register(
+    r"include-pattern-affected-urls", views.IncludePatternAffectedURLsViewSet, basename="include-pattern-affected-urls"
+)
+router.register(
+    r"exclude-pattern-affected-urls", views.ExcludePatternAffectedURLsViewSet, basename="exclude-pattern-affected-urls"
+)
+router.register(
+    r"title-pattern-affected-urls", views.TitlePatternAffectedURLsViewSet, basename="title-pattern-affected-urls"
+)
+router.register(
+    r"documenttype-pattern-affected-urls",
+    views.DocumentTypePatternAffectedURLsViewSet,
+    basename="documenttype-pattern-affected-urls",
+)
 router.register(r"exclude-patterns", views.ExcludePatternViewSet)
 router.register(r"include-patterns", views.IncludePatternViewSet)
 router.register(r"title-patterns", views.TitlePatternViewSet)
