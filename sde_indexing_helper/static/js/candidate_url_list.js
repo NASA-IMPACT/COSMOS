@@ -387,6 +387,18 @@ function initializeDataTable() {
         data: "candidate_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return `
+            <div style="display: flex; align-items: center; justify-content: center;">
+              <span style="min-width: 50px; text-align: right; padding-right: 10px;">
+                ${data}
+              </span>
+              <button type="button" class="btn btn-sm view-exclude-pattern-urls" data-row-id="${row.id}">
+                <i class="fa fa-eye"></i>
+              </button>
+            </div>
+          `;
+        },
       },
       {
         data: null,
@@ -467,6 +479,18 @@ function initializeDataTable() {
         data: "candidate_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return `
+            <div style="display: flex; align-items: center; justify-content: center;">
+              <span style="min-width: 50px; text-align: right; padding-right: 10px;">
+                ${data}
+              </span>
+              <button type="button" class="btn btn-sm view-include-pattern-urls" data-row-id="${row.id}">
+                <i class="fa fa-eye"></i>
+              </button>
+            </div>
+          `;
+        },
       },
       {
         data: null,
@@ -547,6 +571,18 @@ function initializeDataTable() {
         data: "candidate_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return `
+            <div style="display: flex; align-items: center; justify-content: center;">
+              <span style="min-width: 50px; text-align: right; padding-right: 10px;">
+                ${data}
+              </span>
+              <button type="button" class="btn btn-sm view-title-pattern-urls" data-row-id="${row.id}">
+                <i class="fa fa-eye"></i>
+              </button>
+            </div>
+          `;
+        },
       },
       {
         data: null,
@@ -659,7 +695,20 @@ function initializeDataTable() {
         data: "candidate_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return `
+            <div style="display: flex; align-items: center; justify-content: center;">
+              <span style="min-width: 50px; text-align: right; padding-right: 10px;">
+                ${data}
+              </span>
+              <button type="button" class="btn btn-sm view-document-type-pattern-urls" data-row-id="${row.id}">
+                <i class="fa fa-eye"></i>
+              </button>
+            </div>
+          `;
+        },
       },
+
       {
         data: null,
         sortable: false,
@@ -813,6 +862,7 @@ function setupClickHandlers() {
   handleDeleteIncludePatternButtonClick();
   handleDeleteTitlePatternButtonClick();
   handleDeleteDivisionButtonClick();
+  handleShowAffectedURLsListButtonClick();
 
   handleDocumentTypeSelect();
   handleDivisionSelect();
@@ -1123,6 +1173,28 @@ function handleExcludeIndividualUrlClick() {
       (match_pattern_type = 1),
       true
     );
+  });
+}
+
+function handleShowAffectedURLsListButtonClick() {
+  $("body").on("click", ".view-exclude-pattern-urls", function () {
+    var matchPatternId = $(this).data("row-id");
+    window.open(`/exclude-pattern/${matchPatternId}/`, '_blank');
+  });
+
+  $("body").on("click", ".view-include-pattern-urls", function () {
+    var matchPatternId = $(this).data("row-id");
+    window.open(`/include-pattern/${matchPatternId}/`, '_blank');
+  });
+
+  $("body").on("click", ".view-title-pattern-urls", function () {
+    var matchPatternId = $(this).data("row-id");
+    window.open(`/title-pattern/${matchPatternId}/`, '_blank');
+  });
+
+  $("body").on("click", ".view-document-type-pattern-urls", function () {
+    var matchPatternId = $(this).data("row-id");
+    window.open(`/document-type-pattern/${matchPatternId}/`, '_blank');
   });
 }
 

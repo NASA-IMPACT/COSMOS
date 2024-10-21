@@ -1,0 +1,100 @@
+{% extends "layouts/base.html" %}
+{% load static i18n %}
+{% load humanize %}
+{% block title %}
+Affected URLs for {{pattern_type}} Pattern
+{% endblock title %}
+
+{% block stylesheets %}
+    {{ block.super }}
+    <link href="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/plug-ins/2.0.8/features/inputPaging/dist/dataTables.inputPaging.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/affected_urls.css' %}" />
+    <link href="{% static 'css/project.css' %}" rel="stylesheet">
+{% endblock stylesheets %}
+
+{% block content %}
+    {% csrf_token %}
+    <div class="headerDiv">
+        <h1 class="pageTitle">Affected URLs</h1>
+    </div>
+
+    <div class="candidateUrlContainer">
+
+    <h3 class="whiteText candidateTitle">
+        {{ url_count|intcomma }} affected URLs for {{ pattern_type | lower }} pattern:
+        <span style="color: #65B1EF;">{{ pattern.match_pattern }}</span>
+    </h3>
+
+    <div class="container mt-4">
+        <table id="affectedURLsTable" class="table" style="width:100%">
+            <thead class="tableHeader">
+                <tr>
+                    <!-- <th scope="col" class="text-center col-2">ID</th> -->
+                    <th scope="col" class="text-center">URL</th>
+                    {% if pattern_type == "Exclude" %}
+                    <th scope="col" class="text-center" style="width: 10%;">Include URL</th>
+                    {% endif %}
+                </tr>
+                <tr class="filter-row">
+                    <!-- <td> </td> -->
+                    <td ><input type="text" class="table_filter_row_input textBoxStyling" id="affectedURLsFilter" placeholder="URL" /></td>
+                    {% if pattern_type == "Exclude" %}
+                    <td></td>
+                    {% endif %}
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <ul class="custom-menu list-group">
+        <li data-action="include-pattern" class="list-group-item">Create Include Pattern</li>
+    </ul>
+
+    <div class="modal fade" id="includePatternModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="includePatternModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="includePatternModalLabel">Include Pattern Form</h5>
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="include_pattern_form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="match_pattern_input" class="form-label">Match Pattern</label>
+                        <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="button-wrapper">
+                    <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                </div></div>
+            </form>
+        </div>
+        </div>
+    </div>
+
+    </div>
+{% endblock content %}
+
+{% block javascripts %}
+    {{ block.super }}
+    <script>
+    var collection_id = "{{ collection.id }}";
+    var patternType = "{{ pattern_type }}";
+    var pattern_id = "{{ pattern_id }}";
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.js" integrity="sha384-hYG8UYaiy9eSRy58/jaXhT3suoM1QfgYThNxzYEE1y+ijcFXuwMaNt1zr1ERbrIM" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js" integrity="sha384-Ct2s0NBxEbvJlnXHOZJheqOGKjX3Q4ewsYoJZYnLz/teMXnlGhim5o9305EkvlsN" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/plug-ins/2.0.8/features/inputPaging/dist/dataTables.inputPaging.min.js" integrity="sha384-mKZ8fubNsDhTYk1d7pc3PkY4PtNykywmSWAs9uCX02tybo9mFN0D842g4XkshSF/" crossorigin="anonymous"></script>
+    <script src="{% static 'js/project.js' %}"></script>
+    <script src="{% static 'js/affected_urls.js' %}"></script>
+    <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
+
+{% endblock javascripts %}

@@ -9,6 +9,20 @@ router = routers.DefaultRouter()
 router.register(r"collections", views.CollectionViewSet, basename="collection")
 router.register(r"collections-read", views.CollectionReadViewSet, basename="collection-read")
 router.register(r"candidate-urls", views.CandidateURLViewSet)
+router.register(
+    r"include-pattern-affected-urls", views.IncludePatternAffectedURLsViewSet, basename="include-pattern-affected-urls"
+)
+router.register(
+    r"exclude-pattern-affected-urls", views.ExcludePatternAffectedURLsViewSet, basename="exclude-pattern-affected-urls"
+)
+router.register(
+    r"title-pattern-affected-urls", views.TitlePatternAffectedURLsViewSet, basename="title-pattern-affected-urls"
+)
+router.register(
+    r"documenttype-pattern-affected-urls",
+    views.DocumentTypePatternAffectedURLsViewSet,
+    basename="documenttype-pattern-affected-urls",
+)
 router.register(r"exclude-patterns", views.ExcludePatternViewSet)
 router.register(r"include-patterns", views.IncludePatternViewSet)
 router.register(r"title-patterns", views.TitlePatternViewSet)
@@ -42,6 +56,26 @@ urlpatterns = [
         "<int:pk>/candidate-urls",
         view=views.CandidateURLsListView.as_view(),
         name="candidate_urls",
+    ),
+    path(
+        "exclude-pattern/<int:id>/",
+        view=views.ExcludePatternAffectedURLsListView.as_view(),
+        name="affected_urls",
+    ),
+    path(
+        "include-pattern/<int:id>/",
+        view=views.IncludePatternAffectedURLsListView.as_view(),
+        name="affected_urls",
+    ),
+    path(
+        "title-pattern/<int:id>/",
+        view=views.TitlePatternAffectedURLsListView.as_view(),
+        name="affected_urls",
+    ),
+    path(
+        "document-type-pattern/<int:id>/",
+        view=views.DocumentTypePatternAffectedURLsListView.as_view(),
+        name="affected_urls",
     ),
     path(
         "consolidate/",

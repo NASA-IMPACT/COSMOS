@@ -1,0 +1,275 @@
+.dataTables_scrollHead,
+.dataTables_scrollBody {
+    overflow: visible !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: none;
+    border: none;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 0em;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: .5em;
+}
+
+.paginate_input {
+    width: 15%;
+}
+
+.table_filter_row_input {
+    width: 100%;
+}
+
+.candidateUrlContainer {
+    background: #15232E;
+    padding: 40px 30px;
+    border-radius: 15px;
+}
+
+.table tbody tr:nth-child(odd) {
+    background-color: #050E19 !important;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #3F4A58 !important;
+}
+
+.candidateTitle {
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.custom-select,
+.buttons-csv,
+.customizeColumns,
+.addPattern {
+    border-style: solid !important;
+    border-color: #A7BACD !important;
+    border-width: 1px !important;
+    color: #A7BACD !important;
+    border-radius: 5px !important;
+    padding: 11px 15px;
+}
+
+.addPattern {
+    background-color: #0066CA !important;
+    border-color: #0066CA !important;
+    color: #fff !important;
+}
+
+#match_pattern_input {
+    background: #3F4A58;
+    border-radius: 4px;
+}
+
+.asterik {
+    color: #C3001A;
+}
+
+.customizeColumns {
+    margin-left: 10px !important;
+}
+
+.form-control:read-only {
+    background-image: none;
+}
+
+.form-control {
+    color: white;
+}
+
+.form-control:focus {
+    color: white;
+}
+
+.dt-container div.dt-length label {
+    display: none;
+}
+
+div.dt-container div.dt-info {
+    padding-top: 0;
+    white-space: normal;
+}
+
+.page-link {
+    color: white !important;
+    border: 0.5px solid !important;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.page-link:hover {
+    background-color: #0066CA !important;
+}
+
+.page-item.disabled .page-link {
+    color: grey !important;
+}
+
+.dt-paging-input {
+    color: white;
+}
+
+.dt-paging-input input {
+    background-color: #3F4A58;
+    color: white;
+    border: solid 0.5px !important;
+}
+
+.dt-inputpaging {
+    position: absolute;
+    right: 16px;
+    top: -27px;
+}
+
+.ml-auto {
+    width: 50%;
+}
+
+.custom-select-sm {
+    margin-left: 5px;
+}
+
+.selected {
+    background-color: inherit !important;
+}
+
+.headerDiv {
+    display: flex;
+    justify-content: space-between;
+}
+
+.url-cell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
+    overflow-wrap: break-word;
+    min-width: 100%;
+    max-width: 100%;
+}
+
+.url-icon {
+    color: #65B1EF;
+}
+
+/* pagination position */
+div.dt-container div.dt-paging ul.pagination {
+    position: absolute;
+    right: 60px;
+}
+
+/* Dark theme adjustments later added */
+body {
+    background-color: #2c2c2c;
+    color: #f5f5f5;
+}
+
+.pageTitle {
+    color: #f5f5f5;
+}
+
+.table {
+    background-color: #1e1e1e;
+    color: #f5f5f5;
+}
+
+.table thead th {
+    background-color: #444;
+    color: #f5f5f5;
+}
+
+.table tbody tr:hover {
+    background-color: #333;
+}
+
+.table tbody tr td a {
+    color: #61dafb;
+    /* URL links */
+}
+
+.table tbody tr td a:hover {
+    color: #f5f5f5;
+    /* Hover effect for links */
+}
+
+/* Optional styles for the Include URL button */
+.include-url-btn {
+    background-color: transparent;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+.modalTitle {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 36px;
+    letter-spacing: -0.03em;
+}
+
+#hideShowColumnsModal {
+    position: fixed;
+    top: 0;
+    right: 0 !important;
+    left: unset !important;
+    background: #FFFFFF;
+    width: 30vw;
+    z-index: 2000;
+}
+
+.modalFooter {
+    position: sticky;
+    bottom: 0;
+    position: sticky;
+    bottom: 0;
+    padding: 10px 0;
+    background: #FFFFFF;
+}
+
+.modal-body .bmd-label-static {
+    top: -20px !important;
+}
+
+.modal-header {
+    margin-bottom: 40px;
+}
+
+.row .col-md-auto {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dt-buttons {
+    margin-left: auto;
+}
+
+.custom-menu {
+    display: none;
+    z-index: 1000;
+    position: absolute;
+    overflow: hidden;
+    border: 1px solid #CCC;
+    white-space: nowrap;
+    font-family: sans-serif;
+    background: #FFF;
+    color: white;
+    border-radius: 5px;
+    background-color: #15232E;
+}
+
+.custom-menu li {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.custom-menu li:hover {
+    background-color: #0066CA;
+}
