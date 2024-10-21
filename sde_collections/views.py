@@ -241,7 +241,7 @@ class BaseAffectedURLsListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         self.pattern = self.pattern_model.objects.get(id=self.kwargs["id"])
         queryset = self.pattern.matched_urls()
-        return self.pattern.matched_urls()
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
