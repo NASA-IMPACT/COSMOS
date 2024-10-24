@@ -148,35 +148,51 @@ class XmlEditor:
         scraper_config = self.update_config_xml()
         return scraper_config
 
-    def convert_template_to_plugin_indexer(self, scraper_editor) -> None:
+    def convert_template_to_job(self, collection, job_source) -> None:
         """
-        assuming this class has been instantiated with the scraper_template.xml
+        assuming this class has been instantiated with the job_template.xml
+        """
+        self.update_or_add_element_value("Collection", f"/{job_source}/{collection.config_folder}/")
+        job_config = self.update_config_xml()
+        return job_config
+
+    def convert_template_to_indexer(self, scraper_editor) -> None:
+        """
+        assuming this class has been instantiated with the final_config_template.xml
         """
 
         transfer_fields = [
-            "KeepHashFragmentInUrl",
-            "CorrectDomainCookies",
-            "IgnoreSessionCookies",
-            "DownloadImages",
-            "DownloadMedia",
-            "DownloadCss",
-            "DownloadFtp",
-            "DownloadFile",
-            "IndexJs",
-            "FollowJs",
-            "CrawlFlash",
-            "NormalizeSecureSchemesWhenTestingVisited",
-            "RetryCount",
-            "RetryPause",
-            "AddBaseHref",
-            "AddMetaContentType",
-            "NormalizeUrls",
+            "Throttle",
         ]
 
         double_transfer_fields = [
-            ("UrlAccess", "AllowXPathCookies"),
             ("UrlAccess", "UseBrowserForWebRequests"),
-            ("UrlAccess", "UseHttpClientForWebRequests"),
+            ("UrlAccess", "BrowserForWebRequestsReadinessThreshold"),
+            ("UrlAccess", "BrowserForWebRequestsInitialDelay"),
+            ("UrlAccess", "BrowserForWebRequestsMaxTotalDelay"),
+            ("UrlAccess", "BrowserForWebRequestsMaxResourcesDelay"),
+            ("UrlAccess", "BrowserForWebRequestsLogLevel"),
+            ("UrlAccess", "BrowserForWebRequestsViewportWidth"),
+            ("UrlAccess", "BrowserForWebRequestsViewportHeight"),
+            ("UrlAccess", "BrowserForWebRequestsAdditionalJavascript"),
+            ("UrlAccess", "PostLoginUrl"),
+            ("UrlAccess", "PostLoginData"),
+            ("UrlAccess", "GetBeforePostLogin"),
+            ("UrlAccess", "PostLoginAutoRedirect"),
+            ("UrlAccess", "ReLoginCount"),
+            ("UrlAccess", "ReLoginDelay"),
+            ("UrlAccess", "DetectHtmlLoginPattern"),
+            ("IndexerClient", "RetryTimeout"),
+            ("IndexerClient", "RetrySleep"),
+        ]
+
+        triple_transfer_fields = [
+            ("UrlAccess", "BrowserLogin", "Activate"),
+            ("UrlAccess", "BrowserLogin", "RemoteDebuggingPort"),
+            ("UrlAccess", "BrowserLogin", "BrowserLogLevel"),
+            ("UrlAccess", "BrowserLogin", "ShowDevTools"),
+            ("UrlAccess", "BrowserLogin", "SuccessCondition"),
+            ("UrlAccess", "BrowserLogin", "CookieFilter"),
         ]
 
         for field in transfer_fields:
@@ -187,17 +203,14 @@ class XmlEditor:
                 f"{parent}/{child}", scraper_editor.get_tag_value(f"{parent}/{child}", strict=True)
             )
 
+        for grandparent, parent, child in triple_transfer_fields:
+            self.update_or_add_element_value(
+                f"{grandparent}/{parent}/{child}",
+                scraper_editor.get_tag_value(f"{grandparent}/{parent}/{child}", strict=True),
+            )
+
         scraper_config = self.update_config_xml()
         return scraper_config
-
-    def convert_template_to_indexer(self, collection) -> None:
-        """
-        assuming this class has been instantiated with the indexer_template.xml
-        """
-        self.update_or_add_element_value("Collection", f"/SDE/{collection.config_folder}/")
-        indexer_config = self.update_config_xml()
-
-        return indexer_config
 
     def _mapping_exists(self, new_mapping: ET.Element):
         """

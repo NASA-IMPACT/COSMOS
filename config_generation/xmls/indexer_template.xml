@@ -6,11 +6,13 @@
     <indexers></indexers>
     <index></index>
     <domain></domain>
+    <treeRoot></treeRoot>
     <Revision>1</Revision>
     <visibility></visibility>
     <ForceReindexation>false</ForceReindexation>
+    <Url></Url>
     <Plugin>SMD_Plugins/Sinequa.Plugin.WebCrawler_Index_URLList</Plugin>
-    <WorkerCount>6</WorkerCount>
+    <WorkerCount>8</WorkerCount>
     <MaxWorkerPerHost></MaxWorkerPerHost>
     <UrlList></UrlList>
     <DynamicUrlList></DynamicUrlList>
@@ -23,16 +25,28 @@
     <EnableNeuralIndexing>true</EnableNeuralIndexing>
     <NeuralSearchSelectionQuery></NeuralSearchSelectionQuery>
     <UrlStayInside>true</UrlStayInside>
-    <UrlRefererStayInside>false</UrlRefererStayInside>
-    <FollowLinks>false</FollowLinks>
-    <MaxLevel>100</MaxLevel>
-    <MaxToIndex>100000</MaxToIndex>
-    <MaxToCrawl>100000</MaxToCrawl>
-    <MaxRedirection>10</MaxRedirection>
-    <CrawlMaxSize>-1</CrawlMaxSize>
-    <CrawlTimeout>-1</CrawlTimeout>
+    <MaxLevel></MaxLevel>
+    <MaxToIndex></MaxToIndex>
+    <MaxToCrawl></MaxToCrawl>
+    <MaxRedirection></MaxRedirection>
+    <CrawlMaxSize></CrawlMaxSize>
+    <CrawlTimeout></CrawlTimeout>
+    <NormalizeUrls>true</NormalizeUrls>
+    <CorrectDomainCookies>false</CorrectDomainCookies>
+    <IgnoreSessionCookies>false</IgnoreSessionCookies>
+    <DownloadImages>true</DownloadImages>
+    <DownloadMedia>true</DownloadMedia>
+    <DownloadCss>false</DownloadCss>
+    <DownloadFtp>true</DownloadFtp>
+    <DownloadFile>true</DownloadFile>
+    <IndexJs>false</IndexJs>
+    <FollowJs>true</FollowJs>
+    <CrawlFlash>true</CrawlFlash>
     <IndexEmptyPages>true</IndexEmptyPages>
     <CrawlWebsphereSeedlist>true</CrawlWebsphereSeedlist>
+    <KeepHashFragmentInUrl>false</KeepHashFragmentInUrl>
+    <RetryCount></RetryCount>
+    <RetryPause></RetryPause>
     <HttpCodesToRetry></HttpCodesToRetry>
     <UseIfModifiedSince>true</UseIfModifiedSince>
     <UseIfNoneMatch>no</UseIfNoneMatch>
@@ -40,6 +54,7 @@
     <ForcedEncoding></ForcedEncoding>
     <UseCompression>false</UseCompression>
     <UseUnsafeHeaderParsing>false</UseUnsafeHeaderParsing>
+    <NormalizeSecureSchemesWhenTestingVisited>false</NormalizeSecureSchemesWhenTestingVisited>
     <ExactDeduplication>false</ExactDeduplication>
     <NearDeduplication>false</NearDeduplication>
     <CrawlPauseDelay></CrawlPauseDelay>
@@ -49,7 +64,7 @@
     <RememberConnectFailure>true</RememberConnectFailure>
     <RememberTrustFailure>true</RememberTrustFailure>
     <RememberProxyNameResolutionFailure>false</RememberProxyNameResolutionFailure>
-    <UseRobotsNoIndex>true</UseRobotsNoIndex>
+    <UseRobotsNoIndex>false</UseRobotsNoIndex>
     <UseRobotsNoFollow>true</UseRobotsNoFollow>
     <UseRobotsTxt>false</UseRobotsTxt>
     <RobotsTxtCaseSensitive>false</RobotsTxtCaseSensitive>
@@ -83,7 +98,8 @@
         <ClientCertificateStorage></ClientCertificateStorage>
         <AllowXPathCookies>false</AllowXPathCookies>
         <UseHttpClientForWebRequests>false</UseHttpClientForWebRequests>
-        <UseBrowserForWebRequests>true</UseBrowserForWebRequests>
+        <ThrottleManagerCode>expBackoff+headers</ThrottleManagerCode>
+        <UseBrowserForWebRequests>false</UseBrowserForWebRequests>
         <BrowserForWebRequestsReadinessThreshold></BrowserForWebRequestsReadinessThreshold>
         <BrowserForWebRequestsInitialDelay></BrowserForWebRequestsInitialDelay>
         <BrowserForWebRequestsMaxTotalDelay></BrowserForWebRequestsMaxTotalDelay>
@@ -91,6 +107,7 @@
         <BrowserForWebRequestsLogLevel></BrowserForWebRequestsLogLevel>
         <BrowserForWebRequestsViewportWidth></BrowserForWebRequestsViewportWidth>
         <BrowserForWebRequestsViewportHeight></BrowserForWebRequestsViewportHeight>
+        <BrowserForWebRequestsAdditionalJavascript></BrowserForWebRequestsAdditionalJavascript>
         <WebConnectionPluginName></WebConnectionPluginName>
         <PostLoginUrl></PostLoginUrl>
         <PostLoginData></PostLoginData>
@@ -103,6 +120,7 @@
             <Activate>false</Activate>
             <RemoteDebuggingPort></RemoteDebuggingPort>
             <BrowserLogLevel></BrowserLogLevel>
+            <ShowDevTools>false</ShowDevTools>
             <SuccessCondition></SuccessCondition>
             <CookieFilter></CookieFilter>
         </BrowserLogin>
@@ -128,7 +146,7 @@
         <ProxyAddress></ProxyAddress>
         <ProxyBypassOnLocal>true</ProxyBypassOnLocal>
         <ProxyServer></ProxyServer>
-        <ProxyPort>80</ProxyPort>
+        <ProxyPort></ProxyPort>
         <ProxyUseDefaultCredentials>true</ProxyUseDefaultCredentials>
         <ProxyUseDefaultNetworkCredentials>false</ProxyUseDefaultNetworkCredentials>
         <ProxyUser></ProxyUser>
@@ -136,7 +154,7 @@
         <ProxyDomain></ProxyDomain>
     </UrlAccess>
     <System>
-        <LogLevel>20</LogLevel>
+        <LogLevel>INFO</LogLevel>
     </System>
     <DisplayLongProperties>false</DisplayLongProperties>
     <LongPropertyLimit></LongPropertyLimit>
@@ -149,7 +167,7 @@
     <SaveDeniedDocs>false</SaveDeniedDocs>
     <SavePropertiesToRegistry>false</SavePropertiesToRegistry>
     <CollectionStateNative>false</CollectionStateNative>
-    <HtmlNavigatorNative>false</HtmlNavigatorNative>
+    <HtmlNavigatorNative>true</HtmlNavigatorNative>
     <XPathNavigatorNative>false</XPathNavigatorNative>
     <StatusMaxOk></StatusMaxOk>
     <DelApiSecret></DelApiSecret>
@@ -157,23 +175,16 @@
         <Simulate>false</Simulate>
         <SimulateGetCollectionState>false</SimulateGetCollectionState>
         <QueueMaxCount></QueueMaxCount>
+        <SendingThreadFactor></SendingThreadFactor>
         <DirectFileAccess>false</DirectFileAccess>
         <UseCompression>false</UseCompression>
         <SessionIsFinishedWait>false</SessionIsFinishedWait>
         <SendTimeout></SendTimeout>
-        <ReceiveTimeout></ReceiveTimeout>
         <RetryConnectCount></RetryConnectCount>
         <RetryConnectDelay></RetryConnectDelay>
-        <SleepQueueFull></SleepQueueFull>
-        <SleepQueueFullCount></SleepQueueFullCount>
-        <SleepQueueFullQuick></SleepQueueFullQuick>
-        <SleepQueueFullQuickCount></SleepQueueFullQuickCount>
-        <SleepCheckOpen></SleepCheckOpen>
-        <SleepCheckOpenCount></SleepCheckOpenCount>
-        <SleepCheckOpenQuick></SleepCheckOpenQuick>
-        <SleepCheckOpenQuickCount></SleepCheckOpenQuickCount>
+        <RetryTimeout></RetryTimeout>
+        <RetrySleep></RetrySleep>
         <DeactivationTimeout></DeactivationTimeout>
-        <BackToSendingQueueCount></BackToSendingQueueCount>
     </IndexerClient>
     <Indexation>
         <SimulateLemma>false</SimulateLemma>
@@ -181,7 +192,7 @@
         <SimulateCache>false</SimulateCache>
         <SimulateLemmaMin></SimulateLemmaMin>
         <SimulateLemmaMax></SimulateLemmaMax>
-        <CollectionStateParallelRowFetch>0</CollectionStateParallelRowFetch>
+        <CollectionStateParallelRowFetch></CollectionStateParallelRowFetch>
         <EngineMetaEnabled>true</EngineMetaEnabled>
         <ThumbnailHeight></ThumbnailHeight>
         <ThumbnailWidth></ThumbnailWidth>
@@ -192,6 +203,7 @@
         <StoreInCollectionCache>false</StoreInCollectionCache>
         <GetFilePropertiesFromConverter>false</GetFilePropertiesFromConverter>
     </Indexation>
+    <CollectDocumentProperties>true</CollectDocumentProperties>
     <DocCountLimitOnCollectProperties></DocCountLimitOnCollectProperties>
     <ForceBlobSend>false</ForceBlobSend>
     <ContinueOnError>true</ContinueOnError>
@@ -209,6 +221,8 @@
     <RealTimeInfoOnError>false</RealTimeInfoOnError>
     <ConversionProxies></ConversionProxies>
     <ConversionPlan></ConversionPlan>
+    <AddBaseHref>true</AddBaseHref>
+    <AddMetaContentType>false</AddMetaContentType>
     <Throttle></Throttle>
     <DocumentClass></DocumentClass>
     <ConnectorLanguage></ConnectorLanguage>
@@ -242,6 +256,7 @@
     <ArchiveItemsUseArchiveVersion>false</ArchiveItemsUseArchiveVersion>
     <UseShortAttachmentId>false</UseShortAttachmentId>
     <UseExtendedExtensionGuesser>false</UseExtendedExtensionGuesser>
+    <AlwaysScanContainerFiles>false</AlwaysScanContainerFiles>
     <XmpExtensions></XmpExtensions>
     <MediaExtensions></MediaExtensions>
     <ExiftoolExtensions></ExiftoolExtensions>
@@ -250,6 +265,7 @@
     <AttachmentSelectionQuery></AttachmentSelectionQuery>
     <ArchiveItemSelectionQuery></ArchiveItemSelectionQuery>
     <EngineConnectionWait></EngineConnectionWait>
+    <FetchCollectionDataDirectlyFromEngine></FetchCollectionDataDirectlyFromEngine>
     <CalculateGraphBoost>false</CalculateGraphBoost>
     <GraphBoostColumn></GraphBoostColumn>
     <GraphBoostEMColumn></GraphBoostEMColumn>
@@ -268,8 +284,6 @@
         <Name>id</Name>
         <Value>doc.url1</Value>
     </Mapping>
-    <Mapping>
-        <Name>version</Name>
-        <Value>Md5(doc.url1)</Value>
-    </Mapping>
+    <UrlRefererStayInside>false</UrlRefererStayInside>
+    <FollowLinks>false</FollowLinks>
 </Sinequa>
