@@ -3,12 +3,14 @@ import os
 import shutil
 
 import boto3
+import requests
 from django.apps import apps
 from django.conf import settings
 from django.core import management
 from django.core.management.commands import loaddata
 
 from config import celery_app
+from sde_collections.models.candidate_url import CandidateURL
 
 from .models.collection import Collection, WorkflowStatusChoices
 from .sinequa_api import Api
@@ -141,3 +143,59 @@ def resolve_title_pattern(title_pattern_id):
     TitlePattern = apps.get_model("sde_collections", "TitlePattern")
     title_pattern = TitlePattern.objects.get(id=title_pattern_id)
     title_pattern.apply()
+
+
+@celery_app.task
+def fetch_and_update_full_text(collection_id, server_type):
+    try:
+        collection = Collection.objects.get(id=collection_id)
+    except Collection.DoesNotExist:
+        raise Exception(f"Collection with ID {collection_id} does not exist.")
+
+    server_config = get_server_config(server_type)
+    token = server_config["token"]
+    url = server_config["url"]
+
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
+
+    payload = json.dumps(
+        {
+            "method": "engine.sql",
+            "sql": f"SELECT url1, text, title FROM sde_index WHERE collection = '/SDE/{collection.config_folder}/'",
+            "pretty": True,
+            "log": False,
+            "output": "json",
+            "resolveIndexList": "false",
+            "engines": "default",
+        }
+    )
+
+    try:
+        response = requests.post(url, headers=headers, data=payload, timeout=10)
+        response.raise_for_status()  # Raise exception for HTTP errors
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"API request failed: {str(e)}")
+
+    records = response.json().get("Rows", [])
+    if not records:
+        return "No records found in the response."
+
+    for record in records:
+        url, full_text, title = record
+        if not (url and full_text and title):
+            continue
+
+        CandidateURL.objects.update_or_create(
+            url=url, collection=collection, defaults={"scraped_text": full_text, "scraped_title": title}
+        )
+
+    return f"Successfully processed {len(records)} records and updated the database."
+
+
+def get_server_config(server_type):
+    if server_type == "LRM_DEV":
+        return {"url": "https://sde-lrm.nasa-impact.net/api/v1/engine.sql", "token": os.getenv("LRMDEV_TOKEN")}
+    elif server_type == "LIS":
+        return {"url": "http://sde-xli.nasa-impact.net/api/v1/engine.sql", "token": os.getenv("LIS_TOKEN")}
+    else:
+        raise ValueError("Invalid server type.")

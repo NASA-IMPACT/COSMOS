@@ -39,3 +39,8 @@ XLI_USER=''
 XLI_PASSWORD=''
 LRM_QA_USER=''
 LRM_QA_PASSWORD=''
+
+#Server Tokens
+#--------------------------------------------------------------------------------
+LRMDEV_TOKEN=''
+LIS_TOKEN=''
