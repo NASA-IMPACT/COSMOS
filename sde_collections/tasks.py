@@ -144,6 +144,7 @@ def resolve_title_pattern(title_pattern_id):
     title_pattern = TitlePattern.objects.get(id=title_pattern_id)
     title_pattern.apply()
 
+
 @celery_app.task
 def fetch_and_update_full_text(collection_id, server_type):
     try:
@@ -198,4 +199,3 @@ def get_server_config(server_type):
         return {"url": "http://sde-xli.nasa-impact.net/api/v1/engine.sql", "token": os.getenv("LIS_TOKEN")}
     else:
         raise ValueError("Invalid server type.")
-    
