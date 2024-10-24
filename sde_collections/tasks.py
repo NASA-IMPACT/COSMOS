@@ -1,14 +1,16 @@
 import json
 import os
 import shutil
-import requests
+
 import boto3
+import requests
 from django.apps import apps
 from django.conf import settings
 from django.core import management
 from django.core.management.commands import loaddata
-from sde_collections.models.candidate_url import CandidateURL
+
 from config import celery_app
+from sde_collections.models.candidate_url import CandidateURL
 
 from .models.collection import Collection, WorkflowStatusChoices
 from .sinequa_api import Api
@@ -141,15 +143,17 @@ def resolve_title_pattern(title_pattern_id):
     TitlePattern = apps.get_model("sde_collections", "TitlePattern")
     title_pattern = TitlePattern.objects.get(id=title_pattern_id)
     title_pattern.apply()
-'''
+
+
+"""
 @celery_app.task
 def fetch_and_update_full_text(collection_id):
-    
+
     try:
         collection = Collection.objects.get(id=collection_id)
     except Collection.DoesNotExist:
         raise Exception(f"Collection with ID {collection_id} does not exist.")
-    
+
     url = "https://sde-lrm.nasa-impact.net/api/v1/engine.sql" #LRM_DEV Server
     sql_command = f"SELECT url1, text, title FROM sde_index WHERE collection = '/SDE/{collection.config_folder}/'"
     token = os.getenv('LRMDEV_TOKEN')
@@ -164,12 +168,12 @@ def fetch_and_update_full_text(collection_id):
         "resolveIndexList": "false",
         "engines": "default"
     })
-    
+
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {token}'
     }
-    
+
     response = requests.post(url, headers=headers, data=payload)
     if response.status_code == 200:
         records = response.json().get("Rows", [])
@@ -190,21 +194,21 @@ def fetch_and_update_full_text(collection_id):
         return f"Processed {len(records)} records; Updated or created in database."
     else:
         raise Exception(f"Failed to fetch text: {response.status_code} {response.text}")
-    '''
+    """
 
-#You will have to have a different function for Li's server as it uses user and pw with body to login.
-#If the sinequa web token is used, can user&pw be removed from the body? if yes then can integrate, but headers will b diff (auth/cookie). if lis then header1, elif lrm_dev then h2, else h3
-#Fill in the tokens in the .django file
+# You will have to have a different function for Li's server as it uses user and pw with body to login.
+# If the sinequa web token is used, can user&pw be removed from the body? if yes then can integrate, but headers will b diff (auth/cookie). if lis then header1, elif lrm_dev then h2, else h3
+# Fill in the tokens in the .django file
 
-#Integrated - LRM devs and Lis separate
-'''
+# Integrated - LRM devs and Lis separate
+"""
 @celery_app.task
 def fetch_and_update_full_text(collection_id, server_type):
     try:
         collection = Collection.objects.get(id=collection_id)
     except Collection.DoesNotExist:
         raise Exception(f"Collection with ID {collection_id} does not exist.")
-    
+
     # Server-specific configurations
     server_config = get_server_config(server_type)
 
@@ -260,7 +264,7 @@ def get_server_config(server_type):
         }
     else:
         raise ValueError("Invalid server type.")
-'''
+"""
 
 
 @celery_app.task
@@ -274,20 +278,19 @@ def fetch_and_update_full_text(collection_id, server_type):
     token = server_config["token"]
     url = server_config["url"]
 
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {token}'
-    }
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
 
-    payload = json.dumps({
-        "method": "engine.sql",
-        "sql": f"SELECT url1, text, title FROM sde_index WHERE collection = '/SDE/{collection.config_folder}/'",
-        "pretty": True,
-        "log": False,
-        "output": "json",
-        "resolveIndexList": "false",
-        "engines": "default"
-    })
+    payload = json.dumps(
+        {
+            "method": "engine.sql",
+            "sql": f"SELECT url1, text, title FROM sde_index WHERE collection = '/SDE/{collection.config_folder}/'",
+            "pretty": True,
+            "log": False,
+            "output": "json",
+            "resolveIndexList": "false",
+            "engines": "default",
+        }
+    )
 
     try:
         response = requests.post(url, headers=headers, data=payload, timeout=10)
@@ -302,30 +305,19 @@ def fetch_and_update_full_text(collection_id, server_type):
     for record in records:
         url, full_text, title = record
         if not (url and full_text and title):
-            continue 
+            continue
 
         CandidateURL.objects.update_or_create(
-            url=url,
-            collection=collection,
-            defaults={
-                'scraped_text': full_text,
-                'scraped_title': title
-            }
+            url=url, collection=collection, defaults={"scraped_text": full_text, "scraped_title": title}
         )
 
     return f"Successfully processed {len(records)} records and updated the database."
 
+
 def get_server_config(server_type):
     if server_type == "LRM_DEV":
-        return {
-            "url": "https://sde-lrm.nasa-impact.net/api/v1/engine.sql",
-            "token": os.getenv("LRMDEV_TOKEN")
-        }
+        return {"url": "https://sde-lrm.nasa-impact.net/api/v1/engine.sql", "token": os.getenv("LRMDEV_TOKEN")}
     elif server_type == "LIS":
-        return {
-            "url": "http://sde-xli.nasa-impact.net/api/v1/engine.sql",
-            "token": os.getenv("LIS_TOKEN")
-        }
+        return {"url": "http://sde-xli.nasa-impact.net/api/v1/engine.sql", "token": os.getenv("LIS_TOKEN")}
     else:
         raise ValueError("Invalid server type.")
-

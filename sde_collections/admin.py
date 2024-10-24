@@ -6,8 +6,7 @@ from django.http import HttpResponse
 from .models.candidate_url import CandidateURL, ResolvedTitle
 from .models.collection import Collection, WorkflowHistory
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
-from .tasks import import_candidate_urls_from_api
-from .tasks import fetch_and_update_full_text
+from .tasks import fetch_and_update_full_text, import_candidate_urls_from_api
 
 
 @admin.action(description="Import candidate URLs from LRM Dev Server with Full Text")
@@ -22,7 +21,6 @@ def fetch_full_text_lis_action(modeladmin, request, queryset):
     for collection in queryset:
         fetch_and_update_full_text.delay(collection.id, "LIS")
     modeladmin.message_user(request, "Full text fetched and updated from Li's Server successfully.")
- 
 
 
 @admin.action(description="Generate deployment message")
