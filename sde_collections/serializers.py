@@ -1,3 +1,4 @@
+from django.db import models
 from rest_framework import serializers
 
 from .models.candidate_url import CandidateURL
@@ -10,7 +11,6 @@ from .models.pattern import (
     IncludePattern,
     TitlePattern,
 )
-from django.db import models
 
 
 class CollectionSerializer(serializers.ModelSerializer):

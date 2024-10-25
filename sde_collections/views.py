@@ -346,7 +346,7 @@ class CandidateURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
                     included=models.Exists(
                         IncludePattern.candidate_urls.through.objects.filter(
                             candidateurl=models.OuterRef("pk"),
-                            includepattern__collection_id=collection_id  # Filter by the specific collection
+                            includepattern__collection_id=collection_id,  # Filter by the specific collection
                         )
                     )
                 )
