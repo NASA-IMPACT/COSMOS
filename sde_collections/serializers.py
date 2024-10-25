@@ -63,6 +63,9 @@ class CandidateURLSerializer(serializers.ModelSerializer):
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
     candidate_urls_count = serializers.SerializerMethodField(read_only=True)
 
+    # New fields for annotated parameters
+    included = serializers.BooleanField(read_only=True)
+
     def get_candidate_urls_count(self, obj):
         titlepattern = obj.titlepattern_urls.last()
         return titlepattern.candidate_urls.count() if titlepattern else 0
@@ -80,6 +83,7 @@ class CandidateURLSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "excluded",
+            "included",
             "url",
             "scraped_title",
             "generated_title",

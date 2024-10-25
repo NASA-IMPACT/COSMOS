@@ -339,6 +339,18 @@ class CandidateURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             is_excluded = self.request.GET.get("is_excluded")
             if is_excluded:
                 queryset = self._filter_by_is_excluded(queryset, is_excluded)
+
+            collection_id = self.request.GET.get("collection_id")
+            if collection_id:
+                queryset = queryset.annotate(
+                    included=models.Exists(
+                        IncludePattern.candidate_urls.through.objects.filter(
+                            candidateurl=models.OuterRef("pk"),
+                            includepattern__collection_id=collection_id  # Filter by the specific collection
+                        )
+                    )
+                )
+
         return queryset.order_by("url")
 
     def update_division(self, request, pk=None):

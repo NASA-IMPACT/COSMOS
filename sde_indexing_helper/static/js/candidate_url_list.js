@@ -262,6 +262,7 @@ function initializeDataTable() {
       { data: "match_pattern_type", visible: false, searchable: false },
       { data: "candidate_urls_count", visible: false, searchable: false },
       { data: "excluded", visible: false, searchable: false },
+      { data: "included", visible: false, searchable: false },
       {
         data: null,
         render: function (data, type, row) {
@@ -292,7 +293,7 @@ function initializeDataTable() {
       // getDivisionColumn(),
     ],
     createdRow: function (row, data, dataIndex) {
-      if (data["excluded"]) {
+      if (data["excluded"] === true && data["included"] === false) {
         $(row).attr(
           "style",
           "background-color: rgba(255, 61, 87, 0.36) !important"
@@ -1039,14 +1040,14 @@ function getExcludedColumn(true_icon, false_icon) {
     width: "10%",
     class: "col-1 text-center",
     render: function (data, type, row) {
-      return data === true
-        ? `<a class="exclude_individual_url" value=${remove_protocol(
+      return (data === false || row["included"] === true)
+      ? `<a class="exclude_individual_url" value=${remove_protocol(
+        row["url"]
+      )}>${false_icon}</a>`
+      :`<a class="exclude_individual_url" value=${remove_protocol(
             row["url"]
-          )}>${true_icon}</a>`
-        : `<a class="exclude_individual_url" value=${remove_protocol(
-            row["url"]
-          )}>${false_icon}</a>`;
-    },
+          )}>${true_icon}</a>`;
+            },
   };
 }
 
