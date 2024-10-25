@@ -10,6 +10,7 @@ from .models.pattern import (
     IncludePattern,
     TitlePattern,
 )
+from django.db import models
 
 
 class CollectionSerializer(serializers.ModelSerializer):
@@ -227,6 +228,27 @@ class ExcludePatternSerializer(BasePatternSerializer, serializers.ModelSerialize
     class Meta:
         model = ExcludePattern
         fields = BasePatternSerializer.Meta.fields + ("reason",)
+
+    def get_candidate_urls_count(self, instance):
+        # Count URLs matched by the excluded pattern
+        matched_urls = instance.candidate_urls
+        matched_urls_count = matched_urls.count()
+
+        # Get the IDs of the matched URLs
+        matched_url_ids = matched_urls.values_list("id", flat=True)
+
+        # Count URLs included by other patterns in the same collection
+        included_urls_count = (
+            IncludePattern.objects.filter(collection=instance.collection, candidate_urls__in=matched_url_ids)
+            .annotate(included_count=models.Count("candidate_urls"))
+            .aggregate(total=models.Sum("included_count"))["total"]
+            or 0
+        )
+
+        # Calculate effective URLs count
+        effective_urls_count = matched_urls_count - included_urls_count
+
+        return effective_urls_count
 
 
 class IncludePatternSerializer(BasePatternSerializer, serializers.ModelSerializer):
