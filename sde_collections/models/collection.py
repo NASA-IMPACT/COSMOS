@@ -34,9 +34,9 @@ User = get_user_model()
 class Collection(models.Model):
     """Model definition for Collection."""
 
-    tdamm_manual = models.CharField(max_length=255, null=True, blank=True)
-    tdamm_ml = models.CharField(max_length=255, null=True, blank=True)
-    tdamm = PairedFieldDescriptor('tdamm')
+    tdamm_tag_manual = models.CharField(max_length=255, null=True, blank=True, verbose_name="TDAMM Manual Tag")
+    tdamm_tag_ml = models.CharField(max_length=255, null=True, blank=True, verbose_name="TDAMM ML Tag")
+    tdamm_tag = PairedFieldDescriptor('tdamm_tag')
 
     name = models.CharField("Name", max_length=1024)
     config_folder = models.CharField("Config Folder", max_length=2048, unique=True, editable=False)

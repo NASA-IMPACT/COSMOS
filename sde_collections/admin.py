@@ -7,6 +7,7 @@ from .models.candidate_url import CandidateURL, ResolvedTitle
 from .models.collection import Collection, WorkflowHistory
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
 from .tasks import import_candidate_urls_from_api
+from django import forms
 
 
 @admin.action(description="Generate deployment message")
@@ -174,9 +175,33 @@ class UpdateConfigMixin:
     update_config.short_description = "Update configs of selected"
 
 
+class CollectionForm(forms.ModelForm):
+    tdamm_tag = forms.CharField(required=False, label="TDAMM Tag")
+
+    class Meta:
+        model = Collection
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and hasattr(self.instance, "tdamm_tag"):
+            # Set the initial value of tdamm_tag to the computed value
+            self.fields["tdamm_tag"].initial = self.instance.tdamm_tag
+
+    def clean(self):
+        cleaned_data = super().clean()
+        tdamm_value = cleaned_data.get("tdamm_tag")
+        if tdamm_value:
+            # Set the manual field with the value from tdamm
+            cleaned_data["tdamm_tag_manual"] = tdamm_value
+        return cleaned_data
+
+
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
     """Admin View for Collection"""
+
+    form = CollectionForm
 
     fieldsets = (
         (
@@ -187,6 +212,9 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
                     "config_folder",
                     "url",
                     "division",
+                    "tdamm_tag",
+                    "tdamm_tag_ml",
+                    "tdamm_tag_manual",
                     "document_type",
                     "update_frequency",
                     "source",
@@ -215,15 +243,22 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         ),
     )
 
+    def tdamm_tag(self, obj):
+        return obj.tdamm_tag
+
     list_display = (
         "name",
         "candidate_urls_count",
         "config_folder",
         "url",
+        "tdamm_tag",
+        "tdamm_tag_ml",
+        "tdamm_tag_manual",
         "division",
         "new_collection",
         "is_multi_division",
     )
+
     readonly_fields = ("config_folder",)
     list_filter = ("division", "curation_status", "workflow_status", "turned_on", "is_multi_division")
     search_fields = ("name", "url", "config_folder")
