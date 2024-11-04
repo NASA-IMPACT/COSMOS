@@ -1,6 +1,3 @@
-from django.db import models
-
-
 class PairedFieldDescriptor:
     def __init__(self, field_name):
         self.manual_field_name = f"{field_name}_manual"

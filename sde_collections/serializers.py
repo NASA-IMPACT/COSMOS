@@ -112,18 +112,21 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
     file_extension = serializers.SerializerMethodField()
     tree_root = serializers.SerializerMethodField()
+    tdamm_tag = serializers.SerializerMethodField()
 
     class Meta:
         model = CandidateURL
-        fields = (
-            "url",
-            "title",
-            "document_type",
-            "hash",
-            "file_extension",
-            "tree_root",
-            "tdamm_tag"
-        )
+        fields = ("url", "title", "document_type", "hash", "file_extension", "tree_root", "is_tdamm", "tdamm_tag")
+
+    def to_representation(self, instance):
+        """Remove tdamm_tag field if is_tdamm is False"""
+        representation = super().to_representation(instance)
+        if not instance.is_tdamm:
+            representation.pop("tdamm_tag", None)
+        return representation
+
+    def get_tdamm_tag(self, obj):
+        return obj.tdamm_tag
 
     def get_document_type(self, obj):
         if obj.document_type is not None:
