@@ -2,13 +2,13 @@ import hashlib
 import os
 from urllib.parse import urlparse
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
+from ..utils.paired_field_descriptor import PairedFieldDescriptor
 from .collection import Collection
 from .collection_choice_fields import Divisions, DocumentTypes
 from .pattern import ExcludePattern, TitlePattern
-from ..utils.paired_field_descriptor import PairedFieldDescriptor
-from django.contrib.postgres.fields import ArrayField
 
 
 class CandidateURLQuerySet(models.QuerySet):
