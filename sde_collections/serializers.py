@@ -26,7 +26,6 @@ class CollectionSerializer(serializers.ModelSerializer):
             "workflow_status_display",
             "curated_by",
             "division",
-            "tdamm_tag",
             "document_type",
             "name",
         )
@@ -123,6 +122,7 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
             "hash",
             "file_extension",
             "tree_root",
+            "tdamm_tag"
         )
 
     def get_document_type(self, obj):

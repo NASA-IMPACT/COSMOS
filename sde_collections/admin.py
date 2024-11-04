@@ -8,6 +8,7 @@ from .models.collection import Collection, WorkflowHistory
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
 from .tasks import import_candidate_urls_from_api
 from django import forms
+from django.contrib.postgres.fields import ArrayField
 
 
 @admin.action(description="Generate deployment message")
@@ -175,33 +176,9 @@ class UpdateConfigMixin:
     update_config.short_description = "Update configs of selected"
 
 
-class CollectionForm(forms.ModelForm):
-    tdamm_tag = forms.CharField(required=False, label="TDAMM Tag")
-
-    class Meta:
-        model = Collection
-        fields = "__all__"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance and hasattr(self.instance, "tdamm_tag"):
-            # Set the initial value of tdamm_tag to the computed value
-            self.fields["tdamm_tag"].initial = self.instance.tdamm_tag
-
-    def clean(self):
-        cleaned_data = super().clean()
-        tdamm_value = cleaned_data.get("tdamm_tag")
-        if tdamm_value:
-            # Set the manual field with the value from tdamm
-            cleaned_data["tdamm_tag_manual"] = tdamm_value
-        return cleaned_data
-
-
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
     """Admin View for Collection"""
-
-    form = CollectionForm
 
     fieldsets = (
         (
@@ -212,9 +189,6 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
                     "config_folder",
                     "url",
                     "division",
-                    "tdamm_tag",
-                    "tdamm_tag_ml",
-                    "tdamm_tag_manual",
                     "document_type",
                     "update_frequency",
                     "source",
@@ -243,17 +217,11 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         ),
     )
 
-    def tdamm_tag(self, obj):
-        return obj.tdamm_tag
-
     list_display = (
         "name",
         "candidate_urls_count",
         "config_folder",
         "url",
-        "tdamm_tag",
-        "tdamm_tag_ml",
-        "tdamm_tag_manual",
         "division",
         "new_collection",
         "is_multi_division",
@@ -296,12 +264,103 @@ def exclude_and_delete_children(modeladmin, request, queryset):
     for candidate_url in queryset.all():
         candidate_url.get_children().delete()
 
+class CandidateURLForm(forms.ModelForm):
+    # tdamm_tag = forms.MultipleChoiceField(
+    #     choices=CandidateURL.TDAMM_TAG_CHOICES,
+    #     required=False,
+    #     label="TDAMM Tags",
+    #     widget=forms.CheckboxSelectMultiple,
+    # )
+
+    tdamm_tag_ml = forms.MultipleChoiceField(
+        choices=CandidateURL.TDAMM_TAG_CHOICES,
+        required=False,
+        label="TDAMM ML Tags",
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+    tdamm_tag_manual = forms.MultipleChoiceField(
+        choices=CandidateURL.TDAMM_TAG_CHOICES,
+        required=False,
+        label="TDAMM Manual Tags",
+        widget=forms.CheckboxSelectMultiple,
+    )
+    
+    class Meta:
+        model = CandidateURL
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Initialize tdamm_tag
+        # if self.instance and hasattr(self.instance, 'tdamm_tag'):
+        #     self.fields['tdamm_tag'].initial = self.instance.tdamm_tag or []
+
+        # Initialize tdamm_tag_ml
+        if self.instance and self.instance.tdamm_tag_ml:
+            self.fields['tdamm_tag_ml'].initial = self.instance.tdamm_tag_ml
+        
+        # Initialize tdamm_tag_manual
+        if self.instance and self.instance.tdamm_tag_manual:
+            self.fields['tdamm_tag_manual'].initial = self.instance.tdamm_tag_manual
+
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Handle tdamm_tag
+        # tdamm_tag_value = cleaned_data.get('tdamm_tag', [])
+        # if not tdamm_tag_value:
+        #     cleaned_data['tdamm_tag_manual'] = None
+        # else:
+        #     cleaned_data['tdamm_tag_manual'] = tdamm_tag_value
+
+        # Handle tdamm_tag_ml
+        tdamm_tag_ml_value = cleaned_data.get('tdamm_tag_ml', [])
+        if not tdamm_tag_ml_value:
+            cleaned_data['tdamm_tag_ml'] = None
+
+        # Handle tdamm_tag_manual
+        tdamm_tag_manual_value = cleaned_data.get('tdamm_tag_manual', [])
+        if not tdamm_tag_manual_value:
+            cleaned_data['tdamm_tag_manual'] = None
+
+        return cleaned_data
 
 class CandidateURLAdmin(admin.ModelAdmin):
     """Admin View for CandidateURL"""
 
-    list_display = ("url", "scraped_title", "collection")
+    form = CandidateURLForm
+
+    list_display = (
+        "url", 
+        "scraped_title", 
+        "collection", 
+        # "tdamm_tag_display",
+        "tdamm_tag_ml_display",
+        "tdamm_tag_manual_display"
+    )
     list_filter = ("collection",)
+
+    # @admin.display(description='TDAMM Tags')
+    # def tdamm_tag_display(self, obj):
+    #     if obj.tdamm_tag:
+    #         readable_tags = [dict(CandidateURL.TDAMM_TAG_CHOICES).get(tag, tag) for tag in obj.tdamm_tag]
+    #         return ", ".join(readable_tags)
+    #     return ""
+
+    @admin.display(description='TDAMM ML Tags')
+    def tdamm_tag_ml_display(self, obj):
+        if obj.tdamm_tag_ml:
+            readable_tags = [dict(CandidateURL.TDAMM_TAG_CHOICES).get(tag, tag) for tag in obj.tdamm_tag_ml]
+            return ", ".join(readable_tags)
+        return ""
+
+    @admin.display(description='TDAMM Manual Tags')
+    def tdamm_tag_manual_display(self, obj):
+        if obj.tdamm_tag_manual:
+            readable_tags = [dict(CandidateURL.TDAMM_TAG_CHOICES).get(tag, tag) for tag in obj.tdamm_tag_manual]
+            return ", ".join(readable_tags)
+        return ""
 
 
 class TitlePatternAdmin(admin.ModelAdmin):
