@@ -1,20 +1,23 @@
 from django.db import models
 
 
-class Divisions(models.IntegerChoices):
+class ChoiceFieldMixin:
+    @classmethod
+    def lookup_by_text(cls, text: str) -> int | None:
+        """Common lookup functionality for all choice fields"""
+        for choice in cls.choices:
+            if choice[1].lower() == text.lower():
+                return choice[0]
+        return None
+
+
+class Divisions(ChoiceFieldMixin, models.IntegerChoices):
     ASTROPHYSICS = 1, "Astrophysics"
     BIOLOGY = 2, "Biological and Physical Sciences"
     EARTH_SCIENCE = 3, "Earth Science"
     HELIOPHYSICS = 4, "Heliophysics"
     PLANETARY = 5, "Planetary Science"
     GENERAL = 6, "General"
-
-    @classmethod
-    def lookup_by_text(cls, text: str) -> int | None:
-        for choice in cls.choices:
-            if choice[1].lower() == text.lower():
-                return choice[0]
-        return None
 
 
 class UpdateFrequencies(models.IntegerChoices):
@@ -24,19 +27,12 @@ class UpdateFrequencies(models.IntegerChoices):
     MONTHLY = 4, "Monthly"
 
 
-class DocumentTypes(models.IntegerChoices):
+class DocumentTypes(ChoiceFieldMixin, models.IntegerChoices):
     IMAGES = 1, "Images"
     DATA = 2, "Data"
     DOCUMENTATION = 3, "Documentation"
     SOFTWARETOOLS = 4, "Software and Tools"
     MISSIONSINSTRUMENTS = 5, "Missions and Instruments"
-
-    @classmethod
-    def lookup_by_text(cls, text: str) -> int | None:
-        for choice in cls.choices:
-            if choice[1].lower() == text.lower():
-                return choice[0]
-        return None
 
 
 class SourceChoices(models.IntegerChoices):
@@ -45,18 +41,11 @@ class SourceChoices(models.IntegerChoices):
     ONLY_IN_SINEQUA_CONFIGS = 3, "Only in Sinequa configs"
 
 
-class ConnectorChoices(models.IntegerChoices):
+class ConnectorChoices(ChoiceFieldMixin, models.IntegerChoices):
     CRAWLER2 = 1, "crawler2"
     JSON = 2, "json"
     HYPERINDEX = 3, "hyperindex"
     NO_CONNECTOR = 4, "No Connector"
-
-    @classmethod
-    def lookup_by_text(cls, text: str) -> int | None:
-        for choice in cls.choices:
-            if choice[1].lower() == text.lower():
-                return choice[0]
-        return None
 
 
 class CurationStatusChoices(models.IntegerChoices):

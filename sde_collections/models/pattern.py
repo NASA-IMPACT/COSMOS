@@ -34,6 +34,8 @@ class BaseMatchPattern(models.Model):
         "CandidateURL",
         related_name="%(class)s_urls",
     )
+    field_to_update = None  # This should be overridden in subclasses
+    value_field = None      # Field containing the value to set (e.g., 'document_type', 'division')
 
     def matched_urls(self):
         """Find all the urls matching the pattern."""
@@ -63,10 +65,28 @@ class BaseMatchPattern(models.Model):
         return processed_pattern
 
     def apply(self):
-        raise NotImplementedError
+        """Universal apply method that works with both direct fields and relationships"""
+        if self.field_to_update and not self.value_field:
+            raise NotImplementedError("Subclasses must define both field_to_update and value_field")
+
+        matched_urls = self.matched_urls()
+        
+        if self.field_to_update:
+            # For patterns that update a field (DocumentType, Division)
+            value_to_set = getattr(self, self.value_field)
+            matched_urls.update(**{self.field_to_update: value_to_set})
+        
+        # Create relationships for all patterns
+        self.candidate_urls.add(*matched_urls)
 
     def unapply(self):
-        raise NotImplementedError
+        """Universal unapply method"""
+        if self.field_to_update:
+            # For patterns that update a field
+            self.candidate_urls.update(**{self.field_to_update: None})
+        
+        # Remove relationships for all patterns
+        self.candidate_urls.clear()
 
     def save(self, *args, **kwargs):
         """Save the pattern and apply it."""
@@ -89,47 +109,19 @@ class BaseMatchPattern(models.Model):
 
 class ExcludePattern(BaseMatchPattern):
     reason = models.TextField("Reason for excluding", default="", blank=True)
-
-    def apply(self) -> None:
-        matched_urls = self.matched_urls()
-        candidate_url_ids = list(matched_urls.values_list("id", flat=True))
-        self.candidate_urls.through.objects.bulk_create(
-            objs=[
-                ExcludePattern.candidate_urls.through(candidateurl_id=candidate_url_id, excludepattern_id=self.id)
-                for candidate_url_id in candidate_url_ids
-            ]
-        )
-
-    def unapply(self) -> None:
-        "Unapplies automatically by deleting include pattern through objects in a cascade"
-        return
+    # No field_to_update needed - uses relationships only
 
     class Meta:
-        """Meta definition for ExcludePattern."""
-
         verbose_name = "Exclude Pattern"
         verbose_name_plural = "Exclude Patterns"
         unique_together = ("collection", "match_pattern")
 
 
 class IncludePattern(BaseMatchPattern):
-    def apply(self) -> None:
-        matched_urls = self.matched_urls()
-        candidate_url_ids = list(matched_urls.values_list("id", flat=True))
-        self.candidate_urls.through.objects.bulk_create(
-            objs=[
-                IncludePattern.candidate_urls.through(candidateurl_id=candidate_url_id, includepattern_id=self.id)
-                for candidate_url_id in candidate_url_ids
-            ]
-        )
-
-    def unapply(self) -> None:
-        "Unapplies automatically by deleting includepattern through objects in a cascade"
-        return
+    # No field_to_update needed - uses relationships only
+    pass
 
     class Meta:
-        """Meta definition for IncludePattern."""
-
         verbose_name = "Include Pattern"
         verbose_name_plural = "Include Patterns"
         unique_together = ("collection", "match_pattern")
@@ -225,26 +217,10 @@ class TitlePattern(BaseMatchPattern):
 
 class DocumentTypePattern(BaseMatchPattern):
     document_type = models.IntegerField(choices=DocumentTypes.choices)
-
-    def apply(self) -> None:
-        matched_urls = self.matched_urls()
-        matched_urls.update(document_type=self.document_type)
-        candidate_url_ids = list(matched_urls.values_list("id", flat=True))
-        self.candidate_urls.through.objects.bulk_create(
-            objs=[
-                DocumentTypePattern.candidate_urls.through(
-                    candidateurl_id=candidate_url_id, documenttypepattern_id=self.id
-                )
-                for candidate_url_id in candidate_url_ids
-            ]
-        )
-
-    def unapply(self) -> None:
-        self.candidate_urls.update(document_type=None)
+    field_to_update = 'document_type'
+    value_field = 'document_type'
 
     class Meta:
-        """Meta definition for DocumentTypePattern."""
-
         verbose_name = "Document Type Pattern"
         verbose_name_plural = "Document Type Patterns"
         unique_together = ("collection", "match_pattern")
@@ -252,20 +228,8 @@ class DocumentTypePattern(BaseMatchPattern):
 
 class DivisionPattern(BaseMatchPattern):
     division = models.IntegerField(choices=Divisions.choices)
-
-    def apply(self) -> None:
-        matched_urls = self.matched_urls()
-        matched_urls.update(division=self.division)
-        candidate_url_ids = list(matched_urls.values_list("id", flat=True))
-        self.candidate_urls.through.objects.bulk_create(
-            objs=[
-                DivisionPattern.candidate_urls.through(candidateurl_id=candidate_url_id, divisionpattern_id=self.id)
-                for candidate_url_id in candidate_url_ids
-            ]
-        )
-
-    def unapply(self) -> None:
-        self.candidate_urls.update(division=None)
+    field_to_update = 'division'
+    value_field = 'division'
 
     class Meta:
         verbose_name = "Division Pattern"
@@ -277,3 +241,8 @@ class DivisionPattern(BaseMatchPattern):
 # def post_save_handler(sender, instance, created, **kwargs):
 #     if created:
 #         transaction.on_commit(lambda: resolve_title_pattern.delay(instance.pk))
+
+
+
+
+#To test:
