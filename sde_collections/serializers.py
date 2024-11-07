@@ -166,6 +166,7 @@ def create_pattern_validator(model_class, match_pattern_type_choices):
         except model_class.DoesNotExist:
             pass
         return value
+
     return validate_match_pattern
 
 
@@ -191,9 +192,7 @@ class TitlePatternSerializer(BasePatternSerializer, serializers.ModelSerializer)
 
 class DocumentTypePatternSerializer(BasePatternSerializer, serializers.ModelSerializer):
     document_type_display = serializers.CharField(source="get_document_type_display", read_only=True)
-    document_type = serializers.ChoiceField(
-        choices=DocumentTypes.choices + [(0, "None")]
-    )
+    document_type = serializers.ChoiceField(choices=DocumentTypes.choices + [(0, "None")])
 
     class Meta:
         model = DocumentTypePattern
@@ -203,6 +202,7 @@ class DocumentTypePatternSerializer(BasePatternSerializer, serializers.ModelSeri
         )
 
     validate_match_pattern = create_pattern_validator(DocumentTypePattern, DocumentTypePattern.MatchPatternTypeChoices)
+
 
 class DivisionPatternSerializer(BasePatternSerializer, serializers.ModelSerializer):
     division_display = serializers.CharField(source="get_division_display", read_only=True)

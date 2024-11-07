@@ -35,7 +35,7 @@ class BaseMatchPattern(models.Model):
         related_name="%(class)s_urls",
     )
     field_to_update = None  # This should be overridden in subclasses
-    value_field = None      # Field containing the value to set (e.g., 'document_type', 'division')
+    value_field = None  # Field containing the value to set (e.g., 'document_type', 'division')
 
     def matched_urls(self):
         """Find all the urls matching the pattern."""
@@ -70,12 +70,12 @@ class BaseMatchPattern(models.Model):
             raise NotImplementedError("Subclasses must define both field_to_update and value_field")
 
         matched_urls = self.matched_urls()
-        
+
         if self.field_to_update:
             # For patterns that update a field (DocumentType, Division)
             value_to_set = getattr(self, self.value_field)
             matched_urls.update(**{self.field_to_update: value_to_set})
-        
+
         # Create relationships for all patterns
         self.candidate_urls.add(*matched_urls)
 
@@ -84,7 +84,7 @@ class BaseMatchPattern(models.Model):
         if self.field_to_update:
             # For patterns that update a field
             self.candidate_urls.update(**{self.field_to_update: None})
-        
+
         # Remove relationships for all patterns
         self.candidate_urls.clear()
 
@@ -217,8 +217,8 @@ class TitlePattern(BaseMatchPattern):
 
 class DocumentTypePattern(BaseMatchPattern):
     document_type = models.IntegerField(choices=DocumentTypes.choices)
-    field_to_update = 'document_type'
-    value_field = 'document_type'
+    field_to_update = "document_type"
+    value_field = "document_type"
 
     class Meta:
         verbose_name = "Document Type Pattern"
@@ -228,8 +228,8 @@ class DocumentTypePattern(BaseMatchPattern):
 
 class DivisionPattern(BaseMatchPattern):
     division = models.IntegerField(choices=Divisions.choices)
-    field_to_update = 'division'
-    value_field = 'division'
+    field_to_update = "division"
+    value_field = "division"
 
     class Meta:
         verbose_name = "Division Pattern"
@@ -243,6 +243,4 @@ class DivisionPattern(BaseMatchPattern):
 #         transaction.on_commit(lambda: resolve_title_pattern.delay(instance.pk))
 
 
-
-
-#To test:
+# To test:
