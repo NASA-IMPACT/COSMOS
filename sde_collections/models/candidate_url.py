@@ -126,47 +126,13 @@ class CandidateURL(models.Model):
         ("MMA_S_SU", "Signals - Supernovae"),
     ]
 
-    # Define TDAMM fields but make them optional
-    @property
-    def tdamm_tag_manual(self):
-        if hasattr(self, "_tdamm_tag_manual") and self.is_tdamm:
-            return self._tdamm_tag_manual
-        return None
-
-    @tdamm_tag_manual.setter
-    def tdamm_tag_manual(self, value):
-        if self.is_tdamm:
-            self._tdamm_tag_manual = value
-
-    @property
-    def tdamm_tag_ml(self):
-        if hasattr(self, "_tdamm_tag_ml") and self.is_tdamm:
-            return self._tdamm_tag_ml
-        return None
-
-    @tdamm_tag_ml.setter
-    def tdamm_tag_ml(self, value):
-        if self.is_tdamm:
-            self._tdamm_tag_ml = value
-
-    _tdamm_tag_manual = ArrayField(
-        models.CharField(max_length=255, choices=TDAMM_TAG_CHOICES),
-        blank=True,
-        null=True,
-        verbose_name="TDAMM Manual Tags",
-        db_column="tdamm_tag_manual",
+    tdamm_tag = PairedFieldDescriptor(
+        field_name="tdamm_tag",
+        field_type=ArrayField(models.CharField(max_length=255, choices=TDAMM_TAG_CHOICES), blank=True, null=True),
+        switch="is_tdamm",
+        verbose_name="TDAMM Tags",
     )
-
-    _tdamm_tag_ml = ArrayField(
-        models.CharField(max_length=255, choices=TDAMM_TAG_CHOICES),
-        blank=True,
-        null=True,
-        verbose_name="TDAMM ML Tags",
-        db_column="tdamm_tag_ml",
-    )
-
-    tdamm_tag = PairedFieldDescriptor("tdamm_tag")
-
+    
     class Meta:
         """Meta definition for Candidate URL."""
 
