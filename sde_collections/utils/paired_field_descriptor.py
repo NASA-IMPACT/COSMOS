@@ -59,8 +59,10 @@ class PairedFieldDescriptor:
         manual_value = getattr(instance, self.manual_field_name, None)
         ml_value = getattr(instance, self.ml_field_name, None)
 
-        # Return manual if it exists, otherwise ML
-        return manual_value if manual_value is not None else ml_value
+        # Return manual value only if it exists and is not empty
+        if manual_value and len(manual_value) > 0:
+            return manual_value
+        return ml_value
 
     def __set__(self, instance, value):
         """

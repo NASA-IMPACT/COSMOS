@@ -126,7 +126,8 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
         return representation
 
     def get_tdamm_tag(self, obj):
-        return obj.tdamm_tag
+        tags = obj.tdamm_tag
+        return tags if tags is not None else []
 
     def get_document_type(self, obj):
         if obj.document_type is not None:

@@ -265,13 +265,7 @@ def exclude_and_delete_children(modeladmin, request, queryset):
 
 
 class CandidateURLForm(forms.ModelForm):
-    tdamm_tag_ml = forms.MultipleChoiceField(
-        choices=CandidateURL.TDAMM_TAG_CHOICES,
-        required=False,
-        label="TDAMM ML Tags",
-        widget=forms.CheckboxSelectMultiple,
-    )
-
+    # Define the fields as MultipleChoiceFields with checkboxes
     tdamm_tag_manual = forms.MultipleChoiceField(
         choices=CandidateURL.TDAMM_TAG_CHOICES,
         required=False,
@@ -279,87 +273,25 @@ class CandidateURLForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
     )
 
+    tdamm_tag_ml = forms.MultipleChoiceField(
+        choices=CandidateURL.TDAMM_TAG_CHOICES,
+        required=False,
+        label="TDAMM ML Tags",
+        widget=forms.CheckboxSelectMultiple,
+    )
+
     class Meta:
         model = CandidateURL
         fields = "__all__"
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        instance = kwargs.get("instance")
-
-        # Only show TDAMM fields if is_tdamm is True
-        if not instance or not instance.is_tdamm:
-            if "tdamm_tag_ml" in self.fields:
-                del self.fields["tdamm_tag_ml"]
-            if "tdamm_tag_manual" in self.fields:
-                del self.fields["tdamm_tag_manual"]
-        else:
-            # Initialize tdamm fields only if is_tdamm is True
-            if hasattr(self.instance, "tdamm_tag_ml"):
-                self.fields["tdamm_tag_ml"].initial = self.instance.tdamm_tag_ml or []
-
-            if hasattr(self.instance, "tdamm_tag_manual"):
-                self.fields["tdamm_tag_manual"].initial = self.instance.tdamm_tag_manual or []
-
-    def clean(self):
-        cleaned_data = super().clean()
-        return cleaned_data
-
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-
-        # Handle TDAMM fields if is_tdamm is True
-        if instance.is_tdamm:
-            # Get values from the form
-            tdamm_tag_ml = self.cleaned_data.get("tdamm_tag_ml", [])
-            tdamm_tag_manual = self.cleaned_data.get("tdamm_tag_manual", [])
-
-            # Set the values directly on the instance
-            instance.tdamm_tag_ml = tdamm_tag_ml or None
-            instance.tdamm_tag_manual = tdamm_tag_manual or None
-        else:
-            # Clear TDAMM fields if is_tdamm is False
-            instance.tdamm_tag_ml = None
-            instance.tdamm_tag_manual = None
-
-        if commit:
-            instance.save()
-
-        return instance
-
 
 class CandidateURLAdmin(admin.ModelAdmin):
-    """Admin View for CandidateURL"""
+    """Admin view for CandidateURL"""
 
     form = CandidateURLForm
-
-    def get_list_display(self, request):
-        list_display = [
-            "url",
-            "scraped_title",
-            "collection",
-            "is_tdamm",
-        ]
-        # Add TDAMM-related fields only if any TDAMM-enabled URLs exist
-        if CandidateURL.objects.filter(is_tdamm=True).exists():
-            list_display.extend(["tdamm_tag_ml_display", "tdamm_tag_manual_display"])
-        return list_display
-
-    list_filter = ("collection", "is_tdamm")
-
-    @admin.display(description="TDAMM ML Tags")
-    def tdamm_tag_ml_display(self, obj):
-        if obj.is_tdamm and obj.tdamm_tag_ml:
-            readable_tags = [dict(CandidateURL.TDAMM_TAG_CHOICES).get(tag, tag) for tag in obj.tdamm_tag_ml]
-            return ", ".join(readable_tags)
-        return ""
-
-    @admin.display(description="TDAMM Manual Tags")
-    def tdamm_tag_manual_display(self, obj):
-        if obj.is_tdamm and obj.tdamm_tag_manual:
-            readable_tags = [dict(CandidateURL.TDAMM_TAG_CHOICES).get(tag, tag) for tag in obj.tdamm_tag_manual]
-            return ", ".join(readable_tags)
-        return ""
+    list_display = ["url", "collection", "is_tdamm", "tdamm_tag_manual", "tdamm_tag_ml"]
+    list_filter = ["collection", "is_tdamm"]
+    search_fields = ("url", "collection__name")
 
     def get_fieldsets(self, request, obj=None):
         """Dynamically adjust fieldsets based on is_tdamm"""
@@ -405,13 +337,6 @@ class CandidateURLAdmin(admin.ModelAdmin):
             )
 
         return fieldsets
-
-    def save_model(self, request, obj, form, change):
-        """Ensure proper saving of the model"""
-        if not obj.is_tdamm:
-            obj.tdamm_tag_ml = None
-            obj.tdamm_tag_manual = None
-        super().save_model(request, obj, form, change)
 
 
 class TitlePatternAdmin(admin.ModelAdmin):
