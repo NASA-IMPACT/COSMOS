@@ -132,7 +132,7 @@ class CandidateURL(models.Model):
         switch="is_tdamm",
         verbose_name="TDAMM Tags",
     )
-    
+
     class Meta:
         """Meta definition for Candidate URL."""
 
