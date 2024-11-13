@@ -1,7 +1,3 @@
-from django.contrib.postgres.fields import ArrayField
-from django.db import models
-
-
 class PairedFieldDescriptor:
     """
     A descriptor that manages paired manual/ML fields where:
