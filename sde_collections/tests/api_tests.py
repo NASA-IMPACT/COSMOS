@@ -1,11 +1,8 @@
 # docker-compose -f local.yml run --rm django pytest sde_collections/tests/api_tests.py
 import unittest
 from unittest.mock import Mock, patch
-
 from requests import HTTPError
-
 from ..sinequa_api import Api
-
 
 class TestApi(unittest.TestCase):
     def setUp(self):
@@ -69,8 +66,7 @@ class TestApi(unittest.TestCase):
                 "advanced": {"collection": "/SDE/sample_folder/"},
             },
         }
-
-        mock_post.assert_called_once_with(expected_url, headers=None, json=expected_payload, data=None, verify=False)
+        mock_post.assert_called_once_with(expected_url, headers={}, json=expected_payload, verify=False)
 
     @patch("requests.post")
     def test_sql_query(self, mock_post):
@@ -132,7 +128,6 @@ class TestApi(unittest.TestCase):
             {"url": "http://example.com/article2", "full_text": "Full text for article 2", "title": "Title 2"},
         ]
         self.assertEqual(processed_response, expected)
-
 
 if __name__ == "__main__":
     unittest.main()
