@@ -1,15 +1,18 @@
-#docker-compose -f local.yml run --rm django pytest sde_collections/tests/api_tests.py
+# docker-compose -f local.yml run --rm django pytest sde_collections/tests/api_tests.py
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
 from requests import HTTPError
+
 from ..sinequa_api import Api
+
 
 class TestApi(unittest.TestCase):
     def setUp(self):
         # Set up an instance of the Api class with parameters for testing
         self.api = Api(server_name="test", user="test_user", password="test_password", token="test_token")
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_process_response_success(self, mock_post):
         # This test checks the process_response method when the HTTP request is successful
         mock_response = Mock()
@@ -21,7 +24,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {"key": "value"})
         mock_post.assert_called_once()
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_process_response_failure(self, mock_post):
         # Create a mock response object with a 500 status code
         mock_response = Mock()
@@ -31,7 +34,9 @@ class TestApi(unittest.TestCase):
 
         def raise_for_status():
             if mock_response.status_code != 200:
-                raise HTTPError(f"{mock_response.status_code} Server Error: Internal Server Error for url: http://example.com/api")
+                raise HTTPError(
+                    f"{mock_response.status_code} Server Error: Internal Server Error for url: http://example.com/api"
+                )
 
         mock_response.raise_for_status = raise_for_status
 
@@ -39,7 +44,7 @@ class TestApi(unittest.TestCase):
         with self.assertRaises(HTTPError):
             self.api.process_response("http://example.com/api", payload={"test": "data"})
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_query(self, mock_post):
         """
         The test ensures that the query method constructs the correct URL and payload based on input parameters,
@@ -65,15 +70,9 @@ class TestApi(unittest.TestCase):
             },
         }
 
-        mock_post.assert_called_once_with(
-            expected_url,
-            headers=None,
-            json=expected_payload,
-            data=None,
-            verify=False
-        )
+        mock_post.assert_called_once_with(expected_url, headers=None, json=expected_payload, data=None, verify=False)
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_sql_query(self, mock_post):
         # Mock response for the `sql_query` function with token-based authentication
         mock_response = Mock()
@@ -85,7 +84,7 @@ class TestApi(unittest.TestCase):
         response = self.api.sql_query(sql)
         self.assertEqual(response, {"Rows": [["http://example.com", "sample text", "sample title"]]})
 
-    @patch('requests.post')
+    @patch("requests.post")
     def test_get_full_texts(self, mock_post):
         # Mock response for the `get_full_texts` method
         mock_response = Mock()
@@ -93,7 +92,7 @@ class TestApi(unittest.TestCase):
         mock_response.json.return_value = {
             "Rows": [
                 ["http://example.com/article1", "Here is the full text of the first article...", "Article One Title"],
-                ["http://example.com/article2", "Here is the full text of the second article...", "Article Two Title"]
+                ["http://example.com/article2", "Here is the full text of the second article...", "Article Two Title"],
             ]
         }
         mock_post.return_value = mock_response
@@ -103,29 +102,28 @@ class TestApi(unittest.TestCase):
             {
                 "url": "http://example.com/article1",
                 "full_text": "Here is the full text of the first article...",
-                "title": "Article One Title"
+                "title": "Article One Title",
             },
             {
                 "url": "http://example.com/article2",
                 "full_text": "Here is the full text of the second article...",
-                "title": "Article Two Title"
-            }
+                "title": "Article Two Title",
+            },
         ]
         self.assertEqual(result, expected)
 
     def test_missing_token_for_sql_query(self):
-        # To test when token is missing for sql_query 
+        # To test when token is missing for sql_query
         api = Api(server_name="test", token=None)
         with self.assertRaises(ValueError):
             api.sql_query("SELECT * FROM test_table")
-
 
     def test_process_full_text_response(self):
         # Test `_process_full_text_response` parsing functionality
         raw_response = {
             "Rows": [
                 ["http://example.com/article1", "Full text for article 1", "Title 1"],
-                ["http://example.com/article2", "Full text for article 2", "Title 2"]
+                ["http://example.com/article2", "Full text for article 2", "Title 2"],
             ]
         }
         processed_response = Api._process_full_text_response(raw_response)
@@ -135,5 +133,6 @@ class TestApi(unittest.TestCase):
         ]
         self.assertEqual(processed_response, expected)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
