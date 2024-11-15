@@ -1,6 +1,7 @@
 # docker-compose -f local.yml run --rm django pytest -s sde_collections/tests/test_tdamm_tags.py
 
 import pytest
+
 from sde_collections.tests.factories import CandidateURLFactory
 
 

@@ -2,8 +2,8 @@ import factory
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from sde_collections.models.collection import Collection
 from sde_collections.models.candidate_url import CandidateURL
+from sde_collections.models.collection import Collection
 from sde_collections.models.collection_choice_fields import (
     ConnectorChoices,
     Divisions,
