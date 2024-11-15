@@ -4,9 +4,10 @@ this script is then run via the dm shell on the COSMOS server to populate the da
 """
 
 import json
-import urllib.parse
-from config.server_configs import server_configs
 import os
+import urllib.parse
+
+from config.server_configs import server_configs
 from environmental_justice.models import EnvironmentalJusticeRow
 
 
@@ -23,7 +24,7 @@ def concept_id_to_sinequa_id(concept_id: str) -> str:
 
 
 def sinequa_id_to_url(sinequa_id: str) -> str:
-    base_domain = os.getenv('BASE_URL_PROD')
+    base_domain = os.getenv("BASE_URL_PROD")
     base_url = f"{base_domain}/app/nasa-sba-smd/#/preview"
     query = '{"name":"query-smd-primary","scope":"All","text":""}'
 
@@ -31,6 +32,7 @@ def sinequa_id_to_url(sinequa_id: str) -> str:
     encoded_query = urllib.parse.quote(query, safe="")
 
     return f"{base_url}?id={encoded_id}&query={encoded_query}"
+
 
 def categorize_processing_level(level):
     advanced_analysis_levels = {"0", "Level 0", "NA", "Not Provided", "Not provided"}

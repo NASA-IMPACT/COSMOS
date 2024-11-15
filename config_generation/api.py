@@ -1,7 +1,10 @@
 from typing import Any
-from config.server_configs import server_configs
+
 import requests
+
 from config import tokens
+from config.server_configs import server_configs
+
 
 class Api:
     def __init__(self, server_name: str) -> None:

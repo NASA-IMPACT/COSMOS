@@ -1,6 +1,7 @@
 import json
-import urllib.parse
 import os
+import urllib.parse
+
 import requests
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -129,7 +130,7 @@ class Collection(models.Model):
 
     @property
     def server_url_secret_prod(self) -> str:
-        base_url = os.getenv('BASE_URL_SECRET_TEST')  # noqa: E231
+        base_url = os.getenv("BASE_URL_SECRET_TEST")  # noqa: E231
         payload = {
             "name": "secret-prod",
             "scope": "All",
@@ -143,7 +144,7 @@ class Collection(models.Model):
 
     @property
     def server_url_prod(self) -> str:
-        base_url = os.getenv('BASE_URL_PROD')  # noqa: E231
+        base_url = os.getenv("BASE_URL_PROD")  # noqa: E231
         payload = {
             "name": "query-smd-primary",
             "scope": "All",

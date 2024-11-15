@@ -1,8 +1,9 @@
 import json
+import os
 import sys
 import time
 import urllib.parse
-import os
+
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -16,8 +17,8 @@ except IndexError:
 
 def server_url(config_folder, server="test", secret=True) -> str:
     URLS = {
-        "test": os.getenv('BASE_URL_TEST'),
-        "prod": os.getenv('BASE_URL_PROD'),
+        "test": os.getenv("BASE_URL_TEST"),
+        "prod": os.getenv("BASE_URL_PROD"),
     }
     if secret:
         query = "query-sde-primary"

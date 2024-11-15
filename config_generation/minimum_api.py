@@ -1,6 +1,8 @@
 from typing import Any
-from config.server_configs import server_configs
+
 import requests
+
+from config.server_configs import server_configs
 
 
 class Api:

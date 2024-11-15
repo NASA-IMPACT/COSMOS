@@ -1,11 +1,14 @@
 import json
 from typing import Any
-from config.server_configs import server_configs
+
 import requests
 import urllib3
 from django.conf import settings
 
+from config.server_configs import server_configs
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 class Api:
     def __init__(self, server_name: str = None, user: str = None, password: str = None, token: str = None) -> None:
