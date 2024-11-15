@@ -1,19 +1,6 @@
 from typing import Any
-
+from config.server_configs import server_configs
 import requests
-
-server_configs: dict[str, dict[str, str]] = {
-    "test_server": {
-        "app_name": "nasa-sba-smd",
-        "query_name": "query-smd-primary",
-        "base_url": "https://sciencediscoveryengine.test.nasa.gov",
-    },
-    "production_server": {
-        "app_name": "nasa-sba-smd",
-        "query_name": "query-smd-primary",
-        "base_url": "https://sciencediscoveryengine.nasa.gov",
-    },
-}
 
 
 class Api:

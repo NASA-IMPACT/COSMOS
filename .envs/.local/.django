@@ -47,3 +47,15 @@ LRM_QA_PASSWORD=''
 #--------------------------------------------------------------------------------
 LRM_DEV_TOKEN=''
 XLI_TOKEN=''
+TEST_SERVER_TOKEN=''
+
+#Server Base_URLs
+#--------------------------------------------------------------------------------
+BASE_URL_DEV=http://sde-renaissance.nasa-impact.net
+BASE_URL_TEST=https://sciencediscoveryengine.test.nasa.gov
+BASE_URL_PROD=https://sciencediscoveryengine.nasa.gov
+BASE_URL_XLI=http://sde-xli.nasa-impact.net
+BASE_URL_LRM_DEV=https://sde-lrm.nasa-impact.net
+BASE_URL_LRM_QA=https://sde-qa.nasa-impact.net
+BASE_URL_TEST_SERVER=http://10.51.14.135
+BASE_URL_REN=http://sde-renaissance.nasa-impact.net

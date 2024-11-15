@@ -1,22 +1,7 @@
 from typing import Any
-
+from config.server_configs import server_configs
 import requests
-
 from config import tokens
-
-server_configs: dict[str, dict[str, str]] = {
-    "ren_server": {
-        "app_name": "nasa-sba-smd",
-        "query_name": "query-smd-primary",
-        "base_url": "http://sde-renaissance.nasa-impact.net",
-    },
-    "test_server": {
-        "app_name": "nasa-sba-smd",
-        "query_name": "query-smd-primary",
-        "base_url": "http://10.51.14.135",
-    },
-}
-
 
 class Api:
     def __init__(self, server_name: str) -> None:
