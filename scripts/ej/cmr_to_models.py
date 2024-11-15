@@ -7,7 +7,6 @@ import json
 import os
 import urllib.parse
 
-from config.server_configs import server_configs
 from environmental_justice.models import EnvironmentalJusticeRow
 
 
