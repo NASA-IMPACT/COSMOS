@@ -31,7 +31,7 @@ certificatesResolvers:
 http:
   routers:
     web-secure-router:
-      rule: "Host(`sde-indexing-helper.nasa-impact.net`)"
+      rule: 'Host(`{{ env "TRAEFIK_DOMAIN" }}`)'
       entryPoints:
         - web-secure
       middlewares:
@@ -42,7 +42,7 @@ http:
         certResolver: letsencrypt
 
     flower-secure-router:
-      rule: "Host(`sde-indexing-helper.nasa-impact.net`)"
+      rule: 'Host(`{{ env "TRAEFIK_DOMAIN" }}`)'
       entryPoints:
         - flower
       service: flower

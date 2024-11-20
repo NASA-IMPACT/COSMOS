@@ -2,7 +2,6 @@ import factory
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from sde_collections.models.candidate_url import CandidateURL
 from sde_collections.models.collection import Collection
 from sde_collections.models.collection_choice_fields import (
     ConnectorChoices,
@@ -11,6 +10,7 @@ from sde_collections.models.collection_choice_fields import (
     UpdateFrequencies,
     WorkflowStatusChoices,
 )
+from sde_collections.models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
 
 User = get_user_model()
 
@@ -52,23 +52,39 @@ class CollectionFactory(factory.django.DjangoModelFactory):
     curation_started = factory.LazyFunction(timezone.now)
 
 
-class CandidateURLFactory(factory.django.DjangoModelFactory):
+class DumpUrlFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = CandidateURL
+        model = DumpUrl
 
     collection = factory.SubFactory(CollectionFactory)
     url = factory.Faker("url")
-    hash = factory.LazyFunction(lambda: "1")
     scraped_title = factory.Faker("sentence")
+    scraped_text = factory.Faker("paragraph")
+    # generated_title = factory.Faker("sentence")
+    # visited = factory.Faker("boolean")
+    # document_type = 1
+    # division = 1
+
+
+class CuratedUrlFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CuratedUrl
+
+    collection = factory.SubFactory(CollectionFactory)
+    url = factory.Faker("url")
+    scraped_title = factory.Faker("sentence")
+    scraped_text = factory.Faker("paragraph")
     generated_title = factory.Faker("sentence")
-    test_title = ""
-    production_title = ""
-    level = 0
-    visited = False
-    document_type = DocumentTypes.DOCUMENTATION
-    division = Divisions.ASTROPHYSICS
-    inferenced_by = ""
-    is_pdf = False
-    present_on_test = False
-    present_on_prod = False
-    is_tdamm = False
+    visited = factory.Faker("boolean")
+    document_type = 1
+    division = 1
+
+
+class DeltaUrlFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = DeltaUrl
+
+    collection = factory.SubFactory(CollectionFactory)
+    url = factory.Faker("url")
+    scraped_title = factory.Faker("sentence")
+    to_delete = False

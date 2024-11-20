@@ -82,7 +82,7 @@ $ docker-compose -f local.yml run --rm django python manage.py loaddata sde_coll
 Navigate to the server running prod, then to the project folder. Run the following command to create a backup:
 
 ```bash
-docker-compose -f production.yml run --rm --user root django python manage.py dumpdata --natural-foreign --natural-primary --exclude=contenttypes --exclude=auth.Permission --indent 2 --output /app/backups/prod_backup-20240812.json
+docker-compose -f production.yml run --rm --user root django python manage.py dumpdata --natural-foreign --natural-primary --exclude=contenttypes --exclude=auth.Permission --indent 2 --output /app/backups/prod_backup-20241114.json
 ```
 This will have saved the backup in a folder outside of the docker container. Now you can copy it to your local machine.
 
@@ -208,3 +208,20 @@ Eventually, job creation will be done seamlessly by the webapp. Until then, edit
   - JavaScript: `/sde_indexing_helper/static/js`
   - CSS: `/sde_indexing_helper/static/css`
   - Images: `/sde_indexing_helper/static/images`
+
+
+## Running Long Scripts on the Server
+```shell
+tmux new -s docker_django
+```
+Once you are inside, you can run dmshell.
+
+Later, you can do this to get back in.
+```shell
+tmux attach -t docker_django
+```
+
+To delete the session:
+```shell
+tmux kill-session -t docker_django
+```

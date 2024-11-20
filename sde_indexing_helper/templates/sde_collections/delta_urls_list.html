@@ -2,19 +2,19 @@
 {% load static i18n %}
 {% load humanize %}
 {% block title %}
-{{ collection.name }} Candidate URLs
+{{ collection.name }} Delta URLs
 {% endblock title %}
 {% block stylesheets %}
     {{ block.super }}
     <link href="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/plug-ins/2.0.8/features/inputPaging/dist/dataTables.inputPaging.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="{% static 'css/candidate_url_list.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/delta_url_list.css' %}" />
     <link href="{% static 'css/project.css' %}" rel="stylesheet">
 {% endblock stylesheets %}
 {% block content %}
 {% csrf_token %}
 <div class="headerDiv">
-<h1 class="pageTitle">Candidate URLs</h1>
+<h1 class="pageTitle">Delta URLs</h1>
 <button class="btn badge {{ collection.workflow_status_button_color }} dropdown-toggle title-dropdown btn-sm"
 type="button"
 data-toggle="dropdown"
@@ -28,9 +28,9 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
 {% endfor %}
 </div>
 </div>
-<div class="candidateUrlContainer">
-<h3 class="whiteText candidateTitle">
-    {{ candidate_urls.count|intcomma }} Candidate URLs for <a
+<div class="deltaUrlContainer">
+<h3 class="whiteText deltaTitle">
+    {{ delta_urls.count|intcomma }} Delta URLs for <a
         href="{% url 'sde_collections:detail' collection.pk %}"><strong class="urlStyle underline">{{ collection.name }}</strong></a>
     <br>
     <!-- <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small> -->
@@ -40,7 +40,10 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
     <!-- Nav tabs -->
     <ul class="nav nav-tabs">
         <li class="nav-item">
-            <a class="tab-nav active tabStyle" data-toggle="tab" href="#Candidate-URLs">Candidate URLs</a>
+            <a class="tab-nav active tabStyle" data-toggle="tab" href="#Delta-URLs">Delta URLs</a>
+        </li>
+        <li class="nav-item">
+            <a class="tab-nav tabStyle" data-toggle="tab" href="#Curated-URLs">Curated URLs</a>
         </li>
         <li class="nav-item">
             <a class="tab-nav tabStyle" id="excludePatternsTab" data-toggle="tab" href="#Exclude-Patterns">Exclude Patterns</a>
@@ -63,8 +66,8 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
 
     <!-- Tab panes -->
     <div class="tab-content">
-        <div class="tab-pane active" id="Candidate-URLs">
-            <table class="table" id="candidate_urls_table" style="width:100%" >
+        <div class="tab-pane active" id="Delta-URLs">
+            <table class="table" id="delta_urls_table" style="width:100%" >
                 <thead class="tableHeader">
                     <tr>
                         <th scope="col" class="text-center col-1"><div class="header-title">URL</div></th>
@@ -86,13 +89,71 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
 
                     </tr>
                     <tr>
-                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateUrlFilter" placeholder="URL" /></td>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="deltaUrlFilter" placeholder="URL" /></td>
                         <td ><select class="dropdown-1 select-dropdown selectStyling"><option value="">SELECT</option>
                             <option value="false">FALSE</option>
                             <option value="true">TRUE</option>
                         </select></td>
-                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateScrapedTitleFilter" placeholder="Scraped Title" /></td>
-                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateNewTitleFilter" placeholder="New Title" /></td>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="deltaScrapedTitleFilter" placeholder="Scraped Title" /></td>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="deltaNewTitleFilter" placeholder="New Title" /></td>
+                        <td><select class="dropdown-4 select-dropdown selectStyling"><option value="">SELECT</option>
+                        <option value="0">None</option>
+                        <option value="1">Images</option>
+                        <option value="2">Data</option>
+                        <option value="3">Documentation</option>
+                        <option value="4">Software and Tools</option>
+                        <option value="5">Missions and Instruments</option>
+                        </select></td>
+                        <td><select class="dropdown-5 select-dropdown selectStyling"><option value="">SELECT</option>
+                        <option value="0">None</option>
+                        <option value="1">Astrophysics</option>
+                        <option value="2">Biological and Physical Sciences</option>
+                        <option value="3">Earth Science</option>
+                        <option value="4">Heliophysics</option>
+                        <option value="5">Planetary Science</option>
+                        </select></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                        <td ></td>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div class="tab-pane fade" id="Curated-URLs">
+            <table class="table" id="curated_urls_table" style="width:100%" >
+                <thead class="tableHeader">
+                    <tr>
+                        <th scope="col" class="text-center col-1"><div class="header-title">URL</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">Exclude</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">Scraped Title</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">New Title</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">Document Type</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">Division</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">ID</div></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <!-- <th scope="col" class="text-center col-1"><div class="header-title">Document Type</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">Exclude</div></th>
+                        <th scope="col" class="text-center col-1"><div class="header-title">generated_title</div></th> -->
+                        <!-- {% if is_multi_division %} -->
+                        <!-- {% endif %} -->
+
+                    </tr>
+                    <tr>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="curatedUrlFilter" placeholder="URL" /></td>
+                        <td ><select class="dropdown-1 select-dropdown selectStyling"><option value="">SELECT</option>
+                            <option value="false">FALSE</option>
+                            <option value="true">TRUE</option>
+                        </select></td>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="curatedScrapedTitleFilter" placeholder="Scraped Title" /></td>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="curatedNewTitleFilter" placeholder="New Title" /></td>
                         <td><select class="dropdown-4 select-dropdown selectStyling"><option value="">SELECT</option>
                         <option value="0">None</option>
                         <option value="1">Images</option>
@@ -133,12 +194,12 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         <th scope="col" class="text-center col-1"><strong>ID</strong></th>
                     </tr>
                     <tr>
-                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateMatchPatternFilter" placeholder="Match Pattern" /></td>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="deltaMatchPatternFilter" placeholder="Match Pattern" /></td>
                         <td > <select id="exclude-patterns-dropdown-1" class="select-dropdown selectStyling"><option value="">SELECT</option>
                             <option value="Individual URL Pattern">Individual URL Pattern</option>
                             <option value="Multi-URL Pattern">Multi-URL Pattern</option>
                         </select>
-                            <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateReasonFilter" placeholder="Reason" /></td>
+                            <td ><input type="text" class="table_filter_row_input textBoxStyling" id="deltaReasonFilter" placeholder="Reason" /></td>
                         <td ></td>
                         <td ></td>
                         <td ></td>
@@ -169,7 +230,7 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         </th>
                     </tr>
                     <tr>
-                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateIncludeMatchPatternFilter" placeholder="Match Pattern" /></td>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="deltaIncludeMatchPatternFilter" placeholder="Match Pattern" /></td>
                         <td > <select id="include-patterns-dropdown-1" class="select-dropdown selectStyling"><option value="">SELECT</option>
                             <option value="Individual URL Pattern">Individual URL Pattern</option>
                             <option value="Multi-URL Pattern">Multi-URL Pattern</option>
@@ -206,12 +267,12 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         </th>
                     </tr>
                     <tr>
-                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateTitleMatchPatternFilter" placeholder="Match Pattern" /></td>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="deltaTitleMatchPatternFilter" placeholder="Match Pattern" /></td>
                         <td > <select id="title-patterns-dropdown-1" class="select-dropdown selectStyling"><option value="">SELECT</option>
                             <option value="Individual URL Pattern">Individual URL Pattern</option>
                             <option value="Multi-URL Pattern">Multi-URL Pattern</option>
                         </select></td>
-                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateTitlePatternTypeFilter" placeholder="Title Pattern" /></td>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="deltaTitlePatternTypeFilter" placeholder="Title Pattern" /></td>
                         <td ></td>
                         <td ></td>
                         <td ></td>
@@ -243,7 +304,7 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         </th>
                     </tr>
                     <tr>
-                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="candidateDocTypeMatchPatternFilter" placeholder="Match Pattern" /></td>
+                        <td ><input type="text" class="table_filter_row_input textBoxStyling" id="deltaDocTypeMatchPatternFilter" placeholder="Match Pattern" /></td>
                         <td ><select id="document-type-patterns-dropdown-1" class="select-dropdown selectStyling"><option value="">SELECT</option>
                             <option value="Individual URL Pattern">Individual URL Pattern</option>
                             <option value="Multi-URL Pattern">Multi-URL Pattern</option>
@@ -274,7 +335,7 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         <th scope="col" class="text-center col-1"><strong>ID</strong></th>
                     </tr>
                     <tr>
-                        <td><input type="text" class="table_filter_row_input textBoxStyling" id="candidateDivisionMatchPatternFilter" placeholder="Match Pattern" /></td>
+                        <td><input type="text" class="table_filter_row_input textBoxStyling" id="deltaDivisionMatchPatternFilter" placeholder="Match Pattern" /></td>
                         <td><select id="division-patterns-dropdown-1" class="select-dropdown selectStyling">
                             <option value="">SELECT</option>
                             <option value="Individual URL Pattern">Individual URL Pattern</option>
@@ -563,7 +624,7 @@ aria-labelledby="workflowStatusChangeModal" aria-hidden="true">
     <script src="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
     <script src="https://cdn.datatables.net/plug-ins/2.0.8/features/inputPaging/dist/dataTables.inputPaging.min.js"></script>
-    <script src="{% static 'js/candidate_url_list.js' %}"></script>
+    <script src="{% static 'js/delta_url_list.js' %}"></script>
     <script src="{% static 'js/project.js' %}"></script>
     <script src="{% static 'js/core/bootstrap.min.js' %}"></script>
 {% endblock javascripts %}

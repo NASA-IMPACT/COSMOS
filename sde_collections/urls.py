@@ -8,7 +8,8 @@ from . import views
 router = routers.DefaultRouter()
 router.register(r"collections", views.CollectionViewSet, basename="collection")
 router.register(r"collections-read", views.CollectionReadViewSet, basename="collection-read")
-router.register(r"candidate-urls", views.CandidateURLViewSet)
+router.register(r"delta-urls", views.DeltaURLViewSet)
+router.register(r"curated-urls", views.CuratedURLViewSet)
 router.register(r"exclude-patterns", views.ExcludePatternViewSet)
 router.register(r"include-patterns", views.IncludePatternViewSet)
 router.register(r"title-patterns", views.TitlePatternViewSet)
@@ -32,31 +33,37 @@ urlpatterns = [
         views.IndexingInstructionsView.as_view(),
         name="indexing_instructions",
     ),
-    path("api/assign-division/<int:pk>/", views.CandidateURLViewSet.as_view({"post": "update_division"})),
+    path("api/assign-division/<int:pk>/", views.DeltaURLViewSet.as_view({"post": "update_division"})),
     path(
         "delete-required-url/<int:pk>",
         view=views.RequiredUrlsDeleteView.as_view(),
         name="delete_required_url",
     ),
     path(
-        "<int:pk>/candidate-urls",
-        view=views.CandidateURLsListView.as_view(),
-        name="candidate_urls",
+        "<int:pk>/delta-urls",
+        view=views.DeltaURLsListView.as_view(),
+        name="delta_urls",
     ),
     path(
         "consolidate/",
         view=views.WebappGitHubConsolidationView.as_view(),
         name="consolidate_db_and_github_configs",
     ),
-    # List all CandidateURL instances: /candidate-urls/
-    # Retrieve a specific CandidateURL instance: /candidate-urls/{id}/
-    # Create a new CandidateURL instance: /candidate-urls/
-    # Update an existing CandidateURL instance: /candidate-urls/{id}/
-    # Delete an existing CandidateURL instance: /candidate-urls/{id}/
+    # List all DeltaURL instances: /delta-urls/
+    # Retrieve a specific DeltaURL instance: /delta-urls/{id}/
+    # Create a new DeltaURL instance: /delta-urls/
+    # Update an existing DeltaURL instance: /delta-urls/{id}/
+    # Delete an existing DeltaURL instance: /delta-urls/{id}/
     path("api/", include(router.urls)),
     path(
-        "candidate-urls-api/<str:config_folder>/",
-        view=views.CandidateURLAPIView.as_view(),
+        "delta-urls-api/<str:config_folder>/",
+        view=views.DeltaURLAPIView.as_view(),
+        name="delta-url-api",
+    ),
+    path("curated-urls-api/<str:config_folder>/", view=views.CuratedURLAPIView.as_view(), name="curated-url-api"),
+    path(
+        "candidate-url-api/<str:config_folder>/",
+        view=views.CuratedURLAPIView.as_view(),
         name="candidate-url-api",
     ),
     path("titles-and-errors/", views.TitlesAndErrorsView.as_view(), name="titles-and-errors-list"),

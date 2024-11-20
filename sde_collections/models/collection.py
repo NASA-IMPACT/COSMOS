@@ -3,6 +3,7 @@ import urllib.parse
 
 import requests
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -26,8 +27,10 @@ from .collection_choice_fields import (
     UpdateFrequencies,
     WorkflowStatusChoices,
 )
+from .delta_url import CuratedUrl, DeltaUrl, DumpUrl
 
 User = get_user_model()
+DELTA_COMPARISON_FIELDS = ["scraped_title"]  # Add more fields as needed
 
 
 class Collection(models.Model):
@@ -83,6 +86,134 @@ class Collection(models.Model):
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
 
+    def clear_delta_urls(self):
+        """Clears all DeltaUrls for this collection."""
+        DeltaUrl.objects.filter(collection=self).delete()
+
+    def clear_dump_urls(self):
+        """Clears all DumpUrls for this collection."""
+        DumpUrl.objects.filter(collection=self).delete()
+
+    def refresh_url_lists_for_all_patterns(self):
+        """
+        Updates pattern relations for all patterns associated with this collection.
+        """
+        # List of pattern models to update
+        pattern_models = [
+            "DeltaExcludePattern",
+            "DeltaIncludePattern",
+            "DeltaTitlePattern",
+            "DeltaDocumentTypePattern",
+            "DeltaDivisionPattern",
+        ]
+
+        # Loop through each model and update its relations
+        for model_name in pattern_models:
+            # Get the model dynamically
+            model = ContentType.objects.get(app_label="sde_collections", model=model_name.lower()).model_class()
+
+            # Filter patterns for the current collection and update relations
+            for pattern in model.objects.filter(collection=self):
+                pattern.refresh_url_lists()
+
+    def migrate_dump_to_delta(self):
+        """Main function to handle migration from DumpUrls to DeltaUrls with specific rules."""
+        # Step 1: Clear existing DeltaUrls for this collection
+        self.clear_delta_urls()
+
+        # Step 2: Fetch all current DumpUrls and CuratedUrls for this collection
+        dump_urls = {url.url: url for url in DumpUrl.objects.filter(collection=self)}
+        curated_urls = {url.url: url for url in CuratedUrl.objects.filter(collection=self)}
+
+        # Step 3: Process each URL in DumpUrls to migrate as needed
+        for url, dump in dump_urls.items():
+            curated = curated_urls.get(url)
+
+            if curated:
+                # Check if any of the comparison fields differ
+                if any(getattr(curated, field) != getattr(dump, field) for field in DELTA_COMPARISON_FIELDS):
+                    self.create_or_update_delta_url(dump, to_delete=False)
+            else:
+                # New URL, not in CuratedUrls; move it entirely to DeltaUrls
+                self.create_or_update_delta_url(dump, to_delete=False)
+
+        # Step 4: Identify CuratedUrls missing in DumpUrls and flag them for deletion in DeltaUrls
+        for curated in curated_urls.values():
+            if curated.url not in dump_urls:
+                self.create_or_update_delta_url(curated, to_delete=True)
+
+        # Step 5: Clear DumpUrls after migration is complete
+        self.clear_dump_urls()
+
+        # Step 6: Reapply patterns to DeltaUrls
+        self.refresh_url_lists_for_all_patterns()
+
+    def create_or_update_delta_url(self, url_instance, to_delete=False):
+        """
+        Creates or updates a DeltaUrl entry based on the given DumpUrl or CuratedUrl object.
+        If to_delete is True, only sets the to_delete flag and url.
+        """
+        if to_delete:
+            # Only set the URL and to_delete flag
+            DeltaUrl.objects.update_or_create(collection=self, url=url_instance.url, defaults={"to_delete": True})
+        else:
+            # Automatically move over all fields from url_instance
+            fields_to_copy = {
+                field.name: getattr(url_instance, field.name)
+                for field in DumpUrl._meta.fields  # Assumes same fields for CuratedUrl via inheritance
+                if field.name not in ["id", "collection", "url"]
+            }
+            fields_to_copy["to_delete"] = False  # Ensure to_delete flag is False
+
+            DeltaUrl.objects.update_or_create(collection=self, url=url_instance.url, defaults=fields_to_copy)
+
+    def promote_to_curated(self):
+        """
+        Promotes all DeltaUrls in this collection to CuratedUrls.
+        Updates, adds, or removes CuratedUrls as necessary to match the latest DeltaUrls.
+        """
+        # Step 1: Fetch all current DeltaUrls and CuratedUrls for this collection
+        delta_urls = {url.url: url for url in DeltaUrl.objects.filter(collection=self)}
+        curated_urls = {url.url: url for url in CuratedUrl.objects.filter(collection=self)}
+
+        # Step 2: Process each DeltaUrl to update or create the corresponding CuratedUrl
+        for url, delta in delta_urls.items():
+            curated = curated_urls.get(url)
+
+            # Delete the CuratedUrl if the DeltaUrl is marked for deletion
+            if delta.to_delete:
+                if curated:
+                    curated.delete()
+                continue
+
+            if curated:
+                updated_fields = {}
+                for field in delta._meta.fields:
+                    field_name = field.name
+                    if field_name == "to_delete":
+                        continue
+
+                    delta_value = getattr(delta, field_name)
+                    if delta_value not in [None, ""] and getattr(curated, field_name) != delta_value:
+                        updated_fields[field_name] = delta_value
+
+                if updated_fields:
+                    CuratedUrl.objects.filter(pk=curated.pk).update(**updated_fields)
+            else:
+                # If no matching CuratedUrl, create a new one using all non-null and non-empty fields
+                new_data = {
+                    field.name: getattr(delta, field.name)
+                    for field in delta._meta.fields
+                    if field.name not in ["to_delete", "collection"] and getattr(delta, field.name) not in [None, ""]
+                }
+                CuratedUrl.objects.create(collection=self, **new_data)
+
+        # Step 3: Clear all DeltaUrls for this collection since they've been promoted
+        DeltaUrl.objects.filter(collection=self).delete()
+
+        # Step 4: Reapply patterns to DeltaUrls
+        self.refresh_url_lists_for_all_patterns()
+
     def add_to_public_query(self):
         """Add the collection to the public query."""
         if self.workflow_status not in [
@@ -110,6 +241,16 @@ class Collection(models.Model):
     @property
     def included_urls_count(self):
         return self.candidate_urls.filter(excluded=False).count()
+
+    @property
+    def delta_urls_count(self):
+        """get the total number of delta urls"""
+        return self.delta_urls.filter(excluded=False).count()
+
+    @property
+    def included_curated_urls_count(self):
+        """get the number of included, curated urls"""
+        return self.curated_urls.filter(excluded=False).count()
 
     @property
     def _scraper_config_path(self) -> str:
@@ -482,7 +623,13 @@ class Collection(models.Model):
                 if transition in STATUS_CHANGE_NOTIFICATIONS:
                     details = STATUS_CHANGE_NOTIFICATIONS[transition]
                     message = format_slack_message(self.name, details, self.id)
-                    send_slack_message(message)
+                    try:
+                        # TODO: find a better way to allow this to work on dev environments with
+                        # no slack integration
+                        send_slack_message(message)
+                    except Exception as e:
+                        print(f"Error sending Slack message: {e}")
+
         # Call the parent class's save method
         super().save(*args, **kwargs)
 
@@ -580,6 +727,8 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
     if "workflow_status" in instance.tracker.changed():
         if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
             instance.create_plugin_config(overwrite=True)
+        elif instance.workflow_status == WorkflowStatusChoices.CURATED:
+            instance.promote_to_curated()
         elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
             instance.create_scraper_config(overwrite=False)
             instance.create_indexer_config(overwrite=False)
