@@ -116,14 +116,7 @@ class CandidateURLAPISerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CandidateURL
-        fields = ("url", "title", "document_type", "hash", "file_extension", "tree_root", "is_tdamm", "tdamm_tag")
-
-    def to_representation(self, instance):
-        """Remove tdamm_tag field if is_tdamm is False"""
-        representation = super().to_representation(instance)
-        if not instance.is_tdamm:
-            representation.pop("tdamm_tag", None)
-        return representation
+        fields = ("url", "title", "document_type", "hash", "file_extension", "tree_root", "tdamm_tag")
 
     def get_tdamm_tag(self, obj):
         tags = obj.tdamm_tag

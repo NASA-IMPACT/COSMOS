@@ -290,12 +290,11 @@ class CandidateURLAdmin(admin.ModelAdmin):
     """Admin view for CandidateURL"""
 
     form = CandidateURLForm
-    list_display = ["url", "collection", "is_tdamm", "tdamm_tag_manual", "tdamm_tag_ml"]
-    list_filter = ["collection", "is_tdamm"]
+    list_display = ["url", "collection", "tdamm_tag_manual", "tdamm_tag_ml"]
+    list_filter = ["collection"]
     search_fields = ("url", "collection__name")
 
     def get_fieldsets(self, request, obj=None):
-        """Dynamically adjust fieldsets based on is_tdamm"""
         fieldsets = [
             (
                 "Essential Information",
@@ -316,26 +315,20 @@ class CandidateURLAdmin(admin.ModelAdmin):
                         "is_pdf",
                         "present_on_test",
                         "present_on_prod",
-                        "is_tdamm",
                     )
                 },
             ),
+            (
+                "TDAMM Tags",
+                {
+                    "fields": (
+                        "tdamm_tag_ml",
+                        "tdamm_tag_manual",
+                    ),
+                    "classes": ("collapse",),
+                },
+            ),
         ]
-
-        # Add TDAMM fields only if is_tdamm is True
-        if obj and obj.is_tdamm:
-            fieldsets.append(
-                (
-                    "TDAMM Tags",
-                    {
-                        "fields": (
-                            "tdamm_tag_ml",
-                            "tdamm_tag_manual",
-                        ),
-                        "classes": ("collapse",),
-                    },
-                )
-            )
 
         return fieldsets
 

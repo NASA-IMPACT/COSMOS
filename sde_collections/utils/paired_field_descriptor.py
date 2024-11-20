@@ -6,13 +6,12 @@ class PairedFieldDescriptor:
     - Getting the main field returns manual if present, otherwise ML
     """
 
-    def __init__(self, field_name, field_type, switch, verbose_name=""):
+    def __init__(self, field_name, field_type, verbose_name=""):
         self.field_name = field_name
         self.manual_field_name = f"{field_name}_manual"
         self.ml_field_name = f"{field_name}_ml"
         self.field_type = field_type
         self.verbose_name = verbose_name or field_name.replace("_", " ").title()
-        self.switch = switch
 
     def contribute_to_class(self, cls, name):
         """Called by Django when the descriptor is added to the model class."""
@@ -48,13 +47,9 @@ class PairedFieldDescriptor:
         Get the value of the main field:
         - Returns manual tags if they exist
         - Otherwise returns ML tags
-        - Returns None if switch is False
         """
         if instance is None:
             return self
-
-        if not getattr(instance, self.switch, False):
-            return None
 
         manual_value = getattr(instance, self.manual_field_name, None)
         ml_value = getattr(instance, self.ml_field_name, None)
@@ -69,16 +64,10 @@ class PairedFieldDescriptor:
         Set only the manual field when setting the field.
         ML field must be set explicitly.
         """
-        if getattr(instance, self.switch, False):
-            # Only set the manual field
-            setattr(instance, self.manual_field_name, value)
+
+        setattr(instance, self.manual_field_name, value)
 
     def __delete__(self, instance):
         """Delete both manual and ML fields"""
         setattr(instance, self.manual_field_name, None)
         setattr(instance, self.ml_field_name, None)
-
-    def set_ml(self, instance, value):
-        """Explicit method to set ML tags"""
-        if getattr(instance, self.switch, False):
-            setattr(instance, self.ml_field_name, value)

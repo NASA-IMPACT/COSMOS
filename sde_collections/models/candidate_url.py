@@ -81,11 +81,10 @@ class CandidateURL(models.Model):
         default=False,
         help_text="Helps keep track if the Current URL is present in production or not",
     )
-    is_tdamm = models.BooleanField("Is TDAMM?", default=False, help_text="Enable TDAMM tagging for this URL")
+    # is_tdamm = models.BooleanField("Is TDAMM?", default=False, help_text="Enable TDAMM tagging for this URL")
     tdamm_tag = PairedFieldDescriptor(
         field_name="tdamm_tag",
         field_type=ArrayField(models.CharField(max_length=255, choices=TDAMMTags.choices), blank=True, null=True),
-        switch="is_tdamm",
         verbose_name="TDAMM Tags",
     )
 
