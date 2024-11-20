@@ -8,6 +8,7 @@ from .models.candidate_url import CandidateURL, ResolvedTitle
 from .models.collection import Collection, WorkflowHistory
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
 from .tasks import import_candidate_urls_from_api
+from .models.collection_choice_fields import TDAMMTags
 
 
 @admin.action(description="Generate deployment message")
@@ -267,14 +268,14 @@ def exclude_and_delete_children(modeladmin, request, queryset):
 class CandidateURLForm(forms.ModelForm):
     # Define the fields as MultipleChoiceFields with checkboxes
     tdamm_tag_manual = forms.MultipleChoiceField(
-        choices=CandidateURL.TDAMM_TAG_CHOICES,
+        choices=TDAMMTags.choices,
         required=False,
         label="TDAMM Manual Tags",
         widget=forms.CheckboxSelectMultiple,
     )
 
     tdamm_tag_ml = forms.MultipleChoiceField(
-        choices=CandidateURL.TDAMM_TAG_CHOICES,
+        choices=TDAMMTags.choices,
         required=False,
         label="TDAMM ML Tags",
         widget=forms.CheckboxSelectMultiple,

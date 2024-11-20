@@ -7,7 +7,7 @@ from django.db import models
 
 from ..utils.paired_field_descriptor import PairedFieldDescriptor
 from .collection import Collection
-from .collection_choice_fields import Divisions, DocumentTypes
+from .collection_choice_fields import Divisions, DocumentTypes, TDAMMTags
 from .pattern import ExcludePattern, TitlePattern
 
 
@@ -82,53 +82,9 @@ class CandidateURL(models.Model):
         help_text="Helps keep track if the Current URL is present in production or not",
     )
     is_tdamm = models.BooleanField("Is TDAMM?", default=False, help_text="Enable TDAMM tagging for this URL")
-
-    TDAMM_TAG_CHOICES = [
-        ("MMA_M_EM", "Messenger - EM Radiation"),
-        ("MMA_M_EM_G", "Messenger - EM Radiation - Gamma rays"),
-        ("MMA_M_EM_X", "Messenger - EM Radiation - X-rays"),
-        ("MMA_M_EM_U", "Messenger - EM Radiation - Ultraviolet"),
-        ("MMA_M_EM_O", "Messenger - EM Radiation - Optical"),
-        ("MMA_M_EM_I", "Messenger - EM Radiation - Infrared"),
-        ("MMA_M_EM_M", "Messenger - EM Radiation - Microwave"),
-        ("MMA_M_EM_R", "Messenger - EM Radiation - Radio"),
-        ("MMA_M_G", "Messenger - Gravitational Waves"),
-        ("MMA_M_G_CBI", "Messenger - Gravitational Waves - Compact Binary Inspiral"),
-        ("MMA_M_G_S", "Messenger - Gravitational Waves - Stochastic"),
-        ("MMA_M_G_CON", "Messenger - Gravitational Waves - Continuous"),
-        ("MMA_M_G_B", "Messenger - Gravitational Waves - Burst"),
-        ("MMA_M_C", "Messenger - Cosmic Rays"),
-        ("MMA_M_N", "Messenger - Neutrinos"),
-        ("MMA_O_BI", "Objects - Binaries"),
-        ("MMA_O_BI_BBH", "Objects - Binaries - Binary Black Holes"),
-        ("MMA_O_BI_BNS", "Objects - Binaries - Binary Neutron Stars"),
-        ("MMA_O_BI_C", "Objects - Binaries - Cataclysmic Variables"),
-        ("MMA_O_BI_N", "Objects - Binaries - Neutron Star-Black Hole"),
-        ("MMA_O_BI_B", "Objects - Binaries - Binary Pulsars"),
-        ("MMA_O_BI_W", "Objects - Binaries - White Dwarf Binaries"),
-        ("MMA_O_BH", "Objects - Black Holes"),
-        ("MMA_O_BH_AGN", "Objects - Black Holes - Active Galactic Nuclei"),
-        ("MMA_O_BH_IM", "Objects - Black Holes - Intermediate mass"),
-        ("MMA_O_BH_STM", "Objects - Black Holes - Stellar mass"),
-        ("MMA_O_BH_SUM", "Objects - Black Holes - Supermassive"),
-        ("MMA_O_E", "Objects - Exoplanets"),
-        ("MMA_O_N", "Objects - Neutron Stars"),
-        ("MMA_O_N_M", "Objects - Neutron Stars - Magnetars"),
-        ("MMA_O_N_P", "Objects - Neutron Stars - Pulsars"),
-        ("MMA_O_N_PWN", "Objects - Neutron Stars - Pulsar Wind Nebula"),
-        ("MMA_O_S", "Objects - Supernova Remnants"),
-        ("MMA_S_F", "Signals - Fast Radio Bursts"),
-        ("MMA_S_G", "Signals - Gamma-ray Bursts"),
-        ("MMA_S_K", "Signals - Kilonovae"),
-        ("MMA_S_N", "Signals - Novae"),
-        ("MMA_S_P", "Signals - Pevatrons"),
-        ("MMA_S_ST", "Signals - Stellar flares"),
-        ("MMA_S_SU", "Signals - Supernovae"),
-    ]
-
     tdamm_tag = PairedFieldDescriptor(
         field_name="tdamm_tag",
-        field_type=ArrayField(models.CharField(max_length=255, choices=TDAMM_TAG_CHOICES), blank=True, null=True),
+        field_type=ArrayField(models.CharField(max_length=255, choices=TDAMMTags.choices), blank=True, null=True),
         switch="is_tdamm",
         verbose_name="TDAMM Tags",
     )
