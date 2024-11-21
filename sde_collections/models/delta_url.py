@@ -3,8 +3,10 @@ from urllib.parse import urlparse
 
 from django.db import models
 
-from .collection_choice_fields import Divisions, DocumentTypes
+from .collection_choice_fields import Divisions, DocumentTypes, TDAMMTags
 from .delta_patterns import DeltaExcludePattern, DeltaTitlePattern
+from ..utils.paired_field_descriptor import PairedFieldDescriptor
+from django.contrib.postgres.fields import ArrayField
 
 
 class DeltaUrlQuerySet(models.QuerySet):
@@ -61,6 +63,12 @@ class BaseUrl(models.Model):
     visited = models.BooleanField(default=False)
     document_type = models.IntegerField(choices=DocumentTypes.choices, null=True)
     division = models.IntegerField(choices=Divisions.choices, null=True)
+
+    tdamm_tag = PairedFieldDescriptor(
+        field_name="tdamm_tag",
+        field_type=ArrayField(models.CharField(max_length=255, choices=TDAMMTags.choices), blank=True, null=True),
+        verbose_name="TDAMM Tags",
+    )
 
     class Meta:
         abstract = True

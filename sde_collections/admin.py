@@ -285,8 +285,9 @@ def exclude_and_delete_children(modeladmin, request, queryset):
         candidate_url.get_children().delete()
 
 
-class CandidateURLForm(forms.ModelForm):
-    # Define the fields as MultipleChoiceFields with checkboxes
+class TDAMMFormMixin(forms.ModelForm):
+    """Mixin for forms that need TDAMM tag fields"""
+
     tdamm_tag_manual = forms.MultipleChoiceField(
         choices=TDAMMTags.choices,
         required=False,
@@ -301,40 +302,28 @@ class CandidateURLForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
     )
 
-    class Meta:
-        model = CandidateURL
-        fields = "__all__"
 
+class TDAMMAdminMixin:
+    """Mixin for admin classes that handle TDAMM tags"""
 
-class CandidateURLAdmin(admin.ModelAdmin):
-    """Admin view for CandidateURL"""
-
-    form = CandidateURLForm
-    list_display = ["url", "collection", "tdamm_tag_manual", "tdamm_tag_ml"]
+    list_display = ("url", "scraped_title", "generated_title", "collection")
     list_filter = ["collection"]
     search_fields = ("url", "collection__name")
 
     def get_fieldsets(self, request, obj=None):
         fieldsets = [
             (
-                "Essential Information",
+                "Overall Information",
                 {
                     "fields": (
                         "collection",
                         "url",
-                        "hash",
                         "scraped_title",
+                        "scraped_text",
                         "generated_title",
-                        "test_title",
-                        "production_title",
-                        "level",
                         "visited",
                         "document_type",
                         "division",
-                        "inferenced_by",
-                        "is_pdf",
-                        "present_on_test",
-                        "present_on_prod",
                     )
                 },
             ),
@@ -349,8 +338,37 @@ class CandidateURLAdmin(admin.ModelAdmin):
                 },
             ),
         ]
-
         return fieldsets
+
+
+class CandidateURLForm(TDAMMFormMixin):
+    class Meta:
+        model = CandidateURL
+        fields = "__all__"
+
+
+class DumpURLForm(TDAMMFormMixin, forms.ModelForm):
+    class Meta:
+        model = DumpUrl
+        fields = "__all__"
+
+
+class DeltaURLForm(TDAMMFormMixin, forms.ModelForm):
+    class Meta:
+        model = DeltaUrl
+        fields = "__all__"
+
+
+class CuratedURLForm(TDAMMFormMixin, forms.ModelForm):
+    class Meta:
+        model = CuratedUrl
+        fields = "__all__"
+
+
+class CandidateURLAdmin(TDAMMAdminMixin, admin.ModelAdmin):
+    """Admin view for CandidateURL"""
+
+    form = CandidateURLForm
 
 
 class TitlePatternAdmin(admin.ModelAdmin):
@@ -408,25 +426,27 @@ class DeltaDivisionPatternAdmin(admin.ModelAdmin):
     search_fields = ("match_pattern", "division")
 
 
-class DumpUrlAdmin(admin.ModelAdmin):
+class DumpUrlAdmin(TDAMMAdminMixin, admin.ModelAdmin):
     """Admin View for DumpUrl"""
 
-    list_display = ("url", "scraped_title", "collection")
-    list_filter = ("collection",)
+    form = DumpURLForm
 
 
-class DeltaUrlAdmin(admin.ModelAdmin):
+class DeltaUrlAdmin(TDAMMAdminMixin, admin.ModelAdmin):
     """Admin View for DeltaUrl"""
 
-    list_display = ("url", "scraped_title", "generated_title", "collection")
-    list_filter = ("collection",)
+    form = DeltaURLForm
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        fieldsets[0][1]["fields"] += ("to_delete",)
+        return fieldsets
 
 
-class CuratedUrlAdmin(admin.ModelAdmin):
+class CuratedUrlAdmin(TDAMMAdminMixin, admin.ModelAdmin):
     """Admin View for CuratedUrl"""
 
-    list_display = ("url", "scraped_title", "generated_title", "collection")
-    list_filter = ("collection",)
+    form = CuratedURLForm
 
 
 admin.site.register(WorkflowHistory, WorkflowHistoryAdmin)
