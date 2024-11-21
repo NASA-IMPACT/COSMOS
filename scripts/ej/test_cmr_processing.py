@@ -26,7 +26,7 @@ class TestCmrDatasetIntegration:
         assert cmr_dataset.limitations == "None"
         assert cmr_dataset.format == "application/vnd.nasa.cmr.umm+json"
         assert cmr_dataset.temporal_extent == ""  # No SingleDateTimes in example
-        assert cmr_dataset.intended_use == "exploration"  # ProcessingLevel is 4
+        assert cmr_dataset.intended_use == "Path A"  # ProcessingLevel is 4
         assert cmr_dataset.source_link == "https://doi.org/10.7927/H4NK3BZJ"
         assert "Long temporal extent" in cmr_dataset.strengths
         assert "No recent data available" in cmr_dataset.weaknesses
@@ -179,6 +179,130 @@ class TestSpatialProcessing:
         }
         dataset = CmrDataset(data)
         assert dataset.geographic_coverage == ""
+
+    def test_spatial_resolution_varies(self):
+        """Test spatial resolution when it varies."""
+        data = {
+            "umm": {
+                "SpatialExtent": {
+                    "HorizontalSpatialDomain": {
+                        "ResolutionAndCoordinateSystem": {"HorizontalDataResolution": {"VariesResolution": "Varies"}}
+                    }
+                }
+            }
+        }
+        dataset = CmrDataset(data)
+        assert dataset.spatial_resolution == "Varies"
+
+    def test_spatial_resolution_gridded_range(self):
+        """Test spatial resolution with gridded range resolutions."""
+        data = {
+            "umm": {
+                "SpatialExtent": {
+                    "HorizontalSpatialDomain": {
+                        "ResolutionAndCoordinateSystem": {
+                            "HorizontalDataResolution": {
+                                "GriddedRangeResolutions": [
+                                    {
+                                        "MinimumXDimension": 5.0,
+                                        "MinimumYDimension": 5.0,
+                                        "MaximumXDimension": 50.0,
+                                        "MaximumYDimension": 40.0,
+                                        "Unit": "Kilometers",
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        dataset = CmrDataset(data)
+        assert dataset.spatial_resolution == "50.0 kilometers"
+
+    def test_spatial_resolution_gridded(self):
+        """Test spatial resolution with gridded resolutions."""
+        data = {
+            "umm": {
+                "SpatialExtent": {
+                    "HorizontalSpatialDomain": {
+                        "ResolutionAndCoordinateSystem": {
+                            "HorizontalDataResolution": {
+                                "GriddedResolutions": [{"XDimension": 30.0, "YDimension": 30.0, "Unit": "Meters"}]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        dataset = CmrDataset(data)
+        assert dataset.spatial_resolution == "30.0 meters"
+
+    def test_spatial_resolution_generic(self):
+        """Test spatial resolution with generic resolutions."""
+        data = {
+            "umm": {
+                "SpatialExtent": {
+                    "HorizontalSpatialDomain": {
+                        "ResolutionAndCoordinateSystem": {
+                            "HorizontalDataResolution": {
+                                "GenericResolutions": [{"XDimension": 10.0, "YDimension": 10.0, "Unit": "Kilometers"}]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        dataset = CmrDataset(data)
+        assert dataset.spatial_resolution == "10.0 kilometers"
+
+    def test_spatial_resolution_missing(self):
+        """Test spatial resolution when resolution data is missing."""
+        data = {"umm": {"SpatialExtent": {"HorizontalSpatialDomain": {"ResolutionAndCoordinateSystem": {}}}}}
+        dataset = CmrDataset(data)
+        assert dataset.spatial_resolution == ""
+
+    def test_spatial_resolution_different_dimensions(self):
+        """Test spatial resolution when X and Y dimensions differ."""
+        data = {
+            "umm": {
+                "SpatialExtent": {
+                    "HorizontalSpatialDomain": {
+                        "ResolutionAndCoordinateSystem": {
+                            "HorizontalDataResolution": {
+                                "GriddedResolutions": [{"XDimension": 30.0, "YDimension": 40.0, "Unit": "Meters"}]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        dataset = CmrDataset(data)
+        assert dataset.spatial_resolution == "40.0 meters"
+
+    def test_spatial_resolution_incomplete_data(self):
+        """Test spatial resolution with incomplete resolution data."""
+        data = {
+            "umm": {
+                "SpatialExtent": {
+                    "HorizontalSpatialDomain": {
+                        "ResolutionAndCoordinateSystem": {
+                            "HorizontalDataResolution": {
+                                "GriddedResolutions": [
+                                    {
+                                        "XDimension": 30.0,
+                                        # Missing YDimension
+                                        "Unit": "Meters",
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        dataset = CmrDataset(data)
+        assert dataset.spatial_resolution == ""
 
 
 class TestDownloadProcessing:

@@ -8,12 +8,20 @@ from datetime import datetime
 from cmr_processing import CmrDataset
 from threshold_processing import ThresholdProcessor
 
-from config import (
-    CMR_FILENAME,
-    INFERENCE_FILENAME,
-    OUTPUT_FILENAME_TEMPLATE,
-    TIMESTAMP_FORMAT,
-)
+try:
+    from config import (
+        CMR_FILENAME,
+        INFERENCE_FILENAME,
+        OUTPUT_FILENAME_TEMPLATE,
+        TIMESTAMP_FORMAT,
+    )
+except ImportError:
+    from scripts.ej.config import (
+        CMR_FILENAME,
+        INFERENCE_FILENAME,
+        OUTPUT_FILENAME_TEMPLATE,
+        TIMESTAMP_FORMAT,
+    )
 
 
 def load_json_file(file_path: str) -> dict:

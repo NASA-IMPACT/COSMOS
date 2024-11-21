@@ -1,6 +1,9 @@
 """Module for processing classification predictions with thresholds."""
 
-from config import AUTHORIZED_CLASSIFICATIONS, INDICATOR_THRESHOLDS
+try:
+    from config import AUTHORIZED_CLASSIFICATIONS, INDICATOR_THRESHOLDS
+except ImportError:
+    from scripts.ej.config import AUTHORIZED_CLASSIFICATIONS, INDICATOR_THRESHOLDS
 
 
 class ThresholdProcessor:

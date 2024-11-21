@@ -1,5 +1,7 @@
 """Unit tests for threshold processing functionality."""
 
+# docker-compose -f local.yml run --rm django pytest scripts/ej/test_threshold_processing.py
+
 import pytest
 from threshold_processing import ThresholdProcessor
 
