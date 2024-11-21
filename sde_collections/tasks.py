@@ -145,13 +145,11 @@ def resolve_title_pattern(title_pattern_id):
     title_pattern.apply()
 
 
-@celery_app.task
+@celery_app.task(soft_time_limit=600)
 def fetch_and_replace_full_text(collection_id, server_name):
     """
-    Task to fetch and replace full text and metadata for all URLs associated with a specified collection
-    from a given server. This task deletes all existing DumpUrl entries for the collection and creates
-    new entries based on the latest fetched data.
-
+    Task to initiate fetching and replacing full text and metadata for all URLs associated with a specified collection
+    from a given server.
     Args:
         collection_id (int): The identifier for the collection in the database.
         server_name (str): The name of the server.
@@ -161,28 +159,15 @@ def fetch_and_replace_full_text(collection_id, server_name):
     """
     collection = Collection.objects.get(id=collection_id)
     api = Api(server_name)
-    documents = api.get_full_texts(collection.config_folder)
 
     # Step 1: Delete all existing DumpUrl entries for the collection
     deleted_count, _ = DumpUrl.objects.filter(collection=collection).delete()
+    print(f"Deleted {deleted_count} old records.")
 
-    # Step 2: Create new DumpUrl entries from the fetched documents
-    processed_count = 0
-    for doc in documents:
-        try:
-            DumpUrl.objects.create(
-                url=doc["url"],
-                collection=collection,
-                scraped_text=doc.get("full_text", ""),
-                scraped_title=doc.get("title", ""),
-            )
-            processed_count += 1
-        except IntegrityError:
-            # Handle duplicate URL case if needed
-            print(f"Duplicate URL found, skipping: {doc['url']}")
+    # Step 2: Fetch and process new data
+    result_message = api.get_full_texts(collection.config_folder,collection=collection)
 
+    # Step 3: Migrate DumpUrl to DeltaUrl
     collection.migrate_dump_to_delta()
 
-    print(f"Processed {processed_count} new records.")
-
-    return f"Successfully processed {len(documents)} records and updated the database."
+    return result_message

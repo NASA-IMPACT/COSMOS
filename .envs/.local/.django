@@ -46,4 +46,4 @@ LRM_QA_PASSWORD=''
 #Server Tokens
 #--------------------------------------------------------------------------------
 LRM_DEV_TOKEN=''
-XLI_TOKEN=''
+XLI_TOKEN='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJTaW5lcXVhIiwiaWF0IjoxNzI3OTAzMzAzLCJzaWQiOiJCRDkwN0Q4QzJCMjg0MDA2ODQ5OEZFOENCRjdEODQwNiIsImtpbmQiOiJhY2Nlc3MiLCJleHAiOjE3MzU2NzkzMDMsInN1YiI6IlNpbmVxdWF8Z3JhX3VzZXJzIn0.o1a3eDPgEWdoHu7S8KQi0wMw_brxfAM1lClbfncVQVI'
