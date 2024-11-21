@@ -48,6 +48,7 @@ def create_clean_dataset(
 ) -> list[dict]:
     """
     Create clean dataset with processed CMR data and classifications.
+    Excludes datasets classified as 'Not EJ'.
 
     Args:
         inferences: List of inference dictionaries containing predictions.
@@ -55,7 +56,7 @@ def create_clean_dataset(
         processor: ThresholdProcessor instance for processing classifications.
 
     Returns:
-        List of processed dataset dictionaries.
+        List of processed dataset dictionaries, excluding 'Not EJ' classifications.
     """
     clean_data = []
 
@@ -67,7 +68,8 @@ def create_clean_dataset(
             # Process classifications
             classifications = processor.process_and_filter(inference["predictions"])
 
-            if classifications:
+            # Only include datasets that have valid classifications and are not marked as 'Not EJ'
+            if classifications and "Not EJ" not in classifications:
                 # Process CMR data
                 processed_cmr = CmrDataset(cmr_dataset).to_dict()
                 processed_cmr["indicators"] = ";".join(classifications)
@@ -97,7 +99,7 @@ def main(
     # Create CMR dictionary
     cmr_dict = create_cmr_dict(cmr)
 
-    # Create clean dataset with all required fields
+    # Create clean dataset with all required fields, excluding 'Not EJ' classifications
     clean_data = create_clean_dataset(
         inferences=inferences,
         cmr_dict=cmr_dict,
@@ -110,7 +112,7 @@ def main(
 
     # Save output
     save_to_json(clean_data, output_filename)
-    print(f"Processed {len(clean_data)} datasets from {cmr_file} and {inference_file}")
+    print(f"Processed {len(clean_data)} EJ datasets from {cmr_file} and {inference_file}")
     print()
     print(f"Saved to {output_filename}")
 
