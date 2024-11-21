@@ -220,7 +220,7 @@ class TestProcessingLevelInfo:
     def test_intended_use_exploration(self):
         data = {"umm": {"ProcessingLevel": {"Id": "4"}, "CollectionDataType": "SCIENCE_QUALITY"}}
         dataset = CmrDataset(data)
-        assert dataset.intended_use == "exploration"
+        assert dataset.intended_use == "Path A"
 
     def test_intended_use_basic_analysis(self):
         data = {
@@ -231,7 +231,19 @@ class TestProcessingLevelInfo:
             }
         }
         dataset = CmrDataset(data)
-        assert dataset.intended_use == "basic analysis"
+        assert dataset.intended_use == "Path B"
+
+    def test_intended_use_advanced_analysis(self):
+        # Added this test to cover Path C case
+        data = {
+            "umm": {
+                "ProcessingLevel": {"Id": "2"},
+                "CollectionDataType": "SCIENCE_QUALITY",
+                "DataCenters": [{"ShortName": "OTHER"}],
+            }
+        }
+        dataset = CmrDataset(data)
+        assert dataset.intended_use == "Path C"
 
     def test_latency_mapping(self):
         data = {"umm": {"CollectionDataType": "NEAR_REAL_TIME"}}

@@ -220,22 +220,22 @@ class CmrDataset:
 
     @property
     def intended_use(self) -> str:
-        """Get dataset intended use."""
+        """Get dataset intended use path."""
         level = self.processing_info.level
         collection_type = self.processing_info.collection_type
         data_centers = self.processing_info.data_centers
 
         if level == "4" and collection_type == "SCIENCE_QUALITY":
-            return "exploration"
+            return "Path A"  # maps to "exploration"
 
         if (
             (level in ["2", "2a", "2b"] and "SEDAC" in data_centers and collection_type == "SCIENCE_QUALITY")
             or (level in ["3", "3a"] and collection_type == "SCIENCE_QUALITY")
             or (level == "4" and collection_type != "SCIENCE_QUALITY")
         ):
-            return "basic analysis"
+            return "Path B"  # maps to "basic analysis"
 
-        return "advanced analysis"
+        return "Path C"  # maps to "advanced analysis"
 
     @property
     def geographic_coverage(self) -> str:
