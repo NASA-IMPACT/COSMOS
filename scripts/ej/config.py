@@ -3,7 +3,7 @@
 # Threshold values for different indicators
 INDICATOR_THRESHOLDS = {
     "Not EJ": 0.80,
-    # "Climate Change": 1.0,
+    "Climate Change": 1.0,
     "Disasters": 0.80,
     "Extreme Heat": 0.50,
     "Food Availability": 0.80,
