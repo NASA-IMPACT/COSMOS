@@ -4,93 +4,48 @@ this script is then run via the dm shell on the COSMOS server to populate the da
 """
 
 import json
-import urllib.parse
 
 from environmental_justice.models import EnvironmentalJusticeRow
 
-
-def generate_source_link(doi_field):
-    authority = doi_field.get("Authority")
-    doi = doi_field.get("DOI")
-    if authority and doi:
-        return urllib.parse.urljoin(authority, doi)
-    return ""
+from .cmr_processing import CmrDataset
 
 
-def concept_id_to_sinequa_id(concept_id: str) -> str:
-    return f"/SDE/CMR_API/|{concept_id}"
+def process_ej_dump(file_path: str) -> None:
+    """Process EJ dump file and create database entries."""
+
+    destination_server = EnvironmentalJusticeRow.DestinationServerChoices.DEV
+
+    # Clear existing data
+    EnvironmentalJusticeRow.objects.filter(destination_server=destination_server).delete()
+
+    # Load the data
+    ej_dump = json.load(open(file_path))
+
+    # Process each dataset into the database
+    for dataset in ej_dump:
+        processed_dataset = CmrDataset(dataset)
+        ej_row = EnvironmentalJusticeRow(
+            destination_server=destination_server,
+            sde_link=processed_dataset.sde_link,
+            dataset=processed_dataset.dataset_name,
+            description=processed_dataset.description,
+            limitations=processed_dataset.limitations,
+            format=processed_dataset.format,
+            temporal_extent=processed_dataset.temporal_extent,
+            intended_use=processed_dataset.intended_use,
+            source_link=processed_dataset.source_link,
+            indicators=dataset["indicators"],
+            strengths=processed_dataset.strengths,
+            weaknesses=processed_dataset.weaknesses,
+            latency=processed_dataset.latency,
+            geographic_coverage=processed_dataset.geographic_coverage,
+            data_visualization=processed_dataset.data_visualization,
+            temporal_resolution=processed_dataset.temporal_resolution,
+            spatial_resolution=processed_dataset.spatial_resolution,
+            projects=processed_dataset.projects,
+        )
+        ej_row.save()
 
 
-def sinequa_id_to_url(sinequa_id: str) -> str:
-    base_url = "https://sciencediscoveryengine.nasa.gov/app/nasa-sba-smd/#/preview"
-    query = '{"name":"query-smd-primary","scope":"All","text":""}'
-
-    encoded_id = urllib.parse.quote(sinequa_id, safe="")
-    encoded_query = urllib.parse.quote(query, safe="")
-
-    return f"{base_url}?id={encoded_id}&query={encoded_query}"
-
-
-def categorize_processing_level(level):
-    advanced_analysis_levels = {"0", "Level 0", "NA", "Not Provided", "Not provided"}
-
-    basic_analysis_levels = {
-        "1",
-        "1A",
-        "1B",
-        "1C",
-        "1T",
-        "2",
-        "2A",
-        "2B",
-        "2G",
-        "2P",
-        "Level 1",
-        "Level 1A",
-        "Level 1B",
-        "Level 1C",
-        "Level 2",
-        "Level 2A",
-        "Level 2B",
-    }
-
-    exploration_levels = {"3", "4", "Level 3", "Level 4", "L2"}
-
-    if level in exploration_levels:
-        return "exploration"
-    elif level in basic_analysis_levels:
-        return "basic analysis"
-    elif level in advanced_analysis_levels:
-        return "advanced analysis"
-    else:
-        return "advanced analysis"
-
-
-# remove existing data
-EnvironmentalJusticeRow.objects.filter(destination_server=EnvironmentalJusticeRow.DestinationServerChoices.DEV).delete()
-
-ej_dump = json.load(open("backups/ej_dump_20241017_133151.json.json"))
-for dataset in ej_dump:
-    ej_row = EnvironmentalJusticeRow(
-        destination_server=EnvironmentalJusticeRow.DestinationServerChoices.DEV,
-        sde_link=sinequa_id_to_url(concept_id_to_sinequa_id(dataset.get("meta", {}).get("concept-id", ""))),
-        dataset=dataset.get("umm", {}).get("ShortName", ""),
-        description=dataset.get("umm", {}).get("Abstract", ""),
-        limitations=dataset.get("umm", {}).get("AccessConstraints", {}).get("Description", ""),
-        format=dataset.get("meta", {}).get("format", ""),
-        temporal_extent=", ".join(dataset.get("umm", {}).get("TemporalExtents", [{}])[0].get("SingleDateTimes", [])),
-        intended_use=categorize_processing_level(
-            dataset.get("umm", {}).get("ProcessingLevel", {}).get("Id", "advanced analysis")
-        ),
-        source_link=generate_source_link(dataset.get("umm", {}).get("DOI", {})),
-        indicators=dataset["indicators"],
-        geographic_coverage="",  # Not provided in the data
-        data_visualization="",  # dataset.get("umm", {}).get("RelatedUrls", [{}])[0].get("URL", ""),
-        latency="",  # Not provided in the data
-        spatial_resolution="",  # Not provided in the data
-        temporal_resolution="",  # Not provided in the data
-        description_simplified="",  # Not provided in the data
-        project="",  # Not provided in the data
-        strengths="",  # Not provided in the data
-    )
-    ej_row.save()
+if __name__ == "__main__":
+    process_ej_dump("backups/ej_dump_20241017_133151.json")
