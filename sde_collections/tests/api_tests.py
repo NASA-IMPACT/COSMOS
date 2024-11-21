@@ -1,12 +1,14 @@
-#docker-compose -f local.yml run --rm django pytest sde_collections/tests/api_tests.py
+# docker-compose -f local.yml run --rm django pytest sde_collections/tests/api_tests.py
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 from django.utils import timezone
+
 from sde_collections.models.collection import Collection, WorkflowStatusChoices
 from sde_collections.models.delta_url import DumpUrl
-from sde_collections.tests.factories import CollectionFactory, UserFactory
 from sde_collections.sinequa_api import Api
 from sde_collections.tasks import fetch_and_replace_full_text
+from sde_collections.tests.factories import CollectionFactory, UserFactory
 
 
 @pytest.mark.django_db
@@ -19,20 +21,23 @@ class TestApiClass:
             curated_by=user,
             curation_started=timezone.now(),
             config_folder="example_config",
-            workflow_status=WorkflowStatusChoices.RESEARCH_IN_PROGRESS
+            workflow_status=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
         )
 
     @pytest.fixture
     def api_instance(self):
         """Fixture to create an Api instance with mocked server configs."""
-        with patch("sde_collections.sinequa_api.server_configs", {
-            "test_server": {
-                "app_name": "test_app",
-                "query_name": "test_query",
-                "base_url": "http://testserver.com/api",
-                "index": "test_index"
-            }
-        }):
+        with patch(
+            "sde_collections.sinequa_api.server_configs",
+            {
+                "test_server": {
+                    "app_name": "test_app",
+                    "query_name": "test_query",
+                    "base_url": "http://testserver.com/api",
+                    "index": "test_index",
+                }
+            },
+        ):
             return Api(server_name="test_server", user="test_user", password="test_pass", token="test_token")
 
     @patch("requests.post")
@@ -69,7 +74,7 @@ class TestApiClass:
         """Test SQL query execution and response processing."""
         mock_process_response.return_value = {
             "Rows": [{"url": "http://example.com", "full_text": "Text", "title": "Title"}],
-            "TotalRowCount": 1
+            "TotalRowCount": 1,
         }
         response = api_instance.sql_query("SELECT * FROM test_index", collection)
         assert response == "All 1 records have been processed and updated."
@@ -80,14 +85,14 @@ class TestApiClass:
         mock_process_response.return_value = {
             "Rows": [{"url": "http://example.com", "text": "Example text", "title": "Example title"}]
         }
-        response = api_instance.get_full_texts(collection_config_folder="folder", source="source", collection=collection)
+        response = api_instance.get_full_texts(
+            collection_config_folder="folder", source="source", collection=collection
+        )
         assert response == "All 0 records have been processed and updated."
 
     def test_process_and_update_data(self, api_instance, collection):
         """Test processing and updating data in the database."""
-        batch_data = [
-            {"url": "http://example.com", "full_text": "Example text", "title": "Example title"}
-        ]
+        batch_data = [{"url": "http://example.com", "full_text": "Example text", "title": "Example title"}]
         api_instance.process_and_update_data(batch_data, collection)
         dump_urls = DumpUrl.objects.filter(collection=collection)
         assert dump_urls.count() == 1
@@ -97,14 +102,17 @@ class TestApiClass:
     @patch("sde_collections.models.collection.Collection.migrate_dump_to_delta")
     def test_fetch_and_replace_full_text(self, mock_migrate, mock_sql_query, collection):
         """Test the fetch_and_replace_full_text Celery task."""
-        with patch("sde_collections.sinequa_api.server_configs", {
-            "test_server": {
-                "app_name": "test_app",
-                "query_name": "test_query",
-                "base_url": "http://testserver.com/api",
-                "index": "test_index"
-            }
-        }):
+        with patch(
+            "sde_collections.sinequa_api.server_configs",
+            {
+                "test_server": {
+                    "app_name": "test_app",
+                    "query_name": "test_query",
+                    "base_url": "http://testserver.com/api",
+                    "index": "test_index",
+                }
+            },
+        ):
             mock_sql_query.return_value = "All records processed"
             mock_migrate.return_value = None
 
@@ -112,18 +120,21 @@ class TestApiClass:
             assert result == "All records processed"
             mock_migrate.assert_called_once()
 
-    @patch("sde_collections.sinequa_api.server_configs", {
-        "test_server": {
-            "app_name": "test_app",
-            "query_name": "test_query",
-            "base_url": "http://testserver.com/api",
-            "index": "test_index"
-        }
-    })
-    @pytest.mark.parametrize("server_name, user, password, expected", [
-        ("test_server", "user1", "pass1", True),
-        ("invalid_server", None, None, False)
-    ])
+    @patch(
+        "sde_collections.sinequa_api.server_configs",
+        {
+            "test_server": {
+                "app_name": "test_app",
+                "query_name": "test_query",
+                "base_url": "http://testserver.com/api",
+                "index": "test_index",
+            }
+        },
+    )
+    @pytest.mark.parametrize(
+        "server_name, user, password, expected",
+        [("test_server", "user1", "pass1", True), ("invalid_server", None, None, False)],
+    )
     def test_api_init(self, server_name, user, password, expected):
         """Test API initialization with valid and invalid server names."""
         if expected:
