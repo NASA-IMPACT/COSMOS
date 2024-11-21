@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from django.utils import timezone
 
-from sde_collections.models.collection import Collection, WorkflowStatusChoices
+from sde_collections.models.collection import WorkflowStatusChoices
 from sde_collections.models.delta_url import DumpUrl
 from sde_collections.sinequa_api import Api
 from sde_collections.tasks import fetch_and_replace_full_text
