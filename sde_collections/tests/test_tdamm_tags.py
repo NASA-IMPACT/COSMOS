@@ -2,8 +2,13 @@
 
 import pytest
 
+from sde_collections.tests.factories import (
+    CollectionFactory,
+    DeltaUrlFactory,
+    DumpUrlFactory,
+)
+
 from ..models.delta_url import CuratedUrl, DeltaUrl
-from sde_collections.tests.factories import CollectionFactory, DeltaUrlFactory, DumpUrlFactory
 
 
 @pytest.mark.django_db

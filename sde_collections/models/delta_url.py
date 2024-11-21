@@ -1,12 +1,12 @@
 import os
 from urllib.parse import urlparse
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
+from ..utils.paired_field_descriptor import PairedFieldDescriptor
 from .collection_choice_fields import Divisions, DocumentTypes, TDAMMTags
 from .delta_patterns import DeltaExcludePattern, DeltaTitlePattern
-from ..utils.paired_field_descriptor import PairedFieldDescriptor
-from django.contrib.postgres.fields import ArrayField
 
 
 class DeltaUrlQuerySet(models.QuerySet):
