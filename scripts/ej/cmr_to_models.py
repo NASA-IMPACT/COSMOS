@@ -28,22 +28,23 @@ def process_ej_dump(file_path: str) -> None:
             sde_link=entry["sde_link"],
             dataset=entry["dataset"],
             description=entry["description"],
-            limitations=entry["limitations"],
+            description_simplified="",  # This field exists in model but not in data
+            # I think the "limitations" in SDE is equivalent to "weaknesses" from emily's data
+            limitations=entry["weaknesses"],
             format=entry["format"],
             temporal_extent=entry["temporal_extent"],
             intended_use=entry["intended_use"],
             source_link=entry["source_link"],
             indicators=entry["indicators"],
             strengths=entry["strengths"],
-            weaknesses=entry["weaknesses"],
             latency=entry["latency"],
             geographic_coverage=entry["geographic_coverage"],
             data_visualization=entry["data_visualization"],
             temporal_resolution=entry["temporal_resolution"],
             spatial_resolution=entry["spatial_resolution"],
-            projects=entry["projects"],
+            project=entry["projects"],  # Changed from 'projects' to 'project' to match model
         )
         ej_row.save()
 
 
-process_ej_dump("backups/ej_dump_20241017_133151.json")
+process_ej_dump("backups/ej_dump_20241120_211754.json")
