@@ -340,9 +340,22 @@ class CmrDataset:
 
     @property
     def projects(self) -> str:
-        """Get dataset projects."""
+        """Get dataset projects with both short and long names where available."""
         projects = self.umm.get("Projects", [])
-        return "; ".join(project.get("ShortName", "") for project in projects if project.get("ShortName"))
+        formatted_projects = []
+
+        for project in projects:
+            short_name = project.get("ShortName", "")
+            long_name = project.get("LongName", "")
+
+            if short_name and long_name:
+                formatted_projects.append(f"{short_name} - {long_name}")
+            elif short_name:
+                formatted_projects.append(short_name)
+            elif long_name:
+                formatted_projects.append(long_name)
+
+        return "; ".join(formatted_projects)
 
     @property
     def dataset_name(self) -> str:
