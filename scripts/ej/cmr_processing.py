@@ -27,7 +27,7 @@ class DownloadInfo(NamedTuple):
     has_distribution: bool
     has_direct_download: bool
     visualization_urls: list[str]
-    format: str
+    formats: list[str]  # Changed from single format to list of formats
 
 
 class ProcessingInfo(NamedTuple):
@@ -190,7 +190,17 @@ class CmrDataset:
         has_distribution = False
         has_direct_download = False
         visualization_urls = []
+        formats = []
 
+        # Extract formats from FileDistributionInformation
+        archive_info = self.umm.get("ArchiveAndDistributionInformation", {})
+        distribution_info = archive_info.get("FileDistributionInformation", [])
+
+        for info in distribution_info:
+            if "Format" in info:
+                formats.append(info["Format"])
+
+        # Process RelatedUrls
         related_urls = self.umm.get("RelatedUrls", [])
         for url in related_urls:
             if url.get("URLContentType") == "DistributionURL" and url.get("Type") == "GET DATA":
@@ -204,8 +214,13 @@ class CmrDataset:
             has_distribution=has_distribution,
             has_direct_download=has_direct_download,
             visualization_urls=visualization_urls,
-            format=self.meta.get("format", ""),
+            formats=formats,
         )
+
+    @property
+    def format(self) -> str:
+        """Get dataset formats as semicolon-separated string."""
+        return "; ".join(self.download_info.formats) if self.download_info.formats else ""
 
     def _process_processing_info(self) -> ProcessingInfo:
         """Process all processing level information."""
@@ -331,8 +346,8 @@ class CmrDataset:
 
     @property
     def dataset_name(self) -> str:
-        """Get dataset short name."""
-        return self.umm.get("ShortName", "")
+        """Get dataset entry title or shortname."""
+        return self.umm.get("EntryTitle", self.umm.get("ShortName", ""))
 
     @property
     def description(self) -> str:
@@ -343,11 +358,6 @@ class CmrDataset:
     def limitations(self) -> str:
         """Get dataset access constraints."""
         return self.umm.get("AccessConstraints", {}).get("Description", "")
-
-    @property
-    def format(self) -> str:
-        """Get dataset format."""
-        return self.download_info.format
 
     @property
     def temporal_extent(self) -> str:

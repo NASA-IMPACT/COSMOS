@@ -21,10 +21,10 @@ class TestCmrDatasetIntegration:
     def test_full_dataset_processing(self, cmr_dataset):
         """Test that all properties can be extracted from real data without errors"""
         # Test all property accessors
-        assert cmr_dataset.dataset_name == "CIESIN_SEDAC_ESI_2000"
+        assert cmr_dataset.dataset_name == "2000 Pilot Environmental Sustainability Index (ESI)"
         assert cmr_dataset.description.startswith("The 2000 Pilot Environmental Sustainability Index")
         assert cmr_dataset.limitations == "None"
-        assert cmr_dataset.format == "application/vnd.nasa.cmr.umm+json"
+        assert cmr_dataset.format == "PDF"
         assert cmr_dataset.temporal_extent == ""  # No SingleDateTimes in example
         assert cmr_dataset.intended_use == "Path A"  # ProcessingLevel is 4
         assert cmr_dataset.source_link == "https://doi.org/10.7927/H4NK3BZJ"
@@ -336,6 +336,47 @@ class TestDownloadProcessing:
         dataset = CmrDataset(data)
         assert "http://example.com/viz1" in dataset.data_visualization
         assert "http://example.com/viz2" in dataset.data_visualization
+
+    def test_format_extraction_single(self):
+        data = {
+            "umm": {
+                "ArchiveAndDistributionInformation": {
+                    "FileDistributionInformation": [{"Format": "GeoTIFF", "Fees": "0"}]
+                }
+            }
+        }
+        dataset = CmrDataset(data)
+        assert dataset.format == "GeoTIFF"
+
+    def test_format_extraction_multiple(self):
+        data = {
+            "umm": {
+                "ArchiveAndDistributionInformation": {
+                    "FileDistributionInformation": [
+                        {"Format": "Excel", "Fees": "0"},
+                        {"Format": "PDF", "Fees": "0"},
+                        {"Format": "PNG", "Fees": "0"},
+                    ]
+                }
+            }
+        }
+        dataset = CmrDataset(data)
+        assert dataset.format == "Excel; PDF; PNG"
+
+    def test_format_extraction_empty(self):
+        data = {"umm": {"ArchiveAndDistributionInformation": {"FileDistributionInformation": []}}}
+        dataset = CmrDataset(data)
+        assert dataset.format == ""
+
+    def test_format_extraction_missing_info(self):
+        data = {"umm": {"ArchiveAndDistributionInformation": {}}}
+        dataset = CmrDataset(data)
+        assert dataset.format == ""
+
+    def test_format_extraction_no_archive_info(self):
+        data = {"umm": {}}
+        dataset = CmrDataset(data)
+        assert dataset.format == ""
 
 
 class TestProcessingLevelInfo:
