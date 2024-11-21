@@ -7,8 +7,24 @@ from django.http import HttpResponse
 from .models.candidate_url import CandidateURL, ResolvedTitle
 from .models.collection import Collection, WorkflowHistory
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
-from .tasks import import_candidate_urls_from_api
 from .models.collection_choice_fields import TDAMMTags
+from .tasks import fetch_and_update_full_text, import_candidate_urls_from_api
+
+
+def fetch_and_update_text_for_server(modeladmin, request, queryset, server_name):
+    for collection in queryset:
+        fetch_and_update_full_text.delay(collection.id, server_name)
+    modeladmin.message_user(request, f"Started importing URLs from {server_name.upper()} Server")
+
+
+@admin.action(description="Import candidate URLs from LRM Dev Server with Full Text")
+def fetch_full_text_lrm_dev_action(modeladmin, request, queryset):
+    fetch_and_update_text_for_server(modeladmin, request, queryset, "lrm_dev")
+
+
+@admin.action(description="Import candidate URLs from XLI Server with Full Text")
+def fetch_full_text_lis_action(modeladmin, request, queryset):
+    fetch_and_update_text_for_server(modeladmin, request, queryset, "xli")
 
 
 @admin.action(description="Generate deployment message")
@@ -111,7 +127,7 @@ def import_candidate_urls_from_api_caller(modeladmin, request, queryset, server_
     messages.add_message(
         request,
         messages.INFO,
-        f"Started importing URLs from the API for: {collection_names} from {server_name.title()}",
+        f"Started importing URLs from the API for: {collection_names} from {server_name.upper()} Server",
     )
 
 
@@ -135,19 +151,19 @@ def import_candidate_urls_secret_production(modeladmin, request, queryset):
     import_candidate_urls_from_api_caller(modeladmin, request, queryset, "secret_production")
 
 
-@admin.action(description="Import candidate URLs from Li's Server")
-def import_candidate_urls_lis_server(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lis_server")
+@admin.action(description="Import candidate URLs from XLI Server")
+def import_candidate_urls_xli_server(modeladmin, request, queryset):
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "xli")
 
 
 @admin.action(description="Import candidate URLs from LRM Dev Server")
 def import_candidate_urls_lrm_dev_server(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lrm_dev_server")
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lrm_dev")
 
 
 @admin.action(description="Import candidate URLs from LRM QA Server")
 def import_candidate_urls_lrm_qa_server(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lrm_qa_server")
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lrm_qa")
 
 
 class ExportCsvMixin:
@@ -239,9 +255,11 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         import_candidate_urls_production,
         import_candidate_urls_secret_test,
         import_candidate_urls_secret_production,
-        import_candidate_urls_lis_server,
+        import_candidate_urls_xli_server,
         import_candidate_urls_lrm_dev_server,
         import_candidate_urls_lrm_qa_server,
+        fetch_full_text_lrm_dev_action,
+        fetch_full_text_lis_action,
     ]
     ordering = ("cleaning_order",)
 

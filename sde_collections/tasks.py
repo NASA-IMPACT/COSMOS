@@ -9,6 +9,7 @@ from django.core import management
 from django.core.management.commands import loaddata
 
 from config import celery_app
+from sde_collections.models.candidate_url import CandidateURL
 
 from .models.collection import Collection, WorkflowStatusChoices
 from .sinequa_api import Api
@@ -141,3 +142,34 @@ def resolve_title_pattern(title_pattern_id):
     TitlePattern = apps.get_model("sde_collections", "TitlePattern")
     title_pattern = TitlePattern.objects.get(id=title_pattern_id)
     title_pattern.apply()
+
+
+@celery_app.task
+def fetch_and_update_full_text(collection_id, server_name):
+    """
+    Task to fetch and update full text and metadata for all URLs associated with a specified collection
+    from a given server.
+
+    Args:
+        collection_id (int): The identifier for the collection in the database.
+        server_name (str): The name of the server.
+
+    Returns:
+        str: A message indicating the result of the operation, including the number of URLs processed
+             or a message if no records were found.
+    """
+    collection = Collection.objects.get(id=collection_id)
+    api = Api(server_name)
+    documents = api.get_full_texts(collection.config_folder)
+
+    for doc in documents:
+        # if all values are not present, then it is skipped?
+        if not (doc["url"] and doc["full_text"] and doc["title"]):
+            continue
+
+        CandidateURL.objects.update_or_create(
+            url=doc["url"],
+            collection=collection,
+            defaults={"scraped_text": doc["full_text"], "scraped_title": doc["title"]},
+        )
+    return f"Successfully processed {len(documents)} records and updated the database."
