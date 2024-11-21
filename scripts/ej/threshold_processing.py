@@ -27,11 +27,15 @@ class ThresholdProcessor:
 
         Args:
             predictions: List of dictionaries containing prediction labels and scores.
-                       Each dict should have 'label' and 'score' keys.
+                    Each dict should have 'label' and 'score' keys.
 
         Returns:
             List of classification labels that meet their respective thresholds.
         """
+        # Handle empty predictions
+        if not predictions:
+            return ["Not EJ"]
+
         # Find highest scoring prediction
         highest_prediction = max(predictions, key=lambda x: x["score"])
 
@@ -43,7 +47,11 @@ class ThresholdProcessor:
         classifications = [
             pred["label"]
             for pred in predictions
-            if (pred["score"] >= self.thresholds[pred["label"]] and pred["label"] != "Not EJ")
+            if (
+                pred["label"] in self.thresholds  # Only check labels we have thresholds for
+                and pred["score"] >= self.thresholds[pred["label"]]
+                and pred["label"] != "Not EJ"
+            )
         ]
 
         # Default to "Not EJ" if no classifications meet thresholds
