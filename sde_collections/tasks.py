@@ -165,7 +165,7 @@ def fetch_and_replace_full_text(collection_id, server_name):
     print(f"Deleted {deleted_count} old records.")
 
     # Step 2: Fetch and process new data
-    result_message = api.get_full_texts(collection.config_folder,collection=collection)
+    result_message = api.get_full_texts(collection.config_folder, collection=collection)
 
     # Step 3: Migrate DumpUrl to DeltaUrl
     collection.migrate_dump_to_delta()

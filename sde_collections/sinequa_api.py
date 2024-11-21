@@ -1,10 +1,13 @@
 import json
 from typing import Any
+
 import requests
 import urllib3
 from django.conf import settings
-from .models.delta_url import DumpUrl
 from django.db import transaction
+
+from .models.delta_url import DumpUrl
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 server_configs = {
@@ -134,29 +137,32 @@ class Api:
             payload["query"]["advanced"]["collection"] = f"/{source}/{collection_config_folder}/"
 
         return self.process_response(url, payload)
+
     def sql_query(self, sql: str, collection) -> Any:
         """Executes an SQL query on the configured server using token-based authentication with pagination."""
         token = self._get_token()
         if not token:
             raise ValueError("A token is required to use the SQL endpoint")
- 
+
         page = 0
         page_size = 5000  # Number of records per page
-        skip_records = 0 
+        skip_records = 0
 
         while True:
             paginated_sql = f"{sql} SKIP {skip_records} COUNT {page_size}"
             url = f"{self.base_url}/api/v1/engine.sql"
             headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
-            raw_payload = json.dumps({
-                "method": "engine.sql",
-                "sql": paginated_sql,
-                "pretty": True,
-            })
+            raw_payload = json.dumps(
+                {
+                    "method": "engine.sql",
+                    "sql": paginated_sql,
+                    "pretty": True,
+                }
+            )
 
             response = self.process_response(url, headers=headers, raw_data=raw_payload)
-            batch_data = response.get('Rows', [])
-            total_row_count = response.get('TotalRowCount', 0)
+            batch_data = response.get("Rows", [])
+            total_row_count = response.get("TotalRowCount", 0)
             processed_response = self._process_full_text_response(response)
             self.process_and_update_data(processed_response, collection)
             print(f"Batch {page + 1} is being processed and updated")
@@ -174,17 +180,17 @@ class Api:
         for record in batch_data:
             try:
                 with transaction.atomic():
-                    url = record['url']
-                    scraped_text = record.get('full_text', '')
-                    scraped_title = record.get('title', '')
+                    url = record["url"]
+                    scraped_text = record.get("full_text", "")
+                    scraped_title = record.get("title", "")
                     # Ensure the collection is included in the defaults
                     DumpUrl.objects.update_or_create(
-                        url=url, 
+                        url=url,
                         defaults={
-                            'scraped_text': scraped_text, 
-                            'scraped_title': scraped_title,
-                            'collection': collection
-                        }
+                            "scraped_text": scraped_text,
+                            "scraped_title": scraped_title,
+                            "collection": collection,
+                        },
                     )
             except KeyError as e:
                 print(f"Missing key in data: {str(e)}")
@@ -222,10 +228,8 @@ class Api:
             raise ValueError("Index not defined for this server")
 
         sql = f"SELECT url1, text, title FROM {index} WHERE collection = '/{source}/{collection_config_folder}/'"
-        return self.sql_query(sql,collection)
+        return self.sql_query(sql, collection)
+
     @staticmethod
-    def _process_full_text_response(batch_data:str):
-        return [
-            {"url": url, "full_text": full_text, "title": title} for url, full_text, title in batch_data["Rows"]
-        ]
-    
+    def _process_full_text_response(batch_data: str):
+        return [{"url": url, "full_text": full_text, "title": title} for url, full_text, title in batch_data["Rows"]]
