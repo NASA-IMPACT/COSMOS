@@ -116,10 +116,74 @@ class CmrDataset:
             for rect in rectangles
         )
 
-        resolution_system = horizontal_domain.get("ResolutionAndCoordinateSystem", {})
-        resolution = resolution_system.get("HorizontalDataResolution", "")
+        resolution = self._extract_spatial_resolution(horizontal_domain)
 
         return SpatialInfo(is_global, resolution, rectangles)
+
+    def _extract_spatial_resolution(self, horizontal_domain: dict) -> str:
+        """
+        Extract and format spatial resolution from horizontal domain data.
+
+        Args:
+            horizontal_domain: Dictionary containing resolution information
+
+        Returns:
+            Formatted resolution string or empty string if not available
+        """
+        resolution_system = horizontal_domain.get("ResolutionAndCoordinateSystem", {})
+        resolution_data = resolution_system.get("HorizontalDataResolution", {})
+
+        if not resolution_data:
+            return ""
+
+        # Check for Varies resolution
+        if resolution_data.get("VariesResolution") == "Varies":
+            return "Varies"
+
+        # Check for GriddedRangeResolutions (use maximum values)
+        gridded_range = resolution_data.get("GriddedRangeResolutions", [])
+        if gridded_range:
+            # I spot checked 200 datasets, and never saw more than one entry
+            # so I'm just going to use the first one for now for simplicity
+            range_data = gridded_range[0]
+            # in a gridded range, MinimumXDimension is also available,
+            # however I have chosen to use the less impressive MaximumXDimension
+            max_x = range_data.get("MaximumXDimension")
+            max_y = range_data.get("MaximumYDimension")
+            unit = range_data.get("Unit", "").lower()
+            if max_x and max_y and unit:
+                # Use the larger of the two dimensions
+                max_dim = max(max_x, max_y)
+                return f"{max_dim} {unit}"
+            return ""
+
+        # Check for GriddedResolutions
+        gridded = resolution_data.get("GriddedResolutions", [])
+        if gridded:
+            grid_data = gridded[0]
+            x_dim = grid_data.get("XDimension")
+            y_dim = grid_data.get("YDimension")
+            unit = grid_data.get("Unit", "").lower()
+            if x_dim and y_dim and unit:
+                # If dimensions differ, use the larger one
+                max_dim = max(x_dim, y_dim)
+                return f"{max_dim} {unit}"
+            return ""
+
+        # Check for GenericResolutions
+        generic = resolution_data.get("GenericResolutions", [])
+        if generic:
+            generic_data = generic[0]
+            x_dim = generic_data.get("XDimension")
+            y_dim = generic_data.get("YDimension")
+            unit = generic_data.get("Unit", "").lower()
+            if x_dim and y_dim and unit:
+                # If dimensions differ, use the larger one
+                max_dim = max(x_dim, y_dim)
+                return f"{max_dim} {unit}"
+            return ""
+
+        return ""
 
     def _process_download_info(self) -> DownloadInfo:
         """Process all download and visualization information."""
