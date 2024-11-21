@@ -7,7 +7,6 @@ from django.apps import apps
 from django.conf import settings
 from django.core import management
 from django.core.management.commands import loaddata
-from django.db import IntegrityError
 
 from config import celery_app
 
