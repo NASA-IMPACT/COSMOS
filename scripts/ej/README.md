@@ -50,9 +50,9 @@ INDICATOR_THRESHOLDS = {
     # ... other thresholds
 }
 
-# Change default filenames
-DEFAULT_CMR_FILENAME = "your_cmr_file.json"
-DEFAULT_INFERENCE_FILENAME = "your_predictions.json"
+# Change filenames
+CMR_FILENAME = "your_cmr_file.json"
+INFERENCE_FILENAME = "your_predictions.json"
 ```
 
 ## Usage
