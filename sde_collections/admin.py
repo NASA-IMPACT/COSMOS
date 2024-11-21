@@ -13,7 +13,6 @@ from .models.candidate_url import CandidateURL, ResolvedTitle
 from .models.collection import Collection, WorkflowHistory
 from .models.delta_url import CuratedUrl, DeltaResolvedTitle, DeltaUrl, DumpUrl
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
-from .tasks import import_candidate_urls_from_api
 from .models.collection_choice_fields import TDAMMTags
 from .tasks import fetch_and_replace_full_text, import_candidate_urls_from_api
 

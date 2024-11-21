@@ -62,6 +62,11 @@ class DeltaURLSerializer(serializers.ModelSerializer):
     generated_title_id = serializers.SerializerMethodField(read_only=True)
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
     delta_urls_count = serializers.SerializerMethodField(read_only=True)
+    tdamm_tag = serializers.SerializerMethodField()
+
+    def get_tdamm_tag(self, obj):
+        tags = obj.tdamm_tag
+        return tags if tags is not None else []
 
     def get_delta_urls_count(self, obj):
         titlepattern = obj.deltatitlepattern_delta_urls.last()
@@ -91,6 +96,7 @@ class DeltaURLSerializer(serializers.ModelSerializer):
             "division",
             "division_display",
             "visited",
+            "tdamm_tag",
         )
 
 
@@ -102,6 +108,11 @@ class CuratedURLSerializer(serializers.ModelSerializer):
     generated_title_id = serializers.SerializerMethodField(read_only=True)
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
     curated_urls_count = serializers.SerializerMethodField(read_only=True)
+    tdamm_tag = serializers.SerializerMethodField()
+
+    def get_tdamm_tag(self, obj):
+        tags = obj.tdamm_tag
+        return tags if tags is not None else []
 
     def get_curated_urls_count(self, obj):
         titlepattern = obj.deltatitlepattern_curated_urls.last()
@@ -131,6 +142,7 @@ class CuratedURLSerializer(serializers.ModelSerializer):
             "division",
             "division_display",
             "visited",
+            "tdamm_tag",
         )
 
 
@@ -148,6 +160,7 @@ class DeltaURLAPISerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
     file_extension = serializers.SerializerMethodField()
     tree_root = serializers.SerializerMethodField()
+    tdamm_tag = serializers.SerializerMethodField()
 
     class Meta:
         model = DeltaUrl
@@ -157,7 +170,12 @@ class DeltaURLAPISerializer(serializers.ModelSerializer):
             "document_type",
             "file_extension",
             "tree_root",
+            "tdamm_tag",
         )
+
+    def get_tdamm_tag(self, obj):
+        tags = obj.tdamm_tag
+        return tags if tags is not None else []
 
     def get_document_type(self, obj):
         if obj.document_type is not None:
@@ -198,7 +216,12 @@ class CuratedURLAPISerializer(serializers.ModelSerializer):
             "document_type",
             "file_extension",
             "tree_root",
+            "tdamm_tag",
         )
+
+    def get_tdamm_tag(self, obj):
+        tags = obj.tdamm_tag
+        return tags if tags is not None else []
 
     def get_document_type(self, obj):
         if obj.document_type is not None:
