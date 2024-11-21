@@ -1,12 +1,17 @@
 """
 inferences are supplied by the classification model. the contact point is Bishwas
-cmr is supplied by running
+
+CMR data is supplied by running:
 github.com/NASA-IMPACT/llm-app-EJ-classifier/blob/develop/scripts/data_processing/download_cmr.py
-move to the server like this: scp ej_dump_20241017_133151.json  sde:/home/ec2-user/sde_indexing_helper/backups/
+
+Move to the server like this:
+scp ej_dump_20241017_133151.json sde:/home/ec2-user/sde_indexing_helper/backups/
 """
 
 import json
 from datetime import datetime
+
+from cmr_processing import CmrDataset
 
 
 def load_json_file(file_path: str) -> dict:
@@ -62,33 +67,37 @@ def remove_unauthorized_classifications(classifications: list[str]) -> list[str]
     return [cls for cls in classifications if cls in authorized_classifications]
 
 
-def update_cmr_with_classifications(
+def create_clean_dataset(
     inferences: list[dict[str, dict]],
     cmr_dict: dict[str, dict[str, dict]],
     thresholds: dict[str, float],
-) -> list[dict[str, dict]]:
-    """Update CMR data with valid classifications based on inferences."""
+) -> list[dict]:
+    """Create clean dataset with processed CMR data and classifications."""
 
-    predicted_cmr = []
+    clean_data = []
 
     for inference in inferences:
-        classifications = process_classifications(predictions=inference["predictions"], thresholds=thresholds)
-        classifications = remove_unauthorized_classifications(classifications)
+        concept_id = inference["concept-id"]
+        cmr_dataset = cmr_dict.get(concept_id)
 
-        if classifications:
-            cmr_dataset = cmr_dict.get(inference["concept-id"])
+        if cmr_dataset:
+            # Process classifications
+            classifications = process_classifications(predictions=inference["predictions"], thresholds=thresholds)
+            classifications = remove_unauthorized_classifications(classifications)
 
-            if cmr_dataset:
-                cmr_dataset["indicators"] = ";".join(classifications)
-                predicted_cmr.append(cmr_dataset)
+            if classifications:
+                # Process CMR data
+                processed_cmr = CmrDataset(cmr_dataset).to_dict()
+                processed_cmr["indicators"] = ";".join(classifications)
+                clean_data.append(processed_cmr)
 
-    return predicted_cmr
+    return clean_data
 
 
 def main():
     thresholds = {
         "Not EJ": 0.80,
-        "Climate Change": 0.95,
+        "Climate Change": 1,
         "Disasters": 0.80,
         "Extreme Heat": 0.50,
         "Food Availability": 0.80,
@@ -98,17 +107,20 @@ def main():
         "Water Availability": 0.80,
     }
 
+    # Load input files
     inferences = load_json_file("alpha-1.3-wise-vortex-42-predictions.json")
     cmr = load_json_file("cmr_collections_umm_20240807_142146.json")
 
+    # Create CMR dictionary
     cmr_dict = create_cmr_dict(cmr)
 
-    predicted_cmr = update_cmr_with_classifications(inferences=inferences, cmr_dict=cmr_dict, thresholds=thresholds)
+    # Create clean dataset with all required fields
+    clean_data = create_clean_dataset(inferences=inferences, cmr_dict=cmr_dict, thresholds=thresholds)
 
+    # Save output
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     file_name = f"ej_dump_{timestamp}.json"
-
-    save_to_json(predicted_cmr, file_name)
+    save_to_json(clean_data, file_name)
     print(f"Saved to {file_name}")
 
 

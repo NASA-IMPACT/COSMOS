@@ -315,3 +315,25 @@ class CmrDataset:
         encoded_query = urllib.parse.quote(query, safe="")
 
         return f"{base_url}?id={encoded_id}&query={encoded_query}"
+
+    def to_dict(self) -> dict:
+        """Convert CmrDataset to a dictionary with all final ej fields."""
+        return {
+            "concept_id": self.meta.get("concept-id", ""),
+            "dataset": self.dataset_name,
+            "description": self.description,
+            "limitations": self.limitations,
+            "format": self.format,
+            "temporal_extent": self.temporal_extent,
+            "intended_use": self.intended_use,
+            "source_link": self.source_link,
+            "sde_link": self.sde_link,
+            "strengths": self.strengths,
+            "weaknesses": self.weaknesses,
+            "latency": self.latency,
+            "geographic_coverage": self.geographic_coverage,
+            "data_visualization": self.data_visualization,
+            "temporal_resolution": self.temporal_resolution,
+            "spatial_resolution": self.spatial_resolution,
+            "projects": self.projects,
+        }
