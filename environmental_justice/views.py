@@ -1,6 +1,6 @@
-from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
+from rest_framework.exceptions import ValidationError
 
 from .models import EnvironmentalJusticeRow
 from .serializers import EnvironmentalJusticeRowSerializer
@@ -17,31 +17,27 @@ class EnvironmentalJusticeRowViewSet(viewsets.ModelViewSet):
     serializer_class = EnvironmentalJusticeRowSerializer
     http_method_names = ["get"]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["data_source"]
+    filterset_fields = []
 
     def get_combined_queryset(self):
         """
         Returns combined data where:
         1. All spreadsheet data is included
         2. ML production data is included only if there's no spreadsheet data with matching dataset
+        Records are sorted by dataset name and then data_source (ensuring spreadsheet comes before ml_production)
         """
-        # First, get all unique datasets that exist in spreadsheet
-        spreadsheet_datasets = (
-            EnvironmentalJusticeRow.objects.filter(data_source=EnvironmentalJusticeRow.DataSourceChoices.SPREADSHEET)
-            .values_list("dataset", flat=True)
-            .distinct()
+        # Get spreadsheet data
+        spreadsheet_data = EnvironmentalJusticeRow.objects.filter(
+            data_source=EnvironmentalJusticeRow.DataSourceChoices.SPREADSHEET
         )
 
-        # Build query to get:
-        # 1. ALL spreadsheet records
-        # 2. ML production records where dataset isn't in spreadsheet
-        combined_query = Q(data_source=EnvironmentalJusticeRow.DataSourceChoices.SPREADSHEET) | Q(
-            data_source=EnvironmentalJusticeRow.DataSourceChoices.ML_PRODUCTION, dataset__not_in=spreadsheet_datasets
-        )
+        # Get ML production data excluding datasets that exist in spreadsheet
+        ml_production_data = EnvironmentalJusticeRow.objects.filter(
+            data_source=EnvironmentalJusticeRow.DataSourceChoices.ML_PRODUCTION
+        ).exclude(dataset__in=spreadsheet_data.values_list("dataset", flat=True))
 
-        return EnvironmentalJusticeRow.objects.filter(combined_query).order_by(
-            "dataset"
-        )  # Optional: orders results by dataset name
+        # Combine the querysets and sort
+        return spreadsheet_data.union(ml_production_data).order_by("dataset", "data_source")
 
     def get_queryset(self):
         """
@@ -52,9 +48,13 @@ class EnvironmentalJusticeRowViewSet(viewsets.ModelViewSet):
         """
         data_source = self.request.query_params.get("data_source", "combined")
 
-        # straightfoward case: return data for specific source
-        if data_source in EnvironmentalJusticeRow.DataSourceChoices.values:
-            return super().get_queryset().filter(data_source=data_source)
+        # Handle the 'combined' case or no parameter case
+        if not data_source or data_source == "combined":
+            return self.get_combined_queryset()
 
-        # Handle 'combined' or no filter case
-        return self.get_combined_queryset()
+        # Validate specific data source
+        if data_source not in EnvironmentalJusticeRow.DataSourceChoices.values:
+            valid_choices = list(EnvironmentalJusticeRow.DataSourceChoices.values) + ["combined"]
+            raise ValidationError(f"Invalid data_source. Valid choices are: {', '.join(valid_choices)}")
+
+        return super().get_queryset().filter(data_source=data_source).order_by("dataset")
