@@ -53,7 +53,7 @@ services:
     image: redis:6
     container_name: sde_indexing_helper_local_redis
 
- celeryworker:
+  celeryworker:
     <<: *django
     image: sde_indexing_helper_local_celeryworker
     container_name: sde_indexing_helper_local_celeryworker
