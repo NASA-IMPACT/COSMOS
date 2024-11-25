@@ -53,16 +53,15 @@ services:
     image: redis:6
     container_name: sde_indexing_helper_local_redis
 
-  celeryworker:
-   <<: *django
-   image: sde_indexing_helper_local_celeryworker
-   container_name: sde_indexing_helper_local_celeryworker
-   depends_on:
-     - redis
-     - postgres
-   ports: []
-   command: /start-celeryworker
-
+ celeryworker:
+    <<: *django
+    image: sde_indexing_helper_local_celeryworker
+    container_name: sde_indexing_helper_local_celeryworker
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-celeryworker
 
   # celerybeat:
   #   <<: *django
