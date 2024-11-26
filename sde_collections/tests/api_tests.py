@@ -147,7 +147,7 @@ class TestApiClass:
     @patch("requests.post")
     def test_query_dev_server_authentication(self, mock_post, api_instance):
         """Test query on dev servers requiring authentication."""
-        api_instance.server_name = "xli"  # Setting a dev server
+        api_instance.server_name = "xli"
         mock_post.return_value = MagicMock(status_code=200, json=lambda: {"result": "success"})
 
         response = api_instance.query(page=1, collection_config_folder="folder")
@@ -168,3 +168,34 @@ class TestApiClass:
 
         result = api_instance.sql_query("SELECT * FROM test_index", collection)
         assert result == "All 6 records have been processed and updated."
+
+    def test_process_full_text_response(self, api_instance):
+        """Test that _process_full_text_response correctly processes the data."""
+        batch_data = {"Rows": [
+            ["http://example.com", "Example text", "Example title"],
+            ["http://example.net", "Another text", "Another title"]
+        ]}
+        expected_output = [
+            {"url": "http://example.com", "full_text": "Example text", "title": "Example title"},
+            {"url": "http://example.net", "full_text": "Another text", "title": "Another title"}
+        ]
+        result = api_instance._process_full_text_response(batch_data)
+        assert result == expected_output
+
+    def test_process_full_text_response_with_invalid_data(self, api_instance):
+        """Test that _process_full_text_response raises an error with invalid data."""
+        # Test for missing 'Rows' key
+        invalid_data_no_rows = {}  # No 'Rows' key
+        with pytest.raises(ValueError, match="Expected 'Rows' key with a list of data"):
+            api_instance._process_full_text_response(invalid_data_no_rows)
+
+        # Test for incorrect row length
+        invalid_data_wrong_length = {"Rows": [["http://example.com", "Example text"]]}  # Missing 'title'
+        with pytest.raises(ValueError, match="Each row must contain exactly three elements"):
+            api_instance._process_full_text_response(invalid_data_wrong_length)
+
+    @patch("sde_collections.sinequa_api.Api._get_token", return_value=None)
+    def test_sql_query_missing_token(self, mock_get_token, api_instance, collection):
+        """Test that sql_query raises an error when no token is provided."""
+        with pytest.raises(ValueError, match="A token is required to use the SQL endpoint"):
+            api_instance.sql_query("SELECT * FROM test_table", collection)

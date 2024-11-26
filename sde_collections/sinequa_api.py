@@ -231,5 +231,15 @@ class Api:
         return self.sql_query(sql, collection)
 
     @staticmethod
-    def _process_full_text_response(batch_data: str):
-        return [{"url": url, "full_text": full_text, "title": title} for url, full_text, title in batch_data["Rows"]]
+    def _process_full_text_response(batch_data: dict):
+        if 'Rows' not in batch_data or not isinstance(batch_data['Rows'], list):
+            raise ValueError("Expected 'Rows' key with a list of data.")
+
+        processed_data = []
+        for row in batch_data['Rows']:
+            # Ensure each row has exactly three elements (url, full_text, title)
+            if len(row) != 3:
+                raise ValueError("Each row must contain exactly three elements (url, full_text, title).")
+            url, full_text, title = row
+            processed_data.append({"url": url, "full_text": full_text, "title": title})
+        return processed_data
