@@ -64,7 +64,7 @@ class Api:
     def __init__(self, server_name: str = None, user: str = None, password: str = None, token: str = None) -> None:
         self.server_name = server_name
         if server_name not in server_configs:
-            raise ValueError(f"Server name '{server_name}' is not in server_configs")
+            raise ValueError(f"Invalid server configuration: '{server_name}' is not a recognized server name")
 
         self.config = server_configs[server_name]
         self.app_name: str = self.config["app_name"]
@@ -72,7 +72,6 @@ class Api:
         self.base_url: str = self.config["base_url"]
         self.dev_servers = ["xli", "lrm_dev", "lrm_qa"]
 
-        # Store provided values only
         self._provided_user = user
         self._provided_password = password
         self._provided_token = token
@@ -116,7 +115,8 @@ class Api:
             password = self._get_password()
             if not user or not password:
                 raise ValueError(
-                    "User and password are required for the query endpoint on the following servers: {self.dev_servers}"
+                    f"Authentication error: Missing credentials for dev server '{self.server_name}'. "
+                    f"Both username and password are required for servers: {', '.join(self.dev_servers)}"
                 )
             authentication = f"?Password={password}&User={user}"
             url = f"{url}{authentication}"
@@ -139,10 +139,9 @@ class Api:
         return self.process_response(url, payload)
 
     def sql_query(self, sql: str, collection) -> Any:
-        """Executes an SQL query on the configured server using token-based authentication with pagination."""
         token = self._get_token()
         if not token:
-            raise ValueError("A token is required to use the SQL endpoint")
+            raise ValueError("Authentication error: Token is required for SQL endpoint access")
 
         page = 0
         page_size = 5000  # Number of records per page
@@ -165,7 +164,6 @@ class Api:
             total_row_count = response.get("TotalRowCount", 0)
             processed_response = self._process_full_text_response(response)
             self.process_and_update_data(processed_response, collection)
-            print(f"Batch {page + 1} is being processed and updated")
 
             # Check if all rows have been fetched
             if len(batch_data) == 0 or (skip_records + page_size) >= total_row_count:
@@ -183,7 +181,6 @@ class Api:
                     url = record["url"]
                     scraped_text = record.get("full_text", "")
                     scraped_title = record.get("title", "")
-                    # Ensure the collection is included in the defaults
                     DumpUrl.objects.update_or_create(
                         url=url,
                         defaults={
@@ -193,6 +190,7 @@ class Api:
                         },
                     )
             except KeyError as e:
+                # TODO: reevaluate whether this should be a Raise and break the code
                 print(f"Missing key in data: {str(e)}")
             except Exception as e:
                 print(f"Error processing record: {str(e)}")
@@ -225,7 +223,10 @@ class Api:
             source = self._get_source_name()
 
         if (index := self.config.get("index")) is None:
-            raise ValueError("Index not defined for this server")
+            raise ValueError(
+                f"Configuration error: Index not defined for server '{self.server_name}'. "
+                "Please update server configuration with the required index."
+            )
 
         sql = f"SELECT url1, text, title FROM {index} WHERE collection = '/{source}/{collection_config_folder}/'"
         return self.sql_query(sql, collection)
@@ -233,13 +234,18 @@ class Api:
     @staticmethod
     def _process_full_text_response(batch_data: dict):
         if "Rows" not in batch_data or not isinstance(batch_data["Rows"], list):
-            raise ValueError("Expected 'Rows' key with a list of data.")
+            raise ValueError(
+                "Invalid response format: Expected 'Rows' key with list data in Sinequa server response. "
+                f"Received: {type(batch_data.get('Rows', None))}"
+            )
 
         processed_data = []
-        for row in batch_data["Rows"]:
-            # Ensure each row has exactly three elements (url, full_text, title)
+        for idx, row in enumerate(batch_data["Rows"]):
             if len(row) != 3:
-                raise ValueError("Each row must contain exactly three elements (url, full_text, title).")
+                raise ValueError(
+                    f"Invalid row format at index {idx}: Expected exactly three elements (url, full_text, title). "
+                    f"Received {len(row)} elements."
+                )
             url, full_text, title = row
             processed_data.append({"url": url, "full_text": full_text, "title": title})
         return processed_data
