@@ -87,7 +87,7 @@ class Command(BaseCommand):
                             visited=candidate_url.visited,
                             document_type=candidate_url.document_type,
                             division=candidate_url.division,
-                            delete=False,
+                            to_delete=False,
                         )
                     )
 
