@@ -232,11 +232,11 @@ class Api:
 
     @staticmethod
     def _process_full_text_response(batch_data: dict):
-        if 'Rows' not in batch_data or not isinstance(batch_data['Rows'], list):
+        if "Rows" not in batch_data or not isinstance(batch_data["Rows"], list):
             raise ValueError("Expected 'Rows' key with a list of data.")
 
         processed_data = []
-        for row in batch_data['Rows']:
+        for row in batch_data["Rows"]:
             # Ensure each row has exactly three elements (url, full_text, title)
             if len(row) != 3:
                 raise ValueError("Each row must contain exactly three elements (url, full_text, title).")

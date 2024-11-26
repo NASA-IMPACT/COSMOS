@@ -171,13 +171,15 @@ class TestApiClass:
 
     def test_process_full_text_response(self, api_instance):
         """Test that _process_full_text_response correctly processes the data."""
-        batch_data = {"Rows": [
-            ["http://example.com", "Example text", "Example title"],
-            ["http://example.net", "Another text", "Another title"]
-        ]}
+        batch_data = {
+            "Rows": [
+                ["http://example.com", "Example text", "Example title"],
+                ["http://example.net", "Another text", "Another title"],
+            ]
+        }
         expected_output = [
             {"url": "http://example.com", "full_text": "Example text", "title": "Example title"},
-            {"url": "http://example.net", "full_text": "Another text", "title": "Another title"}
+            {"url": "http://example.net", "full_text": "Another text", "title": "Another title"},
         ]
         result = api_instance._process_full_text_response(batch_data)
         assert result == expected_output
