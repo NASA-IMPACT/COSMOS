@@ -164,6 +164,7 @@ class Api:
             total_row_count = response.get("TotalRowCount", 0)
             processed_response = self._process_full_text_response(response)
             self.process_and_update_data(processed_response, collection)
+            print(f"Batch {page + 1} has been processed and updated")
 
             # Check if all rows have been fetched
             if len(batch_data) == 0 or (skip_records + page_size) >= total_row_count:
