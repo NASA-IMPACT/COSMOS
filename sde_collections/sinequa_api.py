@@ -190,7 +190,6 @@ class Api:
                         },
                     )
             except KeyError as e:
-                # TODO: reevaluate whether this should be a Raise and break the code
                 print(f"Missing key in data: {str(e)}")
             except Exception as e:
                 print(f"Error processing record: {str(e)}")
