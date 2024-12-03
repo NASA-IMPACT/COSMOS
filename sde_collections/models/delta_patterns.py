@@ -6,10 +6,10 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from ..utils.title_resolver import (
-    is_valid_fstring,
     is_valid_xpath,
     parse_title,
     resolve_title,
+    validate_fstring,
 )
 from .collection_choice_fields import Divisions, DocumentTypes
 
@@ -398,7 +398,7 @@ def validate_title_pattern(title_pattern_string: str) -> None:
                 raise ValidationError(f"Invalid xpath: {element_value}")
         elif element_type == "brace":
             try:
-                is_valid_fstring(element_value)
+                validate_fstring(element_value)
             except ValueError as e:
                 raise ValidationError(str(e))
 
