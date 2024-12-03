@@ -1,5 +1,6 @@
 # docker-compose -f local.yml run --rm django pytest scripts/ej/test_cmr_processing.py
 import json
+from urllib.parse import urlparse
 
 import pytest
 from cmr_processing import CmrDataset
@@ -448,7 +449,8 @@ class TestUrlProcessing:
     def test_sde_link_generation(self):
         data = {"meta": {"concept-id": "C179001887-SEDAC"}}
         dataset = CmrDataset(data)
-        assert "sciencediscoveryengine.nasa.gov" in dataset.sde_link
+        parsed_url = urlparse(dataset.sde_link)
+        assert parsed_url.hostname == "sciencediscoveryengine.nasa.gov"
         assert "C179001887-SEDAC" in dataset.sde_link
 
     def test_source_link_generation(self):
@@ -465,14 +467,14 @@ class TestProjectProcessing:
     """Unit tests for project information processing"""
 
     def test_multiple_projects(self):
-        data = {"umm": {"Projects": [{"ShortName": "Project1"}, {"ShortName": "Project2"}]}}
+        data = {"umm": {"Projects": [{"ShortName": "short_1"}, {"ShortName": "short_2"}]}}
         dataset = CmrDataset(data)
-        assert dataset.projects == "Project1; Project2"
+        assert dataset.projects == "short_1; short_2"
 
     def test_missing_project_shortname(self):
-        data = {"umm": {"Projects": [{"LongName": "Project1"}, {"ShortName": "Project2"}]}}
+        data = {"umm": {"Projects": [{"LongName": "long_1"}, {"ShortName": "short_2"}]}}
         dataset = CmrDataset(data)
-        assert dataset.projects == "Project2"
+        assert dataset.projects == "long_1; short_2"
 
     def test_no_projects(self):
         dataset = CmrDataset({"umm": {}})
