@@ -62,7 +62,7 @@ urlpatterns = [
     ),
     path("curated-urls-api/<str:config_folder>/", view=views.CuratedURLAPIView.as_view(), name="curated-url-api"),
     path(
-        "candidate-url-api/<str:config_folder>/",
+        "candidate-urls-api/<str:config_folder>/",
         view=views.CuratedURLAPIView.as_view(),
         name="candidate-url-api",
     ),
