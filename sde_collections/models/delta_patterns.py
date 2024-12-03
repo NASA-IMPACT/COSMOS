@@ -50,11 +50,19 @@ class BaseMatchPattern(models.Model):
 
     def is_most_distinctive_pattern(self, url) -> bool:
         """
-        Determine if this pattern should apply to a URL by checking if it matches
-        the smallest number of URLs among all patterns that match this URL.
+        Determine if this pattern should apply to a URL by checking:
+        1. First checks if this pattern matches this URL
+        2. If it matches the smallest number of URLs among all patterns that match this URL
+        3. If tied for smallest number of matches, uses the longest pattern string
         Returns True if this pattern should be applied.
         """
+        # First check if this pattern matches the URL
+        regex_pattern = self.get_regex_pattern()
+        if not re.search(regex_pattern, url.url):
+            return False
+
         my_match_count = self.get_url_match_count()
+        my_pattern_length = len(self.match_pattern)
 
         # Get patterns from same type that affect this URL
         pattern_class = self.__class__
@@ -63,12 +71,19 @@ class BaseMatchPattern(models.Model):
             .filter(models.Q(delta_urls__url=url.url) | models.Q(curated_urls__url=url.url))
             .exclude(id=self.id)
             .distinct()
-        )  # TODO: does this have a distinct urls, or distinct model objects.
+        )
 
-        # If any matching pattern has a smaller URL set, don't apply
+        # Use M2M relationships for checking other patterns since those are already established
         for pattern in matching_patterns:
-            if pattern.get_url_match_count() < my_match_count:
+            other_match_count = pattern.get_url_match_count()
+            if other_match_count < my_match_count:
+                # Other pattern matches fewer URLs - definitely not most distinctive
                 return False
+            if other_match_count == my_match_count:
+                # Same match count - check pattern length
+                if len(pattern.match_pattern) > my_pattern_length:
+                    # Other pattern is longer - not most distinctive
+                    return False
 
         return True
 

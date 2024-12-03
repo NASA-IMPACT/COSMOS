@@ -283,7 +283,6 @@ class TestDeltaTitlePattern:
         general_pattern = DeltaTitlePattern.objects.create(
             collection=collection,
             match_pattern="*docs*",
-            # Use a different error-causing pattern
             title_pattern="{invalid}",  # Invalid variable name will cause error
             match_pattern_type=2,
         )
@@ -297,14 +296,17 @@ class TestDeltaTitlePattern:
         specific_pattern = DeltaTitlePattern.objects.create(
             collection=collection,
             match_pattern="*docs/specific*",
-            # Different invalid variable
             title_pattern="{another_invalid}",
             match_pattern_type=2,
         )
 
+        # Re-fetch error to see latest state
+        error.refresh_from_db()
+
         # Error should now be from specific pattern
-        error = url.deltaresolvedtitleerror  # Should still only be one
-        assert error.title_pattern == specific_pattern
+        assert (
+            error.title_pattern == specific_pattern
+        ), f"Error still associated with {error.title_pattern} instead of {specific_pattern}"
         assert "Variable 'another_invalid' not allowed in f-string pattern" in error.error_string
 
         # Verify we still only have one error record

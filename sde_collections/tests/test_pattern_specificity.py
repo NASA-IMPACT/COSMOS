@@ -156,3 +156,65 @@ def test_field_modifying_pattern_layered_specificity():
     assert mid_tool.pk in broad_pattern.delta_urls.values_list("pk", flat=True)
 
     assert top_tool.pk in broad_pattern.delta_urls.values_list("pk", flat=True)
+
+
+@pytest.mark.django_db
+def test_pattern_specificity_tiebreaker():
+    """Test that when patterns match the same number of URLs, longer patterns are considered more specific."""
+    collection = CollectionFactory()
+
+    # Create URLs that would result in same match count for different patterns
+    url1 = DeltaUrlFactory(
+        collection=collection, url="https://example.com/docs/specific/item1.html", scraped_title="Title 1"
+    )
+    url2 = DeltaUrlFactory(
+        collection=collection, url="https://example.com/docs/specific/item2.html", scraped_title="Title 2"
+    )
+
+    # Create patterns with same match count but different lengths
+    general_pattern = DeltaTitlePattern.objects.create(
+        collection=collection,
+        match_pattern="*docs*",  # Shorter pattern
+        title_pattern="{title}",
+        match_pattern_type=2,
+    )
+
+    specific_pattern = DeltaTitlePattern.objects.create(
+        collection=collection,
+        match_pattern="*docs/specific*",  # Longer pattern
+        title_pattern="{title} - Specific",
+        match_pattern_type=2,
+    )
+
+    # Both patterns will match both URLs (same match count)
+    assert general_pattern.get_url_match_count() == 2
+    assert specific_pattern.get_url_match_count() == 2
+
+    # But the longer pattern should be considered more specific
+    assert general_pattern.is_most_distinctive_pattern(url1) is False
+    assert specific_pattern.is_most_distinctive_pattern(url1) is True
+
+    # Check that this applies to both URLs
+    assert general_pattern.is_most_distinctive_pattern(url2) is False
+    assert specific_pattern.is_most_distinctive_pattern(url2) is True
+
+    # Create an even more specific pattern
+    very_specific_pattern = DeltaTitlePattern.objects.create(
+        collection=collection,
+        match_pattern="*docs/specific/item1*",  # Even longer pattern
+        title_pattern="{title} - Very Specific",
+        match_pattern_type=2,
+    )
+
+    # It matches fewer URLs
+    assert very_specific_pattern.get_url_match_count() == 1
+
+    # For URL1, the very specific pattern should win due to fewer matches
+    assert general_pattern.is_most_distinctive_pattern(url1) is False
+    assert specific_pattern.is_most_distinctive_pattern(url1) is False
+    assert very_specific_pattern.is_most_distinctive_pattern(url1) is True
+
+    # For URL2, the middle pattern should still win since very_specific doesn't match
+    assert general_pattern.is_most_distinctive_pattern(url2) is False
+    assert specific_pattern.is_most_distinctive_pattern(url2) is True
+    assert very_specific_pattern.is_most_distinctive_pattern(url2) is False
