@@ -69,26 +69,28 @@ class CmrDataset:
         return begin_date, end_date
 
     def _process_temporal_extents(self) -> TemporalInfo:
-        """Process all temporal information."""
         temporal_extents = self.umm.get("TemporalExtents", [])
         latest_end_date = None
         total_duration = 0
-        single_date_times = []
+        all_temporal_strings = []
 
         for extent in temporal_extents:
-            single_date_times.extend(extent.get("SingleDateTimes", []))
-            range_datetimes = extent.get("RangeDateTimes", [])
+            # Process single dates
+            all_temporal_strings.extend(extent.get("SingleDateTimes", []))
 
-            for range_dt in range_datetimes:
+            # Process range dates
+            for range_dt in extent.get("RangeDateTimes", []):
                 try:
                     begin_date, end_date = self._check_temporal_range(range_dt)
+                    range_str = f"{range_dt['BeginningDateTime']} - {range_dt['EndingDateTime']}"
+                    all_temporal_strings.append(range_str)
+
                     if latest_end_date is None or end_date > latest_end_date:
                         latest_end_date = end_date
                     total_duration += (end_date - begin_date).days
                 except (KeyError, ValueError):
                     continue
 
-        # Fix: Extract Value and Unit correctly from the TemporalResolution dictionary
         temporal_resolution_dict = temporal_extents[0].get("TemporalResolution", {}) if temporal_extents else {}
         resolution_value = temporal_resolution_dict.get("Value", "")
         resolution_unit = temporal_resolution_dict.get("Unit", "")
@@ -96,9 +98,9 @@ class CmrDataset:
         return TemporalInfo(
             latest_end_date=latest_end_date,
             total_duration=total_duration,
-            resolution=str(resolution_value),  # Convert to string in case it's a number
+            resolution=str(resolution_value),
             resolution_unit=resolution_unit,
-            single_date_times=single_date_times,
+            single_date_times=sorted(all_temporal_strings),
         )
 
     def _process_spatial_info(self) -> SpatialInfo:

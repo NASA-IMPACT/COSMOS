@@ -21,13 +21,12 @@ class TestCmrDatasetIntegration:
 
     def test_full_dataset_processing(self, cmr_dataset):
         """Test that all properties can be extracted from real data without errors"""
-        # Test all property accessors
         assert cmr_dataset.dataset_name == "2000 Pilot Environmental Sustainability Index (ESI)"
         assert cmr_dataset.description.startswith("The 2000 Pilot Environmental Sustainability Index")
         assert cmr_dataset.limitations == "None"
         assert cmr_dataset.format == "PDF"
-        assert cmr_dataset.temporal_extent == ""  # No SingleDateTimes in example
-        assert cmr_dataset.intended_use == "Path A"  # ProcessingLevel is 4
+        assert cmr_dataset.temporal_extent == "1978-01-01T00:00:00.000Z - 1999-12-31T00:00:00.000Z"
+        assert cmr_dataset.intended_use == "Path A"
         assert cmr_dataset.source_link == "https://doi.org/10.7927/H4NK3BZJ"
         assert "Long temporal extent" in cmr_dataset.strengths
         assert "No recent data available" in cmr_dataset.weaknesses
@@ -132,6 +131,62 @@ class TestTemporalProcessing:
         assert dataset.temporal_info.total_duration == 0
         assert dataset.temporal_info.latest_end_date is None
         assert dataset.temporal_resolution == ""
+
+    def test_single_date_only(self):
+        data = {
+            "meta": {},
+            "umm": {"TemporalExtents": [{"SingleDateTimes": ["2020-01-01T00:00:00.000Z", "2020-06-01T00:00:00.000Z"]}]},
+        }
+        dataset = CmrDataset(data)
+        assert dataset.temporal_extent == "2020-01-01T00:00:00.000Z, 2020-06-01T00:00:00.000Z"
+
+    def test_range_date_only(self):
+        data = {
+            "meta": {},
+            "umm": {
+                "TemporalExtents": [
+                    {
+                        "RangeDateTimes": [
+                            {
+                                "BeginningDateTime": "2020-01-01T00:00:00.000Z",
+                                "EndingDateTime": "2020-12-31T23:59:59.999Z",
+                            },
+                            {
+                                "BeginningDateTime": "2021-01-01T00:00:00.000Z",
+                                "EndingDateTime": "2021-12-31T23:59:59.999Z",
+                            },
+                        ]
+                    }
+                ]
+            },
+        }
+        dataset = CmrDataset(data)
+        assert (
+            dataset.temporal_extent
+            == "2020-01-01T00:00:00.000Z - 2020-12-31T23:59:59.999Z, 2021-01-01T00:00:00.000Z - 2021-12-31T23:59:59.999Z"  # noqa
+        )
+
+    def test_combined_single_and_range_dates(self):
+        data = {
+            "meta": {},
+            "umm": {
+                "TemporalExtents": [
+                    {
+                        "SingleDateTimes": ["2020-01-01T00:00:00.000Z"],
+                        "RangeDateTimes": [
+                            {
+                                "BeginningDateTime": "2021-01-01T00:00:00.000Z",
+                                "EndingDateTime": "2021-12-31T23:59:59.999Z",
+                            }
+                        ],
+                    }
+                ]
+            },
+        }
+        dataset = CmrDataset(data)
+        assert (
+            dataset.temporal_extent == "2020-01-01T00:00:00.000Z, 2021-01-01T00:00:00.000Z - 2021-12-31T23:59:59.999Z"
+        )
 
 
 class TestSpatialProcessing:
