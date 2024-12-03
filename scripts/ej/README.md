@@ -10,11 +10,6 @@ The pipeline consists of several components:
 - Threshold-based filtering
 - Data dump creation
 
-## Prerequisites
-
-- Access to CMR collection data
-- Access to the classification model predictions (contact Bishwas for access)
-
 ## Setup
 
 1. Clone the repository
@@ -34,7 +29,7 @@ github.com/NASA-IMPACT/llm-app-EJ-classifier/blob/develop/scripts/data_processin
 
 ## Configuration
 
-Edit `config.py` to customize:
+Edit `scripts/ej/config.py` to customize:
 
 - Classification thresholds
 - Authorized classifications
