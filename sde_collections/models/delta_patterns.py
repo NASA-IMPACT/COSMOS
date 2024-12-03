@@ -454,8 +454,9 @@ class DeltaTitlePattern(BaseMatchPattern):
             new_title, error = self.generate_title_for_url(curated_url)
 
             if error:
-                # Log error and continue to next URL
-                DeltaResolvedTitleError.objects.create(title_pattern=self, delta_url=curated_url, error_string=error)
+                DeltaResolvedTitleError.objects.update_or_create(
+                    delta_url=curated_url, defaults={"title_pattern": self, "error_string": error}  # lookup field
+                )
                 continue
 
             # Skip if the generated title matches existing or if Delta already exists
@@ -488,7 +489,9 @@ class DeltaTitlePattern(BaseMatchPattern):
             new_title, error = self.generate_title_for_url(delta_url)
 
             if error:
-                DeltaResolvedTitleError.objects.create(title_pattern=self, delta_url=delta_url, error_string=error)
+                DeltaResolvedTitleError.objects.update_or_create(
+                    delta_url=delta_url, defaults={"title_pattern": self, "error_string": error}  # lookup field
+                )
                 continue
 
             # Update title and record resolution - key change here
