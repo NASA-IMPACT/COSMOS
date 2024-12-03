@@ -1,0 +1,692 @@
+[
+    {
+        "meta": {
+            "revision-id": 41,
+            "deleted": false,
+            "format": "application/vnd.nasa.cmr.umm+json",
+            "provider-id": "SEDAC",
+            "has-combine": false,
+            "user-id": "mhansen",
+            "has-formats": false,
+            "has-spatial-subsetting": false,
+            "native-id": "2000 Pilot Environmental Sustainability Index (ESI)",
+            "has-transforms": false,
+            "has-variables": false,
+            "concept-id": "C179001887-SEDAC",
+            "revision-date": "2022-12-05T20:48:32.236Z",
+            "has-temporal-subsetting": false,
+            "concept-type": "collection"
+        },
+        "umm": {
+            "DataLanguage": "English",
+            "CollectionCitations": [
+                {
+                    "Version": "2000.00",
+                    "Title": "2000 Pilot Environmental Sustainability Index (ESI)",
+                    "Creator": "World Economic Forum - WEF - Global Leaders for Tomorrow Environment Task Force, Yale Center for Environmental Law and Policy - YCELP - Yale University, and Center for International Earth Science Information Network - CIESIN - Columbia University",
+                    "ReleaseDate": "2000-12-31T00:00:00.000Z",
+                    "ReleasePlace": "New Haven, CT",
+                    "Publisher": "Yale Center for Environmental Law and Policy (YCELP)/Yale University",
+                    "OnlineResource": {
+                        "Linkage": "https://doi.org/10.7927/H4NK3BZJ"
+                    }
+                }
+            ],
+            "SpatialExtent": {
+                "SpatialCoverageType": "HORIZONTAL",
+                "HorizontalSpatialDomain": {
+                    "Geometry": {
+                        "CoordinateSystem": "CARTESIAN",
+                        "BoundingRectangles": [
+                            {
+                                "NorthBoundingCoordinate": 90.0,
+                                "WestBoundingCoordinate": -180.0,
+                                "EastBoundingCoordinate": 180.0,
+                                "SouthBoundingCoordinate": -55.0
+                            }
+                        ]
+                    }
+                },
+                "GranuleSpatialRepresentation": "CARTESIAN"
+            },
+            "CollectionProgress": "COMPLETE",
+            "ScienceKeywords": [
+                {
+                    "Category": "EARTH SCIENCE",
+                    "Topic": "HUMAN DIMENSIONS",
+                    "Term": "SUSTAINABILITY",
+                    "VariableLevel1": "ENVIRONMENTAL SUSTAINABILITY"
+                }
+            ],
+            "TemporalExtents": [
+                {
+                    "EndsAtPresentFlag": false,
+                    "RangeDateTimes": [
+                        {
+                            "BeginningDateTime": "1978-01-01T00:00:00.000Z",
+                            "EndingDateTime": "1999-12-31T00:00:00.000Z"
+                        }
+                    ]
+                }
+            ],
+            "ProcessingLevel": {
+                "Id": "4"
+            },
+            "DOI": {
+                "DOI": "10.7927/H4NK3BZJ",
+                "Authority": "https://doi.org/"
+            },
+            "ShortName": "CIESIN_SEDAC_ESI_2000",
+            "EntryTitle": "2000 Pilot Environmental Sustainability Index (ESI)",
+            "PublicationReferences": [
+                {
+                    "Title": "2001 Environmental Sustainability Index (ESI)",
+                    "Publisher": "Yale Center for Environmental Law and Policy (YCELP)/Yale University",
+                    "DOI": {
+                        "DOI": "10.7927/H4X34VDM",
+                        "Authority": "https://doi.org/"
+                    },
+                    "Author": "World Economic Forum - WEF - Global Leaders for Tomorrow Environment Task Force, Yale Center for Environmental Law and Policy - YCELP - Yale University, and Center for International Earth Science Information Network - CIESIN - Columbia University",
+                    "PublicationDate": "2001-12-31T00:00:00.000Z",
+                    "Edition": "2001.00",
+                    "PublicationPlace": "New Haven, CT"
+                },
+                {
+                    "Title": "2002 Environmental Sustainability Index (ESI)",
+                    "Publisher": "Yale Center for Environmental Law and Policy (YCELP)/Yale University",
+                    "DOI": {
+                        "DOI": "10.7927/H4SB43P8",
+                        "Authority": "https://doi.org/"
+                    },
+                    "Author": "World Economic Forum - WEF - Global Leaders for Tomorrow Environment Task Force, Yale Center for Environmental Law and Policy - YCELP - Yale University, and Center for International Earth Science Information Network - CIESIN - Columbia University",
+                    "PublicationDate": "2002-12-31T00:00:00.000Z",
+                    "Edition": "2002.00",
+                    "PublicationPlace": "New Haven, CT"
+                },
+                {
+                    "Title": "2005 Environmental Sustainability Index (ESI)",
+                    "Publisher": "Yale Center for Environmental Law and Policy (YCELP)/Yale University",
+                    "DOI": {
+                        "DOI": "10.7927/H40V89R6",
+                        "Authority": "https://doi.org/"
+                    },
+                    "Author": "Yale Center for Environmental Law and Policy - YCELP - Yale University, Center for International Earth Science Information Network - CIESIN - Columbia University, World Economic Forum - WEF, and Joint Research Centre - JRC - European Commission",
+                    "PublicationDate": "2005-12-31T00:00:00.000Z",
+                    "Edition": "2005.00",
+                    "PublicationPlace": "New Haven, CT"
+                }
+            ],
+            "AccessConstraints": {
+                "Description": "None"
+            },
+            "RelatedUrls": [
+                {
+                    "Description": "Sample browse graphic of the data set.",
+                    "URLContentType": "VisualizationURL",
+                    "Type": "GET RELATED VISUALIZATION",
+                    "URL": "https://sedac.ciesin.columbia.edu/downloads/maps/esi/esi-pilot-environmental-sustainability-index-2000/sedac-logo.jpg"
+                },
+                {
+                    "Description": "Data Download Page",
+                    "URLContentType": "DistributionURL",
+                    "Type": "GET DATA",
+                    "Subtype": "DIRECT DOWNLOAD",
+                    "URL": "https://sedac.ciesin.columbia.edu/data/set/esi-pilot-environmental-sustainability-index-2000/data-download"
+                },
+                {
+                    "Description": "Data Set\u00a0Overview Page",
+                    "URLContentType": "PublicationURL",
+                    "Type": "VIEW RELATED INFORMATION",
+                    "Subtype": "GENERAL DOCUMENTATION",
+                    "URL": "https://sedac.ciesin.columbia.edu/data/set/esi-pilot-environmental-sustainability-index-2000"
+                }
+            ],
+            "ContactGroups": [
+                {
+                    "Roles": [
+                        "Metadata Author"
+                    ],
+                    "GroupName": "CIESIN METADATA ADMINISTRATION",
+                    "ContactInformation": {
+                        "ContactMechanisms": [
+                            {
+                                "Type": "Email",
+                                "Value": "metadata@ciesin.columbia.edu"
+                            },
+                            {
+                                "Type": "Fax",
+                                "Value": "+1 845-365-8922"
+                            },
+                            {
+                                "Type": "Telephone",
+                                "Value": "+1 845-365-8988"
+                            }
+                        ],
+                        "Addresses": [
+                            {
+                                "Country": "United States",
+                                "StreetAddresses": [
+                                    "CIESIN, Columbia University, 61 Route 9W, P.O. Box 1000"
+                                ],
+                                "City": "Palisades",
+                                "StateProvince": "New York",
+                                "PostalCode": "10964"
+                            }
+                        ],
+                        "RelatedUrls": [
+                            {
+                                "Description": "Metadata Author\u00a0Home\u00a0Page",
+                                "URLContentType": "DataContactURL",
+                                "Type": "HOME PAGE",
+                                "URL": "https://sedac.ciesin.columbia.edu"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "DataDates": [
+                {
+                    "Date": "2000-12-31T00:00:00.000Z",
+                    "Type": "CREATE"
+                },
+                {
+                    "Date": "2000-12-31T00:00:00.000Z",
+                    "Type": "UPDATE"
+                }
+            ],
+            "Abstract": "The 2000 Pilot Environmental Sustainability Index (ESI) is an exploratory effort to construct an index that measures the ability of a nation's economy to achieve sustainable development, with the long term goal of finding a single indicator for environmental sustainability analagous to that of the Gross Domestic Product (GDP). The index covering 56 countries is a composite measure of the current status of a nation's environmental systems, pressures on those systems, human vulnerability to environmental change, national capacity to respond, and contributions to global environmental stewardship. The index was unveiled at the World Economic Forum's annual meeting, January 2000, Davos, Switzerland. The 2000 Pilot ESI is the result of collaboration among the World Economic Forum (WEF), Yale Center for Environmental Law and Policy (YCELP), and the Columbia University Center for International Earth Science Information Network (CIESIN).",
+            "Purpose": "To test the feasibility of creating a comparative index of national-level environmental sustainability.",
+            "LocationKeywords": [
+                {
+                    "Category": "CONTINENT",
+                    "Type": "ASIA",
+                    "Subregion1": "WESTERN ASIA",
+                    "Subregion2": "MIDDLE EAST",
+                    "Subregion3": "BAHRAIN"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "NORTH AMERICA",
+                    "Subregion1": "CANADA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "SOUTH AMERICA",
+                    "Subregion1": "ARGENTINA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "AUSTRALIA/NEW ZEALAND",
+                    "Subregion1": "AUSTRALIA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "WESTERN EUROPE",
+                    "Subregion2": "AUSTRIA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "WESTERN EUROPE",
+                    "Subregion2": "BELGIUM"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "SOUTH AMERICA",
+                    "Subregion1": "BOLIVIA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "SOUTH AMERICA",
+                    "Subregion1": "BRAZIL"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "EASTERN EUROPE",
+                    "Subregion2": "BULGARIA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "SOUTH AMERICA",
+                    "Subregion1": "CHILE"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "SOUTH AMERICA",
+                    "Subregion1": "COLOMBIA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "NORTH AMERICA",
+                    "Subregion1": "CENTRAL AMERICA",
+                    "Subregion2": "COSTA RICA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "NORTHERN EUROPE",
+                    "Subregion2": "SCANDINAVIA",
+                    "Subregion3": "DENMARK"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "SOUTH AMERICA",
+                    "Subregion1": "ECUADOR"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "AFRICA",
+                    "Subregion1": "NORTHERN AFRICA",
+                    "Subregion2": "EGYPT"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "NORTH AMERICA",
+                    "Subregion1": "CENTRAL AMERICA",
+                    "Subregion2": "EL SALVADOR"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "NORTHERN EUROPE",
+                    "Subregion2": "SCANDINAVIA",
+                    "Subregion3": "FINLAND"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "WESTERN EUROPE",
+                    "Subregion2": "FRANCE"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "WESTERN EUROPE",
+                    "Subregion2": "GERMANY"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "SOUTHERN EUROPE",
+                    "Subregion2": "GREECE"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "EASTERN EUROPE",
+                    "Subregion2": "HUNGARY"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "NORTHERN EUROPE",
+                    "Subregion2": "ICELAND"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "ASIA",
+                    "Subregion1": "SOUTHCENTRAL ASIA",
+                    "Subregion2": "INDIA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "NORTHERN EUROPE",
+                    "Subregion2": "BRITISH ISLES",
+                    "Subregion3": "IRELAND"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "ASIA",
+                    "Subregion1": "WESTERN ASIA",
+                    "Subregion2": "MIDDLE EAST",
+                    "Subregion3": "ISRAEL"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "SOUTHERN EUROPE",
+                    "Subregion2": "ITALY"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "ASIA",
+                    "Subregion1": "EASTERN ASIA",
+                    "Subregion2": "JAPAN"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "ASIA",
+                    "Subregion1": "WESTERN ASIA",
+                    "Subregion2": "MIDDLE EAST",
+                    "Subregion3": "JORDAN"
+                },
+                {
+                    "Category": "OCEAN",
+                    "Type": "INDIAN OCEAN",
+                    "Subregion1": "MALAYSIA"
+                },
+                {
+                    "Category": "OCEAN",
+                    "Type": "INDIAN OCEAN",
+                    "Subregion1": "MAURITIUS"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "NORTH AMERICA",
+                    "Subregion1": "MEXICO"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "WESTERN EUROPE",
+                    "Subregion2": "NETHERLANDS"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "AUSTRALIA/NEW ZEALAND",
+                    "Subregion1": "NEW ZEALAND"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "NORTHERN EUROPE",
+                    "Subregion2": "SCANDINAVIA",
+                    "Subregion3": "NORWAY"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "SOUTH AMERICA",
+                    "Subregion1": "PERU"
+                },
+                {
+                    "Category": "OCEAN",
+                    "Type": "PACIFIC OCEAN",
+                    "Subregion1": "WESTERN PACIFIC OCEAN",
+                    "Subregion2": "PHILIPPINES"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "EASTERN EUROPE",
+                    "Subregion2": "POLAND"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "WESTERN EUROPE",
+                    "Subregion2": "PORTUGAL"
+                },
+                {
+                    "Category": "OCEAN",
+                    "Type": "INDIAN OCEAN",
+                    "Subregion1": "SINGAPORE"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "EASTERN EUROPE",
+                    "Subregion2": "SLOVAKIA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "AFRICA",
+                    "Subregion1": "SOUTHERN AFRICA",
+                    "Subregion2": "SOUTH AFRICA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "ASIA",
+                    "Subregion1": "EASTERN ASIA",
+                    "Subregion2": "SOUTH KOREA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "SOUTHERN EUROPE",
+                    "Subregion2": "SPAIN",
+                    "Subregion3": "GIBRALTAR"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "NORTHERN EUROPE",
+                    "Subregion2": "SCANDINAVIA",
+                    "Subregion3": "SWEDEN"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "WESTERN EUROPE",
+                    "Subregion2": "SWITZERLAND"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "ASIA",
+                    "Subregion1": "SOUTHEASTERN ASIA",
+                    "Subregion2": "THAILAND"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "ASIA",
+                    "Subregion1": "WESTERN ASIA",
+                    "Subregion2": "TURKEY"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "EASTERN EUROPE",
+                    "Subregion2": "UKRAINE"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "NORTHERN EUROPE",
+                    "Subregion2": "BRITISH ISLES",
+                    "Subregion3": "UNITED KINGDOM"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "SOUTH AMERICA",
+                    "Subregion1": "VENEZUELA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "ASIA",
+                    "Subregion1": "SOUTHEASTERN ASIA",
+                    "Subregion2": "VIETNAM"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "AFRICA",
+                    "Subregion1": "EASTERN AFRICA",
+                    "Subregion2": "ZIMBABWE"
+                },
+                {
+                    "Category": "GEOGRAPHIC REGION",
+                    "Type": "GLOBAL"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "NORTH AMERICA",
+                    "Subregion1": "UNITED STATES OF AMERICA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "SOUTHERN EUROPE",
+                    "Subregion2": "SPAIN"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "EASTERN EUROPE",
+                    "Subregion2": "RUSSIAN FEDERATION"
+                },
+                {
+                    "Category": "OCEAN",
+                    "Type": "INDIAN OCEAN",
+                    "Subregion1": "INDONESIA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "ASIA",
+                    "Subregion1": "EASTERN ASIA",
+                    "Subregion2": "CHINA"
+                },
+                {
+                    "Category": "CONTINENT",
+                    "Type": "EUROPE",
+                    "Subregion1": "EASTERN EUROPE",
+                    "Subregion2": "CZECHIA"
+                }
+            ],
+            "MetadataDates": [
+                {
+                    "Type": "CREATE",
+                    "Date": "2012-12-12T00:00:00.000Z"
+                },
+                {
+                    "Type": "UPDATE",
+                    "Date": "2022-12-05T20:40:00.000Z"
+                }
+            ],
+            "DirectoryNames": [
+                {
+                    "ShortName": "CIESIN_SEDAC_ESI_2000"
+                }
+            ],
+            "Version": "2000.00",
+            "Projects": [
+                {
+                    "ShortName": "ESI",
+                    "LongName": "Environmental Sustainability Index"
+                }
+            ],
+            "UseConstraints": {
+                "Description": "Users are free to use, copy, distribute, transmit, and adapt the work for commercial and non-commercial purposes, without restriction, as long as clear attribution of the source is provided."
+            },
+            "CollectionDataType": "SCIENCE_QUALITY",
+            "DataCenters": [
+                {
+                    "Roles": [
+                        "DISTRIBUTOR"
+                    ],
+                    "ShortName": "SEDAC",
+                    "LongName": "Socioeconomic Data and Applications Center",
+                    "ContactInformation": {
+                        "ContactMechanisms": [
+                            {
+                                "Type": "Telephone",
+                                "Value": "+1 845-365-8920"
+                            },
+                            {
+                                "Type": "Fax",
+                                "Value": "+1 845-365-8922"
+                            },
+                            {
+                                "Type": "Email",
+                                "Value": "ciesin.info@ciesin.columbia.edu"
+                            }
+                        ],
+                        "Addresses": [
+                            {
+                                "Country": "United States",
+                                "StreetAddresses": [
+                                    "CIESIN, Columbia University, 61 Route 9W, P.O. Box 1000"
+                                ],
+                                "City": "Palisades",
+                                "StateProvince": "New York",
+                                "PostalCode": "10964"
+                            }
+                        ],
+                        "RelatedUrls": [
+                            {
+                                "Description": "Distributor Home Page",
+                                "URLContentType": "DataCenterURL",
+                                "Type": "HOME PAGE",
+                                "URL": "https://sedac.ciesin.columbia.edu/"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "Roles": [
+                        "ARCHIVER"
+                    ],
+                    "ShortName": "SEDAC",
+                    "LongName": "Socioeconomic Data and Applications Center",
+                    "ContactInformation": {
+                        "ContactMechanisms": [
+                            {
+                                "Type": "Telephone",
+                                "Value": "+1 845-365-8920"
+                            },
+                            {
+                                "Type": "Fax",
+                                "Value": "+1 845-365-8922"
+                            },
+                            {
+                                "Type": "Email",
+                                "Value": "ciesin.info@ciesin.columbia.edu"
+                            }
+                        ],
+                        "Addresses": [
+                            {
+                                "Country": "United States",
+                                "StreetAddresses": [
+                                    "CIESIN, Columbia University, 61 Route 9W, P.O. Box 1000"
+                                ],
+                                "City": "Palisades",
+                                "StateProvince": "New York",
+                                "PostalCode": "10964"
+                            }
+                        ],
+                        "RelatedUrls": [
+                            {
+                                "Description": "Archiver Home Page",
+                                "URLContentType": "DataCenterURL",
+                                "Type": "HOME PAGE",
+                                "URL": "https://sedac.ciesin.columbia.edu/"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "Platforms": [
+                {
+                    "Type": "Models",
+                    "ShortName": "MODELS",
+                    "LongName": "MODELS",
+                    "Instruments": [
+                        {
+                            "ShortName": "Computer",
+                            "LongName": "Computer"
+                        }
+                    ]
+                }
+            ],
+            "MetadataSpecification": {
+                "URL": "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.1",
+                "Name": "UMM-C",
+                "Version": "1.18.1"
+            },
+            "ArchiveAndDistributionInformation": {
+                "FileArchiveInformation": [
+                    {
+                        "Format": "PDF"
+                    }
+                ],
+                "FileDistributionInformation": [
+                    {
+                        "Format": "PDF",
+                        "Fees": "0"
+                    }
+                ]
+            }
+        },
+        "indicators": "Human Dimensions"
+    }
+]

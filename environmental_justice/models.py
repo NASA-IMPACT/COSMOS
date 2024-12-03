@@ -6,13 +6,13 @@ class EnvironmentalJusticeRow(models.Model):
     Environmental Justice data from the spreadsheet
     """
 
-    class DestinationServerChoices(models.TextChoices):
-        DEV = "dev", "Development"
-        TEST = "test", "Testing"
-        PROD = "prod", "Production"
+    class DataSourceChoices(models.TextChoices):
+        SPREADSHEET = "spreadsheet", "Spreadsheet"
+        ML_PRODUCTION = "ml_production", "ML Production"
+        ML_TESTING = "ml_testing", "ML Testing"
 
-    destination_server = models.CharField(
-        "Destination Server", max_length=10, choices=DestinationServerChoices.choices, default="", blank=True
+    data_source = models.CharField(
+        "Data Source", max_length=20, choices=DataSourceChoices.choices, default="", blank=True
     )
 
     dataset = models.CharField("Dataset", blank=True, default="")

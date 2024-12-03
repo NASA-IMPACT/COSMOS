@@ -6,10 +6,10 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from ..utils.title_resolver import (
-    is_valid_fstring,
     is_valid_xpath,
     parse_title,
     resolve_title,
+    validate_fstring,
 )
 from .collection_choice_fields import Divisions, DocumentTypes
 
@@ -50,11 +50,19 @@ class BaseMatchPattern(models.Model):
 
     def is_most_distinctive_pattern(self, url) -> bool:
         """
-        Determine if this pattern should apply to a URL by checking if it matches
-        the smallest number of URLs among all patterns that match this URL.
+        Determine if this pattern should apply to a URL by checking:
+        1. First checks if this pattern matches this URL
+        2. If it matches the smallest number of URLs among all patterns that match this URL
+        3. If tied for smallest number of matches, uses the longest pattern string
         Returns True if this pattern should be applied.
         """
+        # First check if this pattern matches the URL
+        regex_pattern = self.get_regex_pattern()
+        if not re.search(regex_pattern, url.url):
+            return False
+
         my_match_count = self.get_url_match_count()
+        my_pattern_length = len(self.match_pattern)
 
         # Get patterns from same type that affect this URL
         pattern_class = self.__class__
@@ -63,12 +71,19 @@ class BaseMatchPattern(models.Model):
             .filter(models.Q(delta_urls__url=url.url) | models.Q(curated_urls__url=url.url))
             .exclude(id=self.id)
             .distinct()
-        )  # TODO: does this have a distinct urls, or distinct model objects.
+        )
 
-        # If any matching pattern has a smaller URL set, don't apply
+        # Use M2M relationships for checking other patterns since those are already established
         for pattern in matching_patterns:
-            if pattern.get_url_match_count() < my_match_count:
+            other_match_count = pattern.get_url_match_count()
+            if other_match_count < my_match_count:
+                # Other pattern matches fewer URLs - definitely not most distinctive
                 return False
+            if other_match_count == my_match_count:
+                # Same match count - check pattern length
+                if len(pattern.match_pattern) > my_pattern_length:
+                    # Other pattern is longer - not most distinctive
+                    return False
 
         return True
 
@@ -398,7 +413,7 @@ def validate_title_pattern(title_pattern_string: str) -> None:
                 raise ValidationError(f"Invalid xpath: {element_value}")
         elif element_type == "brace":
             try:
-                is_valid_fstring(element_value)
+                validate_fstring(element_value)
             except ValueError as e:
                 raise ValidationError(str(e))
 
@@ -454,8 +469,9 @@ class DeltaTitlePattern(BaseMatchPattern):
             new_title, error = self.generate_title_for_url(curated_url)
 
             if error:
-                # Log error and continue to next URL
-                DeltaResolvedTitleError.objects.create(title_pattern=self, delta_url=curated_url, error_string=error)
+                DeltaResolvedTitleError.objects.update_or_create(
+                    delta_url=curated_url, defaults={"title_pattern": self, "error_string": error}  # lookup field
+                )
                 continue
 
             # Skip if the generated title matches existing or if Delta already exists
@@ -488,7 +504,9 @@ class DeltaTitlePattern(BaseMatchPattern):
             new_title, error = self.generate_title_for_url(delta_url)
 
             if error:
-                DeltaResolvedTitleError.objects.create(title_pattern=self, delta_url=delta_url, error_string=error)
+                DeltaResolvedTitleError.objects.update_or_create(
+                    delta_url=delta_url, defaults={"title_pattern": self, "error_string": error}  # lookup field
+                )
                 continue
 
             # Update title and record resolution - key change here

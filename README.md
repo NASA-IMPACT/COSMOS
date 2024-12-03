@@ -214,7 +214,11 @@ Eventually, job creation will be done seamlessly by the webapp. Until then, edit
 ```shell
 tmux new -s docker_django
 ```
-Once you are inside, you can run dmshell.
+Once you are inside, you can run dmshell or for example a managment command:
+
+```shell
+docker-compose -f production.yml run --rm django python manage.py deduplicate_urls
+```
 
 Later, you can do this to get back in.
 ```shell

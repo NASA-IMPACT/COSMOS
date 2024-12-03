@@ -266,3 +266,48 @@ class TestDeltaTitlePattern:
         # Ensure no new `DeltaUrl` is created after reapplying the pattern
         pattern.apply()
         assert DeltaUrl.objects.filter(url=curated_url.url).count() == 0
+
+    @pytest.mark.django_db
+    def test_title_pattern_error_updates(self):
+        """
+        Test that when a more specific pattern creates an error,
+        it updates rather than duplicates the error record.
+        """
+        # Create a collection and URL
+        collection = CollectionFactory()
+        url = DeltaUrlFactory(
+            collection=collection, url="https://example.com/docs/specific/item.html", scraped_title="Original Title"
+        )
+
+        # Create a general pattern first
+        general_pattern = DeltaTitlePattern.objects.create(
+            collection=collection,
+            match_pattern="*docs*",
+            title_pattern="{invalid}",  # Invalid variable name will cause error
+            match_pattern_type=2,
+        )
+
+        # Verify initial error state
+        error = url.deltaresolvedtitleerror
+        assert error.title_pattern == general_pattern
+        assert "Variable 'invalid' not allowed in f-string pattern" in error.error_string
+
+        # Create a more specific pattern
+        specific_pattern = DeltaTitlePattern.objects.create(
+            collection=collection,
+            match_pattern="*docs/specific*",
+            title_pattern="{another_invalid}",
+            match_pattern_type=2,
+        )
+
+        # Re-fetch error to see latest state
+        error.refresh_from_db()
+
+        # Error should now be from specific pattern
+        assert (
+            error.title_pattern == specific_pattern
+        ), f"Error still associated with {error.title_pattern} instead of {specific_pattern}"
+        assert "Variable 'another_invalid' not allowed in f-string pattern" in error.error_string
+
+        # Verify we still only have one error record
+        assert DeltaResolvedTitleError.objects.filter(delta_url=url).count() == 1
