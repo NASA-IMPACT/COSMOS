@@ -12,10 +12,10 @@ from environmental_justice.models import EnvironmentalJusticeRow
 def process_ej_dump(file_path: str) -> None:
     """Process EJ dump file and create database entries."""
 
-    destination_server = EnvironmentalJusticeRow.DestinationServerChoices.DEV
+    data_source = EnvironmentalJusticeRow.DataSourceChoices.ML_PRODUCTION
 
     # Clear existing data
-    EnvironmentalJusticeRow.objects.filter(destination_server=destination_server).delete()
+    EnvironmentalJusticeRow.objects.filter(data_source=data_source).delete()
 
     # Load the preprocessed data
     with open(file_path) as f:
@@ -24,7 +24,7 @@ def process_ej_dump(file_path: str) -> None:
     # Create database entries
     for entry in clean_data:
         ej_row = EnvironmentalJusticeRow(
-            destination_server=destination_server,
+            data_source=data_source,
             sde_link=entry["sde_link"],
             dataset=entry["dataset"],
             description=entry["description"],
@@ -47,4 +47,4 @@ def process_ej_dump(file_path: str) -> None:
         ej_row.save()
 
 
-process_ej_dump("backups/ej_dump_20241120_211754.json")
+process_ej_dump("backups/ej_dump_20241203_170124.json")
