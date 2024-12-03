@@ -114,10 +114,16 @@ class Collection(models.Model):
 
             # Filter patterns for the current collection and update relations
             for pattern in model.objects.filter(collection=self):
-                pattern.refresh_url_lists()
+                pattern.update_affected_delta_urls_list()
+                pattern.update_affected_curated_urls_list()
 
     def migrate_dump_to_delta(self):
-        """Main function to handle migration from DumpUrls to DeltaUrls with specific rules."""
+        """
+        Migrates data from DumpUrls to DeltaUrls, preserving all fields.
+        Creates DeltaUrls that reflect:
+        1. Changes from DumpUrls vs CuratedUrls
+        2. Missing URLs in DumpUrls that exist in CuratedUrls (marked for deletion)
+        """
         # Step 1: Clear existing DeltaUrls for this collection
         self.clear_delta_urls()
 
@@ -145,27 +151,31 @@ class Collection(models.Model):
         # Step 5: Clear DumpUrls after migration is complete
         self.clear_dump_urls()
 
-        # Step 6: Reapply patterns to DeltaUrls
-        self.refresh_url_lists_for_all_patterns()
+        # Step 6: Apply all patterns to DeltaUrls
+        # self.refresh_url_lists_for_all_patterns() # TODO: I'm pretty confident we shouldn't be running this
+        self.apply_all_patterns()
 
     def create_or_update_delta_url(self, url_instance, to_delete=False):
         """
         Creates or updates a DeltaUrl entry based on the given DumpUrl or CuratedUrl object.
-        If to_delete is True, only sets the to_delete flag and url.
-        """
-        if to_delete:
-            # Only set the URL and to_delete flag
-            DeltaUrl.objects.update_or_create(collection=self, url=url_instance.url, defaults={"to_delete": True})
-        else:
-            # Automatically move over all fields from url_instance
-            fields_to_copy = {
-                field.name: getattr(url_instance, field.name)
-                for field in DumpUrl._meta.fields  # Assumes same fields for CuratedUrl via inheritance
-                if field.name not in ["id", "collection", "url"]
-            }
-            fields_to_copy["to_delete"] = False  # Ensure to_delete flag is False
+        Always copies all fields, even for deletion cases.
 
-            DeltaUrl.objects.update_or_create(collection=self, url=url_instance.url, defaults=fields_to_copy)
+        Args:
+            url_instance: DumpUrl or CuratedUrl instance to copy from
+            to_delete: Whether to mark the resulting DeltaUrl for deletion
+        """
+        # Get all copyable fields from the source instance
+        fields_to_copy = {
+            field.name: getattr(url_instance, field.name)
+            for field in url_instance._meta.fields
+            if field.name not in ["id", "collection"]
+        }
+
+        # Set deletion status
+        fields_to_copy["to_delete"] = to_delete
+
+        # Update or create the DeltaUrl
+        DeltaUrl.objects.update_or_create(collection=self, url=url_instance.url, defaults=fields_to_copy)
 
     def promote_to_curated(self):
         """
@@ -599,15 +609,22 @@ class Collection(models.Model):
 
         self.save()
 
-    def apply_all_patterns(self) -> None:
-        """Apply all the patterns."""
-        for pattern in self.excludepattern.all():
+    def apply_all_patterns(self):
+        """Apply all the patterns with debug information."""
+
+        for pattern in self.deltaexcludepatterns.all():
             pattern.apply()
-        for pattern in self.includepattern.all():
+
+        for pattern in self.deltaincludepatterns.all():
             pattern.apply()
-        for pattern in self.titlepattern.all():
+
+        for pattern in self.deltatitlepatterns.all():
             pattern.apply()
-        for pattern in self.documenttypepattern.all():
+
+        for pattern in self.deltadocumenttypepatterns.all():
+            pattern.apply()
+
+        for pattern in self.deltadivisionpatterns.all():
             pattern.apply()
 
     def save(self, *args, **kwargs):

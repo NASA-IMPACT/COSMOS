@@ -31,14 +31,11 @@ from .models.delta_patterns import (
     DeltaDocumentTypePattern,
     DeltaExcludePattern,
     DeltaIncludePattern,
-    DeltaTitlePattern,
-)
-from .models.delta_url import (
-    CuratedUrl,
     DeltaResolvedTitle,
     DeltaResolvedTitleError,
-    DeltaUrl,
+    DeltaTitlePattern,
 )
+from .models.delta_url import CuratedUrl, DeltaUrl
 from .serializers import (
     CollectionReadSerializer,
     CollectionSerializer,

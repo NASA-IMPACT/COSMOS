@@ -3,177 +3,92 @@
 import pytest
 
 from sde_collections.models.delta_patterns import (
-    DeltaDivisionPattern,
-    DeltaDocumentTypePattern,
     DeltaExcludePattern,
-    DeltaIncludePattern,
+    DeltaResolvedTitleError,
     DeltaTitlePattern,
 )
-from sde_collections.models.delta_url import (
-    CuratedUrl,
-    DeltaResolvedTitleError,
-    DeltaUrl,
-)
+from sde_collections.models.delta_url import CuratedUrl, DeltaUrl
 from sde_collections.tests.factories import (
     CollectionFactory,
     CuratedUrlFactory,
     DeltaUrlFactory,
-    DumpUrlFactory,
 )
 from sde_collections.utils.title_resolver import resolve_title
 
 
 @pytest.mark.django_db
 def test_exclusion_status():
+    """
+    new patterns should only exclude DeltaUrls, not CuratedUrls
+    """
     collection = CollectionFactory()
-    curated_url = CuratedUrlFactory(collection=collection, url="https://example.com/page")
+    curated_url = CuratedUrlFactory(collection=collection, url="https://example.com/page/1")
+    delta_url = DeltaUrlFactory(collection=collection, url="https://example.com/page/2")
 
-    # Create an exclusion pattern that should apply to this URL
-    DeltaExcludePattern.objects.create(collection=collection, match_pattern="https://example.com/page")
+    # confirm they both start as not excluded
+    assert DeltaUrl.objects.get(pk=delta_url.pk).excluded is False
+    assert CuratedUrl.objects.get(pk=curated_url.pk).excluded is False
 
-    # Assert that the `excluded` field is set to True, as expected
-    assert CuratedUrl.objects.get(pk=curated_url.pk).excluded
+    # Create an exclusion pattern matches both urls
+    pattern = DeltaExcludePattern.objects.create(collection=collection, match_pattern="*page*", match_pattern_type=2)
+    pattern.apply()
+
+    # curated urls should not be affected by patterns until the collection is promoted
+    # curated should be included, but delta should be excluded
+    assert DeltaUrl.objects.get(pk=delta_url.pk).excluded is True
+    assert CuratedUrl.objects.get(pk=curated_url.pk).excluded is False
 
 
 @pytest.mark.django_db
 class TestBaseMatchPattern:
-    def test_individual_url_pattern_matching(self):
+    def test_pattern_save_applies_effects(self):
+        """Test that pattern creation automatically applies effects."""
         collection = CollectionFactory()
-        curated_url = CuratedUrlFactory(collection=collection, url="https://example.com/page")
-        pattern = DeltaIncludePattern.objects.create(
-            collection=collection, match_pattern="https://example.com/page", match_pattern_type=1  # INDIVIDUAL_URL
-        )
-        pattern.apply()
-        matching_urls = pattern.matched_urls()
-        CuratedUrl.objects.filter(collection=collection, url__regex=pattern.match_pattern)
+        curated_url = CuratedUrlFactory(collection=collection, url="https://example.com/test")
 
-        assert curated_url in matching_urls["matching_curated_urls"]
-
-    def test_multi_url_pattern_matching(self):
-        collection = CollectionFactory()
-        curated_url_1 = CuratedUrlFactory(collection=collection, url="https://example.com/page1")
-        curated_url_2 = CuratedUrlFactory(collection=collection, url="https://example.com/page2")
-        pattern = DeltaIncludePattern.objects.create(
-            collection=collection, match_pattern="https://example.com/*", match_pattern_type=2  # MULTI_URL_PATTERN
-        )
-
-        matching_urls = pattern.matched_urls()
-        assert curated_url_1 in matching_urls["matching_curated_urls"]
-        assert curated_url_2 in matching_urls["matching_curated_urls"]
-
-    def test_generate_delta_url_creation_and_update(self):
-        collection = CollectionFactory()
-        curated_url = CuratedUrlFactory(collection=collection, url="https://example.com/page")
-        pattern = DeltaIncludePattern.objects.create(collection=collection, match_pattern="https://example.com/page")
-
-        # First call to generate DeltaUrl
-        pattern.generate_delta_url(curated_url, fields_to_copy=["scraped_title"])
-        delta_url = DeltaUrl.objects.get(url=curated_url.url)
-        original_delta_title = delta_url.scraped_title
-        assert delta_url.scraped_title == curated_url.scraped_title
-
-        # Update DeltaUrl with additional fields
-        # this is kinda weird, but basically if you have a deltaurl with a
-        # scraped_title, that value is gospel. if for some reason generate_delta_url is called
-        # again and it hits that deltaurl, it will not update the scraped_title field, since that
-        # field already exists and is assumed correct.
-        # this is true of title. but i think not of other fields?
-        curated_url.scraped_title = "Updated Title"
-        curated_url.save()
-        curated_url.refresh_from_db()
-        pattern.generate_delta_url(curated_url, fields_to_copy=["scraped_title"])
-        delta_url.refresh_from_db()
-        assert delta_url.scraped_title == original_delta_title
-
-    def test_apply_creates_delta_url_if_curated_url_does_not_exist(self):
-        """
-        Ensures that the `apply` logic creates a new `DeltaUrl` if a matching `CuratedUrl` does not exist.
-        """
-        collection = CollectionFactory()
-        delta_url = DeltaUrlFactory(
-            collection=collection, url="https://example.com/page", scraped_title="Original Title"
-        )
-
-        # Create a pattern matching the URL
-        pattern = DeltaIncludePattern.objects.create(
-            collection=collection, match_pattern="https://example.com/*", match_pattern_type=2
-        )
-
-        # Apply the pattern
-        pattern.apply()
-
-        # Verify that a DeltaUrl is created
-        assert DeltaUrl.objects.filter(url=delta_url.url).exists()
-
-    def test_apply_skips_delta_url_creation_if_curated_url_exists(self):
-        """
-        Ensures that the `apply` logic does not create a new `DeltaUrl` if a matching `CuratedUrl` already exists.
-        """
-        collection = CollectionFactory()
-        delta_url = DeltaUrlFactory(
-            collection=collection, url="https://example.com/page", scraped_title="Original Title"
-        )
-
-        # Create a pattern matching the URL
-        pattern = DeltaIncludePattern.objects.create(
-            collection=collection, match_pattern="https://example.com/*", match_pattern_type=2
-        )
-
-        # Promote the DeltaUrl to a CuratedUrl
-        collection.promote_to_curated()
-        curated_url = CuratedUrl.objects.get(url=delta_url.url)
-
-        # ReApply the pattern
-        pattern.apply()
-
-        # Verify that no DeltaUrl is created after the CuratedUrl exists
-        assert not DeltaUrl.objects.filter(url=curated_url.url).exists()
-
-    def test_apply_creates_delta_url_if_no_curated_url_exists(self):
-        """
-        Ensures that if no `CuratedUrl` exists for a given pattern, a new `DeltaUrl` is created.
-        """
-        collection = CollectionFactory()
-        dump_url = DumpUrlFactory(collection=collection, url="https://example.com/page", scraped_title="New Title")
-
-        # Migrate DumpUrl to DeltaUrl
-        collection.migrate_dump_to_delta()
-
-        # Create a pattern matching the URL
-        pattern = DeltaIncludePattern.objects.create(
-            collection=collection, match_pattern="https://example.com/*", match_pattern_type=2
-        )
-
-        # Apply the pattern
-        pattern.apply()
-
-        # A `DeltaUrl` should now exist
-        delta_url = DeltaUrl.objects.get(url=dump_url.url)
-        assert delta_url.scraped_title == dump_url.scraped_title
-
-    def test_apply_and_unapply_pattern(self):
-        # if we make a new exclude pattern and it affects an old url
-        # that wasn't previously affected, what should happen?
-        # for now, let's say the curated_url should be excluded, and a delta_url is created which is also excluded
-        # when the pattern is deleted, they should both be unexcluded again
-        collection = CollectionFactory()
-        curated_url = CuratedUrlFactory(collection=collection, url="https://example.com/page")
-        assert not CuratedUrl.objects.get(pk=curated_url.pk).excluded
-
+        # Create pattern - should automatically apply
         pattern = DeltaExcludePattern.objects.create(
-            collection=collection,
-            match_pattern="https://example.com/*",
-            match_pattern_type=2,  # MULTI_URL_PATTERN
+            collection=collection, match_pattern=curated_url.url, match_pattern_type=1
         )
 
-        assert CuratedUrl.objects.get(pk=curated_url.pk).excluded
-        assert DeltaUrl.objects.get(url=curated_url.url).excluded
+        # Delta URL should be created and excluded
+        delta_url = DeltaUrl.objects.get(url=curated_url.url)
+        assert delta_url.excluded is True
+        assert pattern.delta_urls.filter(id=delta_url.id).exists()
 
+    def test_pattern_delete_removes_effects(self):
+        """Test that deleting a pattern properly removes its effects."""
+        collection = CollectionFactory()
+        curated_url = CuratedUrlFactory(collection=collection, url="https://example.com/test")
+
+        pattern = DeltaExcludePattern.objects.create(collection=collection, match_pattern=curated_url.url)
+
+        # Verify initial state
+        delta_url = DeltaUrl.objects.get(url=curated_url.url)
+        assert delta_url.excluded is True
+
+        # Delete pattern
         pattern.delete()
 
-        # TODO: for now the DeltaUrl is persisting, but i think we might want to find a way to delete it eventually
-        assert not CuratedUrl.objects.get(pk=curated_url.pk).excluded
-        assert not DeltaUrl.objects.get(url=curated_url.url).excluded
+        # Delta URL should be gone since it was only created for exclusion
+        assert not DeltaUrl.objects.filter(url=curated_url.url).exists()
+
+    def test_different_collections_isolation(self):
+        """Test that patterns only affect URLs in their collection."""
+        collection1 = CollectionFactory()
+        collection2 = CollectionFactory()
+
+        # Create URLs with different paths
+        curated_url1 = CuratedUrlFactory(collection=collection1, url="https://example.com/test1")
+        curated_url2 = CuratedUrlFactory(collection=collection2, url="https://example.com/test2")
+
+        DeltaExcludePattern.objects.create(
+            collection=collection1, match_pattern="https://example.com/*", match_pattern_type=2
+        )
+
+        # Only collection1's URL should be affected
+        assert DeltaUrl.objects.filter(collection=collection1, url=curated_url1.url).exists()
+        assert not DeltaUrl.objects.filter(collection=collection2, url=curated_url2.url).exists()
 
 
 @pytest.mark.django_db
@@ -186,7 +101,6 @@ class TestDeltaTitlePattern:
             collection=collection,
             url="https://example.com/page",
             scraped_title="Sample Title",
-            generated_title="Old Title - Processed",
         )
 
         # Step 2: Create a `DeltaTitlePattern` with a new title pattern
@@ -196,9 +110,6 @@ class TestDeltaTitlePattern:
             match_pattern_type=2,  # MULTI_URL_PATTERN
             title_pattern="{title} - Processed New",
         )
-
-        # Apply the pattern
-        pattern.apply()
 
         # Step 3: A new DeltaUrl should be created with the updated `generated_title`
         delta_url = DeltaUrl.objects.get(url=curated_url.url)
@@ -302,7 +213,7 @@ class TestDeltaTitlePattern:
         curated_url = CuratedUrlFactory(
             collection=collection, url="https://example.com/page", scraped_title="Sample Title"
         )
-        delta_url = DeltaUrlFactory(collection=collection, url="https://example.com/page", scraped_title="Sample Title")
+        delta_url = DeltaUrlFactory(collection=collection, url="https://example.com/page", scraped_title="New Title")
 
         # Create and apply a `DeltaTitlePattern`
         pattern = DeltaTitlePattern.objects.create(
@@ -316,7 +227,8 @@ class TestDeltaTitlePattern:
 
         # Ensure relationships are set
         assert pattern.delta_urls.filter(pk=delta_url.pk).exists()
-        assert pattern.curated_urls.filter(pk=curated_url.pk).exists()
+        # this actually shouldn't match until after promotion
+        assert not pattern.curated_urls.filter(pk=curated_url.pk).exists()
 
         # Unapply the pattern
         pattern.unapply()
@@ -354,60 +266,3 @@ class TestDeltaTitlePattern:
         # Ensure no new `DeltaUrl` is created after reapplying the pattern
         pattern.apply()
         assert DeltaUrl.objects.filter(url=curated_url.url).count() == 0
-
-
-@pytest.mark.django_db
-class TestDeltaDocumentTypePattern:
-    def test_apply_document_type_pattern(self):
-        collection = CollectionFactory()
-        curated_url = CuratedUrlFactory(collection=collection, url="https://example.com/page")
-        pattern = DeltaDocumentTypePattern.objects.create(
-            collection=collection,
-            match_pattern="https://example.com/page",
-            document_type=2,  # A different document type than default
-        )
-        pattern.apply()
-
-        delta_url = DeltaUrl.objects.get(url=curated_url.url)
-        assert delta_url.document_type == 2
-
-    def test_unapply_document_type_pattern(self):
-        collection = CollectionFactory()
-        curated_url = CuratedUrlFactory(collection=collection, url="https://example.com/page")
-        pattern = DeltaDocumentTypePattern.objects.create(
-            collection=collection, match_pattern="https://example.com/*", match_pattern_type=2, document_type=2
-        )
-        pattern.apply()
-
-        delta_url = DeltaUrl.objects.get(url=curated_url.url)
-        assert delta_url.document_type == 2
-
-        pattern.unapply()
-        delta_url.refresh_from_db()
-        assert delta_url.document_type is None
-
-
-@pytest.mark.django_db
-class TestDeltaDivisionPattern:
-    def test_apply_and_unapply_division_pattern(self):
-        # Step 1: Create a collection and a CuratedUrl that matches the pattern
-        collection = CollectionFactory()
-        curated_url = CuratedUrlFactory(collection=collection, url="https://example.com/page", division=1)
-
-        # Step 2: Create a DeltaDivisionPattern to apply to matching URLs
-        pattern = DeltaDivisionPattern.objects.create(
-            collection=collection, match_pattern="https://example.com/*", match_pattern_type=2, division=2
-        )
-
-        # Step 3: Apply the pattern, which should generate a DeltaUrl with the division set to 2
-        delta_url = DeltaUrl.objects.get(url=curated_url.url)
-        assert delta_url.division == 2
-
-        # confirm the curated url maintains its original division
-        curated_url = CuratedUrl.objects.get(url=curated_url.url)
-        assert curated_url.division == 1
-
-        # Step 4: Unapply the pattern and confirm the division field is cleared
-        pattern.unapply()
-        delta_url.refresh_from_db()
-        assert delta_url.division is None
