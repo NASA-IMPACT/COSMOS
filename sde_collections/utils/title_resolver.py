@@ -17,7 +17,7 @@ def is_valid_xpath(xpath: str) -> bool:
         return False
 
 
-def is_valid_fstring(pattern: str) -> bool:
+def validate_fstring(pattern: str) -> bool:
     context = {
         "url": "",
         "title": "",
@@ -53,7 +53,7 @@ def resolve_brace(pattern: str, context: dict[str, Any]) -> str:
     """Safely interpolates the variables in an f-string pattern using the provided context."""
     parsed = ast.parse(f"f'''{pattern}'''", mode="eval")
 
-    is_valid_fstring(pattern)  # Refactor this
+    validate_fstring(pattern)
 
     compiled = compile(parsed, "<string>", "eval")
     return str(eval(compiled, {}, context))
