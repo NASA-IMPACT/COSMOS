@@ -5,9 +5,7 @@ import pytest
 from django.utils import timezone
 
 from sde_collections.models.collection import WorkflowStatusChoices
-from sde_collections.models.delta_url import DumpUrl
 from sde_collections.sinequa_api import Api
-from sde_collections.tasks import fetch_and_replace_full_text
 from sde_collections.tests.factories import CollectionFactory, UserFactory
 
 
@@ -69,135 +67,96 @@ class TestApiClass:
         response = api_instance.query(page=1, collection_config_folder="folder")
         assert response == {"result": "success"}
 
-    @patch("sde_collections.sinequa_api.Api.process_response")
-    def test_sql_query(self, mock_process_response, api_instance, collection):
-        """Test SQL query execution and response processing."""
-        mock_process_response.return_value = {
-            "Rows": [{"url": "http://example.com", "full_text": "Text", "title": "Title"}],
-            "TotalRowCount": 1,
-        }
-        response = api_instance.sql_query("SELECT * FROM test_index", collection)
-        assert response == "All 1 records have been processed and updated."
+    def test_process_rows_to_records(self, api_instance):
+        """Test processing row data into record dictionaries."""
+        # Test valid input
+        valid_rows = [["http://example.com/1", "Text 1", "Title 1"], ["http://example.com/2", "Text 2", "Title 2"]]
+        expected_output = [
+            {"url": "http://example.com/1", "full_text": "Text 1", "title": "Title 1"},
+            {"url": "http://example.com/2", "full_text": "Text 2", "title": "Title 2"},
+        ]
+        assert api_instance._process_rows_to_records(valid_rows) == expected_output
+
+        # Test invalid row length
+        invalid_rows = [["http://example.com", "Text"]]  # Missing title
+        with pytest.raises(ValueError, match="Invalid row format at index 0"):
+            api_instance._process_rows_to_records(invalid_rows)
 
     @patch("sde_collections.sinequa_api.Api.process_response")
-    def test_get_full_texts(self, mock_process_response, api_instance, collection):
-        """Test fetching full texts from the API."""
-        mock_process_response.return_value = {
-            "Rows": [{"url": "http://example.com", "text": "Example text", "title": "Example title"}]
-        }
-        response = api_instance.get_full_texts(
-            collection_config_folder="folder", source="source", collection=collection
-        )
-        assert response == "All 0 records have been processed and updated."
+    def test_execute_sql_query(self, mock_process_response, api_instance):
+        """Test SQL query execution."""
+        mock_process_response.return_value = {"Rows": [], "TotalRowCount": 0}
 
-    def test_process_and_update_data(self, api_instance, collection):
-        """Test processing and updating data in the database."""
-        batch_data = [{"url": "http://example.com", "full_text": "Example text", "title": "Example title"}]
-        api_instance.process_and_update_data(batch_data, collection)
-        dump_urls = DumpUrl.objects.filter(collection=collection)
-        assert dump_urls.count() == 1
-        assert dump_urls.first().url == "http://example.com"
+        # Test successful query
+        result = api_instance._execute_sql_query("SELECT * FROM test")
+        assert result == {"Rows": [], "TotalRowCount": 0}
 
-    @patch("sde_collections.sinequa_api.Api.sql_query")
-    @patch("sde_collections.models.collection.Collection.migrate_dump_to_delta")
-    def test_fetch_and_replace_full_text(self, mock_migrate, mock_sql_query, collection):
-        """Test the fetch_and_replace_full_text Celery task."""
-        with patch(
-            "sde_collections.sinequa_api.server_configs",
+        # Test query with missing token
+        api_instance._provided_token = None
+        with pytest.raises(ValueError, match="Token is required"):
+            api_instance._execute_sql_query("SELECT * FROM test")
+
+    @patch("sde_collections.sinequa_api.Api._execute_sql_query")
+    def test_get_full_texts_pagination(self, mock_execute_sql, api_instance):
+        """Test that get_full_texts correctly handles pagination."""
+        # Mock responses for two pages of results
+        mock_execute_sql.side_effect = [
             {
-                "test_server": {
-                    "app_name": "test_app",
-                    "query_name": "test_query",
-                    "base_url": "http://testserver.com/api",
-                    "index": "test_index",
-                }
+                "Rows": [["http://example.com/1", "Text 1", "Title 1"], ["http://example.com/2", "Text 2", "Title 2"]],
+                "TotalRowCount": 3,
             },
-        ):
-            mock_sql_query.return_value = "All records processed"
-            mock_migrate.return_value = None
+            {"Rows": [["http://example.com/3", "Text 3", "Title 3"]], "TotalRowCount": 3},
+            {"Rows": [], "TotalRowCount": 3},
+        ]
 
-            result = fetch_and_replace_full_text(collection.id, "test_server")
-            assert result == "All records processed"
-            mock_migrate.assert_called_once()
+        # Collect all batches from the iterator
+        batches = list(api_instance.get_full_texts("test_folder"))
 
-    @patch(
-        "sde_collections.sinequa_api.server_configs",
-        {
-            "test_server": {
-                "app_name": "test_app",
-                "query_name": "test_query",
-                "base_url": "http://testserver.com/api",
-                "index": "test_index",
-            }
-        },
-    )
+        assert len(batches) == 2  # Should have two batches
+        assert len(batches[0]) == 2  # First batch has 2 records
+        assert len(batches[1]) == 1  # Second batch has 1 record
+
+        # Verify content of first batch
+        assert batches[0] == [
+            {"url": "http://example.com/1", "full_text": "Text 1", "title": "Title 1"},
+            {"url": "http://example.com/2", "full_text": "Text 2", "title": "Title 2"},
+        ]
+
+        # Verify content of second batch
+        assert batches[1] == [{"url": "http://example.com/3", "full_text": "Text 3", "title": "Title 3"}]
+
+    def test_get_full_texts_missing_index(self, api_instance):
+        """Test that get_full_texts raises error when index is missing from config."""
+        api_instance.config.pop("index", None)
+        with pytest.raises(ValueError, match="Index not defined for server"):
+            next(api_instance.get_full_texts("test_folder"))
+
     @pytest.mark.parametrize(
-        "server_name, user, password, expected",
-        [("test_server", "user1", "pass1", True), ("invalid_server", None, None, False)],
+        "server_name,expect_auth",
+        [
+            ("xli", True),  # dev server should have auth
+            ("production", False),  # prod server should not have auth
+        ],
     )
-    def test_api_init(self, server_name, user, password, expected):
-        """Test API initialization with valid and invalid server names."""
-        if expected:
-            api = Api(server_name=server_name, user=user, password=password)
-            assert api.server_name == server_name
-        else:
-            with pytest.raises(ValueError):
-                Api(server_name=server_name)
-
     @patch("requests.post")
-    def test_query_dev_server_authentication(self, mock_post, api_instance):
-        """Test query on dev servers requiring authentication."""
-        api_instance.server_name = "xli"
+    def test_query_authentication(self, mock_post, server_name, expect_auth, api_instance):
+        """Test authentication handling for different server types."""
+        api_instance.server_name = server_name
         mock_post.return_value = MagicMock(status_code=200, json=lambda: {"result": "success"})
 
         response = api_instance.query(page=1, collection_config_folder="folder")
         assert response == {"result": "success"}
 
-        # Extract URL from call_args (positional arguments)
-        called_url = mock_post.call_args[0][0]  # URL is the first positional argument
-        assert "?Password=test_pass&User=test_user" in called_url
+        called_url = mock_post.call_args[0][0]
+        auth_present = "?Password=test_pass&User=test_user" in called_url
+        assert auth_present == expect_auth
 
-    @patch("sde_collections.sinequa_api.Api.process_response")
-    def test_sql_query_pagination(self, mock_process_response, api_instance, collection):
-        """Test SQL query with pagination."""
-        mock_process_response.side_effect = [
-            {"Rows": [{"url": "http://example.com/1", "full_text": "Text 1", "title": "Title 1"}], "TotalRowCount": 6},
-            {"Rows": [{"url": "http://example.com/2", "full_text": "Text 2", "title": "Title 2"}], "TotalRowCount": 6},
-            {"Rows": [], "TotalRowCount": 6},
-        ]
+    @patch("requests.post")
+    def test_query_dev_server_missing_credentials(self, mock_post, api_instance):
+        """Test that dev servers raise error when credentials are missing."""
+        api_instance.server_name = "xli"
+        api_instance._provided_user = None
+        api_instance._provided_password = None
 
-        result = api_instance.sql_query("SELECT * FROM test_index", collection)
-        assert result == "All 6 records have been processed and updated."
-
-    def test_process_full_text_response(self, api_instance):
-        """Test that _process_full_text_response correctly processes the data."""
-        batch_data = {
-            "Rows": [
-                ["http://example.com", "Example text", "Example title"],
-                ["http://example.net", "Another text", "Another title"],
-            ]
-        }
-        expected_output = [
-            {"url": "http://example.com", "full_text": "Example text", "title": "Example title"},
-            {"url": "http://example.net", "full_text": "Another text", "title": "Another title"},
-        ]
-        result = api_instance._process_full_text_response(batch_data)
-        assert result == expected_output
-
-    def test_process_full_text_response_with_invalid_data(self, api_instance):
-        """Test that _process_full_text_response raises an error with invalid data."""
-        # Test for missing 'Rows' key
-        invalid_data_no_rows = {}  # No 'Rows' key
-        with pytest.raises(ValueError, match="Expected 'Rows' key with a list of data"):
-            api_instance._process_full_text_response(invalid_data_no_rows)
-
-        # Test for incorrect row length
-        invalid_data_wrong_length = {"Rows": [["http://example.com", "Example text"]]}  # Missing 'title'
-        with pytest.raises(ValueError, match="Each row must contain exactly three elements"):
-            api_instance._process_full_text_response(invalid_data_wrong_length)
-
-    @patch("sde_collections.sinequa_api.Api._get_token", return_value=None)
-    def test_sql_query_missing_token(self, mock_get_token, api_instance, collection):
-        """Test that sql_query raises an error when no token is provided."""
-        with pytest.raises(ValueError, match="A token is required to use the SQL endpoint"):
-            api_instance.sql_query("SELECT * FROM test_table", collection)
+        with pytest.raises(ValueError, match="Authentication error: Missing credentials for dev server"):
+            api_instance.query(page=1)
