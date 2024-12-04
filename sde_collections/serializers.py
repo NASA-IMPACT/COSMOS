@@ -81,6 +81,7 @@ class DeltaURLSerializer(serializers.ModelSerializer):
             "id",
             "excluded",
             "url",
+            "to_delete",
             "scraped_title",
             "generated_title",
             "generated_title_id",
