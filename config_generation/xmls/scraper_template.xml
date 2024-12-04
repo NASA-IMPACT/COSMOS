@@ -11,7 +11,7 @@
 	<visibility></visibility>
 	<ForceReindexation>false</ForceReindexation>
 	<Plugin></Plugin>
-	<WorkerCount>6</WorkerCount>
+	<WorkerCount>3</WorkerCount>
 	<MaxWorkerPerHost></MaxWorkerPerHost>
 	<Url></Url>
 	<UrlList></UrlList>

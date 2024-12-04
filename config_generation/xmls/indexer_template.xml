@@ -12,7 +12,7 @@
     <ForceReindexation>false</ForceReindexation>
     <Url></Url>
     <Plugin>SMD_Plugins/Sinequa.Plugin.WebCrawler_Index_URLList</Plugin>
-    <WorkerCount>8</WorkerCount>
+    <WorkerCount>3</WorkerCount>
     <MaxWorkerPerHost></MaxWorkerPerHost>
     <UrlList></UrlList>
     <DynamicUrlList></DynamicUrlList>
