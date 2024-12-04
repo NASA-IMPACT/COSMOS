@@ -35,6 +35,13 @@ class CandidateURL(models.Model):
         blank=True,
         help_text="This is the original title scraped by Sinequa",
     )
+    scraped_text = models.TextField(
+        "Scraped Text",
+        default="",
+        null=True,
+        blank=True,
+        help_text="This is the text scraped by Sinequa",
+    )
     generated_title = models.CharField(
         "Generated Title",
         default="",

@@ -3,10 +3,33 @@ import csv
 from django.contrib import admin, messages
 from django.http import HttpResponse
 
+from sde_collections.models.delta_patterns import (
+    DeltaDivisionPattern,
+    DeltaResolvedTitle,
+    DeltaTitlePattern,
+)
+
 from .models.candidate_url import CandidateURL, ResolvedTitle
 from .models.collection import Collection, WorkflowHistory
+from .models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
-from .tasks import import_candidate_urls_from_api
+from .tasks import fetch_and_replace_full_text, import_candidate_urls_from_api
+
+
+def fetch_and_replace_text_for_server(modeladmin, request, queryset, server_name):
+    for collection in queryset:
+        fetch_and_replace_full_text.delay(collection.id, server_name)
+    modeladmin.message_user(request, f"Started importing URLs from {server_name.upper()} Server")
+
+
+@admin.action(description="Import candidate URLs from LRM Dev Server with Full Text")
+def fetch_full_text_lrm_dev_action(modeladmin, request, queryset):
+    fetch_and_replace_text_for_server(modeladmin, request, queryset, "lrm_dev")
+
+
+@admin.action(description="Import candidate URLs from XLI Server with Full Text")
+def fetch_full_text_xli_action(modeladmin, request, queryset):
+    fetch_and_replace_text_for_server(modeladmin, request, queryset, "xli")
 
 
 @admin.action(description="Generate deployment message")
@@ -109,7 +132,7 @@ def import_candidate_urls_from_api_caller(modeladmin, request, queryset, server_
     messages.add_message(
         request,
         messages.INFO,
-        f"Started importing URLs from the API for: {collection_names} from {server_name.title()}",
+        f"Started importing URLs from the API for: {collection_names} from {server_name.upper()} Server",
     )
 
 
@@ -133,19 +156,19 @@ def import_candidate_urls_secret_production(modeladmin, request, queryset):
     import_candidate_urls_from_api_caller(modeladmin, request, queryset, "secret_production")
 
 
-@admin.action(description="Import candidate URLs from Li's Server")
-def import_candidate_urls_lis_server(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lis_server")
+@admin.action(description="Import candidate URLs from XLI Server")
+def import_candidate_urls_xli_server(modeladmin, request, queryset):
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "xli")
 
 
 @admin.action(description="Import candidate URLs from LRM Dev Server")
 def import_candidate_urls_lrm_dev_server(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lrm_dev_server")
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lrm_dev")
 
 
 @admin.action(description="Import candidate URLs from LRM QA Server")
 def import_candidate_urls_lrm_qa_server(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lrm_qa_server")
+    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lrm_qa")
 
 
 class ExportCsvMixin:
@@ -218,6 +241,8 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
     list_display = (
         "name",
         "candidate_urls_count",
+        "delta_urls_count",
+        "included_curated_urls_count",
         "config_folder",
         "url",
         "division",
@@ -232,13 +257,8 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         "export_as_csv",
         "update_config",
         download_candidate_urls_as_csv,
-        import_candidate_urls_test,
-        import_candidate_urls_production,
-        import_candidate_urls_secret_test,
-        import_candidate_urls_secret_production,
-        import_candidate_urls_lis_server,
-        import_candidate_urls_lrm_dev_server,
-        import_candidate_urls_lrm_qa_server,
+        fetch_full_text_lrm_dev_action,
+        fetch_full_text_xli_action,
     ]
     ordering = ("cleaning_order",)
 
@@ -299,9 +319,63 @@ class DivisionPatternAdmin(admin.ModelAdmin):
     search_fields = ("match_pattern", "division")
 
 
+# deltas below
+class DeltaTitlePatternAdmin(admin.ModelAdmin):
+    """Admin View for DeltaTitlePattern"""
+
+    list_display = (
+        "match_pattern",
+        "title_pattern",
+        "collection",
+        "match_pattern_type",
+    )
+    list_filter = (
+        "match_pattern_type",
+        "collection",
+    )
+
+
+class DeltaResolvedTitleAdmin(admin.ModelAdmin):
+    list_display = ["title_pattern", "delta_url", "resolved_title", "created_at"]
+
+
+class DeltaDivisionPatternAdmin(admin.ModelAdmin):
+    list_display = ("collection", "match_pattern", "division")
+    search_fields = ("match_pattern", "division")
+
+
+class DumpUrlAdmin(admin.ModelAdmin):
+    """Admin View for DumpUrl"""
+
+    list_display = ("url", "scraped_title", "collection")
+    list_filter = ("collection",)
+
+
+class DeltaUrlAdmin(admin.ModelAdmin):
+    """Admin View for DeltaUrl"""
+
+    list_display = ("url", "scraped_title", "generated_title", "collection")
+    list_filter = ("collection",)
+
+
+class CuratedUrlAdmin(admin.ModelAdmin):
+    """Admin View for CuratedUrl"""
+
+    list_display = ("url", "scraped_title", "generated_title", "collection")
+    list_filter = ("collection",)
+
+
 admin.site.register(WorkflowHistory, WorkflowHistoryAdmin)
 admin.site.register(CandidateURL, CandidateURLAdmin)
 admin.site.register(TitlePattern, TitlePatternAdmin)
 admin.site.register(IncludePattern)
 admin.site.register(ResolvedTitle, ResolvedTitleAdmin)
 admin.site.register(DivisionPattern, DivisionPatternAdmin)
+
+
+admin.site.register(DeltaTitlePattern, DeltaTitlePatternAdmin)
+admin.site.register(DeltaResolvedTitle, DeltaResolvedTitleAdmin)
+admin.site.register(DeltaDivisionPattern, DeltaDivisionPatternAdmin)
+admin.site.register(DumpUrl, DumpUrlAdmin)
+admin.site.register(DeltaUrl, DeltaUrlAdmin)
+admin.site.register(CuratedUrl, CuratedUrlAdmin)

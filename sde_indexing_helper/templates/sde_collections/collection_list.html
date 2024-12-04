@@ -16,9 +16,9 @@
         <thead class="tableHeader">
             <tr>
                 <th class="text-center noBorder" style="padding-right:25px !important">Name</th>
-                <th class="text-center noBorder url-th" style="padding-right:25px !important">URL</th>
+                <th class="text-center noBorder url-th" style="padding-right:25px !important">Url</th>
                 <th class="text-center noBorder" style="padding-right:25px !important">Division</th>
-                <th class="text-center noBorder" style="padding-right:25px !important">Candidate URLs</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Delta Urls</th>
                 <th class="text-center noBorder" style="padding-right:25px !important">Workflow Status</th>
                 <th class="text-center noBorder" style="padding-right:25px !important">Curator</th>
                 <th class="text-center noBorder" style="padding-right:25px !important">Connector Type</th>
@@ -68,9 +68,9 @@
                     </td>
                     <td class="whiteText noBorder">{{ collection.get_division_display }}</td>
                     <td class="noBorder centerAlign">
-                        <a href=" {% if collection.num_candidate_urls > 0 %} {% url 'sde_collections:candidate_urls' collection.pk %} {% endif %} "
-                           class="btn btn-sm {% if collection.num_candidate_urls > 0 %}btn-primary {% else %}disabled{% endif %}candidateCount"
-                           role="button">{{ collection.num_candidate_urls|intcomma }}</a>
+                        <a href=" {% if collection.num_delta_urls > 0 %} {% url 'sde_collections:delta_urls' collection.pk %} {% endif %} "
+                           class="btn btn-sm {% if collection.num_delta_urls > 0 %}btn-primary {% else %}disabled{% endif %}candidateCount"
+                           role="button">{{ collection.num_delta_urls|intcomma }}</a>
                     </td>
                     <td class="noBorder">
                         <div class="dropdown workflow_status_dropdown"

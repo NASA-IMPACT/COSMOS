@@ -7,10 +7,12 @@ from django.apps import apps
 from django.conf import settings
 from django.core import management
 from django.core.management.commands import loaddata
+from django.db import transaction
 
 from config import celery_app
 
 from .models.collection import Collection, WorkflowStatusChoices
+from .models.delta_url import DumpUrl
 from .sinequa_api import Api
 from .utils.github_helper import GitHubHandler
 
@@ -49,7 +51,7 @@ def _get_data_to_import(collection, server_name):
                 continue
 
             augmented_data = {
-                "model": "sde_collections.candidateurl",
+                "model": "sde_collections.url",
                 "fields": {
                     "collection": collection_pk,
                     "url": url,
@@ -141,3 +143,48 @@ def resolve_title_pattern(title_pattern_id):
     TitlePattern = apps.get_model("sde_collections", "TitlePattern")
     title_pattern = TitlePattern.objects.get(id=title_pattern_id)
     title_pattern.apply()
+
+
+@celery_app.task(soft_time_limit=600)
+def fetch_and_replace_full_text(collection_id, server_name):
+    """
+    Task to fetch and replace full text and metadata for a collection.
+    Handles data in batches to manage memory usage.
+    """
+    collection = Collection.objects.get(id=collection_id)
+    api = Api(server_name)
+
+    # Step 1: Delete existing DumpUrl entries
+    deleted_count, _ = DumpUrl.objects.filter(collection=collection).delete()
+    print(f"Deleted {deleted_count} old records.")
+
+    # Step 2: Process data in batches
+    total_processed = 0
+
+    try:
+        for batch in api.get_full_texts(collection.config_folder):
+            # Use bulk_create for efficiency, with a transaction per batch
+            with transaction.atomic():
+                DumpUrl.objects.bulk_create(
+                    [
+                        DumpUrl(
+                            url=record["url"],
+                            collection=collection,
+                            scraped_text=record["full_text"],
+                            scraped_title=record["title"],
+                        )
+                        for record in batch
+                    ]
+                )
+
+            total_processed += len(batch)
+            print(f"Processed batch of {len(batch)} records. Total: {total_processed}")
+
+        # Step 3: Migrate dump URLs to delta URLs
+        collection.migrate_dump_to_delta()
+
+        return f"Successfully processed {total_processed} records and updated the database."
+
+    except Exception as e:
+        print(f"Error processing records: {str(e)}")
+        raise
