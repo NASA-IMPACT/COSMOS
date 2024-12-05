@@ -6,7 +6,7 @@ from django.db import models
 
 from ..utils.paired_field_descriptor import PairedFieldDescriptor
 from .collection_choice_fields import Divisions, DocumentTypes, TDAMMTags
-from .delta_patterns import DeltaExcludePattern, DeltaTitlePattern
+from .delta_patterns import DeltaExcludePattern, DeltaIncludePattern
 
 
 class DeltaUrlQuerySet(models.QuerySet):
