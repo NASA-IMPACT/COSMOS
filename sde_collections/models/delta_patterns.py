@@ -1,19 +1,22 @@
 import re
+from typing import Any
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from ..utils.title_resolver import (
-    is_valid_fstring,
     is_valid_xpath,
     parse_title,
     resolve_title,
+    validate_fstring,
 )
 from .collection_choice_fields import Divisions, DocumentTypes
 
 
 class BaseMatchPattern(models.Model):
+    """Base class for all delta patterns."""
+
     class MatchPatternTypeChoices(models.IntegerChoices):
         INDIVIDUAL_URL = 1, "Individual URL Pattern"
         MULTI_URL_PATTERN = 2, "Multi-URL Pattern"
@@ -21,105 +24,109 @@ class BaseMatchPattern(models.Model):
     collection = models.ForeignKey(
         "Collection",
         on_delete=models.CASCADE,
-        related_name="%(class)s",
+        related_name="%(class)ss",  # Makes collection.deltaincludepatterns.all()
         related_query_name="%(class)ss",
     )
     match_pattern = models.CharField(
-        "Pattern",
-        help_text="This pattern is compared against the URL of all the documents in the collection "
-        "and matching documents will be returned",
+        "Pattern", help_text="This pattern is compared against the URL of all documents in the collection"
     )
     match_pattern_type = models.IntegerField(choices=MatchPatternTypeChoices.choices, default=1)
     delta_urls = models.ManyToManyField(
         "DeltaUrl",
-        related_name="%(class)s_delta_urls",
+        related_name="%(class)ss",  # Makes delta_url.deltaincludepatterns.all()
     )
     curated_urls = models.ManyToManyField(
         "CuratedUrl",
-        related_name="%(class)s_curated_urls",
+        related_name="%(class)ss",  # Makes curated_url.deltaincludepatterns.all()
     )
 
-    def matched_urls(self):
+    def get_url_match_count(self):
         """
-        Find all URLs matching the pattern.
-        This does not update pattern.delta_urls or pattern.curated_urls.
+        Get the number of unique URLs this pattern matches across both delta and curated URLs.
         """
+        delta_urls = set(self.get_matching_delta_urls().values_list("url", flat=True))
+        curated_urls = set(self.get_matching_curated_urls().values_list("url", flat=True))
+        return len(delta_urls.union(curated_urls))
+
+    def is_most_distinctive_pattern(self, url) -> bool:
+        """
+        Determine if this pattern should apply to a URL by checking:
+        1. First checks if this pattern matches this URL
+        2. If it matches the smallest number of URLs among all patterns that match this URL
+        3. If tied for smallest number of matches, uses the longest pattern string
+        Returns True if this pattern should be applied.
+        """
+        # First check if this pattern matches the URL
+        regex_pattern = self.get_regex_pattern()
+        if not re.search(regex_pattern, url.url):
+            return False
+
+        my_match_count = self.get_url_match_count()
+        my_pattern_length = len(self.match_pattern)
+
+        # Get patterns from same type that affect this URL
+        pattern_class = self.__class__
+        matching_patterns = (
+            pattern_class.objects.filter(collection=self.collection)
+            .filter(models.Q(delta_urls__url=url.url) | models.Q(curated_urls__url=url.url))
+            .exclude(id=self.id)
+            .distinct()
+        )
+
+        # Use M2M relationships for checking other patterns since those are already established
+        for pattern in matching_patterns:
+            other_match_count = pattern.get_url_match_count()
+            if other_match_count < my_match_count:
+                # Other pattern matches fewer URLs - definitely not most distinctive
+                return False
+            if other_match_count == my_match_count:
+                # Same match count - check pattern length
+                if len(pattern.match_pattern) > my_pattern_length:
+                    # Other pattern is longer - not most distinctive
+                    return False
+
+        return True
+
+    def get_regex_pattern(self) -> str:
+        """Convert the match pattern into a proper regex based on pattern type."""
+        escaped_pattern = re.escape(self.match_pattern)
+        if self.match_pattern_type == self.MatchPatternTypeChoices.INDIVIDUAL_URL:
+            return f"{escaped_pattern}$"
+        return escaped_pattern.replace(r"\*", ".*")
+
+    def get_matching_delta_urls(self) -> models.QuerySet:
+        """Get all DeltaUrls that match this pattern."""
         DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
+        regex_pattern = self.get_regex_pattern()
+        return DeltaUrl.objects.filter(collection=self.collection, url__regex=regex_pattern)
+
+    def get_matching_curated_urls(self) -> models.QuerySet:
+        """Get all CuratedUrls that match this pattern."""
         CuratedUrl = apps.get_model("sde_collections", "CuratedUrl")
+        regex_pattern = self.get_regex_pattern()
+        return CuratedUrl.objects.filter(collection=self.collection, url__regex=regex_pattern)
 
-        # Construct the regex pattern based on match type
-        escaped_match_pattern = re.escape(self.match_pattern)
-        regex_pattern = (
-            f"{escaped_match_pattern}$"
-            if self.match_pattern_type == self.MatchPatternTypeChoices.INDIVIDUAL_URL
-            else escaped_match_pattern.replace(r"\*", ".*")
-        )
+    def update_affected_delta_urls_list(self) -> None:
+        """Update the many-to-many relationship for matched DeltaUrls."""
+        self.delta_urls.set(self.get_matching_delta_urls())
 
-        # Directly query DeltaUrl and CuratedUrl with collection filter
-        matching_delta_urls = DeltaUrl.objects.filter(collection=self.collection, url__regex=regex_pattern)
-        matching_curated_urls = CuratedUrl.objects.filter(collection=self.collection, url__regex=regex_pattern)
+    def update_affected_curated_urls_list(self) -> None:
+        """Update the many-to-many relationship for matched CuratedUrls."""
+        self.curated_urls.set(self.get_matching_curated_urls())
 
-        return {
-            "matching_delta_urls": matching_delta_urls,
-            "matching_curated_urls": matching_curated_urls,
-        }
+    def apply(self) -> None:
+        """Apply pattern effects. Must be implemented by subclasses."""
+        raise NotImplementedError
 
-    def refresh_url_lists(self):
-        """Update the delta_urls and curated_urls ManyToMany relationships."""
-        matched_urls = self.matched_urls()
-        self.delta_urls.set(matched_urls["matching_delta_urls"])
-        self.curated_urls.set(matched_urls["matching_curated_urls"])
+    def unapply(self) -> None:
+        """Remove pattern effects. Must be implemented by subclasses."""
+        raise NotImplementedError
 
-    def generate_delta_url(self, curated_url, fields_to_copy=None):
-        """
-        Generates or updates a DeltaUrl based on a CuratedUrl.
-        Only specified fields are copied if fields_to_copy is provided.
-        """
-        # Import DeltaUrl dynamically to avoid circular import issues
-        DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
-
-        delta_url, created = DeltaUrl.objects.get_or_create(
-            collection=self.collection,
-            url=curated_url.url,
-            defaults={field: getattr(curated_url, field) for field in (fields_to_copy or [])},
-        )
-        if not created and fields_to_copy:
-            # Update only if certain fields are missing in DeltaUrl
-            for field in fields_to_copy:
-                if getattr(delta_url, field, None) in [None, ""]:
-                    setattr(delta_url, field, getattr(curated_url, field))
-            delta_url.save()
-
-    def apply(self, fields_to_copy=None, update_fields=None):
-        matched_urls = self.matched_urls()
-
-        # Step 1: Generate or update DeltaUrls for each matching CuratedUrl
-        for curated_url in matched_urls["matching_curated_urls"]:
-            # Check if the curated_url is already linked to this pattern
-            if self.curated_urls.filter(pk=curated_url.pk).exists():
-                # Skip creating a DeltaUrl if the curated_url is already associated with this pattern
-                continue
-            self.generate_delta_url(curated_url, fields_to_copy)
-
-        # Step 2: Apply updates to fields on matching DeltaUrls
-        if update_fields:
-            matched_urls["matching_delta_urls"].update(**update_fields)
-
-        # Update ManyToMany relationships
-        self.refresh_url_lists()
-
-    def unapply(self):
-        """Default unapply behavior."""
-        self.delta_urls.clear()
-        self.curated_urls.clear()
-
-    def save(self, *args, **kwargs):
-        """Save the pattern and apply it."""
+    def save(self, *args, **kwargs) -> None:
         super().save(*args, **kwargs)
         self.apply()
 
-    def delete(self, *args, **kwargs):
-        """Delete the pattern and unapply it."""
+    def delete(self, *args, **kwargs) -> None:
         self.unapply()
         super().delete(*args, **kwargs)
 
@@ -132,189 +139,474 @@ class BaseMatchPattern(models.Model):
         return self.match_pattern
 
 
-class DeltaExcludePattern(BaseMatchPattern):
+class InclusionPatternBase(BaseMatchPattern):
+    """
+    Base class for patterns that handle URL inclusion/exclusion.
+    Both ExcludePattern and IncludePattern share the same core logic for managing
+    relationships and Delta URL creation/cleanup.
+    """
+
+    class Meta(BaseMatchPattern.Meta):
+        abstract = True
+
+    def apply(self) -> None:
+        """
+        Apply pattern effects to matching URLs:
+        1. Find new Curated URLs that match but weren't previously affected
+        2. Create Delta URLs for newly affected Curated URLs if needed
+        3. Update pattern relationships to manage inclusion/exclusion status
+        """
+        DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
+
+        # Get QuerySet of all matching CuratedUrls
+        matching_curated_urls = self.get_matching_curated_urls()
+
+        # Find Curated URLs that match but weren't previously affected
+        previously_unaffected_curated = matching_curated_urls.exclude(
+            id__in=self.curated_urls.values_list("id", flat=True)
+        )
+
+        # Create Delta URLs for newly affected Curated URLs if needed
+        for curated_url in previously_unaffected_curated:
+            # Skip if Delta already exists
+            if DeltaUrl.objects.filter(url=curated_url.url, collection=self.collection).exists():
+                continue
+
+            # Create new Delta URL copying fields from Curated URL
+            fields = {
+                field.name: getattr(curated_url, field.name)
+                for field in curated_url._meta.fields
+                if field.name not in ["id", "collection"]
+            }
+            fields["to_delete"] = False
+            fields["collection"] = self.collection
+
+            DeltaUrl.objects.create(**fields)
+
+        # Update relationships - this handles inclusion/exclusion status
+        self.update_affected_delta_urls_list()
+
+    def unapply(self) -> None:
+        """
+        Remove this pattern's effects by:
+        1. Creating Delta URLs for previously excluded Curated URLs to show they're no longer excluded/included
+        2. Cleaning up any Delta URLs that are now identical to their Curated URL counterparts
+           (these would have only existed to show their exclusion/inclusion)
+        """
+        DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
+        CuratedUrl = apps.get_model("sde_collections", "CuratedUrl")
+
+        # Create Delta URLs for previously affected Curated URLs
+        for curated_url in self.curated_urls.all():
+            fields = {
+                field.name: getattr(curated_url, field.name)
+                for field in curated_url._meta.fields
+                if field.name not in ["id", "collection"]
+            }
+            fields["to_delete"] = False
+            fields["collection"] = self.collection
+
+            DeltaUrl.objects.get_or_create(**fields)
+
+        # Clean up redundant Delta URLs
+        for delta_url in self.delta_urls.filter(to_delete=False):
+            try:
+                curated_url = CuratedUrl.objects.get(collection=self.collection, url=delta_url.url)
+
+                # Check if Delta is now identical to Curated
+                fields_match = all(
+                    getattr(delta_url, field.name) == getattr(curated_url, field.name)
+                    for field in delta_url._meta.fields
+                    if field.name not in ["id", "to_delete"]
+                )
+
+                if fields_match:
+                    delta_url.delete()
+
+            except CuratedUrl.DoesNotExist:
+                continue
+
+        # Clear pattern relationships
+        self.delta_urls.clear()
+        self.curated_urls.clear()
+
+
+class DeltaExcludePattern(InclusionPatternBase):
+    """Pattern for marking URLs for exclusion."""
+
     reason = models.TextField("Reason for excluding", default="", blank=True)
 
-    # No need to override `apply`—we use the base class logic as-is.
-    # This pattern's functionality is handled by the `excluded` annotation in the manager.
-
-    class Meta:
+    class Meta(InclusionPatternBase.Meta):
         verbose_name = "Delta Exclude Pattern"
         verbose_name_plural = "Delta Exclude Patterns"
-        unique_together = ("collection", "match_pattern")
 
 
-class DeltaIncludePattern(BaseMatchPattern):
-    # No additional logic needed for `apply`—using base class functionality.
+class DeltaIncludePattern(InclusionPatternBase):
+    """Pattern for explicitly including URLs."""
 
-    class Meta:
+    class Meta(InclusionPatternBase.Meta):
         verbose_name = "Delta Include Pattern"
         verbose_name_plural = "Delta Include Patterns"
-        unique_together = ("collection", "match_pattern")
 
 
-def validate_title_pattern(title_pattern_string):
+class FieldModifyingPattern(BaseMatchPattern):
+    """
+    Abstract base class for patterns that modify a single field on matching URLs.
+    Examples: DeltaDivisionPattern, DeltaDocumentTypePattern
+    """
+
+    class Meta(BaseMatchPattern.Meta):
+        abstract = True
+
+    def get_field_to_modify(self) -> str:
+        """Return the name of the field this pattern modifies. Must be implemented by subclasses."""
+        raise NotImplementedError
+
+    def get_new_value(self) -> Any:
+        """Return the new value for the field. Must be implemented by subclasses."""
+        raise NotImplementedError
+
+    def apply(self) -> None:
+        """
+        Apply field modification to matching URLs:
+        1. Find new Curated URLs that match but weren't previously affected
+        2. Create Delta URLs only for Curated URLs where the field value would change
+        3. Update the pattern's list of affected URLs
+        4. Set the field value on all matching Delta URLs
+        """
+        DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
+
+        field = self.get_field_to_modify()
+        new_value = self.get_new_value()
+
+        # Get newly matching Curated URLs
+        matching_curated_urls = self.get_matching_curated_urls()
+        previously_unaffected_curated = matching_curated_urls.exclude(
+            id__in=self.curated_urls.values_list("id", flat=True)
+        )
+
+        # Create DeltaUrls only where field value would change
+        for curated_url in previously_unaffected_curated:
+            if not self.is_most_distinctive_pattern(curated_url):
+                continue
+
+            if (
+                getattr(curated_url, field) == new_value
+                or DeltaUrl.objects.filter(url=curated_url.url, collection=self.collection).exists()
+            ):
+                continue
+
+            fields = {
+                f.name: getattr(curated_url, f.name)
+                for f in curated_url._meta.fields
+                if f.name not in ["id", "collection"]
+            }
+            fields[field] = new_value
+            fields["to_delete"] = False
+            fields["collection"] = self.collection
+
+            DeltaUrl.objects.create(**fields)
+
+        # Update all matching DeltaUrls with the new field value if this is the most distinctive pattern
+        for delta_url in self.get_matching_delta_urls():
+            if self.is_most_distinctive_pattern(delta_url):
+                setattr(delta_url, field, new_value)
+                delta_url.save()
+
+        # Update pattern relationships
+        self.update_affected_delta_urls_list()
+
+    def unapply(self) -> None:
+        """
+        Remove field modifications:
+        1. Create Delta URLs for affected Curated URLs to explicitly set NULL
+        2. Remove field value from affected Delta URLs only if no other patterns affect them
+        3. Clean up Delta URLs that become identical to their Curated URL
+        """
+
+        DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
+        CuratedUrl = apps.get_model("sde_collections", "CuratedUrl")
+
+        field = self.get_field_to_modify()
+
+        # Get all affected URLs
+        affected_deltas = self.delta_urls.all()
+        affected_curated = self.curated_urls.all()
+
+        # Process each affected delta URL
+        for delta in affected_deltas:
+            curated = CuratedUrl.objects.filter(collection=self.collection, url=delta.url).first()
+
+            if not curated:
+                # Scenario 1: Delta only - new URL
+                setattr(delta, field, None)
+                delta.save()
+            else:
+                # Scenario 2: Both exist
+                setattr(delta, field, getattr(curated, field))
+                delta.save()
+
+                # Check if delta is now redundant
+                fields_match = all(
+                    getattr(delta, f.name) == getattr(curated, f.name)
+                    for f in delta._meta.fields
+                    if f.name not in ["id", "to_delete"]
+                )
+                if fields_match:
+                    delta.delete()
+
+        # Handle curated URLs that don't have deltas
+        for curated in affected_curated:
+            if not DeltaUrl.objects.filter(url=curated.url).exists():
+                # Scenario 3: Curated only
+                # Copy all fields from curated except the one we're nulling
+                fields = {
+                    f.name: getattr(curated, f.name) for f in curated._meta.fields if f.name not in ["id", "collection"]
+                }
+                fields[field] = None  # Set the pattern's field to None
+                delta = DeltaUrl.objects.create(collection=self.collection, **fields)
+
+        # Clear pattern relationships
+        self.delta_urls.clear()
+        self.curated_urls.clear()
+
+
+class DeltaDocumentTypePattern(FieldModifyingPattern):
+    """Pattern for setting document types."""
+
+    document_type = models.IntegerField(choices=DocumentTypes.choices)
+
+    def get_field_to_modify(self) -> str:
+        return "document_type"
+
+    def get_new_value(self) -> Any:
+        return self.document_type
+
+    class Meta(FieldModifyingPattern.Meta):
+        verbose_name = "Delta Document Type Pattern"
+        verbose_name_plural = "Delta Document Type Patterns"
+
+
+class DeltaDivisionPattern(FieldModifyingPattern):
+    """Pattern for setting divisions."""
+
+    division = models.IntegerField(choices=Divisions.choices)
+
+    def get_field_to_modify(self) -> str:
+        return "division"
+
+    def get_new_value(self) -> Any:
+        return self.division
+
+    class Meta(FieldModifyingPattern.Meta):
+        verbose_name = "Delta Division Pattern"
+        verbose_name_plural = "Delta Division Patterns"
+
+
+def validate_title_pattern(title_pattern_string: str) -> None:
+    """Validate title pattern format."""
     parsed_title = parse_title(title_pattern_string)
 
-    for element in parsed_title:
-        element_type, element_value = element
-
+    for element_type, element_value in parsed_title:
         if element_type == "xpath":
             if not is_valid_xpath(element_value):
-                raise ValidationError(f"'xpath:{element_value}' is not a valid xpath.")  # noqa: E231
+                raise ValidationError(f"Invalid xpath: {element_value}")
         elif element_type == "brace":
             try:
-                is_valid_fstring(element_value)
+                validate_fstring(element_value)
             except ValueError as e:
                 raise ValidationError(str(e))
 
 
 class DeltaTitlePattern(BaseMatchPattern):
+    """Pattern for modifying titles of URLs based on a template pattern."""
+
     title_pattern = models.CharField(
         "Title Pattern",
-        help_text="This is the pattern for the new title. You can either write an exact replacement string"
-        " (no quotes required) or you can write sinequa-valid code",
+        help_text="Pattern for the new title. Can be an exact replacement string or sinequa-valid code",
         validators=[validate_title_pattern],
     )
 
-    def apply(self) -> None:
-        # Dynamically get the DeltaResolvedTitle and DeltaResolvedTitleError models to avoid circular import issues
-        DeltaResolvedTitle = apps.get_model("sde_collections", "DeltaResolvedTitle")
-        DeltaResolvedTitleError = apps.get_model("sde_collections", "DeltaResolvedTitleError")
-
-        matched_urls = self.matched_urls()
-
-        # Step 1: Apply title pattern to matching DeltaUrls
-        for delta_url in matched_urls["matching_delta_urls"]:
-            self.apply_title_to_url(delta_url, DeltaResolvedTitle, DeltaResolvedTitleError)
-
-        # Step 2: Check and potentially create DeltaUrls for matching CuratedUrls
-        for curated_url in matched_urls["matching_curated_urls"]:
-            self.create_delta_if_title_differs(curated_url, DeltaResolvedTitle, DeltaResolvedTitleError)
-
-        # Step 3: Update ManyToMany relationships for DeltaUrls and CuratedUrls
-        self.refresh_url_lists()
-
-    def create_delta_if_title_differs(self, curated_url, DeltaResolvedTitle, DeltaResolvedTitleError):
+    def generate_title_for_url(self, url_obj) -> tuple[str, str | None]:
         """
-        Checks if the title generated by the pattern differs from the existing generated title
-        in CuratedUrl. If it does, creates or updates a DeltaUrl with the new title.
-        """
-        # Calculate the title that would be generated if the pattern is applied
-        context = {
-            "url": curated_url.url,
-            "title": curated_url.scraped_title,
-            "collection": self.collection.name,
-        }
-        try:
-            new_generated_title = resolve_title(self.title_pattern, context)
-
-            # Compare against the existing generated title in CuratedUrl
-            if curated_url.generated_title != new_generated_title:
-                # Only create a DeltaUrl if the titles differ
-                DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
-                delta_url, created = DeltaUrl.objects.get_or_create(
-                    collection=self.collection,
-                    url=curated_url.url,
-                    defaults={"scraped_title": curated_url.scraped_title},
-                )
-                delta_url.generated_title = new_generated_title
-                delta_url.save()
-                self.apply_title_to_url(delta_url, DeltaResolvedTitle, DeltaResolvedTitleError)
-
-        except (ValueError, ValidationError) as e:
-            self.log_title_error(curated_url, DeltaResolvedTitleError, str(e))
-
-    def apply_title_to_url(self, url_obj, DeltaResolvedTitle, DeltaResolvedTitleError):
-        """
-        Applies the title pattern to a DeltaUrl or CuratedUrl and records the resolved title or errors.
+        Generate a new title for a URL using the pattern.
+        Returns tuple of (generated_title, error_message).
         """
         context = {
             "url": url_obj.url,
             "title": url_obj.scraped_title,
             "collection": self.collection.name,
         }
+
         try:
-            generated_title = resolve_title(self.title_pattern, context)
+            return resolve_title(self.title_pattern, context), None
+        except Exception as e:
+            return None, str(e)
 
-            # Remove existing resolved title entries for this URL
-            DeltaResolvedTitle.objects.filter(delta_url=url_obj).delete()
+    def apply(self) -> None:
+        """
+        Apply the title pattern to matching URLs:
+        1. Find new Curated URLs that match but weren't previously affected
+        2. Create Delta URLs only where the generated title differs
+        3. Update all matching Delta URLs with new titles
+        4. Track title resolution status and errors
+        """
+        DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
+        DeltaResolvedTitle = apps.get_model("sde_collections", "DeltaResolvedTitle")
+        DeltaResolvedTitleError = apps.get_model("sde_collections", "DeltaResolvedTitleError")
 
-            # Create a new resolved title entry
-            DeltaResolvedTitle.objects.create(title_pattern=self, delta_url=url_obj, resolved_title=generated_title)
-
-            # Set generated title only on DeltaUrl
-            url_obj.generated_title = generated_title
-            url_obj.save()
-
-        except (ValueError, ValidationError) as e:
-            self.log_title_error(url_obj, DeltaResolvedTitleError, str(e))
-
-    def log_title_error(self, url_obj, DeltaResolvedTitleError, message):
-        """Logs an error when resolving a title."""
-        resolved_title_error = DeltaResolvedTitleError.objects.create(
-            title_pattern=self, delta_url=url_obj, error_string=message
+        # Get newly matching Curated URLs
+        matching_curated_urls = self.get_matching_curated_urls()
+        previously_unaffected_curated = matching_curated_urls.exclude(
+            id__in=self.curated_urls.values_list("id", flat=True)
         )
-        status_code = re.search(r"Status code: (\d+)", message)
-        if status_code:
-            resolved_title_error.http_status_code = int(status_code.group(1))
-        resolved_title_error.save()
+
+        # Process each previously unaffected curated URL
+        for curated_url in previously_unaffected_curated:
+            if not self.is_most_distinctive_pattern(curated_url):
+                continue
+
+            new_title, error = self.generate_title_for_url(curated_url)
+
+            if error:
+                DeltaResolvedTitleError.objects.update_or_create(
+                    delta_url=curated_url, defaults={"title_pattern": self, "error_string": error}  # lookup field
+                )
+                continue
+
+            # Skip if the generated title matches existing or if Delta already exists
+            if (
+                curated_url.generated_title == new_title
+                or DeltaUrl.objects.filter(url=curated_url.url, collection=self.collection).exists()
+            ):
+                continue
+
+            # Create new Delta URL with the new title
+            fields = {
+                field.name: getattr(curated_url, field.name)
+                for field in curated_url._meta.fields
+                if field.name not in ["id", "collection"]
+            }
+            fields["generated_title"] = new_title
+            fields["to_delete"] = False
+            fields["collection"] = self.collection
+
+            delta_url = DeltaUrl.objects.create(**fields)
+
+            # Record successful title resolution
+            DeltaResolvedTitle.objects.create(title_pattern=self, delta_url=delta_url, resolved_title=new_title)
+
+        # Update titles for all matching Delta URLs
+        for delta_url in self.get_matching_delta_urls():
+            if not self.is_most_distinctive_pattern(delta_url):
+                continue
+
+            new_title, error = self.generate_title_for_url(delta_url)
+
+            if error:
+                DeltaResolvedTitleError.objects.update_or_create(
+                    delta_url=delta_url, defaults={"title_pattern": self, "error_string": error}  # lookup field
+                )
+                continue
+
+            # Update title and record resolution - key change here
+            DeltaResolvedTitle.objects.update_or_create(
+                delta_url=delta_url,  # Only use delta_url for lookup
+                defaults={"title_pattern": self, "resolved_title": new_title},
+            )
+
+            delta_url.generated_title = new_title
+            delta_url.save()
+
+        # Update pattern relationships
+        self.update_affected_delta_urls_list()
 
     def unapply(self) -> None:
-        """Clears generated titles for DeltaUrls affected by this pattern and dissociates URLs from the pattern."""
-        matched_urls = self.matched_urls()
+        """
+        Remove title modifications:
+        1. Create Delta URLs for affected Curated URLs to explicitly clear titles
+        2. Remove generated titles from affected Delta URLs
+        3. Clean up Delta URLs that become identical to their Curated URL
+        4. Clear resolution tracking
+        """
+        DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
+        CuratedUrl = apps.get_model("sde_collections", "CuratedUrl")
+        DeltaResolvedTitle = apps.get_model("sde_collections", "DeltaResolvedTitle")
+        DeltaResolvedTitleError = apps.get_model("sde_collections", "DeltaResolvedTitleError")
 
-        # Clear the `generated_title` for all matching DeltaUrls
-        matched_urls["matching_delta_urls"].update(generated_title="")
+        # Get all affected URLs
+        affected_deltas = self.delta_urls.all()
+        affected_curated = self.curated_urls.all()
 
-        # Clear relationships
+        # Process each affected delta URL
+        for delta in affected_deltas:
+            curated = CuratedUrl.objects.filter(collection=self.collection, url=delta.url).first()
+
+            if not curated:
+                # Scenario 1: Delta only - clear generated title
+                delta.generated_title = ""
+                delta.save()
+            else:
+                # Scenario 2: Both exist - revert to curated title
+                delta.generated_title = curated.generated_title
+                delta.save()
+
+                # Check if delta is now redundant
+                fields_match = all(
+                    getattr(delta, f.name) == getattr(curated, f.name)
+                    for f in delta._meta.fields
+                    if f.name not in ["id", "to_delete"]
+                )
+                if fields_match:
+                    delta.delete()
+
+        # Handle curated URLs that don't have deltas
+        for curated in affected_curated:
+            if not DeltaUrl.objects.filter(url=curated.url).exists():
+                # Scenario 3: Curated only - create delta with cleared title
+                fields = {
+                    f.name: getattr(curated, f.name) for f in curated._meta.fields if f.name not in ["id", "collection"]
+                }
+                fields["generated_title"] = ""
+                DeltaUrl.objects.create(collection=self.collection, **fields)
+
+        # Clear resolution tracking
+        DeltaResolvedTitle.objects.filter(title_pattern=self).delete()
+        DeltaResolvedTitleError.objects.filter(title_pattern=self).delete()
+
+        # Clear pattern relationships
         self.delta_urls.clear()
         self.curated_urls.clear()
 
-    class Meta:
+    class Meta(BaseMatchPattern.Meta):
         verbose_name = "Delta Title Pattern"
         verbose_name_plural = "Delta Title Patterns"
-        unique_together = ("collection", "match_pattern")
 
 
-class DeltaDocumentTypePattern(BaseMatchPattern):
-    document_type = models.IntegerField(choices=DocumentTypes.choices)
+class DeltaResolvedTitleBase(models.Model):
+    # TODO: need to understand this logic and whether we need to have these match to CuratedUrls as well
 
-    # We use `update_fields` in the base apply method to set `document_type`.
-    def apply(self) -> None:
-        super().apply(update_fields={"document_type": self.document_type})
-
-    def unapply(self) -> None:
-        """Clear document type from associated delta and curated URLs."""
-        self.delta_urls.update(document_type=None)
-        self.delta_urls.clear()
-        self.curated_urls.clear()
+    title_pattern = models.ForeignKey(DeltaTitlePattern, on_delete=models.CASCADE)
+    delta_url = models.OneToOneField("sde_collections.DeltaUrl", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Delta Document Type Pattern"
-        verbose_name_plural = "Delta Document Type Patterns"
-        unique_together = ("collection", "match_pattern")
+        abstract = True
 
 
-class DeltaDivisionPattern(BaseMatchPattern):
-    division = models.IntegerField(choices=Divisions.choices)
-
-    # We use `update_fields` in the base apply method to set `division`.
-    def apply(self) -> None:
-        super().apply(update_fields={"division": self.division})
-
-    def unapply(self) -> None:
-        """Clear division from associated delta and curated URLs."""
-        # TODO: need to double check this logic for complicated cases
-        self.delta_urls.update(division=None)
+class DeltaResolvedTitle(DeltaResolvedTitleBase):
+    resolved_title = models.CharField(blank=True, default="")
 
     class Meta:
-        verbose_name = "Delta Division Pattern"
-        verbose_name_plural = "Delta Division Patterns"
-        unique_together = ("collection", "match_pattern")
+        verbose_name = "Resolved Title"
+        verbose_name_plural = "Resolved Titles"
+
+    def save(self, *args, **kwargs):
+        # Finds the linked delta URL and deletes DeltaResolvedTitleError objects linked to it
+        DeltaResolvedTitleError.objects.filter(delta_url=self.delta_url).delete()
+        super().save(*args, **kwargs)
 
 
-# @receiver(post_save, sender=DeltaTitlePattern)
-# def post_save_handler(sender, instance, created, **kwargs):
-#     if created:
-#         transaction.on_commit(lambda: resolve_title_pattern.delay(instance.pk))
+class DeltaResolvedTitleError(DeltaResolvedTitleBase):
+    error_string = models.TextField(null=False, blank=False)
+    http_status_code = models.IntegerField(null=True, blank=True)

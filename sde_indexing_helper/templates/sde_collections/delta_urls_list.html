@@ -14,7 +14,7 @@
 {% block content %}
 {% csrf_token %}
 <div class="headerDiv">
-<h1 class="pageTitle">Delta URLs</h1>
+<h1 class="pageTitle">URLs</h1>
 <button class="btn badge {{ collection.workflow_status_button_color }} dropdown-toggle title-dropdown btn-sm"
 type="button"
 data-toggle="dropdown"
@@ -30,7 +30,9 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
 </div>
 <div class="deltaUrlContainer">
 <h3 class="whiteText deltaTitle">
-    {{ delta_urls.count|intcomma }} Delta URLs for <a
+    <!-- {{ delta_urls.count|intcomma }} Delta URLs for  -->
+      Collection Name:
+    <a
         href="{% url 'sde_collections:detail' collection.pk %}"><strong class="urlStyle underline">{{ collection.name }}</strong></a>
     <br>
     <!-- <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small> -->
@@ -189,7 +191,7 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         <th scope="col" class="text-center col-1"><strong>Match Pattern</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Match Pattern Type</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Reason</strong></th>
-                        <th scope="col" class="text-center col-1"><strong>Affected URLs</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Affected Delta URLs</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Actions</strong></th>
                         <th scope="col" class="text-center col-1"><strong>ID</strong></th>
                     </tr>
@@ -220,7 +222,7 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                             <strong>Match Pattern Type</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
-                            <strong>Affected URLs</strong>
+                            <strong>Affected Delta URLs</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
                             <strong>Actions</strong>
@@ -257,7 +259,7 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                             <strong>Title Pattern</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
-                            <strong>Affected URLs</strong>
+                            <strong>Affected Delta URLs</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
                             <strong>Actions</strong>
@@ -294,7 +296,7 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                             <strong>Document Type</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
-                            <strong>Affected URLs</strong>
+                            <strong>Affected Delta URLs</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
                             <strong>Actions</strong>
@@ -330,7 +332,7 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         <th scope="col" class="text-center col-1"><strong>Match Pattern</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Match Pattern Type</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Division</strong></th>
-                        <th scope="col" class="text-center col-1"><strong>Affected URLs</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Affected Delta URLs</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Actions</strong></th>
                         <th scope="col" class="text-center col-1"><strong>ID</strong></th>
                     </tr>

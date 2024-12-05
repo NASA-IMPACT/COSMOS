@@ -3,11 +3,12 @@
 
 import pytest
 
+from sde_collections.models.collection_choice_fields import DocumentTypes
 from sde_collections.models.delta_patterns import (
+    DeltaDocumentTypePattern,
     DeltaExcludePattern,
-    DeltaIncludePattern,
 )
-from sde_collections.models.delta_url import DeltaUrl, DumpUrl
+from sde_collections.models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
 from sde_collections.tests.factories import (
     CollectionFactory,
     CuratedUrlFactory,
@@ -47,7 +48,7 @@ class TestMigrationHelpers:
         collection.create_or_update_delta_url(curated_url, to_delete=True)
         delta = DeltaUrl.objects.get(url=curated_url.url)
         assert delta.to_delete is True
-        assert delta.scraped_title == ""
+        assert delta.scraped_title == curated_url.scraped_title
 
 
 @pytest.mark.django_db
@@ -76,7 +77,7 @@ class TestMigrateDumpToDelta:
         collection.migrate_dump_to_delta()
         delta = DeltaUrl.objects.get(url=curated_url.url)
         assert delta.to_delete is True
-        assert delta.scraped_title == ""
+        assert delta.scraped_title == curated_url.scraped_title
 
     def test_identical_url_in_both(self):
         collection = CollectionFactory()
@@ -233,77 +234,80 @@ def test_partial_data_in_curated_urls():
 
 
 @pytest.mark.django_db
-def test_patterns_applied_after_migration():
-    collection = CollectionFactory()
-
-    # Add DumpUrls to migrate
-    DumpUrlFactory(collection=collection, url="https://exclude.com")
-    DumpUrlFactory(collection=collection, url="https://include.com")
-    DumpUrlFactory(collection=collection, url="https://neutral.com")
-
-    # Create exclude and include patterns
-    exclude_pattern = DeltaExcludePattern.objects.create(
-        collection=collection, match_pattern_type=2, match_pattern="exclude.*"
-    )
-    include_pattern = DeltaIncludePattern.objects.create(
-        collection=collection, match_pattern_type=2, match_pattern="include.*"
-    )
-
-    # Perform the migration
-    collection.migrate_dump_to_delta()
-
-    # Check that the patterns were applied
-    exclude_pattern.refresh_from_db()
-    include_pattern.refresh_from_db()
-
-    # Verify exclude pattern relationship
-    assert exclude_pattern.delta_urls.filter(
-        url="https://exclude.com"
-    ).exists(), "Exclude pattern not applied to DeltaUrls."
-
-    # Verify include pattern relationship
-    assert include_pattern.delta_urls.filter(
-        url="https://include.com"
-    ).exists(), "Include pattern not applied to DeltaUrls."
-
-    # Ensure neutral URL is unaffected
-    assert not exclude_pattern.delta_urls.filter(
-        url="https://neutral.com"
-    ).exists(), "Exclude pattern incorrectly applied."
-    assert not include_pattern.delta_urls.filter(
-        url="https://neutral.com"
-    ).exists(), "Include pattern incorrectly applied."
-
-
-@pytest.mark.django_db
 def test_full_migration_with_patterns():
+    """
+    Test a complete migration flow with exclude patterns and document type patterns.
+    Tests the following scenarios:
+    - New URL from dump (should create delta)
+    - Updated URL from dump (should create delta with new title)
+    - Deleted URL (should create delta marked for deletion)
+    - URL matching exclude pattern (should be excluded)
+    - URL matching document type pattern (should have correct doc type)
+    """
     collection = CollectionFactory()
 
-    # Set up DumpUrls and CuratedUrls
-    DumpUrlFactory(collection=collection, url="https://new.com")
-    DumpUrlFactory(collection=collection, url="https://update.com", scraped_title="Updated Title")
-    CuratedUrlFactory(collection=collection, url="https://update.com", scraped_title="Old Title")
-    CuratedUrlFactory(collection=collection, url="https://delete.com")
+    # Set up initial DumpUrls and CuratedUrls
+    DumpUrlFactory(collection=collection, url="https://example.com/new", scraped_title="New Page")
+    DumpUrlFactory(collection=collection, url="https://example.com/update", scraped_title="Updated Title")
+    DumpUrlFactory(collection=collection, url="https://example.com/docs/guide", scraped_title="Documentation Guide")
 
-    # Create patterns
+    CuratedUrlFactory(collection=collection, url="https://example.com/update", scraped_title="Old Title")
+    CuratedUrlFactory(collection=collection, url="https://example.com/delete", scraped_title="Delete Me")
+    CuratedUrlFactory(collection=collection, url="https://example.com/docs/guide", scraped_title="Documentation Guide")
+
+    # Create patterns before migration
     exclude_pattern = DeltaExcludePattern.objects.create(
-        collection=collection, match_pattern_type=2, match_pattern="delete.*"
+        collection=collection,
+        match_pattern="https://example.com/delete",
+        match_pattern_type=1,  # Individual URL
+        reason="Test exclusion",
     )
-    include_pattern = DeltaIncludePattern.objects.create(
-        collection=collection, match_pattern_type=2, match_pattern="update.*"
+
+    doc_type_pattern = DeltaDocumentTypePattern.objects.create(
+        collection=collection,
+        match_pattern="https://example.com/docs/*",
+        match_pattern_type=2,  # Multi-URL pattern
+        document_type=DocumentTypes.DOCUMENTATION,
     )
 
     # Perform migration
     collection.migrate_dump_to_delta()
 
-    # Check DeltaUrls
-    assert DeltaUrl.objects.filter(url="https://new.com", to_delete=False).exists()
-    assert DeltaUrl.objects.filter(url="https://update.com", to_delete=False, scraped_title="Updated Title").exists()
-    assert DeltaUrl.objects.filter(url="https://delete.com", to_delete=True).exists()
+    # 1. Check new URL was created as delta
+    new_delta = DeltaUrl.objects.get(url="https://example.com/new")
+    assert new_delta.to_delete is False
+    assert new_delta.scraped_title == "New Page"
 
-    # Check patterns
+    # 2. Check updated URL has new title in delta
+    update_delta = DeltaUrl.objects.get(url="https://example.com/update")
+    assert update_delta.to_delete is False
+    assert update_delta.scraped_title == "Updated Title"
+
+    # 3. Check deleted URL is marked for deletion
+    delete_delta = DeltaUrl.objects.get(url="https://example.com/delete")
+    assert delete_delta.to_delete is True
+    assert delete_delta.excluded is True  # Should be excluded due to pattern
+
+    # 4. Check documentation URL has correct type
+    docs_delta = DeltaUrl.objects.get(url="https://example.com/docs/guide")
+    assert docs_delta.document_type == DocumentTypes.DOCUMENTATION
+    assert docs_delta.to_delete is False
+
+    # 5. Verify pattern relationships
     exclude_pattern.refresh_from_db()
-    include_pattern.refresh_from_db()
+    doc_type_pattern.refresh_from_db()
 
-    assert exclude_pattern.delta_urls.filter(url="https://delete.com").exists(), "Exclude pattern not applied."
-    assert include_pattern.delta_urls.filter(url="https://update.com").exists(), "Include pattern not applied."
+    assert exclude_pattern.delta_urls.filter(url="https://example.com/delete").exists()
+    assert doc_type_pattern.delta_urls.filter(url="https://example.com/docs/guide").exists()
+
+    # 6. Check total number of deltas is correct
+    assert DeltaUrl.objects.filter(collection=collection).count() == 4
+
+    # Optional: Test promotion to verify patterns stick
+    collection.promote_to_curated()
+
+    # Verify results after promotion
+    assert not CuratedUrl.objects.filter(url="https://example.com/delete").exists()
+    assert CuratedUrl.objects.get(url="https://example.com/docs/guide").document_type == DocumentTypes.DOCUMENTATION
+    assert CuratedUrl.objects.get(url="https://example.com/update").scraped_title == "Updated Title"
+    assert not CuratedUrl.objects.filter(scraped_title="Old Title").exists()

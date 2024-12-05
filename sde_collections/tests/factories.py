@@ -66,6 +66,16 @@ class DumpUrlFactory(factory.django.DjangoModelFactory):
     # division = 1
 
 
+class DeltaUrlFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = DeltaUrl
+
+    collection = factory.SubFactory(CollectionFactory)
+    url = factory.Faker("url")
+    scraped_title = factory.Faker("sentence")
+    to_delete = False
+
+
 class CuratedUrlFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = CuratedUrl
@@ -78,13 +88,3 @@ class CuratedUrlFactory(factory.django.DjangoModelFactory):
     visited = factory.Faker("boolean")
     document_type = 1
     division = 1
-
-
-class DeltaUrlFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = DeltaUrl
-
-    collection = factory.SubFactory(CollectionFactory)
-    url = factory.Faker("url")
-    scraped_title = factory.Faker("sentence")
-    to_delete = False
