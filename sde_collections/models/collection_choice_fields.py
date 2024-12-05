@@ -102,6 +102,7 @@ class WorkflowStatusChoices(models.IntegerChoices):
 class TDAMMTags(models.TextChoices):
     """TDAMM (Tagged Data for Multi-Messenger Astronomy) tag choices."""
 
+    NOT_TDAMM = "Not TDAMM", "Not TDAMM"
     MMA_M_EM = "MMA_M_EM", "Messenger - EM Radiation"
     MMA_M_EM_G = "MMA_M_EM_G", "Messenger - EM Radiation - Gamma rays"
     MMA_M_EM_X = "MMA_M_EM_X", "Messenger - EM Radiation - X-rays"
