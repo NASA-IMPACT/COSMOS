@@ -101,7 +101,6 @@ class CandidateURL(models.Model):
         verbose_name = "Candidate URL"
         verbose_name_plural = "Candidate URLs"
         ordering = ["url"]
-        db_table = "sde_collections_candidateurl"
 
     @property
     def fileext(self) -> str:
