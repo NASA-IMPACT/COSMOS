@@ -227,7 +227,7 @@
 		<BrowserForWebRequestsViewportWidth></BrowserForWebRequestsViewportWidth>
 		<BrowserForWebRequestsViewportHeight></BrowserForWebRequestsViewportHeight>
 	</UrlAccess>
-	<WorkerCount>8</WorkerCount>
+	<WorkerCount>3</WorkerCount>
 	<MaxWorkerPerHost></MaxWorkerPerHost>
 	<UrlList></UrlList>
 	<DynamicUrlList></DynamicUrlList>
