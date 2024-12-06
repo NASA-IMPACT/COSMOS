@@ -5,6 +5,87 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
+def set_initial_reindexing_status(apps, schema_editor):
+    Collection = apps.get_model("sde_collections", "Collection")
+
+    # List of collections that have been reindexed on LRM dev
+    reindexed_collections = {
+        "astrophysics_source_code_library",
+        "astrophysics_science_division_asd_code_660",
+        "the_astrophysics_astrochemistry_lab",
+        "Space_Physics_Data_Facility",
+        "ppi_node",
+        "sun_climate_powered_by_solar_irradiance",
+        "magnetospheric_multiscale_satellites",
+        "mdscc_deep_space_network",
+        "voyager",
+        "f_prime",
+        "interactive_multiinstrument_database_of_solar_flares",
+        "cii_hosted_payload_opportunity_online_database",
+        "national_space_weather_program",
+        "starchild_a_learning_center_for_young_astronomers",
+        "nexsci",
+        "explorer_1",
+        "the_new_great_observatories",
+        "nasa_ames_intelligent_systems_division_data",
+        "tropical_cyclone_information_system_data_repository",
+        "explorers_and_heliophysics_projects_division",
+    }
+
+    # Define the workflow status values
+    RESEARCH_IN_PROGRESS = 1
+    READY_FOR_ENGINEERING = 2
+    ENGINEERING_IN_PROGRESS = 3
+    READY_FOR_CURATION = 4
+    CURATION_IN_PROGRESS = 5
+    CURATED = 6
+    QUALITY_FIXED = 7
+    SECRET_DEPLOYMENT_STARTED = 8
+    SECRET_DEPLOYMENT_FAILED = 9
+    READY_FOR_LRM_QUALITY_CHECK = 10
+    READY_FOR_FINAL_QUALITY_CHECK = 11
+    QUALITY_CHECK_FAILED = 12
+    QUALITY_CHECK_PERFECT = 13
+    MERGE_PENDING = 14
+    NEEDS_DELETE = 19
+
+    # Workflow statuses that should be marked as reindexing not needed
+    reindexing_not_needed_statuses = [
+        RESEARCH_IN_PROGRESS,
+        READY_FOR_ENGINEERING,
+        ENGINEERING_IN_PROGRESS,
+        READY_FOR_CURATION,
+        CURATION_IN_PROGRESS,
+        CURATED,
+        QUALITY_FIXED,
+        SECRET_DEPLOYMENT_STARTED,
+        SECRET_DEPLOYMENT_FAILED,
+        READY_FOR_LRM_QUALITY_CHECK,
+        READY_FOR_FINAL_QUALITY_CHECK,
+        QUALITY_CHECK_FAILED,
+        QUALITY_CHECK_PERFECT,
+        MERGE_PENDING,
+        NEEDS_DELETE,
+    ]
+
+    # Set collections that have been reindexed
+    Collection.objects.filter(config_folder__in=reindexed_collections).update(reindexing_status=3)  # FINISHED
+
+    # Set collections that don't need reindexing
+    Collection.objects.filter(workflow_status__in=reindexing_not_needed_statuses).exclude(
+        config_folder__in=reindexed_collections
+    ).update(
+        reindexing_status=1
+    )  # NOT_NEEDED
+
+    # All other collections need reindexing
+    Collection.objects.exclude(config_folder__in=reindexed_collections).exclude(
+        workflow_status__in=reindexing_not_needed_statuses
+    ).update(
+        reindexing_status=2
+    )  # NEEDED
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -82,4 +163,5 @@ class Migration(migrations.Migration):
                 ),
             ],
         ),
+        migrations.RunPython(set_initial_reindexing_status),
     ]
