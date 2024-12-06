@@ -108,7 +108,7 @@ let table = $("#collection_table").DataTable({
   ],
   columnDefs: [
     {
-      targets: 8,
+      targets: [8, 9], // Added 9 for reindexing status ID
       visible: false,
     },
     { width: "200px", targets: 1 },
@@ -170,7 +170,7 @@ let table = $("#collection_table").DataTable({
       searchPanes: {
         show: false,
       },
-      targets: [7, 8],
+      targets: [7, 8, 9], // Added 9 for reindexing status ID
     },
     {
       searchPanes: {
@@ -179,6 +179,14 @@ let table = $("#collection_table").DataTable({
         },
       },
       targets: [5],
+    },
+    {
+      searchPanes: {
+        dtOpts: {
+          scrollY: "100%",
+        },
+      },
+      targets: [6], // Add searchPane for reindexing status column
     },
   ],
 });
@@ -302,6 +310,51 @@ function handleWorkflowStatusSelect() {
     postWorkflowStatus(collection_id, workflow_status);
   });
 }
+function handleReindexingStatusSelect() {
+  $("body").on("click", ".reindexing_status_select", function () {
+    var collection_id = $(this).data("collection-id");
+    var reindexing_status = $(this).attr("value");
+    var reindexing_status_text = $(this).text();
+    var color_choices = {
+      1: "btn-light",    // REINDEXING_NOT_NEEDED
+      2: "btn-warning",  // REINDEXING_NEEDED_ON_DEV
+      3: "btn-secondary", // REINDEXING_FINISHED_ON_DEV
+      4: "btn-info",     // REINDEXING_READY_FOR_CURATION
+      5: "btn-primary",  // REINDEXING_CURATED
+      6: "btn-success",  // REINDEXING_INDEXED_ON_PROD
+    };
+
+    $possible_buttons = $("body").find(
+      `[id="reindexing-status-button-${collection_id}"]`
+    );
+    if ($possible_buttons.length > 1) {
+      $button = $possible_buttons[1];
+      $button = $($button);
+    } else {
+      $button = $(`#reindexing-status-button-${collection_id}`);
+    }
+    $button.text(reindexing_status_text);
+    $button.removeClass(
+      "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+    );
+    $button.addClass(color_choices[parseInt(reindexing_status)]);
+    var row = table.row("#" + collection_id);
+    let index = row.index();
+    var $html = $("<div />", { html: table.data()[index][9] }); // Assuming this is column index 9
+    $html.find("button").html(reindexing_status_text);
+    $html
+      .find("button")
+      .removeClass(
+        "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+      );
+    $html.find("button").addClass(color_choices[parseInt(reindexing_status)]);
+    table.data()[index][9] = $html.html();
+    $("#collection_table").DataTable().searchPanes.rebuildPane(9);
+
+    postReindexingStatus(collection_id, reindexing_status);
+  });
+}
+
 
 function handleCuratorSelect() {
   $("body").on("click", ".curator_select", function () {
@@ -331,6 +384,24 @@ function handleCuratorSelect() {
     table.data()[index][5] = $html.html();
     table.searchPanes.rebuildPane(5);
     postCurator(collection_id, curator_id);
+  });
+}
+
+function postReindexingStatus(collection_id, reindexing_status) {
+  var url = `/api/collections/${collection_id}/`;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    data: {
+      reindexing_status: reindexing_status,
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      toastr.success("Reindexing Status Updated!");
+    },
   });
 }
 
@@ -403,6 +474,7 @@ $(document).ready(function () {
     "Workflow Status",
     "Curator",
     "Connector Type",
+    "Reindexing Status",
   ];
 
   // Event listener for the collection search input
@@ -415,16 +487,16 @@ $(document).ready(function () {
 
     // Filter the table based on the query in the collection name and config folder data attribute
     table.rows().every(function () {
-        let row = $(this.node());
-        let name = row.find('td').first().text().toLowerCase();
-        let configFolder = row.data('config-folder').toLowerCase();
-        let url = row.find('td').eq(1).text().toLowerCase();
+      let row = $(this.node());
+      let name = row.find('td').first().text().toLowerCase();
+      let configFolder = row.data('config-folder').toLowerCase();
+      let url = row.find('td').eq(1).text().toLowerCase();
 
-        if (name.includes(query) || configFolder.includes(query) || url.includes(query)) {
-            row.show();
-        } else {
-            row.hide();
-        }
+      if (name.includes(query) || configFolder.includes(query) || url.includes(query)) {
+        row.show();
+      } else {
+        row.hide();
+      }
     });
   });
 
@@ -448,6 +520,7 @@ $(document).ready(function () {
 function setupClickHandlers() {
   // handleCurationStatusSelect();
   handleWorkflowStatusSelect();
+  handleReindexingStatusSelect();
   handleCuratorSelect();
 }
 

@@ -22,7 +22,8 @@
                 <th class="text-center noBorder" style="padding-right:25px !important">Workflow Status</th>
                 <th class="text-center noBorder" style="padding-right:25px !important">Curator</th>
                 <th class="text-center noBorder" style="padding-right:25px !important">Connector Type</th>
-
+                <th class="text-center noBorder" style="padding-right:25px !important">Reindexing Status</th>
+                <th class="hideDisplay"></th>
                 <th class="hideDisplay"></th>
                 <th class="hideDisplay"></th>
             </tr>
@@ -44,8 +45,15 @@
                 {% endfor %}
                 </select></td>
                 <td class="filterRowBottom"><input class="table_filter_row_input textBoxStyling" type="text" id="connectorTypeFilter" placeholder="Connector Type" /></td>
+                <td class="filterRowBottom"><select id="collection-dropdown-6" class="select-dropdown selectStyling">
+                    <option value="">SELECT</option>
+                    {% for choice in reindexing_status_choices %}
+                        <option value="{{ choice }}" data-collection-id={{ collection.id }}>{{ choice.label }}</option>
+                    {% endfor %}
+                </select></td>
                 <td class="hideDisplay"></td>
                 <td class="hideDisplay"></td>
+                <th class="hideDisplay"></th>
             </tr>
         </thead>
 
@@ -114,8 +122,29 @@
                         </div>
                     </td>
                     <td class="whiteText noBorder">{{ collection.get_connector_display }}</td>
+                    <td class="noBorder">
+                        <div class="dropdown reindexing_status_dropdown"
+                             data-match-pattern
+                             remove_protocol
+                             row
+                             url>
+                            <button class="btn {{ collection.reindexing_status_button_color }} btn-sm dropdown-toggle"
+                                    type="button"
+                                    id="reindexing-status-button-{{ collection.id }}"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">{{ collection.get_reindexing_status_display }}</button>
+                            <div class="dropdown-menu"
+                                 aria-labelledby="reindexing-status-button-{{ collection.id }}">
+                                {% for choice in reindexing_status_choices %}
+                                    <a class="dropdown-item reindexing_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </td>
                     <td class="hideDisplay">{{ collection.workflow_status }}</td>
                     <td class="hideDisplay">{{ collection.curated_by_id }}</td>
+                    <td class="hideDisplay">{{ collection.reindexing_status }}</td>
                 </tr>
             {% endfor %}
         </tbody>
