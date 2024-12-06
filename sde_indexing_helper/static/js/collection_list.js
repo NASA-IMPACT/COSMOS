@@ -170,7 +170,7 @@ let table = $("#collection_table").DataTable({
       searchPanes: {
         show: false,
       },
-      targets: [7, 8, 9], // Added 9 for reindexing status ID
+      targets: [8, 9, 10], // this hides the id columns for reindexing status and some other one
     },
     {
       searchPanes: {
@@ -204,6 +204,7 @@ $("#collection-dropdown-5").on("change", function () {
     .search(this.value ? "^" + this.value + "$" : "", true, false)
     .draw();
 });
+
 
 $("#nameFilter").on("keyup", function () {
   table.columns(0).search(this.value).draw();
@@ -340,7 +341,7 @@ function handleReindexingStatusSelect() {
     $button.addClass(color_choices[parseInt(reindexing_status)]);
     var row = table.row("#" + collection_id);
     let index = row.index();
-    var $html = $("<div />", { html: table.data()[index][9] }); // Assuming this is column index 9
+    var $html = $("<div />", { html: table.data()[index][7] }); // Assuming this is column index 7
     $html.find("button").html(reindexing_status_text);
     $html
       .find("button")
@@ -348,8 +349,8 @@ function handleReindexingStatusSelect() {
         "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
       );
     $html.find("button").addClass(color_choices[parseInt(reindexing_status)]);
-    table.data()[index][9] = $html.html();
-    $("#collection_table").DataTable().searchPanes.rebuildPane(9);
+    table.data()[index][7] = $html.html();
+    $("#collection_table").DataTable().searchPanes.rebuildPane(7);
 
     postReindexingStatus(collection_id, reindexing_status);
   });
