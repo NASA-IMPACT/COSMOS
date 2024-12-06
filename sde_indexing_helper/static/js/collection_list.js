@@ -284,7 +284,7 @@ function handleWorkflowStatusSelect() {
     var row = table.row("#" + collection_id);
     let index = row.index();
     var $html = $("<div />", { html: table.data()[index][COLUMNS.WORKFLOW_STATUS] });
-    $html.find("button").html(workflow_status_text);
+    $html.find("button").text(workflow_status_text);
     $html
       .find("button")
       .removeClass(
@@ -329,7 +329,7 @@ function handleReindexingStatusSelect() {
     var row = table.row("#" + collection_id);
     let index = row.index();
     var $html = $("<div />", { html: table.data()[index][COLUMNS.REINDEXING_STATUS] });
-    $html.find("button").html(reindexing_status_text);
+    $html.find("button").text(reindexing_status_text);
     $html
       .find("button")
       .removeClass(
@@ -367,7 +367,7 @@ function handleCuratorSelect() {
     var row = table.row("#" + collection_id);
     let index = row.index();
     var $html = $("<div />", { html: table.data()[index][COLUMNS.CURATOR] });
-    $html.find("button").html(curator_text);
+    $html.find("button").text(curator_text);
     table.data()[index][COLUMNS.CURATOR] = $html.html();
     table.searchPanes.rebuildPane(COLUMNS.CURATOR);
     postCurator(collection_id, curator_id);
