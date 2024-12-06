@@ -23,6 +23,7 @@ from .collection_choice_fields import (
     CurationStatusChoices,
     Divisions,
     DocumentTypes,
+    ReindexingStatusChoices,
     SourceChoices,
     UpdateFrequencies,
     WorkflowStatusChoices,
@@ -74,6 +75,11 @@ class Collection(models.Model):
     workflow_status = models.IntegerField(
         choices=WorkflowStatusChoices.choices,
         default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
+    )
+    reindexing_status = models.IntegerField(
+        choices=ReindexingStatusChoices.choices,
+        default=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
+        verbose_name="Reindexing Status",
     )
     tracker = FieldTracker(fields=["workflow_status"])
 
@@ -155,6 +161,12 @@ class Collection(models.Model):
         # self.refresh_url_lists_for_all_patterns() # TODO: I'm pretty confident we shouldn't be running this
         self.apply_all_patterns()
 
+        # After migrating, check if we should update reindexing status
+        curated_urls_count = self.curated_urls.count()
+        if curated_urls_count > 0:
+            self.reindexing_status = ReindexingStatusChoices.REINDEXING_READY_FOR_CURATION
+            self.save()
+
     def create_or_update_delta_url(self, url_instance, to_delete=False):
         """
         Creates or updates a DeltaUrl entry based on the given DumpUrl or CuratedUrl object.
@@ -223,6 +235,12 @@ class Collection(models.Model):
 
         # Step 4: Reapply patterns to DeltaUrls
         self.refresh_url_lists_for_all_patterns()
+
+        # After promoting, check if we should update reindexing status
+        curated_urls_count = self.curated_urls.count()
+        if curated_urls_count > 0:
+            self.reindexing_status = ReindexingStatusChoices.REINDEXING_CURATED
+            self.save()
 
     def add_to_public_query(self):
         """Add the collection to the public query."""
@@ -348,6 +366,18 @@ class Collection(models.Model):
             23: "btn-light",
         }
         return color_choices[self.workflow_status]
+
+    @property
+    def reindexing_status_button_color(self) -> str:
+        color_choices = {
+            1: "btn-light",  # NOT_NEEDED
+            2: "btn-warning",  # NEEDED
+            3: "btn-secondary",  # FINISHED
+            4: "btn-info",  # READY_FOR_CURATION
+            5: "btn-primary",  # CURATED
+            6: "btn-success",  # INDEXED_ON_PROD
+        }
+        return color_choices[self.reindexing_status]
 
     def _process_exclude_list(self):
         """Process the exclude list."""
@@ -654,6 +684,7 @@ class Collection(models.Model):
         # Create a cached version of the last workflow_status to compare against
         super().__init__(*args, **kwargs)
         self.old_workflow_status = self.workflow_status
+        self.old_reindexing_status = self.reindexing_status
 
 
 class RequiredUrls(models.Model):
@@ -733,6 +764,40 @@ def log_workflow_history(sender, instance, created, **kwargs):
             curated_by=instance.curated_by,
             old_status=instance.old_workflow_status,
         )
+
+    if instance.reindexing_status != instance.old_reindexing_status:
+        ReindexingHistory.objects.create(
+            collection=instance,
+            reindexing_status=instance.reindexing_status,
+            curated_by=instance.curated_by,
+            old_status=instance.old_reindexing_status,
+        )
+
+
+class ReindexingHistory(models.Model):
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name="reindexing_history", null=True)
+    reindexing_status = models.IntegerField(
+        choices=ReindexingStatusChoices.choices,
+        default=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
+    )
+    old_status = models.IntegerField(choices=ReindexingStatusChoices.choices, null=True)
+    curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.collection) + str(self.reindexing_status)
+
+    @property
+    def reindexing_status_button_color(self) -> str:
+        color_choices = {
+            1: "btn-light",  # REINDEXING_NOT_NEEDED
+            2: "btn-warning",  # REINDEXING_NEEDED_ON_DEV
+            3: "btn-secondary",  # REINDEXING_FINISHED_ON_DEV
+            4: "btn-info",  # REINDEXING_READY_FOR_CURATION
+            5: "btn-primary",  # REINDEXING_CURATED
+            6: "btn-success",  # REINDEXING_INDEXED_ON_PROD
+        }
+        return color_choices[self.reindexing_status]
 
 
 @receiver(post_save, sender=Collection)

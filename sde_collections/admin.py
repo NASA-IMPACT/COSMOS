@@ -11,7 +11,7 @@ from sde_collections.models.delta_patterns import (
 )
 
 from .models.candidate_url import CandidateURL, ResolvedTitle
-from .models.collection import Collection, WorkflowHistory
+from .models.collection import Collection, ReindexingHistory, WorkflowHistory
 from .models.collection_choice_fields import TDAMMTags
 from .models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
@@ -217,6 +217,7 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
                     "source",
                     "turned_on",
                     "is_multi_division",
+                    "reindexing_status",
                 ),
             },
         ),
@@ -250,10 +251,18 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         "division",
         "new_collection",
         "is_multi_division",
+        "reindexing_status",
     )
 
     readonly_fields = ("config_folder",)
-    list_filter = ("division", "curation_status", "workflow_status", "turned_on", "is_multi_division")
+    list_filter = (
+        "division",
+        "curation_status",
+        "workflow_status",
+        "turned_on",
+        "is_multi_division",
+        "reindexing_status",
+    )
     search_fields = ("name", "url", "config_folder")
     actions = [
         generate_deployment_message,
@@ -392,6 +401,12 @@ class WorkflowHistoryAdmin(admin.ModelAdmin):
     list_filter = ["workflow_status", "old_status"]
 
 
+class ReindexingHistoryAdmin(admin.ModelAdmin):
+    list_display = ("collection", "old_status", "reindexing_status", "created_at")
+    search_fields = ["collection__name"]
+    list_filter = ["reindexing_status", "old_status"]
+
+
 class ResolvedTitleAdmin(admin.ModelAdmin):
     list_display = ["title_pattern", "candidate_url", "resolved_title", "created_at"]
 
@@ -449,6 +464,7 @@ class CuratedUrlAdmin(TDAMMAdminMixin, admin.ModelAdmin):
     form = CuratedURLForm
 
 
+admin.site.register(ReindexingHistory, ReindexingHistoryAdmin)
 admin.site.register(WorkflowHistory, WorkflowHistoryAdmin)
 admin.site.register(CandidateURL, CandidateURLAdmin)
 admin.site.register(TitlePattern, TitlePatternAdmin)

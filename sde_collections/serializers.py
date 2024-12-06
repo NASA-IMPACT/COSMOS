@@ -15,6 +15,7 @@ from .models.delta_url import CuratedUrl, DeltaUrl
 class CollectionSerializer(serializers.ModelSerializer):
     curation_status_display = serializers.CharField(source="get_curation_status_display", read_only=True)
     workflow_status_display = serializers.CharField(source="get_workflow_status_display", read_only=True)
+    reindexing_status_display = serializers.CharField(source="get_reindexing_status_display", read_only=True)
 
     class Meta:
         model = Collection
@@ -22,8 +23,10 @@ class CollectionSerializer(serializers.ModelSerializer):
             "id",
             "curation_status",
             "workflow_status",
+            "reindexing_status",
             "curation_status_display",
             "workflow_status_display",
+            "reindexing_status_display",
             "curated_by",
             "division",
             "document_type",
@@ -33,6 +36,7 @@ class CollectionSerializer(serializers.ModelSerializer):
             "division": {"required": False},
             "document_type": {"required": False},
             "name": {"required": False},
+            "reindexing_status": {"required": False},
         }
 
         # extra_kwargs = {
