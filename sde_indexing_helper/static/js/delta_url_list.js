@@ -253,6 +253,7 @@ function initializeDataTable() {
     columns: [
       getURLColumn(),
       getExcludedColumn(true_icon, false_icon),
+      getDeletedColumn(true_icon, false_icon),
       getScrapedTitleColumn(),
       getGeneratedTitleColumn(),
       getDocumentTypeColumn(),
@@ -1205,6 +1206,17 @@ function getCuratedURLColumn() {
       )}</span>
       <a target="_blank" href="${data}" data-url="/api/curated-urls/${row["id"]
         }/" class="url-link"> <i class="material-icons url-icon">open_in_new</i></a></div>`;
+    },
+  };
+}
+
+function getDeletedColumn(true_icon, false_icon) {
+  return {
+    data: "to_delete",
+    width: "10%",
+    class: "col-1 text-center",
+    render: function (data, type, row) {
+      return data === true ? true_icon : false_icon;
     },
   };
 }

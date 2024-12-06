@@ -72,6 +72,7 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                     <tr>
                         <th scope="col" class="text-center col-1"><div class="header-title">URL</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">Exclude</div></th>
+                        <th class="text-center col-1" scope="col"><div class="header-title">Deleted</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">Scraped Title</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">New Title</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">Document Type</div></th>
@@ -90,6 +91,10 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                     </tr>
                     <tr>
                         <td ><input type="text" class="table_filter_row_input textBoxStyling" id="deltaUrlFilter" placeholder="URL" /></td>
+                        <td ><select class="dropdown-1 select-dropdown selectStyling"><option value="">SELECT</option>
+                            <option value="false">FALSE</option>
+                            <option value="true">TRUE</option>
+                        </select></td>
                         <td ><select class="dropdown-1 select-dropdown selectStyling"><option value="">SELECT</option>
                             <option value="false">FALSE</option>
                             <option value="true">TRUE</option>
