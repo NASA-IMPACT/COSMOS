@@ -1,3 +1,18 @@
+// Define column constants for better maintainability
+const COLUMNS = {
+  NAME: 0,
+  URL: 1,
+  DIVISION: 2,
+  DELTA_URLS: 3,
+  WORKFLOW_STATUS: 4,
+  CURATOR: 5,
+  CONNECTOR_TYPE: 6,
+  REINDEXING_STATUS: 7,
+  WORKFLOW_STATUS_RAW: 8,
+  CURATOR_ID: 9,
+  REINDEXING_STATUS_RAW: 10
+};
+
 var uniqueId; //used for logic related to contents on column customization modal
 
 function modalContents(tableName) {
@@ -107,70 +122,68 @@ let table = $("#collection_table").DataTable({
     },
   ],
   columnDefs: [
+    // hide the data columns
     {
-      targets: [8, 9], // Added 9 for reindexing status ID
+      targets: [COLUMNS.WORKFLOW_STATUS_RAW, COLUMNS.CURATOR_ID, COLUMNS.REINDEXING_STATUS_RAW],
       visible: false,
     },
-    { width: "200px", targets: 1 },
+    { width: "200px", targets: COLUMNS.URL },
     {
       searchPanes: {
         options: [
           {
             label: "0 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[3]).text() == 0;
+              return $(rowData[COLUMNS.DELTA_URLS]).text() == 0;
             },
           },
           {
             label: "1 solo URL",
             value: function (rowData, rowIdx) {
-              return $(rowData[3]).text() == 1;
+              return $(rowData[COLUMNS.DELTA_URLS]).text() == 1;
             },
           },
           {
             label: "1 to 100 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[3]).text() <= 100 && $(rowData[3]).text() > 1;
+              return $(rowData[COLUMNS.DELTA_URLS]).text() <= 100 && $(rowData[COLUMNS.DELTA_URLS]).text() > 1;
             },
           },
           {
             label: "100 to 1,000 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[3]).text() <= 1000 && $(rowData[3]).text() > 100;
+              return $(rowData[COLUMNS.DELTA_URLS]).text() <= 1000 && $(rowData[COLUMNS.DELTA_URLS]).text() > 100;
             },
           },
           {
             label: "1,000 to 10,000 URLs",
             value: function (rowData, rowIdx) {
-              return (
-                $(rowData[3]).text() <= 10000 && $(rowData[3]).text() > 1000
-              );
+              return $(rowData[COLUMNS.DELTA_URLS]).text() <= 10000 && $(rowData[COLUMNS.DELTA_URLS]).text() > 1000;
             },
           },
           {
             label: "10,000 to 100,000 URLs",
             value: function (rowData, rowIdx) {
-              return (
-                $(rowData[3]).text() <= 100000 && $(rowData[3]).text() > 10000
-              );
+              return $(rowData[COLUMNS.DELTA_URLS]).text() <= 100000 && $(rowData[COLUMNS.DELTA_URLS]).text() > 10000;
             },
           },
           {
             label: "Over 100,000 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[3]).text() > 100000;
+              return $(rowData[COLUMNS.DELTA_URLS]).text() > 100000;
             },
           },
         ],
       },
-      targets: [3],
+      targets: [COLUMNS.DELTA_URLS],
       type: "num-fmt",
     },
+    // hide the data panes
     {
       searchPanes: {
         show: false,
       },
-      targets: [8, 9, 10], // this hides the id columns for reindexing status and some other one
+      targets: [COLUMNS.WORKFLOW_STATUS_RAW, COLUMNS.CURATOR_ID, COLUMNS.REINDEXING_STATUS_RAW],
     },
     {
       searchPanes: {
@@ -178,7 +191,7 @@ let table = $("#collection_table").DataTable({
           scrollY: "100%",
         },
       },
-      targets: [5],
+      targets: [COLUMNS.CURATOR],
     },
     {
       searchPanes: {
@@ -186,76 +199,49 @@ let table = $("#collection_table").DataTable({
           scrollY: "100%",
         },
       },
-      targets: [6], // Add searchPane for reindexing status column
+      targets: [COLUMNS.CONNECTOR_TYPE],
     },
   ],
 });
 
 $("#collection-dropdown-4").on("change", function () {
   table
-    .columns(7)
+    .columns(COLUMNS.WORKFLOW_STATUS_RAW)
     .search(this.value ? "^" + this.value + "$" : "", true, false)
     .draw();
 });
 
 $("#collection-dropdown-5").on("change", function () {
   table
-    .columns(8)
+    .columns(COLUMNS.CURATOR_ID)
     .search(this.value ? "^" + this.value + "$" : "", true, false)
     .draw();
 });
 
+$("#collection-dropdown-6").on("change", function () {
+  table
+    .columns(COLUMNS.REINDEXING_STATUS_RAW)
+    .search(this.value ? "^" + this.value + "$" : "", true, false)
+    .draw();
+});
 
 $("#nameFilter").on("keyup", function () {
-  table.columns(0).search(this.value).draw();
+  table.columns(COLUMNS.NAME).search(this.value).draw();
 });
 
 $("#urlFilter").on("keyup", function () {
-  table.columns(1).search(this.value).draw();
+  table.columns(COLUMNS.URL).search(this.value).draw();
 });
 
 $("#divisionFilter").on("keyup", function () {
-  table.columns(2).search(this.value).draw();
+  table.columns(COLUMNS.DIVISION).search(this.value).draw();
 });
 
 $("#connectorTypeFilter").on("keyup", function () {
-  table.columns(6).search(this.value).draw();
+  table.columns(COLUMNS.CONNECTOR_TYPE).search(this.value).draw();
 });
 
 var csrftoken = $('input[name="csrfmiddlewaretoken"]').val();
-
-// I don't think this function is being used
-// function handleCurationStatusSelect() {
-//     $("body").on("click", ".curation_status_select", function () {
-//         var collection_id = $(this).data('collection-id');
-//         var curation_status = $(this).attr('value');
-//         var curation_status_text = $(this).text();
-//         var color_choices = {
-//             1: "btn-light",
-//             2: "btn-danger",
-//             3: "btn-warning",
-//             4: "btn-info",
-//             5: "btn-success",
-//             6: "btn-primary",
-//             7: "btn-info",
-//             8: "btn-secondary",
-//         }
-
-//         $possible_buttons = $('body').find(`[id="curation-status-button-${collection_id}"]`);
-//         if ($possible_buttons.length > 1) {
-//             $button = $possible_buttons[1];
-//             $button = $($button);
-//         } else {
-//             $button = $(`#curation-status-button-${collection_id}`);
-//         }
-//         $button.text(curation_status_text);
-//         $button.removeClass('btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary');
-//         $button.addClass(color_choices[parseInt(curation_status)]);
-//         $('#collection_table').DataTable().searchPanes.rebuildPane(6);
-//         var collection_division = $(this).data('collection-division');
-//         postCurationStatus(collection_id, curation_status, collection_division);
-//     });
-// }
 
 function handleWorkflowStatusSelect() {
   $("body").on("click", ".workflow_status_select", function () {
@@ -297,7 +283,7 @@ function handleWorkflowStatusSelect() {
     $button.addClass(color_choices[parseInt(workflow_status)]);
     var row = table.row("#" + collection_id);
     let index = row.index();
-    var $html = $("<div />", { html: table.data()[index][4] });
+    var $html = $("<div />", { html: table.data()[index][COLUMNS.WORKFLOW_STATUS] });
     $html.find("button").html(workflow_status_text);
     $html
       .find("button")
@@ -305,12 +291,13 @@ function handleWorkflowStatusSelect() {
         "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
       );
     $html.find("button").addClass(color_choices[parseInt(workflow_status)]);
-    table.data()[index][4] = $html.html();
-    $("#collection_table").DataTable().searchPanes.rebuildPane(4);
+    table.data()[index][COLUMNS.WORKFLOW_STATUS] = $html.html();
+    $("#collection_table").DataTable().searchPanes.rebuildPane(COLUMNS.WORKFLOW_STATUS);
 
     postWorkflowStatus(collection_id, workflow_status);
   });
 }
+
 function handleReindexingStatusSelect() {
   $("body").on("click", ".reindexing_status_select", function () {
     var collection_id = $(this).data("collection-id");
@@ -341,7 +328,7 @@ function handleReindexingStatusSelect() {
     $button.addClass(color_choices[parseInt(reindexing_status)]);
     var row = table.row("#" + collection_id);
     let index = row.index();
-    var $html = $("<div />", { html: table.data()[index][7] }); // Assuming this is column index 7
+    var $html = $("<div />", { html: table.data()[index][COLUMNS.REINDEXING_STATUS] });
     $html.find("button").html(reindexing_status_text);
     $html
       .find("button")
@@ -349,13 +336,12 @@ function handleReindexingStatusSelect() {
         "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
       );
     $html.find("button").addClass(color_choices[parseInt(reindexing_status)]);
-    table.data()[index][7] = $html.html();
-    $("#collection_table").DataTable().searchPanes.rebuildPane(7);
+    table.data()[index][COLUMNS.REINDEXING_STATUS] = $html.html();
+    $("#collection_table").DataTable().searchPanes.rebuildPane(COLUMNS.REINDEXING_STATUS);
 
     postReindexingStatus(collection_id, reindexing_status);
   });
 }
-
 
 function handleCuratorSelect() {
   $("body").on("click", ".curator_select", function () {
@@ -380,10 +366,10 @@ function handleCuratorSelect() {
     $button.addClass("btn-success");
     var row = table.row("#" + collection_id);
     let index = row.index();
-    var $html = $("<div />", { html: table.data()[index][5] });
+    var $html = $("<div />", { html: table.data()[index][COLUMNS.CURATOR] });
     $html.find("button").html(curator_text);
-    table.data()[index][5] = $html.html();
-    table.searchPanes.rebuildPane(5);
+    table.data()[index][COLUMNS.CURATOR] = $html.html();
+    table.searchPanes.rebuildPane(COLUMNS.CURATOR);
     postCurator(collection_id, curator_id);
   });
 }
@@ -406,23 +392,6 @@ function postReindexingStatus(collection_id, reindexing_status) {
   });
 }
 
-function postCurationStatus(collection_id, curation_status) {
-  var url = `/api/collections/${collection_id}/`;
-  $.ajax({
-    url: url,
-    type: "PUT",
-    data: {
-      curation_status: curation_status,
-      csrfmiddlewaretoken: csrftoken,
-    },
-    headers: {
-      "X-CSRFToken": csrftoken,
-    },
-    success: function (data) {
-      toastr.success("Curation Status Updated!");
-    },
-  });
-}
 
 function postWorkflowStatus(collection_id, workflow_status) {
   var url = `/api/collections/${collection_id}/`;
@@ -486,6 +455,7 @@ $(document).ready(function () {
     // Clear previous search
     table.search('').columns().search('');
 
+    // TODO: this section might still need to be refactored to align with our column index definitions
     // Filter the table based on the query in the collection name and config folder data attribute
     table.rows().every(function () {
       let row = $(this.node());
@@ -519,7 +489,6 @@ $(document).ready(function () {
 });
 
 function setupClickHandlers() {
-  // handleCurationStatusSelect();
   handleWorkflowStatusSelect();
   handleReindexingStatusSelect();
   handleCuratorSelect();
