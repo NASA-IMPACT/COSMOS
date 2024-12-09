@@ -56,10 +56,17 @@ class Command(BaseCommand):
         )
 
     def get_backup_filename(self, server: Server, compress: bool) -> tuple[str, str]:
-        """Generate backup filename and actual dump path."""
+        """Generate backup filename and actual dump path.
+
+        Returns:
+            tuple[str, str]: A tuple containing (final_filename, temp_filename)
+                - final_filename: The name of the final backup file (with .gz if compressed)
+                - temp_filename: The name of the temporary dump file (always without .gz)
+        """
         date_str = datetime.now().strftime("%Y%m%d")
-        base_name = f"{server.value.lower()}_backup_{date_str}.sql"
-        return f"{base_name}.gz" if compress else base_name, base_name
+        temp_filename = f"{server.value.lower()}_backup_{date_str}.sql"
+        final_filename = f"{temp_filename}.gz" if compress else temp_filename
+        return final_filename, temp_filename
 
     def run_pg_dump(self, output_file: str, env: dict) -> None:
         """Execute pg_dump with given parameters."""
