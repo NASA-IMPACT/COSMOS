@@ -28,35 +28,8 @@ jobs:
       - name: Build the Docker environment
         run: docker-compose -f local.yml build
 
-      - name: Run tests for delta patterns
-        run: docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_delta_patterns.py
-
-      - name: Run tests for exclude patterns
-        run: docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_exclude_patterns.py
-
-      - name: Run tests for include patterns
-        run: docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_include_patterns.py
-
-      - name: Run tests for field modifier patterns
-        run: docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_field_modifier_patterns.py
-
-      - name: Run tests for promote collection
-        run: docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_promote_collection.py
-
-      - name: Run tests for migrate dump
-        run: docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_migrate_dump.py
-
-      - name: Run tests for pattern specificity
-        run: docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_pattern_specificity.py
-
-      - name: Run tests for APIs
-        run: docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_apis.py
-
-      - name: Run tests for import fulltexts
-        run: docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_import_fulltexts.py
-
-      - name: Run API tests
-        run: docker-compose -f local.yml run --rm django pytest sde_collections/tests/api_tests.py
+      - name: Run test suite
+        run: docker-compose -f local.yml run --rm django bash ./init.sh
 
       - name: Cleanup
         run: docker-compose -f local.yml down
