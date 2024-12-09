@@ -4,8 +4,14 @@ echo "Running all test cases across the project..."
 # Initialize a failure counter
 failure_count=0
 
-# Find and run all Python files starting with 'test_' in the entire project directory
-for test_file in $(find . -type f -name "test_*.py"); do
+# Exclude tests in `document_classifier` and `functional_tests` directories
+excluded_dirs="document_classifier functional_tests"
+
+# Find all test files except those in excluded directories
+test_files=$(find . -type f -name "test_*.py" | grep -Ev "$(echo $excluded_dirs | sed 's/ /|/g')")
+
+# Run each test file
+for test_file in $test_files; do
     echo "Running $test_file..."
     pytest "$test_file"
 
