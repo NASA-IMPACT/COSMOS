@@ -23,7 +23,6 @@ COPY ./requirements .
 RUN pip wheel --wheel-dir /usr/src/app/wheels  \
   -r ${BUILD_ENVIRONMENT}.txt
 
-
 # Python 'run' stage
 FROM python AS python-run-stage
 
@@ -39,9 +38,10 @@ WORKDIR ${APP_HOME}
 RUN addgroup --system django \
   && adduser --system --ingroup django django
 
-
 # Install required system dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
+  wget \
+  gnupg \
   # psycopg2 dependencies
   libpq-dev \
   # Translations dependencies
@@ -49,6 +49,11 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   # pycurl dependencies
   libcurl4-openssl-dev \
   libssl-dev \
+  # PostgreSQL 15
+  && sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
+  && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+  && apt-get update \
+  && apt-get install -y postgresql-15 postgresql-client-15 \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
@@ -61,24 +66,21 @@ COPY --from=python-build-stage /usr/src/app/wheels  /wheels/
 RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* \
   && rm -rf /wheels/
 
-
 COPY --chown=django:django ./compose/production/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
 RUN chmod +x /entrypoint
 
-
 COPY --chown=django:django ./compose/production/django/start /start
 RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
+
 COPY --chown=django:django ./compose/production/django/celery/worker/start /start-celeryworker
 RUN sed -i 's/\r$//g' /start-celeryworker
 RUN chmod +x /start-celeryworker
 
-
 COPY --chown=django:django ./compose/production/django/celery/beat/start /start-celerybeat
 RUN sed -i 's/\r$//g' /start-celerybeat
 RUN chmod +x /start-celerybeat
-
 
 COPY ./compose/production/django/celery/flower/start /start-flower
 RUN sed -i 's/\r$//g' /start-flower
