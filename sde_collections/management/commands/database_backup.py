@@ -3,13 +3,17 @@ Management command to backup PostgreSQL database.
 
 Usage:
     docker-compose -f local.yml run --rm django python manage.py database_backup
+    docker-compose -f local.yml run --rm django python manage.py database_backup --no-compress
     docker-compose -f production.yml run --rm django python manage.py database_backup
 """
 
 import enum
+import gzip
 import os
+import shutil
 import socket
 import subprocess
+from contextlib import contextmanager
 from datetime import datetime
 
 from django.conf import settings
@@ -24,7 +28,6 @@ class Server(enum.Enum):
 
 def detect_server() -> Server:
     hostname = socket.gethostname().upper()
-
     if "PRODUCTION" in hostname:
         return Server.PRODUCTION
     elif "STAGING" in hostname:
@@ -32,26 +35,78 @@ def detect_server() -> Server:
     return Server.UNKNOWN
 
 
+@contextmanager
+def temp_file_handler(filename: str):
+    """Context manager to handle temporary files, ensuring cleanup."""
+    try:
+        yield filename
+    finally:
+        if os.path.exists(filename):
+            os.remove(filename)
+
+
 class Command(BaseCommand):
     help = "Creates a PostgreSQL backup using pg_dump"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--no-compress",
+            action="store_true",
+            help="Disable backup file compression (enabled by default)",
+        )
+
+    def get_backup_filename(self, server: Server, compress: bool) -> tuple[str, str]:
+        """Generate backup filename and actual dump path."""
+        date_str = datetime.now().strftime("%Y%m%d")
+        base_name = f"{server.value.lower()}_backup_{date_str}.sql"
+        return f"{base_name}.gz" if compress else base_name, base_name
+
+    def run_pg_dump(self, output_file: str, env: dict) -> None:
+        """Execute pg_dump with given parameters."""
+        db_settings = settings.DATABASES["default"]
+        cmd = [
+            "pg_dump",
+            "-h",
+            db_settings["HOST"],
+            "-U",
+            db_settings["USER"],
+            "-d",
+            db_settings["NAME"],
+            "--no-owner",
+            "--no-privileges",
+            "-f",
+            output_file,
+        ]
+        subprocess.run(cmd, env=env, check=True)
+
+    def compress_file(self, input_file: str, output_file: str) -> None:
+        """Compress input file to output file using gzip."""
+        with open(input_file, "rb") as f_in:
+            with gzip.open(output_file, "wb") as f_out:
+                shutil.copyfileobj(f_in, f_out)
+
     def handle(self, *args, **options):
         server = detect_server()
-        date_str = datetime.now().strftime("%Y%m%d")
-        backup_file = f"{server.value.lower()}_backup_{date_str}.sql"
+        compress = not options["no_compress"]
+        backup_file, dump_file = self.get_backup_filename(server, compress)
 
-        db_settings = settings.DATABASES["default"]
-        host = db_settings["HOST"]
-        name = db_settings["NAME"]
-        user = db_settings["USER"]
-        password = db_settings["PASSWORD"]
-
-        cmd = ["pg_dump", "-h", host, "-U", user, "-d", name, "--no-owner", "--no-privileges", "-f", backup_file]
+        env = os.environ.copy()
+        env["PGPASSWORD"] = settings.DATABASES["default"]["PASSWORD"]
 
         try:
-            env = os.environ.copy()
-            env["PGPASSWORD"] = password
-            subprocess.run(cmd, env=env, check=True)
-            self.stdout.write(self.style.SUCCESS(f"Successfully created backup for {server.value}: {backup_file}"))
+            if compress:
+                with temp_file_handler(dump_file):
+                    self.run_pg_dump(dump_file, env)
+                    self.compress_file(dump_file, backup_file)
+            else:
+                self.run_pg_dump(backup_file, env)
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Successfully created {'compressed ' if compress else ''}backup for {server.value}: {backup_file}"
+                )
+            )
         except subprocess.CalledProcessError as e:
             self.stdout.write(self.style.ERROR(f"Backup failed on {server.value}: {str(e)}"))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"Error during backup process: {str(e)}"))

@@ -1,15 +1,18 @@
 """
-Management command to restore PostgreSQL database.
+Management command to restore PostgreSQL database from backup.
 
 Usage:
-    docker-compose -f local.yml run --rm django python manage.py database_restore path/to/backup.sql
-    docker-compose -f production.yml run --rm django python manage.py database_restore path/to/backup.sql
+    docker-compose -f local.yml run --rm django python manage.py database_restore path/to/backup.sql[.gz]
+    docker-compose -f production.yml run --rm django python manage.py database_restore path/to/backup.sql[.gz]
 """
 
 import enum
+import gzip
 import os
+import shutil
 import socket
 import subprocess
+from contextlib import contextmanager
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -30,46 +33,86 @@ def detect_server() -> Server:
     return Server.UNKNOWN
 
 
+@contextmanager
+def temp_file_handler(filename: str):
+    """Context manager to handle temporary files, ensuring cleanup."""
+    try:
+        yield filename
+    finally:
+        if os.path.exists(filename):
+            os.remove(filename)
+
+
 class Command(BaseCommand):
-    help = "Restores PostgreSQL database from backup file"
+    help = "Restores PostgreSQL database from backup file (compressed or uncompressed)"
 
     def add_arguments(self, parser):
-        parser.add_argument("backup_path", type=str, help="Path to the backup file")
+        parser.add_argument("backup_path", type=str, help="Path to the backup file (.sql or .sql.gz)")
+
+    def get_db_settings(self):
+        """Get database connection settings."""
+        db = settings.DATABASES["default"]
+        return {
+            "host": db["HOST"],
+            "name": db["NAME"],
+            "user": db["USER"],
+            "password": db["PASSWORD"],
+        }
+
+    def run_psql_command(self, command: str, db_name: str = "postgres", env: dict = None) -> None:
+        """Execute a psql command."""
+        db = self.get_db_settings()
+        cmd = ["psql", "-h", db["host"], "-U", db["user"], "-d", db_name, "-c", command]
+        subprocess.run(cmd, env=env, check=True)
+
+    def reset_database(self, env: dict) -> None:
+        """Drop and recreate the database."""
+        db = self.get_db_settings()
+        self.stdout.write(f"Dropping database {db['name']}...")
+        self.run_psql_command(f"DROP DATABASE IF EXISTS {db['name']}", env=env)
+
+        self.stdout.write(f"Creating database {db['name']}...")
+        self.run_psql_command(f"CREATE DATABASE {db['name']}", env=env)
+
+    def restore_backup(self, backup_file: str, env: dict) -> None:
+        """Restore database from backup file."""
+        db = self.get_db_settings()
+        cmd = ["psql", "-h", db["host"], "-U", db["user"], "-d", db["name"], "-f", backup_file]
+        self.stdout.write("Restoring from backup...")
+        subprocess.run(cmd, env=env, check=True)
+
+    def decompress_file(self, input_file: str, output_file: str) -> None:
+        """Decompress gzipped file to output file."""
+        with gzip.open(input_file, "rb") as f_in:
+            with open(output_file, "wb") as f_out:
+                shutil.copyfileobj(f_in, f_out)
 
     def handle(self, *args, **options):
         server = detect_server()
         backup_path = options["backup_path"]
+        is_compressed = backup_path.endswith(".gz")
 
         if not os.path.exists(backup_path):
             raise CommandError(f"Backup file not found: {backup_path}")
 
-        db_settings = settings.DATABASES["default"]
-        host = db_settings["HOST"]
-        name = db_settings["NAME"]
-        user = db_settings["USER"]
-        password = db_settings["PASSWORD"]
-
-        # Drop and recreate database
-        drop_cmd = ["psql", "-h", host, "-U", user, "-d", "postgres", "-c", f"DROP DATABASE IF EXISTS {name}"]
-        create_cmd = ["psql", "-h", host, "-U", user, "-d", "postgres", "-c", f"CREATE DATABASE {name}"]
-
-        # Restore command
-        restore_cmd = ["psql", "-h", host, "-U", user, "-d", name, "-f", backup_path]
+        env = os.environ.copy()
+        env["PGPASSWORD"] = self.get_db_settings()["password"]
 
         try:
-            env = os.environ.copy()
-            env["PGPASSWORD"] = password
+            # Reset the database first
+            self.reset_database(env)
 
-            self.stdout.write(f"Dropping database {name}...")
-            subprocess.run(drop_cmd, env=env, check=True)
-
-            self.stdout.write(f"Creating database {name}...")
-            subprocess.run(create_cmd, env=env, check=True)
-
-            self.stdout.write("Restoring from backup...")
-            subprocess.run(restore_cmd, env=env, check=True)
+            # Handle backup restoration
+            if is_compressed:
+                with temp_file_handler(backup_path[:-3]) as temp_file:
+                    self.decompress_file(backup_path, temp_file)
+                    self.restore_backup(temp_file, env)
+            else:
+                self.restore_backup(backup_path, env)
 
             self.stdout.write(self.style.SUCCESS(f"Successfully restored {server.value} database from {backup_path}"))
 
         except subprocess.CalledProcessError as e:
             self.stdout.write(self.style.ERROR(f"Restore failed on {server.value}: {str(e)}"))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"Error during restore process: {str(e)}"))
