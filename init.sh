@@ -8,7 +8,7 @@ failure_count=0
 for test_file in $(find . -type f -name "test_*.py"); do
     echo "Running $test_file..."
     pytest "$test_file"
-    
+
     # Check the exit status of pytest
     if [ $? -ne 0 ]; then
         echo "Test failed: $test_file"
