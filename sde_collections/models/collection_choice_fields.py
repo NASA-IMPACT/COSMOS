@@ -102,8 +102,8 @@ class WorkflowStatusChoices(models.IntegerChoices):
 
 class ReindexingStatusChoices(models.IntegerChoices):
     REINDEXING_NOT_NEEDED = 1, "Re-Indexing Not Needed"
-    REINDEXING_NEEDED_ON_DEV = 2, "Re-Indexing Needed on LRM Dev"
-    REINDEXING_FINISHED_ON_DEV = 3, "Re-Indexing Finished on LRM Dev"
+    REINDEXING_NEEDED_ON_DEV = 2, "Re-Indexing Needed"
+    REINDEXING_FINISHED_ON_DEV = 3, "Re-Indexing Finished"
     REINDEXING_READY_FOR_CURATION = 4, "Ready for Re-Curation"
     REINDEXING_CURATED = 5, "Re-Curation Finished"
     REINDEXING_INDEXED_ON_PROD = 6, "Re-Indexed on Prod"
