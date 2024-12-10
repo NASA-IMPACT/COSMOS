@@ -4,36 +4,22 @@ Management command to backup PostgreSQL database.
 Usage:
     docker-compose -f local.yml run --rm django python manage.py database_backup
     docker-compose -f local.yml run --rm django python manage.py database_backup --no-compress
-    docker-compose -f local.yml run --rm django python manage.py database_backup --output /path/to/output.sql
+    docker-compose -f local.yml run --rm django python manage.py database_backup --output my_backup.sql
     docker-compose -f production.yml run --rm django python manage.py database_backup
+
+All backups are stored in the /backups directory, which is mounted as a volume in both local
+and production environments. If specifying a custom output path, it will be relative to this directory.
 """
 
-import enum
 import gzip
 import os
 import shutil
-import socket
 import subprocess
 from contextlib import contextmanager
 from datetime import datetime
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
-
-class Server(enum.Enum):
-    PRODUCTION = "PRODUCTION"
-    STAGING = "STAGING"
-    UNKNOWN = "UNKNOWN"
-
-
-def detect_server() -> Server:
-    hostname = socket.gethostname().upper()
-    if "PRODUCTION" in hostname:
-        return Server.PRODUCTION
-    elif "STAGING" in hostname:
-        return Server.STAGING
-    return Server.UNKNOWN
 
 
 @contextmanager
@@ -58,36 +44,45 @@ class Command(BaseCommand):
         parser.add_argument(
             "--output",
             type=str,
-            help="Output file path (default: auto-generated based on server name and date)",
+            help="Output file path (default: auto-generated in /app/backups directory)",
         )
 
-    def get_backup_filename(self, server: Server, compress: bool, custom_output: str = None) -> tuple[str, str]:
+    def get_backup_filename(self, compress: bool, custom_output: str = None) -> tuple[str, str]:
         """Generate backup filename and actual dump path.
 
         Args:
-            server: Server enum indicating the environment
             compress: Whether the output should be compressed
             custom_output: Optional custom output path
 
         Returns:
-            tuple[str, str]: A tuple containing (final_filename, temp_filename)
-                - final_filename: The name of the final backup file (with .gz if compressed)
-                - temp_filename: The name of the temporary dump file (always without .gz)
+            tuple[str, str]: A tuple containing:
+                - final_filename: Full path for the final backup file (with .gz if compressed)
+                - temp_filename: Full path for the temporary dump file (without .gz)
         """
+        backup_dir = "/app/backups"
+        os.makedirs(backup_dir, exist_ok=True)
+
         if custom_output:
+            # If custom_output is relative, make it relative to backup_dir
+            if not custom_output.startswith("/"):
+                custom_output = os.path.join(backup_dir, custom_output)
+
             # Ensure the output directory exists
             output_dir = os.path.dirname(custom_output)
             if output_dir:
                 os.makedirs(output_dir, exist_ok=True)
 
             if compress:
-                return custom_output + (".gz" if not custom_output.endswith(".gz") else ""), custom_output.removesuffix(
+                return custom_output + (
+                    ".gz" if not custom_output.endswith(".gz") else ""
+                ), custom_output.removesuffix(  # noqa
                     ".gz"
                 )
             return custom_output, custom_output
         else:
             date_str = datetime.now().strftime("%Y%m%d")
-            temp_filename = f"{server.value.lower()}_backup_{date_str}.sql"
+            env_name = os.getenv("BACKUP_ENVIRONMENT", "unknown")
+            temp_filename = os.path.join(backup_dir, f"{env_name}_backup_{date_str}.sql")
             final_filename = f"{temp_filename}.gz" if compress else temp_filename
             return final_filename, temp_filename
 
@@ -116,9 +111,15 @@ class Command(BaseCommand):
                 shutil.copyfileobj(f_in, f_out)
 
     def handle(self, *args, **options):
-        server = detect_server()
+        if not os.getenv("BACKUP_ENVIRONMENT"):
+            self.stdout.write(
+                self.style.WARNING(
+                    "Note: Set BACKUP_ENVIRONMENT in your env if you want automatic environment-based filenames"
+                )
+            )
+
         compress = not options["no_compress"]
-        backup_file, dump_file = self.get_backup_filename(server, compress, options.get("output"))
+        backup_file, dump_file = self.get_backup_filename(compress, options.get("output"))
 
         env = os.environ.copy()
         env["PGPASSWORD"] = settings.DATABASES["default"]["PASSWORD"]
@@ -133,10 +134,10 @@ class Command(BaseCommand):
 
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Successfully created {'compressed ' if compress else ''}backup for {server.value}: {backup_file}"
+                    f"Successfully created {'compressed ' if compress else ''}backup at: backups/{os.path.basename(backup_file)}"  # noqa
                 )
             )
         except subprocess.CalledProcessError as e:
-            self.stdout.write(self.style.ERROR(f"Backup failed on {server.value}: {str(e)}"))
+            self.stdout.write(self.style.ERROR(f"Backup failed: {str(e)}"))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Error during backup process: {str(e)}"))

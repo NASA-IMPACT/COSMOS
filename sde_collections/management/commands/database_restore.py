@@ -2,8 +2,11 @@
 Management command to restore PostgreSQL database from backup.
 
 Usage:
-    docker-compose -f local.yml run --rm django python manage.py database_restore path/to/backup.sql[.gz]
-    docker-compose -f production.yml run --rm django python manage.py database_restore path/to/backup.sql[.gz]
+    docker-compose -f local.yml run --rm django python manage.py database_restore backups/backup.sql[.gz]
+    docker-compose -f production.yml run --rm django python manage.py database_restore backups/backup.sql[.gz]
+
+The backup file should be located in the /backups directory, which is mounted as a volume in both
+local and production environments.
 """
 
 import enum
