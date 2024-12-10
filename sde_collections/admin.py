@@ -244,7 +244,9 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
     list_display = (
         "name",
         "candidate_urls_count",
+        "included_candidate_urls_count",
         "delta_urls_count",
+        "included_delta_urls_count",
         "included_curated_urls_count",
         "config_folder",
         "url",
@@ -253,6 +255,26 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         "is_multi_division",
         "reindexing_status",
     )
+
+    def included_candidate_urls_count(self, obj) -> int:
+        return obj.candidate_urls.filter(excluded=False).count()
+
+    included_candidate_urls_count.short_description = "Included Candidate URLs Count"
+
+    def delta_urls_count(self, obj) -> int:
+        return obj.delta_urls.count()
+
+    delta_urls_count.short_description = "Total Delta URLs Count"
+
+    def included_delta_urls_count(self, obj) -> int:
+        return obj.delta_urls.filter(excluded=False).count()
+
+    included_delta_urls_count.short_description = "Included Delta URLs Count"
+
+    def included_curated_urls_count(self, obj) -> int:
+        return obj.curated_urls.filter(excluded=False).count()
+
+    included_curated_urls_count.short_description = "Included Curated URLs Count"
 
     readonly_fields = ("config_folder",)
     list_filter = (
