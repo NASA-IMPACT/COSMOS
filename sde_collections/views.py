@@ -24,6 +24,7 @@ from .models.collection_choice_fields import (
     CurationStatusChoices,
     Divisions,
     DocumentTypes,
+    ReindexingStatusChoices,
     WorkflowStatusChoices,
 )
 from .models.delta_patterns import (
@@ -80,6 +81,7 @@ class CollectionListView(LoginRequiredMixin, ListView):
         context["curators"] = User.objects.filter(groups__name="Curators")
         context["curation_status_choices"] = CurationStatusChoices
         context["workflow_status_choices"] = WorkflowStatusChoices
+        context["reindexing_status_choices"] = ReindexingStatusChoices
 
         return context
 

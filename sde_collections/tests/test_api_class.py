@@ -2,6 +2,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+import requests
 from django.utils import timezone
 
 from sde_collections.models.collection import WorkflowStatusChoices
@@ -160,3 +161,67 @@ class TestApiClass:
 
         with pytest.raises(ValueError, match="Authentication error: Missing credentials for dev server"):
             api_instance.query(page=1)
+
+    @patch("sde_collections.sinequa_api.Api._execute_sql_query")
+    def test_get_full_texts_batch_size_reduction(self, mock_execute_sql, api_instance):
+        """Test that batch size reduces appropriately on failure and continues processing."""
+        # Mock first query to fail, then succeed with smaller batch
+        mock_execute_sql.side_effect = [
+            requests.RequestException("Query too large"),  # First attempt fails
+            {
+                "Rows": [["http://example.com/1", "Text 1", "Title 1"]],
+                "TotalRowCount": 1,
+            },  # Succeeds with smaller batch
+        ]
+
+        batches = list(api_instance.get_full_texts("test_folder", batch_size=100, min_batch_size=1))
+
+        # Verify the batches were processed correctly after size reduction
+        assert len(batches) == 1
+        assert len(batches[0]) == 1
+        assert batches[0][0]["url"] == "http://example.com/1"
+
+        # Verify the calls made - first with original size, then with reduced size
+        assert mock_execute_sql.call_count == 2
+        first_call = mock_execute_sql.call_args_list[0][0][0]
+        second_call = mock_execute_sql.call_args_list[1][0][0]
+        assert "COUNT 100" in first_call
+        assert "COUNT 50" in second_call  # Should be halved from 100
+
+    @patch("sde_collections.sinequa_api.Api._execute_sql_query")
+    def test_get_full_texts_minimum_batch_size(self, mock_execute_sql, api_instance):
+        """Test behavior when reaching minimum batch size."""
+        mock_execute_sql.side_effect = requests.RequestException("Query failed")
+
+        # Start with batch_size=4, min_batch_size=1
+        # Should try: 4 -> 2 -> 1 -> raise error
+        with pytest.raises(ValueError, match="Failed to process batch even at minimum size 1"):
+            list(api_instance.get_full_texts("test_folder", batch_size=4, min_batch_size=1))
+
+        # Should have tried 3 times before giving up
+        assert mock_execute_sql.call_count == 3
+        calls = mock_execute_sql.call_args_list
+        assert "COUNT 4" in calls[0][0][0]  # First try with 4
+        assert "COUNT 2" in calls[1][0][0]  # Second try with 2
+        assert "COUNT 1" in calls[2][0][0]  # Final try with 1
+
+    @patch("sde_collections.sinequa_api.Api._execute_sql_query")
+    def test_get_full_texts_batch_size_progression(self, mock_execute_sql, api_instance):
+        """Test multiple batch size reductions followed by successful query."""
+        mock_execute_sql.side_effect = [
+            requests.RequestException("First failure"),
+            requests.RequestException("Second failure"),
+            {"Rows": [["http://example.com/1", "Text 1", "Title 1"]], "TotalRowCount": 1},
+        ]
+
+        # Start with batch_size=100, should reduce to 25 before succeeding
+        batches = list(api_instance.get_full_texts("test_folder", batch_size=100, min_batch_size=1))
+
+        assert len(batches) == 1  # Should get one successful batch
+        assert mock_execute_sql.call_count == 3
+
+        calls = mock_execute_sql.call_args_list
+        # Verify the progression of batch sizes
+        assert "COUNT 100" in calls[0][0][0]  # First attempt
+        assert "COUNT 50" in calls[1][0][0]  # After first failure
+        assert "COUNT 25" in calls[2][0][0]  # After second failure
