@@ -86,14 +86,14 @@ class TestUserRedirectView:
 
     def test_get_redirect_url(self, user: User, rf: RequestFactory):
         """
-        Test that UserRedirectView redirects to the correct user detail URL.
+        Test that UserRedirectView redirects to the "sde_collections:list" URL.
         """
         view = UserRedirectView()
         request = rf.get("/fake-url/")
         request.user = user
         view.request = request
 
-        expected_url = f"/users/{user.username}/"
+        expected_url = reverse("sde_collections:list")
         assert view.get_redirect_url() == expected_url, (
             f"Expected {expected_url}, got {view.get_redirect_url()}"
         )
@@ -128,4 +128,3 @@ class TestUserDetailView:
         assert isinstance(response, HttpResponseRedirect)
         assert response.status_code == 302
         assert response.url == f"{login_url}?next=/fake-url/"
-
