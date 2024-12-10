@@ -70,56 +70,97 @@ $ docker-compose -f local.yml run --rm django python manage.py createsuperuser
 
 Create additional users through the admin interface (/admin).
 
-### Loading Fixtures
+### Database Backup and Restore
 
-To load collections:
+COSMOS provides dedicated management commands for backing up and restoring your PostgreSQL database. These commands handle both compressed and uncompressed backups and automatically detect your server environment from your configuration.
 
-```bash
-$ docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/collections.json
-```
+#### Creating a Database Backup
 
-### Manually Creating and Loading a ContentTypeless Backup
-Navigate to the server running prod, then to the project folder. Run the following command to create a backup:
+To create a backup of your database:
 
 ```bash
-docker-compose -f production.yml run --rm --user root django python manage.py dumpdata --natural-foreign --natural-primary --exclude=contenttypes --exclude=auth.Permission --indent 2 --output /app/backups/prod_backup-20241114.json
+# Create a compressed backup (recommended)
+docker-compose -f local.yml run --rm django python manage.py database_backup
+
+# Create an uncompressed backup
+docker-compose -f local.yml run --rm django python manage.py database_backup --no-compress
+
+# Specify custom output location
+docker-compose -f local.yml run --rm django python manage.py database_backup --output /path/to/output.sql
 ```
-This will have saved the backup in a folder outside of the docker container. Now you can copy it to your local machine.
+
+The backup command will automatically:
+- Detect your server environment (Production/Staging/Local)
+- Use database credentials from your environment settings
+- Generate a dated filename if no output path is specified
+- Compress the backup by default (can be disabled with --no-compress)
+
+#### Restoring from a Database Backup
+
+To restore your database from a backup:
 
 ```bash
-mv ~/prod_backup-20240812.json <project_path>/prod_backup-20240812.json
-scp sde:/home/ec2-user/sde_indexing_helper/backups/prod_backup-20240812.json prod_backup-20240812.json
+# Restore from a backup (handles both .sql and .sql.gz files)
+docker-compose -f local.yml run --rm django python manage.py database_restore path/to/backup.sql[.gz]
 ```
 
-Finally, load the backup into your local database:
+The restore command will:
+- Automatically detect if the backup is compressed (.gz)
+- Terminate existing database connections
+- Drop and recreate the database
+- Restore all data from the backup
+- Handle all database credentials from your environment settings
+
+#### Working with Remote Servers
+
+When working with production or staging servers:
+
+1. First, SSH into the appropriate server:
+```bash
+# For production
+ssh user@production-server
+cd /path/to/project
+
+# For staging
+ssh user@staging-server
+cd /path/to/project
+```
+
+2. Then run the backup command with the production configuration:
+```bash
+docker-compose -f production.yml run --rm django python manage.py database_backup
+```
+
+3. Copy the backup to your local machine:
+```bash
+scp user@remote-server:/path/to/backup.sql.gz ./local-backup.sql.gz
+```
+
+4. Finally, restore locally:
+```bash
+docker-compose -f local.yml run --rm django python manage.py database_restore local-backup.sql.gz
+```
+
+#### Alternative Methods
+
+While the database_backup and database_restore commands are the recommended approach, there are alternative methods available:
+
+##### Using JSON Fixtures (for smaller datasets)
+If you're working with a smaller dataset, you can use Django's built-in fixtures:
 
 ```bash
-docker-compose -f local.yml run --rm django python manage.py loaddata prod_backup-20240812.json
+# Create a backup excluding content types
+docker-compose -f production.yml run --rm --user root django python manage.py dumpdata \
+    --natural-foreign --natural-primary \
+    --exclude=contenttypes --exclude=auth.Permission \
+    --indent 2 \
+    --output /app/backups/prod_backup-$(date +%Y%m%d).json
+
+# Restore from a fixture
+docker-compose -f local.yml run --rm django python manage.py loaddata /path/to/backup.json
 ```
 
-### Loading the Database from an Arbitrary Backup
-
-1. Build the project and run the necessary containers (as documented above).
-2. Clear out content types using the Django shell:
-
-```bash
-$ docker-compose -f local.yml run --rm django python manage.py shell
->>> from django.contrib.contenttypes.models import ContentType
->>> ContentType.objects.all().delete()
->>> exit()
-```
-
-3. Load your backup database:
-
-```bash
-$ docker cp /path/to/your/backup.json container_name:/path/inside/container/backup.json
-$ docker-compose -f local.yml run --rm django python manage.py loaddata /path/inside/the/container/backup.json
-$ docker-compose -f local.yml run --rm django python manage.py migrate
-```
-### Restoring the Database from a SQL Dump
-If the JSON file is particularly large (>1.5GB), Docker might struggle with this method. In such cases, you can use SQL dump and restore commands as an alternative, as described [here](./SQLDumpRestoration.md).
-
-
+Note: For large databases (>1.5GB), the database_backup and database_restore commands are strongly recommended over JSON fixtures as they handle large datasets more efficiently.
 
 ## Additional Commands
 
