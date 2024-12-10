@@ -97,6 +97,7 @@ class WorkflowStatusChoices(models.IntegerChoices):
     PROD_MAJOR = 16, "Prod: Major Issues"
     MERGE_PENDING = 17, "Code Merge Pending"
     NEEDS_DELETE = 19, "Delete from Prod"
+    INDEXING_FINISHED_ON_DEV = 20, "Indexing Finished on LRM Dev"
 
 
 class ReindexingStatusChoices(models.IntegerChoices):

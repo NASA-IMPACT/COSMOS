@@ -11,6 +11,7 @@ from model_utils import FieldTracker
 from slugify import slugify
 
 from config_generation.db_to_xml import XmlEditor
+from sde_collections.tasks import fetch_and_replace_full_text
 
 from ..utils.github_helper import GitHubHandler
 from ..utils.slack_utils import (
@@ -161,12 +162,6 @@ class Collection(models.Model):
         # self.refresh_url_lists_for_all_patterns() # TODO: I'm pretty confident we shouldn't be running this
         self.apply_all_patterns()
 
-        # After migrating, check if we should update reindexing status
-        curated_urls_count = self.curated_urls.count()
-        if curated_urls_count > 0:
-            self.reindexing_status = ReindexingStatusChoices.REINDEXING_READY_FOR_CURATION
-            self.save()
-
     def create_or_update_delta_url(self, url_instance, to_delete=False):
         """
         Creates or updates a DeltaUrl entry based on the given DumpUrl or CuratedUrl object.
@@ -235,12 +230,6 @@ class Collection(models.Model):
 
         # Step 4: Reapply patterns to DeltaUrls
         self.refresh_url_lists_for_all_patterns()
-
-        # After promoting, check if we should update reindexing status
-        curated_urls_count = self.curated_urls.count()
-        if curated_urls_count > 0:
-            self.reindexing_status = ReindexingStatusChoices.REINDEXING_CURATED
-            self.save()
 
     def add_to_public_query(self):
         """Add the collection to the public query."""
@@ -788,20 +777,32 @@ class ReindexingHistory(models.Model):
 
 @receiver(post_save, sender=Collection)
 def create_configs_on_status_change(sender, instance, created, **kwargs):
-    """
-    Creates various config files on certain workflow status changes
-    """
+    """Creates various config files on certain workflow status changes"""
 
-    if "workflow_status" in instance.tracker.changed():
-        if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
-            instance.create_plugin_config(overwrite=True)
-        elif instance.workflow_status == WorkflowStatusChoices.CURATED:
-            instance.promote_to_curated()
-        elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
-            instance.create_scraper_config(overwrite=False)
-            instance.create_indexer_config(overwrite=False)
-        elif instance.workflow_status in [
-            WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
-            WorkflowStatusChoices.QUALITY_CHECK_MINOR,
-        ]:
-            instance.add_to_public_query()
+    if getattr(instance, "_handling_status_change", False):
+        return
+
+    try:
+        instance._handling_status_change = True
+
+        if "workflow_status" in instance.tracker.changed():
+            if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
+                instance.create_plugin_config(overwrite=True)
+            elif instance.workflow_status == WorkflowStatusChoices.CURATED:
+                instance.promote_to_curated()
+            elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
+                instance.create_scraper_config(overwrite=False)
+                instance.create_indexer_config(overwrite=False)
+            elif instance.workflow_status == WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV:
+                fetch_and_replace_full_text.delay(instance.id, "lrm_dev")
+            elif instance.workflow_status in [
+                WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
+                WorkflowStatusChoices.QUALITY_CHECK_MINOR,
+            ]:
+                instance.add_to_public_query()
+
+        if "reindexing_status" in instance.tracker.changed():
+            if instance.reindexing_status == ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV:
+                fetch_and_replace_full_text.delay(instance.id, "lrm_dev")
+    finally:
+        instance._handling_status_change = False
