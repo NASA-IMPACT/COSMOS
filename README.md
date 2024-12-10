@@ -101,7 +101,7 @@ To restore your database from a backup:
 
 ```bash
 # Restore from a backup (handles both .sql and .sql.gz files)
-docker-compose -f local.yml run --rm django python manage.py database_restore path/to/backup.sql[.gz]
+docker-compose -f local.yml run -v local/path/to/directory:/backups --rm django python manage.py database_restore /backups/backup_file_name.sql[.gz]
 ```
 
 The restore command will:
