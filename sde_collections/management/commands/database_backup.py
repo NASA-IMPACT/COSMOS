@@ -4,6 +4,7 @@ Management command to backup PostgreSQL database.
 Usage:
     docker-compose -f local.yml run --rm django python manage.py database_backup
     docker-compose -f local.yml run --rm django python manage.py database_backup --no-compress
+    docker-compose -f local.yml run --rm django python manage.py database_backup --output /path/to/output.sql
     docker-compose -f production.yml run --rm django python manage.py database_backup
 """
 
@@ -54,19 +55,41 @@ class Command(BaseCommand):
             action="store_true",
             help="Disable backup file compression (enabled by default)",
         )
+        parser.add_argument(
+            "--output",
+            type=str,
+            help="Output file path (default: auto-generated based on server name and date)",
+        )
 
-    def get_backup_filename(self, server: Server, compress: bool) -> tuple[str, str]:
+    def get_backup_filename(self, server: Server, compress: bool, custom_output: str = None) -> tuple[str, str]:
         """Generate backup filename and actual dump path.
+
+        Args:
+            server: Server enum indicating the environment
+            compress: Whether the output should be compressed
+            custom_output: Optional custom output path
 
         Returns:
             tuple[str, str]: A tuple containing (final_filename, temp_filename)
                 - final_filename: The name of the final backup file (with .gz if compressed)
                 - temp_filename: The name of the temporary dump file (always without .gz)
         """
-        date_str = datetime.now().strftime("%Y%m%d")
-        temp_filename = f"{server.value.lower()}_backup_{date_str}.sql"
-        final_filename = f"{temp_filename}.gz" if compress else temp_filename
-        return final_filename, temp_filename
+        if custom_output:
+            # Ensure the output directory exists
+            output_dir = os.path.dirname(custom_output)
+            if output_dir:
+                os.makedirs(output_dir, exist_ok=True)
+
+            if compress:
+                return custom_output + (".gz" if not custom_output.endswith(".gz") else ""), custom_output.removesuffix(
+                    ".gz"
+                )
+            return custom_output, custom_output
+        else:
+            date_str = datetime.now().strftime("%Y%m%d")
+            temp_filename = f"{server.value.lower()}_backup_{date_str}.sql"
+            final_filename = f"{temp_filename}.gz" if compress else temp_filename
+            return final_filename, temp_filename
 
     def run_pg_dump(self, output_file: str, env: dict) -> None:
         """Execute pg_dump with given parameters."""
@@ -95,7 +118,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         server = detect_server()
         compress = not options["no_compress"]
-        backup_file, dump_file = self.get_backup_filename(server, compress)
+        backup_file, dump_file = self.get_backup_filename(server, compress, options.get("output"))
 
         env = os.environ.copy()
         env["PGPASSWORD"] = settings.DATABASES["default"]["PASSWORD"]

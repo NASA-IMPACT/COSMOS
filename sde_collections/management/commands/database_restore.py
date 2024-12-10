@@ -16,6 +16,7 @@ from contextlib import contextmanager
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.db import connections
 
 
 class Server(enum.Enum):
@@ -65,9 +66,32 @@ class Command(BaseCommand):
         cmd = ["psql", "-h", db["host"], "-U", db["user"], "-d", db_name, "-c", command]
         subprocess.run(cmd, env=env, check=True)
 
+    def terminate_database_connections(self, env: dict) -> None:
+        """Terminate all connections to the database."""
+        db = self.get_db_settings()
+        # Close Django's connection first
+        connections.close_all()
+
+        # Terminate any remaining PostgreSQL connections
+        terminate_conn_sql = f"""
+        SELECT pg_terminate_backend(pid)
+        FROM pg_stat_activity
+        WHERE datname = '{db["name"]}'
+        AND pid <> pg_backend_pid();
+        """
+        try:
+            self.run_psql_command(terminate_conn_sql, env=env)
+        except subprocess.CalledProcessError:
+            # If this fails, it's usually because there are no connections to terminate
+            pass
+
     def reset_database(self, env: dict) -> None:
         """Drop and recreate the database."""
         db = self.get_db_settings()
+
+        self.stdout.write(f"Terminating connections to {db['name']}...")
+        self.terminate_database_connections(env)
+
         self.stdout.write(f"Dropping database {db['name']}...")
         self.run_psql_command(f"DROP DATABASE IF EXISTS {db['name']}", env=env)
 
