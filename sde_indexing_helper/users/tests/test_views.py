@@ -10,7 +10,6 @@ from django.urls import reverse
 
 from sde_indexing_helper.users.forms import UserAdminChangeForm
 from sde_indexing_helper.users.models import User
-from sde_indexing_helper.users.tests.factories import UserFactory
 from sde_indexing_helper.users.views import (
     UserRedirectView,
     UserUpdateView,
