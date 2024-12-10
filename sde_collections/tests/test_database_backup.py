@@ -9,10 +9,7 @@ import pytest
 from django.core.management import call_command
 
 from sde_collections.management.commands import database_backup
-from sde_collections.management.commands.database_backup import (
-    Server,
-    temp_file_handler,
-)
+from sde_collections.management.commands.database_backup import temp_file_handler
 
 
 @pytest.fixture
@@ -49,17 +46,26 @@ def command():
 
 
 class TestBackupCommand:
-    def test_get_backup_filename_compressed(self, command, mock_date):
+    def test_get_backup_filename_compressed(self, command, mock_date, monkeypatch):
         """Test backup filename generation with compression."""
-        backup_file, dump_file = command.get_backup_filename(Server.STAGING, compress=True)
-        assert backup_file == "staging_backup_20240115.sql.gz"
-        assert dump_file == "staging_backup_20240115.sql"
+        monkeypatch.setenv("BACKUP_ENVIRONMENT", "staging")
+        backup_file, dump_file = command.get_backup_filename(compress=True)
+        assert backup_file.endswith("staging_backup_20240115.sql.gz")
+        assert dump_file.endswith("staging_backup_20240115.sql")
 
-    def test_get_backup_filename_uncompressed(self, command, mock_date):
+    def test_get_backup_filename_uncompressed(self, command, mock_date, monkeypatch):
         """Test backup filename generation without compression."""
-        backup_file, dump_file = command.get_backup_filename(Server.PRODUCTION, compress=False)
-        assert backup_file == "production_backup_20240115.sql"
+        monkeypatch.setenv("BACKUP_ENVIRONMENT", "production")
+        backup_file, dump_file = command.get_backup_filename(compress=False)
+        assert backup_file.endswith("production_backup_20240115.sql")
         assert dump_file == backup_file
+
+    def test_get_backup_filename_no_environment(self, command, mock_date, monkeypatch):
+        """Test backup filename generation with no environment set."""
+        monkeypatch.delenv("BACKUP_ENVIRONMENT", raising=False)
+        backup_file, dump_file = command.get_backup_filename(compress=True)
+        assert backup_file.endswith("unknown_backup_20240115.sql.gz")
+        assert dump_file.endswith("unknown_backup_20240115.sql")
 
     def test_run_pg_dump(self, command, mock_subprocess, mock_settings):
         """Test pg_dump command execution."""
@@ -119,34 +125,18 @@ class TestBackupCommand:
                 raise ValueError("Test error")
         assert not test_file.exists()
 
-    @patch("socket.gethostname")
-    def test_server_detection(self, mock_hostname):
-        """Test server environment detection."""
-        test_cases = [
-            ("PRODUCTION-SERVER", Server.PRODUCTION),
-            ("STAGING-DB", Server.STAGING),
-            ("DEV-HOST", Server.UNKNOWN),
-        ]
-
-        for hostname, expected_server in test_cases:
-            mock_hostname.return_value = hostname
-            with patch("sde_collections.management.commands.database_backup.detect_server") as mock_detect:
-                mock_detect.return_value = expected_server
-                server = database_backup.detect_server()
-                assert server == expected_server
-
     @pytest.mark.parametrize(
-        "compress,hostname",
+        "compress,env_name",
         [
-            (True, "PRODUCTION-SERVER"),
-            (False, "STAGING-SERVER"),
-            (True, "UNKNOWN-SERVER"),
+            (True, "production"),
+            (False, "staging"),
+            (True, "carson_local"),
         ],
     )
-    def test_handle_integration(self, compress, hostname, mock_subprocess, mock_date, mock_settings):
+    def test_handle_integration(self, compress, env_name, mock_subprocess, mock_date, mock_settings, monkeypatch):
         """Test full backup process integration."""
-        with patch("socket.gethostname", return_value=hostname):
-            call_command("database_backup", no_compress=not compress)
+        monkeypatch.setenv("BACKUP_ENVIRONMENT", env_name)
+        call_command("database_backup", no_compress=not compress)
 
         # Verify correct command execution
         mock_subprocess.assert_called_once()
@@ -154,35 +144,32 @@ class TestBackupCommand:
         # Verify correct filename used
         cmd_args = mock_subprocess.call_args[0][0]
         date_str = "20240115"
-        server_type = hostname.split("-")[0].lower()
-        expected_base = f"{server_type}_backup_{date_str}.sql"
+        expected_base = f"{env_name}_backup_{date_str}.sql"
+        assert cmd_args[-1].endswith(expected_base)
 
+        # Verify cleanup attempted if compressed
         if compress:
-            assert cmd_args[-1] == expected_base  # Temporary file
-            # Verify cleanup attempted
             assert not os.path.exists(expected_base)
-        else:
-            assert cmd_args[-1] == expected_base
 
-    def test_handle_pg_dump_error(self, mock_subprocess, mock_date):
+    def test_handle_pg_dump_error(self, mock_subprocess, mock_date, monkeypatch):
         """Test error handling when pg_dump fails."""
         mock_subprocess.side_effect = subprocess.CalledProcessError(1, "pg_dump")
+        monkeypatch.setenv("BACKUP_ENVIRONMENT", "staging")
 
-        with patch("socket.gethostname", return_value="STAGING-SERVER"):
-            call_command("database_backup")
+        call_command("database_backup")
 
         # Verify error handling and cleanup
         date_str = "20240115"
         temp_file = f"staging_backup_{date_str}.sql"
         assert not os.path.exists(temp_file)
 
-    def test_handle_compression_error(self, mock_subprocess, mock_date, command):
+    def test_handle_compression_error(self, mock_subprocess, mock_date, command, monkeypatch):
         """Test error handling during compression."""
+        monkeypatch.setenv("BACKUP_ENVIRONMENT", "staging")
         # Mock compression to fail
         command.compress_file = Mock(side_effect=Exception("Compression failed"))
 
-        with patch("socket.gethostname", return_value="STAGING-SERVER"):
-            call_command("database_backup")
+        call_command("database_backup")
 
         # Verify cleanup
         date_str = "20240115"
