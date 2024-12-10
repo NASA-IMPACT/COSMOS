@@ -58,7 +58,7 @@ class TestDeltaURLAPIView:
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()["results"][0]
-        expected_fields = {"url", "title", "document_type", "file_extension", "tree_root"}
+        expected_fields = {"url", "title", "document_type", "file_extension", "tree_root", "tdamm_tag"}
         assert set(data.keys()) == expected_fields
 
     def test_delta_url_api_pagination(self, client):
@@ -122,7 +122,7 @@ class TestCuratedURLAPIView:
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()["results"][0]
-        expected_fields = {"url", "title", "document_type", "file_extension", "tree_root"}
+        expected_fields = {"url", "title", "document_type", "file_extension", "tree_root", "tdamm_tag"}
         assert set(data.keys()) == expected_fields
 
     def test_candidate_url_api_alias(self, client):
@@ -217,7 +217,7 @@ class TestCandidateURLAPIView:
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()["results"][0]
-        expected_fields = {"url", "title", "document_type", "file_extension", "tree_root"}
+        expected_fields = {"url", "title", "document_type", "file_extension", "tree_root", "tdamm_tag"}
         assert set(data.keys()) == expected_fields
 
     def test_candidate_url_api_alias(self, client):

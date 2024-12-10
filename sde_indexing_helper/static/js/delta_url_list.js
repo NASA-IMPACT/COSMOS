@@ -253,6 +253,7 @@ function initializeDataTable() {
     columns: [
       getURLColumn(),
       getExcludedColumn(true_icon, false_icon),
+      getDeletedColumn(true_icon, false_icon),
       getScrapedTitleColumn(),
       getGeneratedTitleColumn(),
       getDocumentTypeColumn(),
@@ -1209,6 +1210,17 @@ function getCuratedURLColumn() {
   };
 }
 
+function getDeletedColumn(true_icon, false_icon) {
+  return {
+    data: "to_delete",
+    width: "10%",
+    class: "col-1 text-center",
+    render: function (data, type, row) {
+      return data === true ? true_icon : false_icon;
+    },
+  };
+}
+
 function getScrapedTitleColumn() {
   return {
     data: "scraped_title",
@@ -2071,8 +2083,26 @@ function postWorkflowStatus(collection_id, workflow_status) {
       "X-CSRFToken": csrftoken,
     },
     success: function (data) {
+      $('#workflowStatusChangeModal button').blur();
+      $("#workflowStatusChangeModal")
+        .removeClass('show')
+        .removeAttr('aria-hidden')
+        .modal('hide');
+      $('.modal-backdrop').remove();
+      $('body').removeClass('modal-open');
       toastr.success("Workflow Status Updated!");
+
+      // Refresh page after modal closes and success message shows
+      setTimeout(function() {
+        window.location = window.location.href;
+      }, 1500);
     },
+    error: function(xhr, status, error) {
+      $('#workflowStatusChangeModal button').blur();
+      $("#workflowStatusChangeModal").modal('hide');
+      $('.modal-backdrop').remove();
+      toastr.error("Error updating workflow status: " + error);
+    }
   });
 }
 

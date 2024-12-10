@@ -22,39 +22,45 @@ pytestmark = pytest.mark.django_db
 
 class TestUserUpdateView:
     """
-    TODO:
-        extracting view initialization code as class-scoped fixture
-        would be great if only pytest-django supported non-function-scoped
-        fixture db access -- this is a work-in-progress for now:
-        https://github.com/pytest-dev/pytest-django/pull/258
+    Tests for the UserUpdateView.
     """
 
-    def dummy_get_response(self, request: HttpRequest):
+    @staticmethod
+    def dummy_get_response(request: HttpRequest):
+        """Dummy get_response method for middleware testing."""
         return None
 
     def test_get_success_url(self, user: User, rf: RequestFactory):
+        """
+        Test that UserUpdateView redirects to the correct success URL.
+        """
         view = UserUpdateView()
         request = rf.get("/fake-url/")
         request.user = user
-
         view.request = request
 
-        assert view.get_success_url() == f"/users/{user.username}/"
+        expected_url = f"/users/{user.username}/"
+        assert view.get_success_url() == expected_url, f"Expected {expected_url}, got {view.get_success_url()}"
 
     def test_get_object(self, user: User, rf: RequestFactory):
+        """
+        Test that UserUpdateView retrieves the correct user object.
+        """
         view = UserUpdateView()
         request = rf.get("/fake-url/")
         request.user = user
-
         view.request = request
 
         assert view.get_object() == user
 
     def test_form_valid(self, user: User, rf: RequestFactory):
+        """
+        Test that form submission in UserUpdateView processes correctly.
+        """
         view = UserUpdateView()
         request = rf.get("/fake-url/")
 
-        # Add the session/message middleware to the request
+        # Add session and message middleware
         SessionMiddleware(self.dummy_get_response).process_request(request)
         MessageMiddleware(self.dummy_get_response).process_request(request)
         request.user = user
@@ -72,26 +78,43 @@ class TestUserUpdateView:
 
 
 class TestUserRedirectView:
-    def test_get_redirect_url(self, user: User, rf: RequestFactory):
-        view = UserRedirectView()
-        request = rf.get("/fake-url")
-        request.user = user
+    """
+    Tests for the UserRedirectView.
+    """
 
+    def test_get_redirect_url(self, user: User, rf: RequestFactory):
+        """
+        Test that UserRedirectView redirects to the "sde_collections:list" URL.
+        """
+        view = UserRedirectView()
+        request = rf.get("/fake-url/")
+        request.user = user
         view.request = request
 
-        assert view.get_redirect_url() == f"/users/{user.username}/"
+        expected_url = reverse("sde_collections:list")
+        assert view.get_redirect_url() == expected_url, f"Expected {expected_url}, got {view.get_redirect_url()}"
 
 
 class TestUserDetailView:
+    """
+    Tests for the user_detail_view function.
+    """
+
     def test_authenticated(self, user: User, rf: RequestFactory):
+        """
+        Test that an authenticated user can access their detail view.
+        """
         request = rf.get("/fake-url/")
-        request.user = UserFactory()
+        request.user = user
 
         response = user_detail_view(request, username=user.username)
 
         assert response.status_code == 200
 
     def test_not_authenticated(self, user: User, rf: RequestFactory):
+        """
+        Test that an unauthenticated user is redirected to the login page.
+        """
         request = rf.get("/fake-url/")
         request.user = AnonymousUser()
 

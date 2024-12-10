@@ -1,5 +1,6 @@
 import csv
 
+from django import forms
 from django.contrib import admin, messages
 from django.http import HttpResponse
 
@@ -10,7 +11,8 @@ from sde_collections.models.delta_patterns import (
 )
 
 from .models.candidate_url import CandidateURL, ResolvedTitle
-from .models.collection import Collection, WorkflowHistory
+from .models.collection import Collection, ReindexingHistory, WorkflowHistory
+from .models.collection_choice_fields import TDAMMTags
 from .models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
 from .tasks import fetch_and_replace_full_text, import_candidate_urls_from_api
@@ -215,6 +217,7 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
                     "source",
                     "turned_on",
                     "is_multi_division",
+                    "reindexing_status",
                 ),
             },
         ),
@@ -248,9 +251,18 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         "division",
         "new_collection",
         "is_multi_division",
+        "reindexing_status",
     )
+
     readonly_fields = ("config_folder",)
-    list_filter = ("division", "curation_status", "workflow_status", "turned_on", "is_multi_division")
+    list_filter = (
+        "division",
+        "curation_status",
+        "workflow_status",
+        "turned_on",
+        "is_multi_division",
+        "reindexing_status",
+    )
     search_fields = ("name", "url", "config_folder")
     actions = [
         generate_deployment_message,
@@ -282,11 +294,90 @@ def exclude_and_delete_children(modeladmin, request, queryset):
         candidate_url.get_children().delete()
 
 
-class CandidateURLAdmin(admin.ModelAdmin):
-    """Admin View for CandidateURL"""
+class TDAMMFormMixin(forms.ModelForm):
+    """Mixin for forms that need TDAMM tag fields"""
 
-    list_display = ("url", "scraped_title", "collection")
-    list_filter = ("collection",)
+    tdamm_tag_manual = forms.MultipleChoiceField(
+        choices=TDAMMTags.choices,
+        required=False,
+        label="TDAMM Manual Tags",
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+    tdamm_tag_ml = forms.MultipleChoiceField(
+        choices=TDAMMTags.choices,
+        required=False,
+        label="TDAMM ML Tags",
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+
+class TDAMMAdminMixin:
+    """Mixin for admin classes that handle TDAMM tags"""
+
+    list_display = ("url", "scraped_title", "generated_title", "collection")
+    list_filter = ["collection"]
+    search_fields = ("url", "collection__name")
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = [
+            (
+                "Overall Information",
+                {
+                    "fields": (
+                        "collection",
+                        "url",
+                        "scraped_title",
+                        "scraped_text",
+                        "generated_title",
+                        "visited",
+                        "document_type",
+                        "division",
+                    )
+                },
+            ),
+            (
+                "TDAMM Tags",
+                {
+                    "fields": (
+                        "tdamm_tag_ml",
+                        "tdamm_tag_manual",
+                    ),
+                    "classes": ("collapse",),
+                },
+            ),
+        ]
+        return fieldsets
+
+
+class CandidateURLForm(TDAMMFormMixin):
+    class Meta:
+        model = CandidateURL
+        fields = "__all__"
+
+
+class DumpURLForm(TDAMMFormMixin, forms.ModelForm):
+    class Meta:
+        model = DumpUrl
+        fields = "__all__"
+
+
+class DeltaURLForm(TDAMMFormMixin, forms.ModelForm):
+    class Meta:
+        model = DeltaUrl
+        fields = "__all__"
+
+
+class CuratedURLForm(TDAMMFormMixin, forms.ModelForm):
+    class Meta:
+        model = CuratedUrl
+        fields = "__all__"
+
+
+class CandidateURLAdmin(TDAMMAdminMixin, admin.ModelAdmin):
+    """Admin view for CandidateURL"""
+
+    form = CandidateURLForm
 
 
 class TitlePatternAdmin(admin.ModelAdmin):
@@ -308,6 +399,12 @@ class WorkflowHistoryAdmin(admin.ModelAdmin):
     list_display = ("collection", "old_status", "workflow_status", "created_at")
     search_fields = ["collection__name"]
     list_filter = ["workflow_status", "old_status"]
+
+
+class ReindexingHistoryAdmin(admin.ModelAdmin):
+    list_display = ("collection", "old_status", "reindexing_status", "created_at")
+    search_fields = ["collection__name"]
+    list_filter = ["reindexing_status", "old_status"]
 
 
 class ResolvedTitleAdmin(admin.ModelAdmin):
@@ -344,27 +441,30 @@ class DeltaDivisionPatternAdmin(admin.ModelAdmin):
     search_fields = ("match_pattern", "division")
 
 
-class DumpUrlAdmin(admin.ModelAdmin):
+class DumpUrlAdmin(TDAMMAdminMixin, admin.ModelAdmin):
     """Admin View for DumpUrl"""
 
-    list_display = ("url", "scraped_title", "collection")
-    list_filter = ("collection",)
+    form = DumpURLForm
 
 
-class DeltaUrlAdmin(admin.ModelAdmin):
+class DeltaUrlAdmin(TDAMMAdminMixin, admin.ModelAdmin):
     """Admin View for DeltaUrl"""
 
-    list_display = ("url", "scraped_title", "generated_title", "collection")
-    list_filter = ("collection",)
+    form = DeltaURLForm
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        fieldsets[0][1]["fields"] += ("to_delete",)
+        return fieldsets
 
 
-class CuratedUrlAdmin(admin.ModelAdmin):
+class CuratedUrlAdmin(TDAMMAdminMixin, admin.ModelAdmin):
     """Admin View for CuratedUrl"""
 
-    list_display = ("url", "scraped_title", "generated_title", "collection")
-    list_filter = ("collection",)
+    form = CuratedURLForm
 
 
+admin.site.register(ReindexingHistory, ReindexingHistoryAdmin)
 admin.site.register(WorkflowHistory, WorkflowHistoryAdmin)
 admin.site.register(CandidateURL, CandidateURLAdmin)
 admin.site.register(TitlePattern, TitlePatternAdmin)

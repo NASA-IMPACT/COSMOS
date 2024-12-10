@@ -145,7 +145,7 @@
     <CurationIdPattern></CurationIdPattern>
     <RunIndexMiningInIndexer>false</RunIndexMiningInIndexer>
     <Namespace></Namespace>
-    <WorkerCount>8</WorkerCount>
+    <WorkerCount>3</WorkerCount>
     <MaxWorkerPerHost></MaxWorkerPerHost>
     <UrlList></UrlList>
     <DynamicUrlList></DynamicUrlList>

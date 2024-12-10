@@ -188,15 +188,26 @@ class Api:
             processed_records.append({"url": row[0], "full_text": row[1], "title": row[2]})
         return processed_records
 
-    def get_full_texts(self, collection_config_folder: str, source: str = None) -> Iterator[dict]:
+    def get_full_texts(
+        self,
+        collection_config_folder: str,
+        source: str = None,
+        start_at: int = 0,
+        batch_size: int = 500,
+        min_batch_size: int = 1,
+    ) -> Iterator[dict]:
         """
         Retrieves and yields batches of text records from the SQL database for a given collection.
-        Uses pagination to handle large datasets efficiently.
+        Uses pagination to handle large datasets efficiently. If a query fails, it automatically
+        reduces the batch size and retries, with the ability to recover batch size after successful queries.
 
         Args:
-            collection_config_folder (str): The collection folder to query (e.g., "EARTHDATA", "SMD")
+            collection_config_folder (str): The collection folder to query (e.g., "EARTHDATA", "CASEI")
             source (str, optional): The source to query. If None, defaults to "scrapers" for dev servers
                 or "SDE" for other servers.
+            start_at (int, optional): Starting offset for records. Defaults to 0.
+            page_size (int, optional): Initial number of records per batch. Defaults to 500.
+            min_batch_size (int, optional): Minimum batch size before giving up. Defaults to 1.
 
         Yields:
             list[dict]: Batches of records, where each record is a dictionary containing:
@@ -208,29 +219,16 @@ class Api:
 
         Raises:
             ValueError: If the server's index is not defined in its configuration
-
-        Example batch:
-            [
-                {
-                    "url": "https://example.nasa.gov/doc1",
-                    "full_text": "This is the content of doc1...",
-                    "title": "Document 1 Title"
-                },
-                {
-                    "url": "https://example.nasa.gov/doc2",
-                    "full_text": "This is the content of doc2...",
-                    "title": "Document 2 Title"
-                }
-            ]
+            ValueError: If batch size reaches minimum without success
 
         Note:
-            - Results are paginated in batches of 5000 records
+            - Results are paginated with adaptive batch sizing
             - Each batch is processed into clean dictionaries before being yielded
             - The iterator will stop when either:
                 1. No more rows are returned from the query
                 2. The total count of records has been reached
+            - Batch size will decrease on failure and can recover after successful queries
         """
-
         if not source:
             source = self._get_source_name()
 
@@ -240,29 +238,42 @@ class Api:
                 "Please update server configuration with the required index."
             )
 
-        sql = f"SELECT url1, text, title FROM {index} WHERE collection = '/{source}/{collection_config_folder}/'"
+        base_sql = f"SELECT url1, text, title FROM {index} WHERE collection = '/{source}/{collection_config_folder}/'"
 
-        page = 0
-        page_size = 5000
-        total_processed = 0
+        current_offset = start_at
+        current_batch_size = batch_size
+        total_count = None
 
         while True:
-            paginated_sql = f"{sql} SKIP {total_processed} COUNT {page_size}"
-            response = self._execute_sql_query(paginated_sql)
+            sql = f"{base_sql} SKIP {current_offset} COUNT {current_batch_size}"
 
-            rows = response.get("Rows", [])
-            if not rows:  # Stop if we get an empty batch
-                break
+            try:
+                response = self._execute_sql_query(sql)
+                rows = response.get("Rows", [])
 
-            yield self._process_rows_to_records(rows)
+                if not rows:  # Stop if we get an empty batch
+                    break
 
-            total_processed += len(rows)
-            total_count = response.get("TotalRowCount", 0)
+                if total_count is None:
+                    total_count = response.get("TotalRowCount", 0)
 
-            if total_processed >= total_count:  # Stop if we've processed all records
-                break
+                yield self._process_rows_to_records(rows)
 
-            page += 1
+                current_offset += len(rows)
+
+                if total_count and current_offset >= total_count:  # Stop if we've processed all records
+                    break
+
+            except (requests.RequestException, ValueError) as e:
+                if current_batch_size <= min_batch_size:
+                    raise ValueError(
+                        f"Failed to process batch even at minimum size {min_batch_size}. " f"Last error: {str(e)}"
+                    )
+
+                # Halve the batch size and retry
+                current_batch_size = max(current_batch_size // 2, min_batch_size)
+                print(f"Reducing batch size to {current_batch_size} and retrying...")
+                continue
 
     @staticmethod
     def _process_full_text_response(batch_data: dict):
