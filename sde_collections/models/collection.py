@@ -267,20 +267,6 @@ class Collection(models.Model):
         gh.create_or_update_file(query_path, scraper_content)
 
     @property
-    def included_urls_count(self):
-        return self.candidate_urls.filter(excluded=False).count()
-
-    @property
-    def delta_urls_count(self):
-        """get the total number of delta urls"""
-        return self.delta_urls.filter(excluded=False).count()
-
-    @property
-    def included_curated_urls_count(self):
-        """get the number of included, curated urls"""
-        return self.curated_urls.filter(excluded=False).count()
-
-    @property
     def _scraper_config_path(self) -> str:
         return f"sources/scrapers/{self.config_folder}/default.xml"
 
