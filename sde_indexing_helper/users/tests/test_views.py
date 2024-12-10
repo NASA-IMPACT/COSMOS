@@ -10,7 +10,6 @@ from django.urls import reverse
 
 from sde_indexing_helper.users.forms import UserAdminChangeForm
 from sde_indexing_helper.users.models import User
-from sde_indexing_helper.users.tests.factories import UserFactory
 from sde_indexing_helper.users.views import (
     UserRedirectView,
     UserUpdateView,
@@ -91,7 +90,7 @@ class TestUserRedirectView:
         request.user = user
         view.request = request
 
-        expected_url = reverse("sde_collections:list")
+        expected_url = reverse(" ")
         assert view.get_redirect_url() == expected_url, f"Expected {expected_url}, got {view.get_redirect_url()}"
 
 
