@@ -90,7 +90,7 @@ class TestUserRedirectView:
         request.user = user
         view.request = request
 
-        expected_url = reverse(" ")
+        expected_url = reverse("sde_collections:list")
         assert view.get_redirect_url() == expected_url, f"Expected {expected_url}, got {view.get_redirect_url()}"
 
 
