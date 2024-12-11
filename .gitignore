@@ -292,8 +292,7 @@ config_generation/config.py
 # Model's inference files
 Document_Classifier_inference/model.pt
 
-# Database backup
-backup.json
-
-# Prod backup
-prod_backup-20240423.json
+# Ignore Database Backup files
+/backups
+*.sql
+*.gz
