@@ -179,6 +179,7 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
             "-created_at"
         )
         context["workflow_status_choices"] = WorkflowStatusChoices
+        context["reindexing_status_choices"] = ReindexingStatusChoices
 
         return context
 
@@ -227,6 +228,7 @@ class DeltaURLsListView(LoginRequiredMixin, ListView):
         )  # 2=regex patterns
         context["title_patterns"] = self.collection.titlepattern.all()
         context["workflow_status_choices"] = WorkflowStatusChoices
+        context["reindexing_status_choices"] = ReindexingStatusChoices
         context["is_multi_division"] = self.collection.is_multi_division
 
         return context

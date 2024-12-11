@@ -97,22 +97,23 @@ class WorkflowStatusChoices(models.IntegerChoices):
     PROD_MAJOR = 16, "Prod: Major Issues"
     MERGE_PENDING = 17, "Code Merge Pending"
     NEEDS_DELETE = 19, "Delete from Prod"
+    INDEXING_FINISHED_ON_DEV = 20, "Indexing Finished on LRM Dev"
 
 
 class ReindexingStatusChoices(models.IntegerChoices):
-    REINDEXING_NOT_NEEDED = 1, "Reindexing Not Needed"
-    REINDEXING_NEEDED_ON_DEV = 2, "Reindexing Needed on LRM Dev"
-    REINDEXING_FINISHED_ON_DEV = 3, "Reindexing Finished on LRM Dev"
-    REINDEXING_READY_FOR_CURATION = 4, "Ready for Curation"
-    REINDEXING_CURATED = 5, "Curated"
-    REINDEXING_INDEXED_ON_PROD = 6, "Indexed on Prod"
+    REINDEXING_NOT_NEEDED = 1, "Re-Indexing Not Needed"
+    REINDEXING_NEEDED_ON_DEV = 2, "Re-Indexing Needed"
+    REINDEXING_FINISHED_ON_DEV = 3, "Re-Indexing Finished"
+    REINDEXING_READY_FOR_CURATION = 4, "Ready for Re-Curation"
+    REINDEXING_CURATED = 5, "Re-Curation Finished"
+    REINDEXING_INDEXED_ON_PROD = 6, "Re-Indexed on Prod"
 
-    @classmethod
-    def get_status_string(cls, value):
-        for choice in cls.choices:
-            if choice[0] == value:
-                return choice[1]
-        return "N/A"
+    # @classmethod
+    # def get_status_string(cls, value):
+    #     for choice in cls.choices:
+    #         if choice[0] == value:
+    #             return choice[1]
+    #     return "N/A"
 
 
 class TDAMMTags(models.TextChoices):
