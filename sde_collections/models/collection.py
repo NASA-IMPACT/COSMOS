@@ -82,7 +82,7 @@ class Collection(models.Model):
         default=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
         verbose_name="Reindexing Status",
     )
-    tracker = FieldTracker(fields=["workflow_status"])
+    tracker = FieldTracker(fields=["workflow_status", "reindexing_status"])
 
     curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
@@ -804,5 +804,8 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
         if "reindexing_status" in instance.tracker.changed():
             if instance.reindexing_status == ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV:
                 fetch_and_replace_full_text.delay(instance.id, "lrm_dev")
+            elif instance.reindexing_status == ReindexingStatusChoices.REINDEXING_CURATED:
+                instance.promote_to_curated()
+
     finally:
         instance._handling_status_change = False
