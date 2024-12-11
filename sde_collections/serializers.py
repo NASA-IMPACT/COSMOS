@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models.collection import Collection, WorkflowHistory
+from .models.collection import Collection, ReindexingHistory, WorkflowHistory
 from .models.collection_choice_fields import Divisions, DocumentTypes
 from .models.delta_patterns import (
     DeltaDivisionPattern,
@@ -36,7 +36,7 @@ class CollectionSerializer(serializers.ModelSerializer):
             "division": {"required": False},
             "document_type": {"required": False},
             "name": {"required": False},
-            "reindexing_status": {"required": False},
+            # "reindexing_status": {"required": False},
         }
 
         # extra_kwargs = {
@@ -55,6 +55,12 @@ class CollectionReadSerializer(serializers.ModelSerializer):
 class WorkflowHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkflowHistory
+        fields = "__all__"
+
+
+class ReindexingHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReindexingHistory
         fields = "__all__"
 
 

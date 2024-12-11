@@ -39,28 +39,27 @@
         </div>
       </div>
 
-      <div class="btn-group">
-        <button type="button"
-                class="btn {{ collection.reindexing_status_button_color }} dropdown-toggle btn-sm"
-                id="reindexing-status-button-{{ collection.id }}"
+      <div class="btn-group mr-2">
+        <button class="btn badge {{ collection.reindexing_status_button_color }} dropdown-toggle title-dropdown btn-sm"
+                type="button"
                 data-toggle="dropdown"
                 aria-haspopup="true"
+                id="reindexing-status-button-{{ collection.id }}"
                 aria-expanded="false">
           {{ collection.get_reindexing_status_display }}
         </button>
         <div class="dropdown-menu" aria-labelledby="reindexing-status-button-{{ collection.id }}">
-          {% for choice in reindexing_status_choices.choices %}
+          {% for choice in reindexing_status_choices %}
             <a class="dropdown-item reindexing_status_select"
-               href="#"
-               value="{{ choice.0 }}"
+               value="{{ choice }}"
                data-collection-id="{{ collection.id }}">
-              {{ choice.1 }}
+              {{ choice.label }}
             </a>
           {% endfor %}
         </div>
       </div>
     </div>
-  </div>
+</div>
 
 
 <div class="deltaUrlContainer">
@@ -640,19 +639,20 @@ aria-labelledby="workflowStatusChangeModal" aria-hidden="true">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-            <div class="modal-body" id="modal-body">
-                <h5 class="modal-title">Are you sure?</h5>
-                <p class="workflow-status-change-caption" id="caption"></p>
-            </div>
-            <div class="modal-footer">
-                <form id="workflowStatusChangeModalForm">
-                    <div class="button-wrapper">
+        <div class="modal-body" id="workflow-modal-body">
+            <h5 class="modal-title">Are you sure?</h5>
+            <p class="workflow-status-change-caption" id="workflow-caption"></p>
+        </div>
+        <div class="modal-footer">
+            <form id="workflowStatusChangeModalForm">
+                <div class="button-wrapper">
                     <button type="submit" class="btn btn-secondary modal-button-1" id="cancelworkflowStatusChange">No</button>
                     <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="changeWorkflowStatus">Yes</button>
-                    </div>
-                    </form>
-            </div>
+                </div>
+            </form>
+        </div>
     </div>
+</div>
 </div>
 
 <div class="modal" id="reindexingStatusChangeModal" tabindex="-1"
@@ -664,9 +664,9 @@ aria-labelledby="reindexingStatusChangeModal" aria-hidden="true">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-            <div class="modal-body" id="modal-body">
+            <div class="modal-body" id="reindexing-modal-body">
                 <h5 class="modal-title">Are you sure?</h5>
-                <p class="reindexing-status-change-caption" id="caption"></p>
+                <p class="reindexing-status-change-caption" id="reindexing-caption"></p>
             </div>
             <div class="modal-footer">
                 <form id="reindexingStatusChangeModalForm">
@@ -678,7 +678,7 @@ aria-labelledby="reindexingStatusChangeModal" aria-hidden="true">
             </div>
     </div>
 </div>
-
+</div>
 
 {% endblock content %}
 

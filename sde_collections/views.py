@@ -179,6 +179,7 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
             "-created_at"
         )
         context["workflow_status_choices"] = WorkflowStatusChoices
+        context["reindexing_status_choices"] = ReindexingStatusChoices
 
         return context
 

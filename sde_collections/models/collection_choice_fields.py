@@ -108,12 +108,12 @@ class ReindexingStatusChoices(models.IntegerChoices):
     REINDEXING_CURATED = 5, "Re-Curation Finished"
     REINDEXING_INDEXED_ON_PROD = 6, "Re-Indexed on Prod"
 
-    @classmethod
-    def get_status_string(cls, value):
-        for choice in cls.choices:
-            if choice[0] == value:
-                return choice[1]
-        return "N/A"
+    # @classmethod
+    # def get_status_string(cls, value):
+    #     for choice in cls.choices:
+    #         if choice[0] == value:
+    #             return choice[1]
+    #     return "N/A"
 
 
 class TDAMMTags(models.TextChoices):

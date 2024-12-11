@@ -2107,6 +2107,42 @@ function postWorkflowStatus(collection_id, workflow_status) {
   });
 }
 
+function postReindexingStatus(collection_id, reindexing_status) {
+  var url = `/api/collections/${collection_id}/`;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    data: {
+      reindexing_status: reindexing_status,
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      $('#reindexingStatusChangeModal button').blur();
+      $("#reindexingStatusChangeModal")
+        .removeClass('show')
+        .removeAttr('aria-hidden')
+        .modal('hide');
+      $('.modal-backdrop').remove();
+      $('body').removeClass('modal-open');
+      toastr.success("Reindexing Status Updated!");
+
+      // Refresh page after modal closes and success message shows
+      setTimeout(function () {
+        window.location = window.location.href;
+      }, 1500);
+    },
+    error: function (xhr, status, error) {
+      $('#reindexingStatusChangeModal button').blur();
+      $("#reindexingStatusChangeModal").modal('hide');
+      $('.modal-backdrop').remove();
+      toastr.error("Error updating reindexing status: " + error);
+    }
+  });
+}
+
 function handleWorkflowStatusSelect() {
   $("body").on("click", ".workflow_status_select", function () {
     $("#workflowStatusChangeModal").modal();
@@ -2161,42 +2197,6 @@ function handleWorkflowStatusSelect() {
   });
 }
 
-function postReindexingStatus(collection_id, reindexing_status) {
-  var url = `/api/collections/${collection_id}/`;
-  $.ajax({
-    url: url,
-    type: "PUT",
-    data: {
-      reindexing_status: reindexing_status,
-      csrfmiddlewaretoken: csrftoken,
-    },
-    headers: {
-      "X-CSRFToken": csrftoken,
-    },
-    success: function (data) {
-      $('#reindexingStatusChangeModal button').blur();
-      $("#reindexingStatusChangeModal")
-        .removeClass('show')
-        .removeAttr('aria-hidden')
-        .modal('hide');
-      $('.modal-backdrop').remove();
-      $('body').removeClass('modal-open');
-      toastr.success("Reindexing Status Updated!");
-
-      // Refresh page after modal closes and success message shows
-      setTimeout(function () {
-        window.location = window.location.href;
-      }, 1500);
-    },
-    error: function (xhr, status, error) {
-      $('#reindexingStatusChangeModal button').blur();
-      $("#reindexingStatusChangeModal").modal('hide');
-      $('.modal-backdrop').remove();
-      toastr.error("Error updating reindexing status: " + error);
-    }
-  });
-}
-
 function handleReindexingStatusSelect() {
   $("body").on("click", ".reindexing_status_select", function () {
     $("#reindexingStatusChangeModal").modal();
@@ -2208,7 +2208,6 @@ function handleReindexingStatusSelect() {
     $(".reindexing-status-change-caption").html(
       `<div>Reindexing status for <b class="bold">${collectionName}</b> will change to <b class="bold">${new_reindexing_status}</b></div>`
     );
-
     $("#reindexingStatusChangeModalForm").on("click", "button", function (event) {
       event.preventDefault();
       var buttonId = $(this).attr("id");
@@ -2228,8 +2227,11 @@ function handleReindexingStatusSelect() {
           };
 
           $button = $(`#reindexing-status-button-${collection_id}`);
+
           $button.text(new_reindexing_status);
-          $button.removeClass("btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary");
+          $button.removeClass(
+            "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+          );
           $button.addClass(color_choices[parseInt(reindexing_status)]);
           postReindexingStatus(collection_id, reindexing_status);
           $("#reindexingStatusChangeModal").modal("hide");
