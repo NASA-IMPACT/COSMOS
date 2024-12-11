@@ -7,6 +7,13 @@
 .pre-commit-config.yaml
 .readthedocs.yml
 .travis.yml
-venv
 .git
+
+# ignore local python environments
+venv
+.venv
+
+# prevent large backup files from being copied into the image
 /backups
+*.sql
+*.gz
