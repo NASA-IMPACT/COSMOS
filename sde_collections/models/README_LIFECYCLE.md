@@ -13,7 +13,7 @@ This document explains the lifecycle of URLs in the system, focusing on two crit
 - **CuratedUrls**: Production-ready, approved content
 
 ### Fields That Transfer
-All fields are transferred between states, including:
+All fields transfer between states, including:
 - URL
 - Scraped Title
 - Generated Title
@@ -22,6 +22,21 @@ All fields are transferred between states, including:
 - Excluded Status
 - Scraped Text
 - Any additional metadata
+
+## Pattern Application
+
+### When Patterns Are Applied
+Patterns are applied in two scenarios:
+1. During migration from Dump to Delta
+2. When a new pattern is created/updated
+
+Patterns are NOT applied during promotion. The effects of patterns (modified titles, document types, etc.) are carried through to CuratedUrls during promotion, but the patterns themselves don't reapply.
+
+### Pattern Effects
+- Patterns modify DeltaUrls when they are created or when DeltaUrls are created through migration
+- Pattern-modified fields (titles, document types, etc.) become part of the DeltaUrl's data
+- These modifications persist through promotion to CuratedUrls
+- Pattern relationships (which patterns affect which URLs) are maintained for tracking purposes
 
 ## Migration Process (Dump → Delta)
 
@@ -43,49 +58,7 @@ Migration converts DumpUrls to DeltaUrls, preserving all fields and applying pat
 
 ### Examples
 
-#### Example 1: Basic Migration
-```python
-# Starting State
-dump_url = DumpUrl(
-    url="example.com/doc",
-    scraped_title="Original Title",
-    document_type=DocumentTypes.DOCUMENTATION
-)
-
-# After Migration
-delta_url = DeltaUrl(
-    url="example.com/doc",
-    scraped_title="Original Title",
-    document_type=DocumentTypes.DOCUMENTATION,
-    to_delete=False
-)
-```
-
-#### Example 2: Migration with Existing Curated
-```python
-# Starting State
-dump_url = DumpUrl(
-    url="example.com/doc",
-    scraped_title="New Title",
-    document_type=DocumentTypes.DOCUMENTATION
-)
-
-curated_url = CuratedUrl(
-    url="example.com/doc",
-    scraped_title="Old Title",
-    document_type=DocumentTypes.DOCUMENTATION
-)
-
-# After Migration
-delta_url = DeltaUrl(
-    url="example.com/doc",
-    scraped_title="New Title",  # Different from curated
-    document_type=DocumentTypes.DOCUMENTATION,
-    to_delete=False
-)
-```
-
-#### Example 3: Migration with Pattern Application
+#### Example 1: Migration with Pattern Application
 ```python
 # Starting State
 dump_url = DumpUrl(
@@ -111,15 +84,15 @@ delta_url = DeltaUrl(
 ## Promotion Process (Delta → Curated)
 
 ### Overview
-Promotion moves DeltaUrls to CuratedUrls, applying all changes including explicit NULL values. This occurs when:
-- A curator marks a collection as Curated.
+Promotion moves DeltaUrls to CuratedUrls, carrying forward all changes including pattern-applied modifications. This occurs when:
+- A curator marks a collection as Curated
 
 ### Steps
 1. Process each DeltaUrl:
    - If marked for deletion: Remove matching CuratedUrl
    - Otherwise: Update/create CuratedUrl with ALL fields
 2. Clear all DeltaUrls
-3. Refresh pattern relationships
+3. Update pattern relationship tracking
 
 ### Examples
 
@@ -186,18 +159,13 @@ curated_url = CuratedUrl(
 
 ## Important Notes
 
+
 ### Field Handling
 - ALL fields are copied during migration and promotion
 - NULL values in DeltaUrls are treated as explicit values
 - Pattern-set values take precedence over original values
 
-### Pattern Application
-- Patterns are applied after migration
-- Pattern effects persist through promotion
-- Multiple patterns can affect the same URL
-
-### Data Integrity
-- Migrations preserve all field values
-- Promotions apply all changes
-- Deletion flags are honored during promotion
-- Pattern relationships are maintained
+### Pattern Behavior
+- Patterns only apply during migration or when patterns themselves are created/updated
+- Pattern effects are preserved during promotion as regular field values
+- Patterns are NOT re-applied during promotion. This means you can't add a DeltaUrl outside of the migration process and expect patterns to apply. In this case, you would need to either add it as a DumpUrl and migrate it correctly, or add it as a DeltaUrl manually apply the pattern.

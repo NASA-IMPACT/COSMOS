@@ -207,7 +207,7 @@ class Collection(models.Model):
                 updated_fields = {}
                 for field in delta._meta.fields:
                     field_name = field.name
-                    if field_name == "to_delete":
+                    if field_name in ["to_delete", "id"]:
                         continue
 
                     delta_value = getattr(delta, field_name)
@@ -221,7 +221,8 @@ class Collection(models.Model):
                 new_data = {
                     field.name: getattr(delta, field.name)
                     for field in delta._meta.fields
-                    if field.name not in ["to_delete", "collection"] and getattr(delta, field.name) not in [None, ""]
+                    if field.name not in ["to_delete", "collection", "id"]
+                    and getattr(delta, field.name) not in [None, ""]
                 }
                 CuratedUrl.objects.create(collection=self, **new_data)
 
