@@ -440,7 +440,7 @@ $(document).ready(function () {
     null,
     null,
     "Division",
-    "Candidate URLs",
+    "Delta URLs",
     "Workflow Status",
     "Curator",
     "Connector Type",
