@@ -56,9 +56,77 @@ Migration converts DumpUrls to DeltaUrls, preserving all fields and applying pat
 4. Apply all patterns to new Deltas
 5. Clear DumpUrls
 
+## Migration Process (Dump → Delta)
+
+### Overview
+Migration converts DumpUrls to DeltaUrls, preserving all fields and applying patterns. This process happens when:
+- New content is scraped
+- Content is reindexed
+- Collection is being prepared for curation
+### Steps
+1. Clear existing DeltaUrls
+2. Process each DumpUrl:
+   - If matching CuratedUrl exists: Create Delta with all fields
+   - If no matching CuratedUrl: Create Delta as new URL
+3. Process missing CuratedUrls:
+   - Create deletion Deltas for any not in Dump
+4. Apply all patterns to new Deltas
+5. Clear DumpUrls
+
 ### Examples
 
-#### Example 1: Migration with Pattern Application
+#### Example 1: Basic Migration
+If there are no patterns or existing CuratedUrls, the DeltaUrl will be created from the DumpUrl.
+```python
+# Starting State
+dump_url = DumpUrl(
+    url="example.com/doc",
+    scraped_title="Original Title",
+    document_type=DocumentTypes.DOCUMENTATION
+)
+
+# After Migration
+delta_url = DeltaUrl(
+    url="example.com/doc",
+    scraped_title="Original Title",
+    document_type=DocumentTypes.DOCUMENTATION,
+    to_delete=False
+)
+```
+
+#### Example 2: Migration with Existing Curated
+If a CuratedUrl exists for the URL, and the DumpUrl has changes, a DeltaUrl will be created.
+```python
+# Starting State
+dump_url = DumpUrl(
+    url="example.com/doc",
+    scraped_title="New Title",
+    document_type=DocumentTypes.DOCUMENTATION
+)
+
+curated_url = CuratedUrl(
+    url="example.com/doc",
+    scraped_title="Old Title",
+    document_type=DocumentTypes.DOCUMENTATION
+)
+
+# After Migration
+delta_url = DeltaUrl(
+    url="example.com/doc",
+    scraped_title="New Title",  # Different from curated
+    document_type=DocumentTypes.DOCUMENTATION,
+    to_delete=False
+)
+
+curated_url = CuratedUrl(
+    url="example.com/doc",
+    scraped_title="Old Title",
+    document_type=DocumentTypes.DOCUMENTATION
+)
+```
+
+#### Example 3: Migration with Pattern Application
+If a pattern exists that modifies the document type of a DumpUrl, that pattern will be applied and the DeltaUrl will reflect the pattern's changes.
 ```python
 # Starting State
 dump_url = DumpUrl(
@@ -66,7 +134,6 @@ dump_url = DumpUrl(
     scraped_title="Data File",
     document_type=None
 )
-
 document_type_pattern = DocumentTypePattern(
     match_pattern="*.pdf",
     document_type=DocumentTypes.DATA
@@ -97,6 +164,7 @@ Promotion moves DeltaUrls to CuratedUrls, carrying forward all changes including
 ### Examples
 
 #### Example 1: Basic Promotion
+If there ae no CuratedUrls for the URL, the DeltaUrl will be promoted to a new CuratedUrl.
 ```python
 # Starting State
 delta_url = DeltaUrl(
@@ -115,6 +183,7 @@ curated_url = CuratedUrl(
 ```
 
 #### Example 2: Promotion with NULL Override
+It's important to notice that the None value in the DeltaUrl is preserved in the CuratedUrl.
 ```python
 # Starting State
 delta_url = DeltaUrl(
@@ -139,6 +208,7 @@ curated_url = CuratedUrl(
 ```
 
 #### Example 3: Deletion During Promotion
+If there is no DumpUrl for an existing CuratedUrl, this signifies the url has been removed from the collection. A DeltaUrl with `to_delete=True` will be created, and on promotion the CuratedUrl will be deleted.
 ```python
 # Starting State
 delta_url = DeltaUrl(
@@ -158,7 +228,6 @@ curated_url = CuratedUrl(
 ```
 
 ## Important Notes
-
 
 ### Field Handling
 - ALL fields are copied during migration and promotion
