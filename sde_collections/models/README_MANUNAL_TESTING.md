@@ -1,7 +1,7 @@
 # COSMOS Curation System Testing Guide
 
 ## Resources
-There are 14 collections which have been reindexed on dev and can have their statuses changed to `REINDEXING_FINISHED` to test url importing. The collections and their counts can be seen [here](https://docs.google.com/spreadsheets/d/1mJFqZXdIyAN8LTuVQMLRDuNgzm7GIMlYb_cPUtLKSCM/edit?gid=1316450061#gid=1316450061 ).
+There are 14 collections which have been reindexed on dev and can have their statuses changed to `REINDEXING_FINISHED` to test url importing. The collections and their counts can be seen [here](https://docs.google.com/spreadsheets/d/1z_YeTwsyadW6ywPsahUElnf8X65gP7t7UyaO7sVqGiI/edit?gid=1316450061#gid=1316450061).
 
 ## Test Flow 1: Basic URL Collection Lifecycle
 
