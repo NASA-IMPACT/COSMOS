@@ -229,7 +229,7 @@ function initializeDataTable() {
       },
     },
     initComplete: function (data) {
-      const addDropdownSelect = [1, 4, 5];
+      const addDropdownSelect = [1, 2, 4, 5];
       const dict = {
         1: "Images",
         2: "Data",
