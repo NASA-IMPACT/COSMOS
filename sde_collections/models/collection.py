@@ -211,18 +211,18 @@ class Collection(models.Model):
                         continue
 
                     delta_value = getattr(delta, field_name)
-                    if delta_value not in [None, ""] and getattr(curated, field_name) != delta_value:
+                    if getattr(curated, field_name) != delta_value:
                         updated_fields[field_name] = delta_value
 
                 if updated_fields:
                     CuratedUrl.objects.filter(pk=curated.pk).update(**updated_fields)
             else:
-                # If no matching CuratedUrl, create a new one using all non-null and non-empty fields
+                # Previously, we excluded fields with values of None and ""
+                # however, such null values are considered meaningful and should be copied over
                 new_data = {
                     field.name: getattr(delta, field.name)
                     for field in delta._meta.fields
-                    if field.name not in ["to_delete", "collection", "id"]
-                    and getattr(delta, field.name) not in [None, ""]
+                    if field.name not in ["to_delete", "collection", "id"] and getattr(delta, field.name)
                 }
                 CuratedUrl.objects.create(collection=self, **new_data)
 
