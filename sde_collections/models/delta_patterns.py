@@ -333,16 +333,28 @@ class FieldModifyingPattern(BaseMatchPattern):
         affected_deltas = self.delta_urls.all()
         affected_curated = self.curated_urls.all()
 
+        # Get all other patterns of same type for this collection
+        pattern_class = self.__class__
+        other_patterns = pattern_class.objects.filter(collection=self.collection).exclude(id=self.id)
+
         # Process each affected delta URL
         for delta in affected_deltas:
             curated = CuratedUrl.objects.filter(collection=self.collection, url=delta.url).first()
 
-            if not curated:
-                # Scenario 1: Delta only - new URL
-                setattr(delta, field, None)
+            # Find next most specific matching pattern if any
+            matching_patterns = [p for p in other_patterns if re.search(p.get_regex_pattern(), delta.url)]
+
+            next_pattern = None
+            if matching_patterns:
+                # Sort by number of URLs matched (ascending) to find most specific
+                next_pattern = min(matching_patterns, key=lambda p: p.get_url_match_count())
+
+            if next_pattern:
+                # Apply next most specific pattern's value
+                setattr(delta, field, next_pattern.get_new_value())
                 delta.save()
-            else:
-                # Scenario 2: Both exist
+            elif curated:
+                # No other patterns match, revert to curated value
                 setattr(delta, field, getattr(curated, field))
                 delta.save()
 
@@ -354,17 +366,36 @@ class FieldModifyingPattern(BaseMatchPattern):
                 )
                 if fields_match:
                     delta.delete()
+            else:
+                # No curated URL or other patterns, set to None
+                setattr(delta, field, None)
+                delta.save()
 
         # Handle curated URLs that don't have deltas
         for curated in affected_curated:
             if not DeltaUrl.objects.filter(url=curated.url).exists():
-                # Scenario 3: Curated only
-                # Copy all fields from curated except the one we're nulling
-                fields = {
-                    f.name: getattr(curated, f.name) for f in curated._meta.fields if f.name not in ["id", "collection"]
-                }
-                fields[field] = None  # Set the pattern's field to None
-                delta = DeltaUrl.objects.create(collection=self.collection, **fields)
+                # Find any matching patterns
+                matching_patterns = [p for p in other_patterns if re.search(p.get_regex_pattern(), curated.url)]
+
+                if matching_patterns:
+                    # Apply most specific pattern's value
+                    next_pattern = min(matching_patterns, key=lambda p: p.get_url_match_count())
+                    fields = {
+                        f.name: getattr(curated, f.name)
+                        for f in curated._meta.fields
+                        if f.name not in ["id", "collection"]
+                    }
+                    fields[field] = next_pattern.get_new_value()
+                    DeltaUrl.objects.create(collection=self.collection, **fields)
+                else:
+                    # No other patterns, create delta with None
+                    fields = {
+                        f.name: getattr(curated, f.name)
+                        for f in curated._meta.fields
+                        if f.name not in ["id", "collection"]
+                    }
+                    fields[field] = None
+                    DeltaUrl.objects.create(collection=self.collection, **fields)
 
         # Clear pattern relationships
         self.delta_urls.clear()
