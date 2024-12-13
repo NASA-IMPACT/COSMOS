@@ -333,16 +333,28 @@ class FieldModifyingPattern(BaseMatchPattern):
         affected_deltas = self.delta_urls.all()
         affected_curated = self.curated_urls.all()
 
+        # Get all other patterns of same type for this collection
+        pattern_class = self.__class__
+        other_patterns = pattern_class.objects.filter(collection=self.collection).exclude(id=self.id)
+
         # Process each affected delta URL
         for delta in affected_deltas:
             curated = CuratedUrl.objects.filter(collection=self.collection, url=delta.url).first()
 
-            if not curated:
-                # Scenario 1: Delta only - new URL
-                setattr(delta, field, None)
+            # Find next most specific matching pattern if any
+            matching_patterns = [p for p in other_patterns if re.search(p.get_regex_pattern(), delta.url)]
+
+            next_pattern = None
+            if matching_patterns:
+                # Sort by number of URLs matched (ascending) to find most specific
+                next_pattern = min(matching_patterns, key=lambda p: p.get_url_match_count())
+
+            if next_pattern:
+                # Apply next most specific pattern's value
+                setattr(delta, field, next_pattern.get_new_value())
                 delta.save()
-            else:
-                # Scenario 2: Both exist
+            elif curated:
+                # No other patterns match, revert to curated value
                 setattr(delta, field, getattr(curated, field))
                 delta.save()
 
@@ -354,17 +366,36 @@ class FieldModifyingPattern(BaseMatchPattern):
                 )
                 if fields_match:
                     delta.delete()
+            else:
+                # No curated URL or other patterns, set to None
+                setattr(delta, field, None)
+                delta.save()
 
         # Handle curated URLs that don't have deltas
         for curated in affected_curated:
             if not DeltaUrl.objects.filter(url=curated.url).exists():
-                # Scenario 3: Curated only
-                # Copy all fields from curated except the one we're nulling
-                fields = {
-                    f.name: getattr(curated, f.name) for f in curated._meta.fields if f.name not in ["id", "collection"]
-                }
-                fields[field] = None  # Set the pattern's field to None
-                delta = DeltaUrl.objects.create(collection=self.collection, **fields)
+                # Find any matching patterns
+                matching_patterns = [p for p in other_patterns if re.search(p.get_regex_pattern(), curated.url)]
+
+                if matching_patterns:
+                    # Apply most specific pattern's value
+                    next_pattern = min(matching_patterns, key=lambda p: p.get_url_match_count())
+                    fields = {
+                        f.name: getattr(curated, f.name)
+                        for f in curated._meta.fields
+                        if f.name not in ["id", "collection"]
+                    }
+                    fields[field] = next_pattern.get_new_value()
+                    DeltaUrl.objects.create(collection=self.collection, **fields)
+                else:
+                    # No other patterns, create delta with None
+                    fields = {
+                        f.name: getattr(curated, f.name)
+                        for f in curated._meta.fields
+                        if f.name not in ["id", "collection"]
+                    }
+                    fields[field] = None
+                    DeltaUrl.objects.create(collection=self.collection, **fields)
 
         # Clear pattern relationships
         self.delta_urls.clear()
@@ -523,11 +554,12 @@ class DeltaTitlePattern(BaseMatchPattern):
 
     def unapply(self) -> None:
         """
-        Remove title modifications:
-        1. Create Delta URLs for affected Curated URLs to explicitly clear titles
-        2. Remove generated titles from affected Delta URLs
-        3. Clean up Delta URLs that become identical to their Curated URL
-        4. Clear resolution tracking
+        Remove title modifications, maintaining pattern precedence:
+        1. Find any remaining patterns that match each URL
+        2. Apply most specific matching pattern's title if one exists
+        3. Otherwise revert to curated title or clear title
+        4. Update title resolution tracking
+        5. Clean up redundant deltas
         """
         DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
         CuratedUrl = apps.get_model("sde_collections", "CuratedUrl")
@@ -538,16 +570,36 @@ class DeltaTitlePattern(BaseMatchPattern):
         affected_deltas = self.delta_urls.all()
         affected_curated = self.curated_urls.all()
 
+        # Get all other title patterns for this collection
+        other_patterns = DeltaTitlePattern.objects.filter(collection=self.collection).exclude(id=self.id)
+
         # Process each affected delta URL
         for delta in affected_deltas:
             curated = CuratedUrl.objects.filter(collection=self.collection, url=delta.url).first()
 
-            if not curated:
-                # Scenario 1: Delta only - clear generated title
-                delta.generated_title = ""
-                delta.save()
-            else:
-                # Scenario 2: Both exist - revert to curated title
+            # Find next most specific matching pattern if any
+            matching_patterns = [p for p in other_patterns if re.search(p.get_regex_pattern(), delta.url)]
+
+            next_pattern = None
+            if matching_patterns:
+                # Sort by number of URLs matched (ascending) to find most specific
+                next_pattern = min(matching_patterns, key=lambda p: p.get_url_match_count())
+
+            if next_pattern:
+                # Apply next most specific pattern's title
+                new_title, error = next_pattern.generate_title_for_url(delta)
+                if error:
+                    DeltaResolvedTitleError.objects.update_or_create(
+                        delta_url=delta, defaults={"title_pattern": next_pattern, "error_string": error}
+                    )
+                else:
+                    delta.generated_title = new_title
+                    delta.save()
+                    DeltaResolvedTitle.objects.update_or_create(
+                        delta_url=delta, defaults={"title_pattern": next_pattern, "resolved_title": new_title}
+                    )
+            elif curated:
+                # No other patterns match, revert to curated title
                 delta.generated_title = curated.generated_title
                 delta.save()
 
@@ -559,18 +611,47 @@ class DeltaTitlePattern(BaseMatchPattern):
                 )
                 if fields_match:
                     delta.delete()
+            else:
+                # No curated URL or other patterns, clear title
+                delta.generated_title = ""
+                delta.save()
 
         # Handle curated URLs that don't have deltas
         for curated in affected_curated:
             if not DeltaUrl.objects.filter(url=curated.url).exists():
-                # Scenario 3: Curated only - create delta with cleared title
-                fields = {
-                    f.name: getattr(curated, f.name) for f in curated._meta.fields if f.name not in ["id", "collection"]
-                }
-                fields["generated_title"] = ""
-                DeltaUrl.objects.create(collection=self.collection, **fields)
+                # Find any matching patterns
+                matching_patterns = [p for p in other_patterns if re.search(p.get_regex_pattern(), curated.url)]
 
-        # Clear resolution tracking
+                if matching_patterns:
+                    # Apply most specific pattern's title
+                    next_pattern = min(matching_patterns, key=lambda p: p.get_url_match_count())
+
+                    # Copy all fields from curated
+                    fields = {
+                        f.name: getattr(curated, f.name)
+                        for f in curated._meta.fields
+                        if f.name not in ["id", "collection"]
+                    }
+
+                    # Generate and apply new title
+                    new_title, error = next_pattern.generate_title_for_url(curated)
+                    if not error:
+                        fields["generated_title"] = new_title
+                        delta = DeltaUrl.objects.create(collection=self.collection, **fields)
+                        DeltaResolvedTitle.objects.create(
+                            title_pattern=next_pattern, delta_url=delta, resolved_title=new_title
+                        )
+                else:
+                    # No other patterns, create delta with cleared title
+                    fields = {
+                        f.name: getattr(curated, f.name)
+                        for f in curated._meta.fields
+                        if f.name not in ["id", "collection"]
+                    }
+                    fields["generated_title"] = ""
+                    DeltaUrl.objects.create(collection=self.collection, **fields)
+
+        # Clear resolution tracking for this pattern
         DeltaResolvedTitle.objects.filter(title_pattern=self).delete()
         DeltaResolvedTitleError.objects.filter(title_pattern=self).delete()
 
