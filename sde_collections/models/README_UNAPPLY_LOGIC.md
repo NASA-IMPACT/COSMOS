@@ -88,28 +88,28 @@ Pattern: doc_type=DATA
 
 ### Case 5: Overlapping Patterns, Specific Deleted
 ```
-Curated: division=ASTROPHYSICS (because of specific pattern)
+Delta: division=ASTROPHYSICS (because of specific pattern)
 Specific Pattern: division=ASTROPHYSICS
 General Pattern: division=BIOLOGY
 ```
 `[Specific Pattern: division=ASTROPHYSICS], deleted`
 
 ```
-Curated: division=BIOLOGY (because of general pattern)
+Delta: division=BIOLOGY (because of general pattern)
 General Pattern: division=BIOLOGY
 ```
 
 
 ### Case 6: Overlapping Patterns, General Deleted
 ```
-Curated: division=ASTROPHYSICS (because of specific pattern)
+Delta: division=ASTROPHYSICS (because of specific pattern)
 Specific Pattern: division=ASTROPHYSICS
 General Pattern: division=BIOLOGY
 ```
 `[General Pattern: division=BIOLOGY], deleted`
 
 ```
-Curated: division=ASTROPHYSICS (because of specific pattern)
+Delta: division=ASTROPHYSICS (because of specific pattern)
 Specific Pattern: division=ASTROPHYSICS
 ```
 
