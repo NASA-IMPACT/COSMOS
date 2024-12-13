@@ -105,8 +105,9 @@ class ReindexingStatusChoices(models.IntegerChoices):
     REINDEXING_NEEDED_ON_DEV = 2, "Re-Indexing Needed"
     REINDEXING_FINISHED_ON_DEV = 3, "Re-Indexing Finished"
     REINDEXING_READY_FOR_CURATION = 4, "Ready for Re-Curation"
-    REINDEXING_CURATED = 5, "Re-Curation Finished"
-    REINDEXING_INDEXED_ON_PROD = 6, "Re-Indexed on Prod"
+    REINDEXING_CURATION_IN_PROGRESS = 5, "Re-Curation in Progress"
+    REINDEXING_CURATED = 6, "Re-Curation Finished"
+    REINDEXING_INDEXED_ON_PROD = 7, "Re-Indexed on Prod"
 
     # @classmethod
     # def get_status_string(cls, value):

@@ -350,8 +350,9 @@ class Collection(models.Model):
             2: "btn-warning",  # NEEDED
             3: "btn-secondary",  # FINISHED
             4: "btn-info",  # READY_FOR_CURATION
-            5: "btn-primary",  # CURATED
-            6: "btn-success",  # INDEXED_ON_PROD
+            5: "btn-warning",  # CURATION_IN_PROGRESS
+            6: "btn-primary",  # CURATED
+            7: "btn-success",  # INDEXED_ON_PROD
         }
         return color_choices[self.reindexing_status]
 

@@ -304,12 +304,13 @@ function handleReindexingStatusSelect() {
     var reindexing_status = $(this).attr("value");
     var reindexing_status_text = $(this).text();
     var color_choices = {
-      1: "btn-light",    // REINDEXING_NOT_NEEDED
-      2: "btn-warning",  // REINDEXING_NEEDED_ON_DEV
+      1: "btn-light",     // REINDEXING_NOT_NEEDED
+      2: "btn-warning",   // REINDEXING_NEEDED_ON_DEV
       3: "btn-secondary", // REINDEXING_FINISHED_ON_DEV
-      4: "btn-info",     // REINDEXING_READY_FOR_CURATION
-      5: "btn-primary",  // REINDEXING_CURATED
-      6: "btn-success",  // REINDEXING_INDEXED_ON_PROD
+      4: "btn-info",      // REINDEXING_READY_FOR_CURATION
+      5: "btn-warning",   // REINDEXING_CURATION_IN_PROGRESS
+      6: "btn-primary",   // REINDEXING_CURATED
+      7: "btn-success"    // REINDEXING_INDEXED_ON_PROD
     };
 
     $possible_buttons = $("body").find(

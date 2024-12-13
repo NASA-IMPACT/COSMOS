@@ -2218,12 +2218,13 @@ function handleReindexingStatusSelect() {
           break;
         case "changeReindexingStatus":
           var color_choices = {
-            1: "btn-light",    // NOT_NEEDED
-            2: "btn-warning",  // NEEDED
-            3: "btn-secondary",// FINISHED
-            4: "btn-info",     // READY_FOR_CURATION
-            5: "btn-primary",  // CURATED
-            6: "btn-success"   // INDEXED_ON_PROD
+            1: "btn-light",     // REINDEXING_NOT_NEEDED
+            2: "btn-warning",   // REINDEXING_NEEDED_ON_DEV
+            3: "btn-secondary", // REINDEXING_FINISHED_ON_DEV
+            4: "btn-info",      // REINDEXING_READY_FOR_CURATION
+            5: "btn-warning",   // REINDEXING_CURATION_IN_PROGRESS
+            6: "btn-primary",   // REINDEXING_CURATED
+            7: "btn-success"    // REINDEXING_INDEXED_ON_PROD
           };
 
           $button = $(`#reindexing-status-button-${collection_id}`);
