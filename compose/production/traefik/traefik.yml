@@ -14,11 +14,6 @@ entryPoints:
   web-secure:
     # https
     address: ":443"
-    transport:
-      respondingTimeouts:
-        readTimeout: "180s"
-        writeTimeout: "180s"
-        idleTimeout: "180s"
 
   flower:
     address: ":5555"
@@ -34,6 +29,9 @@ certificatesResolvers:
         entryPoint: web
 
 http:
+  serversTransport:
+    respondingTimeouts:
+      idleTimeout: "5m0s"
   routers:
     web-secure-router:
       rule: 'Host(`{{ env "TRAEFIK_DOMAIN" }}`)'
@@ -41,7 +39,6 @@ http:
         - web-secure
       middlewares:
         - csrf
-        - long-timeout
       service: django
       tls:
         # https://docs.traefik.io/master/routing/routers/#certresolver
@@ -62,19 +59,12 @@ http:
       # https://docs.djangoproject.com/en/dev/ref/csrf/#ajax
       headers:
         hostsProxyHeaders: ["X-CSRFToken"]
-    long-timeout:
-      forwardingTimeouts:
-        dialTimeout: "180s"
-        responseHeaderTimeout: "180s"
-        idleConnTimeout: "180s"
 
   services:
     django:
       loadBalancer:
         servers:
           - url: http://django:5000
-        responseForwarding:
-          flushInterval: "100ms"
 
     flower:
       loadBalancer:
