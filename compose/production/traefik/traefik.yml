@@ -36,6 +36,7 @@ http:
         - web-secure
       middlewares:
         - csrf
+        - long-timeout
       service: django
       tls:
         # https://docs.traefik.io/master/routing/routers/#certresolver
@@ -56,6 +57,11 @@ http:
       # https://docs.djangoproject.com/en/dev/ref/csrf/#ajax
       headers:
         hostsProxyHeaders: ["X-CSRFToken"]
+    long-timeout:
+      forwardingTimeouts:
+        dialTimeout: "5m"
+        responseHeaderTimeout: "5m"
+        idleTimeout: "5m"
 
   services:
     django:
