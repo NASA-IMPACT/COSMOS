@@ -2199,7 +2199,6 @@ function handleWorkflowStatusSelect() {
 
 function handleReindexingStatusSelect() {
   $("body").on("click", ".reindexing_status_select", function () {
-    console.log("Reindexing status select clicked");
     $("#reindexingStatusChangeModal").modal();
     var collectionName = $(".urlStyle").text();
     var collection_id = $(this).data("collection-id");
@@ -2234,9 +2233,7 @@ function handleReindexingStatusSelect() {
           $button.removeClass(
             "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
           );
-          console.log("After remove class:", $button.attr('class'));
           $button.addClass(color_choices[parseInt(reindexing_status)]);
-          console.log("After add class:", $button.attr('class'));
           postReindexingStatus(collection_id, reindexing_status);
           $("#reindexingStatusChangeModal").modal("hide");
           break;
