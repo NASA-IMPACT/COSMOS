@@ -62,15 +62,18 @@ http:
       loadBalancer:
         servers:
           - url: http://django:5000
+        # Increase server timeout for long-running requests
+        server:
+          timeout: "300s"
 
     flower:
+      # Flower service
       loadBalancer:
         servers:
           - url: http://flower:5555
-
-serversTransport:
-  defaultTransport:
-    requestTimeout: 90s
+        # Increase server timeout for long-running requests
+        server:
+          timeout: "300s"
 
 providers:
   # https://docs.traefik.io/master/providers/file/
