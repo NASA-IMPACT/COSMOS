@@ -2199,6 +2199,7 @@ function handleWorkflowStatusSelect() {
 
 function handleReindexingStatusSelect() {
   $("body").on("click", ".reindexing_status_select", function () {
+    console.log("Reindexing status select clicked");
     $("#reindexingStatusChangeModal").modal();
     var collectionName = $(".urlStyle").text();
     var collection_id = $(this).data("collection-id");
@@ -2219,13 +2220,13 @@ function handleReindexingStatusSelect() {
         case "changeReindexingStatus":
           var color_choices = {
             1: "btn-light",     // REINDEXING_NOT_NEEDED
-            2: "btn-warning",   // REINDEXING_NEEDED_ON_DEV
-            3: "btn-secondary", // REINDEXING_FINISHED_ON_DEV
-            4: "btn-info",      // REINDEXING_READY_FOR_CURATION
-            5: "btn-warning",   // REINDEXING_CURATION_IN_PROGRESS
-            6: "btn-primary",   // REINDEXING_CURATED
-            7: "btn-success"    // REINDEXING_INDEXED_ON_PROD
-          };
+            2: "btn-danger",    // REINDEXING_NEEDED_ON_DEV (matching Ready For Engineering)
+            3: "btn-info",      // REINDEXING_FINISHED_ON_DEV (matching Indexing Finished on LRM Dev)
+            4: "btn-info",      // REINDEXING_READY_FOR_CURATION (matching Ready for Curation)
+            5: "btn-success",   // REINDEXING_CURATION_IN_PROGRESS (matching Curation in Progress)
+            6: "btn-primary",   // REINDEXING_CURATED (matching Curated)
+            7: "btn-primary"    // REINDEXING_INDEXED_ON_PROD (matching Prod: Perfect)
+        };
 
           $button = $(`#reindexing-status-button-${collection_id}`);
 
@@ -2233,7 +2234,9 @@ function handleReindexingStatusSelect() {
           $button.removeClass(
             "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
           );
+          console.log("After remove class:", $button.attr('class'));
           $button.addClass(color_choices[parseInt(reindexing_status)]);
+          console.log("After add class:", $button.attr('class'));
           postReindexingStatus(collection_id, reindexing_status);
           $("#reindexingStatusChangeModal").modal("hide");
           break;
