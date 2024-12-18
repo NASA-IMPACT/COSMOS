@@ -62,13 +62,15 @@ http:
       loadBalancer:
         servers:
           - url: http://django:5000
-        serversTransport:
-          serverTimeout: "300s"
 
     flower:
       loadBalancer:
         servers:
           - url: http://flower:5555
+
+serversTransport:
+  defaultTransport:
+    requestTimeout: 90s
 
 providers:
   # https://docs.traefik.io/master/providers/file/
