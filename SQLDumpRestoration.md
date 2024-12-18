@@ -82,4 +82,111 @@ docker-compose -f local.yml up
 docker-compose -f local.yml run --rm django python manage.py createsuperuser
 ```
 
-8. Log in to the SDE Indexing Helper frontend to ensure that all data has been correctly populated in the UI.
+8. Log in to the COSMOS frontend to ensure that all data has been correctly populated in the UI.
+
+
+
+# making the backup
+
+```bash
+ssh sde
+cat .envs/.production/.postgres
+```
+
+find the values for the variables:
+POSTGRES_HOST=sde-indexing-helper-db.c3cr2yyh5zt0.us-east-1.rds.amazonaws.com
+POSTGRES_PORT=5432
+POSTGRES_DB=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=this_is_A_web_application_built_in_2023
+
+```bash
+docker ps
+```
+
+b3fefa2c19fb
+
+note here that you need to put the
+```bash
+docker exec -t your_postgres_container_id pg_dump -U your_postgres_user -d your_database_name > backup.sql
+```
+```bash
+docker exec -t container_id pg_dump -h host -U user -d database -W > prod_backup.sql
+```
+
+docker exec -t b3fefa2c19fb env PGPASSWORD="this_is_A_web_application_built_in_2023" pg_dump -h sde-indexing-helper-db.c3cr2yyh5zt0.us-east-1.rds.amazonaws.com -U postgres -d postgres > prod_backup.sql
+
+# move the backup to local
+ go back to local computer and scp the file
+
+```bash
+scp sde:/home/ec2-user/sde_indexing_helper/prod_backup.sql .
+```
+scp prod_backup.sql sde_staging:/home/ec2-user/sde-indexing-helper
+if you have trouble transferring the file, you can use rsync:
+rsync -avzP prod_backup.sql sde_staging:/home/ec2-user/sde-indexing-helper/
+
+# restoring the backup
+bring down the local containers
+```bash
+docker-compose -f local.yml down
+docker-compose -f local.yml up postgres
+docker ps
+```
+
+find the container id
+
+c11d7bae2e56
+
+find the local variables from
+cat .envs/.production/.postgres
+POSTGRES_HOST=sde-indexing-helper-staging-db.c3cr2yyh5zt0.us-east-1.rds.amazonaws.com
+POSTGRES_PORT=5432
+POSTGRES_DB=sde_staging
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+
+
+```bash
+docker exec -it <container id> bash
+```
+docker exec -it c11d7bae2e56 bash
+
+## do all the database shit you need to
+
+
+psql -U <POSTGRES_USER> -d <POSTGRES_DB>
+psql -U postgres -d sde_staging
+or, if you are on one of the servers:
+psql -h sde-indexing-helper-staging-db.c3cr2yyh5zt0.us-east-1.rds.amazonaws.com -U postgres -d postgres
+
+\c postgres
+DROP DATABASE sde_staging;
+CREATE DATABASE sde_staging;
+
+# do the backup
+
+```bash
+docker cp prod_backup.sql c11d7bae2e56:/
+docker exec -it c11d7bae2e56 bash
+```
+
+```bash
+psql -U <POSTGRES_USER> -d <POSTGRES_DB> -f backup.sql
+```
+psql -U VnUvMKBSdkoFIETgLongnxYHrYVJKufn -d sde_indexing_helper -f prod_backup.sql
+
+psql -h sde-indexing-helper-staging-db.c3cr2yyh5zt0.us-east-1.rds.amazonaws.com -U postgres -d postgres -f prod_backup.sql
+pg_restore -h sde-indexing-helper-staging-db.c3cr2yyh5zt0.us-east-1.rds.amazonaws.com -U postgres -d postgres prod_backup.sql
+
+
+
+docker down
+
+docker up build
+
+migrate
+
+down
+
+up
