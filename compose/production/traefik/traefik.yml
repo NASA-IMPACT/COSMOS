@@ -10,13 +10,28 @@ entryPoints:
       redirections:
         entryPoint:
           to: web-secure
+    transport:
+      respondingTimeouts:
+        readTimeout: "300s"
+        writeTimeout: "300s"
+        idleTimeout: "300s"
 
   web-secure:
     # https
     address: ":443"
+    transport:
+      respondingTimeouts:
+        readTimeout: "300s"
+        writeTimeout: "300s"
+        idleTimeout: "300s"
 
   flower:
     address: ":5555"
+    transport:
+      respondingTimeouts:
+        readTimeout: "300s"
+        writeTimeout: "300s"
+        idleTimeout: "300s"
 
 certificatesResolvers:
   letsencrypt:
@@ -36,7 +51,6 @@ http:
         - web-secure
       middlewares:
         - csrf
-        - long-timeout
       service: django
       tls:
         # https://docs.traefik.io/master/routing/routers/#certresolver
@@ -57,10 +71,6 @@ http:
       # https://docs.djangoproject.com/en/dev/ref/csrf/#ajax
       headers:
         hostsProxyHeaders: ["X-CSRFToken"]
-    long-timeout:
-      timeouts:
-        request: "5m"
-        idle: "5m"
 
   services:
     django:
