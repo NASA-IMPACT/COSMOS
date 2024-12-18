@@ -12,26 +12,26 @@ entryPoints:
           to: web-secure
     transport:
       respondingTimeouts:
-        readTimeout: "300s"
-        writeTimeout: "300s"
-        idleTimeout: "300s"
+        readTimeout: "600s"
+        writeTimeout: "600s"
+        idleTimeout: "600s"
 
   web-secure:
     # https
     address: ":443"
     transport:
       respondingTimeouts:
-        readTimeout: "300s"
-        writeTimeout: "300s"
-        idleTimeout: "300s"
+        readTimeout: "600s"
+        writeTimeout: "600s"
+        idleTimeout: "600s"
 
   flower:
     address: ":5555"
     transport:
       respondingTimeouts:
-        readTimeout: "300s"
-        writeTimeout: "300s"
-        idleTimeout: "300s"
+        readTimeout: "600s"
+        writeTimeout: "600s"
+        idleTimeout: "600s"
 
 certificatesResolvers:
   letsencrypt:
