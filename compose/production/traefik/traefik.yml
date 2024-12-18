@@ -58,10 +58,9 @@ http:
       headers:
         hostsProxyHeaders: ["X-CSRFToken"]
     long-timeout:
-      forwardingTimeouts:
-        dialTimeout: "5m"
-        responseHeaderTimeout: "5m"
-        idleTimeout: "5m"
+      timeouts:
+        request: "5m"
+        idle: "5m"
 
   services:
     django:
