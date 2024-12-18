@@ -14,6 +14,9 @@ entryPoints:
   web-secure:
     # https
     address: ":443"
+    http:
+      middlewares:
+        - timeouts
 
   flower:
     address: ":5555"
@@ -29,9 +32,6 @@ certificatesResolvers:
         entryPoint: web
 
 http:
-  serversTransport:
-    respondingTimeouts:
-      idleTimeout: "5m0s"
   routers:
     web-secure-router:
       rule: 'Host(`{{ env "TRAEFIK_DOMAIN" }}`)'
@@ -59,6 +59,9 @@ http:
       # https://docs.djangoproject.com/en/dev/ref/csrf/#ajax
       headers:
         hostsProxyHeaders: ["X-CSRFToken"]
+    timeouts:
+      headers:
+        readTimeout: "300s"
 
   services:
     django:
