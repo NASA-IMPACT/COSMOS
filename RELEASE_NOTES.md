@@ -33,7 +33,7 @@ To ensure reliability and maintainability of these major changes, this release i
 - Pattern precedence system: most specific pattern takes priority, with pattern length as tiebreaker
 
 #### Environmental Justice (EJ) Enhancement
-- Expanded from 89 manual datasets to 1063 ML-classified NASA CMR records
+- Expanded from 92 manual datasets to 1063 ML-classified NASA CMR records
 - New modular processing suite for metadata generation
 - Enhanced API with multiple data sources:
   - Spreadsheet (original manual classifications)
