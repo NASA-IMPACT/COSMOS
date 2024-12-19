@@ -346,13 +346,13 @@ class Collection(models.Model):
     @property
     def reindexing_status_button_color(self) -> str:
         color_choices = {
-            1: "btn-light",  # NOT_NEEDED
-            2: "btn-warning",  # NEEDED
-            3: "btn-secondary",  # FINISHED
-            4: "btn-info",  # READY_FOR_CURATION
-            5: "btn-warning",  # CURATION_IN_PROGRESS
-            6: "btn-primary",  # CURATED
-            7: "btn-success",  # INDEXED_ON_PROD
+            1: "btn-light",  # REINDEXING_NOT_NEEDED
+            2: "btn-danger",  # REINDEXING_NEEDED_ON_DEV (matching Ready For Engineering)
+            3: "btn-info",  # REINDEXING_FINISHED_ON_DEV (matching Indexing Finished on LRM Dev)
+            4: "btn-info",  # REINDEXING_READY_FOR_CURATION (matching Ready for Curation)
+            5: "btn-success",  # REINDEXING_CURATION_IN_PROGRESS (matching Curation in Progress)
+            6: "btn-primary",  # REINDEXING_CURATED (matching Curated)
+            7: "btn-primary",  # REINDEXING_INDEXED_ON_PROD (matching Prod: Perfect)
         }
         return color_choices[self.reindexing_status]
 
