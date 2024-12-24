@@ -606,6 +606,11 @@ function initializeDataTable() {
         sortable: true,
       },
       {
+        data: "curated_urls_count",
+        class: "text-center whiteText",
+        sortable: true,
+      },
+      {
         data: null,
         sortable: false,
         class: "text-center",
@@ -687,6 +692,11 @@ function initializeDataTable() {
         sortable: true,
       },
       {
+        data: "curated_urls_count",
+        class: "text-center whiteText",
+        sortable: true,
+      },
+      {
         data: null,
         sortable: false,
         class: "text-center",
@@ -763,6 +773,11 @@ function initializeDataTable() {
       { data: "title_pattern", class: "whiteText" },
       {
         data: "delta_urls_count",
+        class: "text-center whiteText",
+        sortable: true,
+      },
+      {
+        data: "curated_urls_count",
         class: "text-center whiteText",
         sortable: true,
       },
@@ -879,6 +894,11 @@ function initializeDataTable() {
         sortable: true,
       },
       {
+        data: "curated_urls_count",
+        class: "text-center whiteText",
+        sortable: true,
+      },
+      {
         data: null,
         sortable: false,
         class: "text-center",
@@ -976,6 +996,11 @@ var division_patterns_table = $("#division_patterns_table").DataTable({
     { data: "division_display", class: "whiteText" },
     {
       data: "delta_urls_count",
+      class: "text-center whiteText",
+      sortable: true,
+    },
+    {
+      data: "curated_urls_count",
       class: "text-center whiteText",
       sortable: true,
     },
