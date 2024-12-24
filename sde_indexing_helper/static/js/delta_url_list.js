@@ -539,7 +539,8 @@ function initializeDataTable() {
   );
 
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
-    // scrollY: true,
+    serverSide: true,
+    paging: true,
     dom: "lBrtip",
     buttons: [
       {
@@ -562,7 +563,7 @@ function initializeDataTable() {
       ["Show 25", "Show 50", "Show 100", "Show 500"],
     ],
     orderCellsTop: true,
-    pageLength: 100,
+    pageLength: 50,
     ajax: `/api/exclude-patterns/?format=datatables&collection_id=${collection_id}`,
     initComplete: function (data) {
       var table = $("#exclude_patterns_table").DataTable();
@@ -626,7 +627,8 @@ function initializeDataTable() {
   });
 
   var include_patterns_table = $("#include_patterns_table").DataTable({
-    // scrollY: true,
+    serverSide: true,
+    paging: true,
     lengthMenu: [
       [25, 50, 100, 500],
       ["Show 25", "Show 50", "Show 100", "Show 500"],
@@ -648,7 +650,7 @@ function initializeDataTable() {
         },
       },
     ],
-    pageLength: 100,
+    pageLength: 50,
     orderCellsTop: true,
     ajax: `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
     initComplete: function (data) {
@@ -2219,13 +2221,13 @@ function handleReindexingStatusSelect() {
         case "changeReindexingStatus":
           var color_choices = {
             1: "btn-light",     // REINDEXING_NOT_NEEDED
-            2: "btn-warning",   // REINDEXING_NEEDED_ON_DEV
-            3: "btn-secondary", // REINDEXING_FINISHED_ON_DEV
-            4: "btn-info",      // REINDEXING_READY_FOR_CURATION
-            5: "btn-warning",   // REINDEXING_CURATION_IN_PROGRESS
-            6: "btn-primary",   // REINDEXING_CURATED
-            7: "btn-success"    // REINDEXING_INDEXED_ON_PROD
-          };
+            2: "btn-danger",    // REINDEXING_NEEDED_ON_DEV (matching Ready For Engineering)
+            3: "btn-info",      // REINDEXING_FINISHED_ON_DEV (matching Indexing Finished on LRM Dev)
+            4: "btn-info",      // REINDEXING_READY_FOR_CURATION (matching Ready for Curation)
+            5: "btn-success",   // REINDEXING_CURATION_IN_PROGRESS (matching Curation in Progress)
+            6: "btn-primary",   // REINDEXING_CURATED (matching Curated)
+            7: "btn-primary"    // REINDEXING_INDEXED_ON_PROD (matching Prod: Perfect)
+        };
 
           $button = $(`#reindexing-status-button-${collection_id}`);
 
