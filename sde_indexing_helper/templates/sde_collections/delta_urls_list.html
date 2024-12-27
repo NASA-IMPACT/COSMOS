@@ -61,15 +61,13 @@
     </div>
 </div>
 
-
 <div class="deltaUrlContainer">
 <h3 class="whiteText deltaTitle">
-    <!-- {{ delta_urls.count|intcomma }} Delta URLs for  -->
-      Collection Name:
-    <a
-        href="{% url 'sde_collections:detail' collection.pk %}"><strong class="urlStyle underline">{{ collection.name }}</strong></a>
+    <span id="url-count">{{ delta_urls.count|intcomma }} Delta URLs for</span>
+    <a href="{% url 'sde_collections:detail' collection.pk %}">
+        <strong class="urlStyle underline">{{ collection.name }}</strong>
+    </a>
     <br>
-    <!-- <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small> -->
 </h3>
 
 <div>
