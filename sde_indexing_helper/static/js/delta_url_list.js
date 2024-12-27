@@ -40,6 +40,32 @@ $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
   $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
 });
 
+// handle dynamic sub-title update for URL count for Delta or Curated URLs
+$('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
+  currentTab = e.target.id;
+  $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+
+  // Update URL count based on selected tab
+  let table = null;
+  let countText = "";
+  if (e.target.href.endsWith("Delta-URLs")) {
+    table = $("#delta_urls_table").DataTable();
+    countText = "Delta URLs for";
+  } else if (e.target.href.endsWith("Curated-URLs")) {
+    table = $("#curated_urls_table").DataTable();
+    countText = "Curated URLs for";
+  }
+
+  if (table) {
+    table.on('xhr', function() {
+      const json = table.ajax.json();
+      const count = json.recordsTotal;
+      $("#url-count").text(count.toLocaleString() + " " + countText);
+    });
+    table.ajax.reload(null, false);
+  }
+});
+
 $(document).ready(function () {
   handleAjaxStartAndStop();
   initializeDataTable();
