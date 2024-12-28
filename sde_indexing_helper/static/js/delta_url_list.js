@@ -1097,6 +1097,8 @@ function handleDivisionSelect() {
   $("body").on("click", ".division_select", function () {
     var match_pattern = $(this).closest(".document_type_dropdown").data("match-pattern");
     var division = $(this).attr("value");
+    // var match_pattern_type = $(this).attr("match-pattern-type");
+    // postDivisionPatterns(match_pattern, match_pattern_type, division);
     postDivisionPatterns(match_pattern, 1, division);
   });
 }
@@ -1130,7 +1132,7 @@ $("#division_pattern_form").on("submit", function (e) {
 
   console.log("Form Inputs:", inputs);  // Debugging line to check inputs
 
-  postDivisionPatterns(inputs.match_pattern, 2, inputs.division_pattern);
+  postDivisionPatterns(inputs.match_pattern, inputs.match_pattern_type, inputs.division_pattern);
 
   // Close the modal if it is open
   $("#divisionPatternModal").modal("hide");
@@ -1975,6 +1977,12 @@ $(".custom-menu li").click(function () {
   $(".custom-menu").hide(100);
 });
 
+$(".pattern_type_form_select").on("click", function (e) {
+  e.preventDefault();
+  $('input[name="match_pattern_type"]').val($(this).attr("value"));
+  $(".pattern-dropdown").text($(this).text());
+});
+
 $("#exclude_pattern_form").on("submit", function (e) {
   e.preventDefault();
 
@@ -1996,7 +2004,7 @@ $("#exclude_pattern_form").on("submit", function (e) {
 
   postExcludePatterns(
     (match_pattern = inputs.match_pattern),
-    (match_pattern_type = 2)
+    (match_pattern_type = inputs.match_pattern_type)
   );
 
   // close the modal if it is open
@@ -2024,7 +2032,7 @@ $("#include_pattern_form").on("submit", function (e) {
 
   postIncludePatterns(
     (match_pattern = inputs.match_pattern),
-    (match_pattern_type = 2)
+    (match_pattern_type = inputs.match_pattern_type)
   );
 
   // close the modal if it is open
@@ -2042,7 +2050,7 @@ $("#title_pattern_form").on("submit", function (e) {
   postTitlePatterns(
     (match_pattern = inputs.match_pattern),
     (title_pattern = inputs.title_pattern),
-    (match_pattern_type = 2)
+    (match_pattern_type = inputs.match_pattern_type)
   );
 
   // close the modal if it is open
@@ -2059,7 +2067,7 @@ $("#document_type_pattern_form").on("submit", function (e) {
 
   postDocumentTypePatterns(
     inputs.match_pattern,
-    2,
+    inputs.match_pattern_type,
     inputs.document_type_pattern
   );
 
