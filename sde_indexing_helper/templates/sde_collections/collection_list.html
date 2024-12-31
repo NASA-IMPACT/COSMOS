@@ -150,16 +150,16 @@
                     <!-- Division Column -->
                     <td class="whiteText noBorder">{{ collection.get_division_display }}</td>
 
-                    <!-- Delta URLs Column - Shows count and links if > 0 -->
+                    <!-- Delta URLs Column - Shows count and links if >= 0 -->
                     <td class="noBorder centerAlign">
                         <a href=" {% if collection.num_delta_urls >= 0 %} {% url 'sde_collections:delta_urls' collection.pk %} {% endif %} "
                            class="btn btn-sm {% if collection.num_delta_urls >= 0 %}btn-primary {% else %}disabled{% endif %}candidateCount"
                            role="button">{{ collection.num_delta_urls|intcomma }}</a>
                     </td>
 
-                    <!-- Curated URLs Column - Shows count and links if > 0 -->
+                    <!-- Curated URLs Column - Shows count and links if >= 0 -->
                     <td class="noBorder centerAlign">
-                        <a href=" {% if collection.num_curated_urls > 0 %} {% url 'sde_collections:delta_urls' collection.pk %} {% endif %} "
+                        <a href=" {% if collection.num_curated_urls >= 0 %} {% url 'sde_collections:delta_urls' collection.pk %} {% endif %} "
                            class="btn btn-sm {% if collection.num_curated_urls > 0 %}btn-primary {% else %}disabled{% endif %}candidateCount"
                            role="button">{{ collection.num_curated_urls|intcomma }}</a>
                     </td>
