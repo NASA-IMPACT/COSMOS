@@ -257,6 +257,7 @@ function initializeDataTable() {
       getScrapedTitleColumn(),
       getGeneratedTitleColumn(),
       getDocumentTypeColumn(),
+      getTdammTagColumn(),
       getDivisionColumn(),
       { data: "id", visible: false, searchable: false },
       { data: "generated_title_id", visible: false, searchable: false },
@@ -472,6 +473,7 @@ function initializeDataTable() {
       getCuratedScrapedTitleColumn(),
       getCuratedGeneratedTitleColumn(),
       getCuratedDocumentTypeColumn(),
+      getTdammTagColumn(),
       getCuratedDivisionColumn(),
       { data: "id", visible: false, searchable: false },
       { data: "generated_title_id", visible: false, searchable: false },
@@ -786,6 +788,10 @@ function initializeDataTable() {
   $("#deltaTitlePatternTypeFilter").on("beforeinput", function (val) {
     title_patterns_table.columns(2).search(this.value).draw();
   });
+
+  $("#deltaTdammTagFilter").on("beforeinput", DataTable.util.debounce(function (val) {
+    delta_urls_table.column('tdamm_tag:name').search(this.value).draw();
+  }, 1000));
 
   var document_type_patterns_table = $(
     "#document_type_patterns_table"
@@ -1301,6 +1307,17 @@ function getCuratedExcludedColumn(true_icon, false_icon) {
           row["url"]
         )}>${false_icon}</a>`;
     },
+  };
+}
+
+function getTdammTagColumn() {
+  return {
+    data: "tdamm_tag",
+    width: "10%",
+    className: "text-center whiteText",  // Changed from class to className
+    render: function (data, type, row) {
+      return data && data.length ? data.join(", ") : "None";
+    }
   };
 }
 

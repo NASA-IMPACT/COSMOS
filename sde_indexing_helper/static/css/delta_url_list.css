@@ -451,3 +451,16 @@ div.dt-container div.dt-paging ul.pagination {
     max-width: 100%;
     min-width: 100%;
 }
+
+.table_filter_row_input {
+    width: 100%;
+}
+
+.tdamm-tags {
+    color: white;
+    background-color: #3F4A58;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin: 2px;
+    display: inline-block;
+}
