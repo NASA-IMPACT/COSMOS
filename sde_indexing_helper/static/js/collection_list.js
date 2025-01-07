@@ -204,23 +204,31 @@ let table = $("#collection_table").DataTable({
   ],
 });
 
-$("#collection-dropdown-4").on("change", function () {
+$("#workflow-status-selector").on("change", function () {
   table
     .columns(COLUMNS.WORKFLOW_STATUS_RAW)
     .search(this.value ? "^" + this.value + "$" : "", true, false)
     .draw();
 });
 
-$("#collection-dropdown-5").on("change", function () {
+$("#curator-selector").on("change", function () {
   table
     .columns(COLUMNS.CURATOR_ID)
     .search(this.value ? "^" + this.value + "$" : "", true, false)
     .draw();
 });
 
-$("#collection-dropdown-6").on("change", function () {
+$("#reindexing-status-selector").on("change", function () {
   table
     .columns(COLUMNS.REINDEXING_STATUS_RAW)
+    .search(this.value ? "^" + this.value + "$" : "", true, false)
+    .draw();
+});
+
+// Need to change this to reflect REINDEXING CURATOR CHANGE
+$("#reindexing-curator-selector").on("change", function () {
+  table
+    .columns(COLUMNS.CURATOR_ID)
     .search(this.value ? "^" + this.value + "$" : "", true, false)
     .draw();
 });
