@@ -259,6 +259,8 @@ function initializeDataTable() {
       getDocumentTypeColumn(),
       getDivisionColumn(),
       { data: "id", visible: false, searchable: false },
+      { data: "exclude_pattern_type", visible: false, searchable: false },
+      { data: "include_pattern_id", visible: false, searchable: false },
       { data: "generated_title_id", visible: false, searchable: false },
       { data: "match_pattern_type", visible: false, searchable: false },
       { data: "delta_urls_count", visible: false, searchable: false },
@@ -1483,11 +1485,54 @@ function handleUrlPartButton() {
 
 function handleExcludeIndividualUrlClick() {
   $("body").on("click", ".exclude_individual_url", function () {
-    postExcludePatterns(
-      (match_pattern = $(this).attr("value")),
-      (match_pattern_type = 1),
-      true
-    );
+    const url = $(this).attr("value");
+    // "check" for excluded, "close" for not excluded
+    const isExcluded = $(this).children("i").text() === "check";
+    const row = $(this).closest("tr");
+    const table = $("#delta_urls_table").DataTable();
+    const rowData = table.row(row).data();
+    const isAffectedByMultiPattern = rowData.exclude_pattern_type === MULTI_URL_PATTERN;
+    const patternId = rowData.include_pattern_id;
+
+    if (isAffectedByMultiPattern) {
+      // For URLs affected by multi-URL exclude patterns:
+      // - If excluded: Create individual include pattern to override
+      // - If not excluded: Delete the override include pattern
+      if (isExcluded) {
+        postIncludePatterns((match_pattern = url), (match_pattern_type = 1));
+      } else {
+        deletePatternWithoutPrompt(`/api/include-patterns/${patternId}/`);
+      }
+    } else {
+      // For URLs not affected by multi-URL patterns:
+      // Toggle individual exclude pattern
+      postExcludePatterns(
+        (match_pattern = url),
+        (match_pattern_type = 1),
+        true
+      );
+    }
+  });
+}
+
+function deletePatternWithoutPrompt(url) {
+  $.ajax({
+    url: url,
+    type: "DELETE",
+    data: {
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      $("#delta_urls_table").DataTable().ajax.reload(null, false);
+      $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+      $("#include_patterns_table").DataTable().ajax.reload(null, false);
+      $("#title_patterns_table").DataTable().ajax.reload(null, false);
+      $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
+      $("#division_patterns_table").DataTable().ajax.reload(null, false);
+    },
   });
 }
 

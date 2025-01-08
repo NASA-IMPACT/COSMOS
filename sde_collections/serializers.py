@@ -73,6 +73,8 @@ class DeltaURLSerializer(serializers.ModelSerializer):
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
     delta_urls_count = serializers.SerializerMethodField(read_only=True)
     tdamm_tag = serializers.SerializerMethodField()
+    exclude_pattern_type = serializers.IntegerField(read_only=True)
+    include_pattern_id = serializers.IntegerField(read_only=True)
 
     def get_tdamm_tag(self, obj):
         tags = obj.tdamm_tag
@@ -108,6 +110,8 @@ class DeltaURLSerializer(serializers.ModelSerializer):
             "division_display",
             "visited",
             "tdamm_tag",
+            "exclude_pattern_type",
+            "include_pattern_id",
         )
 
 
