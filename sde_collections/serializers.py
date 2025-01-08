@@ -72,7 +72,6 @@ class DeltaURLSerializer(serializers.ModelSerializer):
     generated_title_id = serializers.SerializerMethodField(read_only=True)
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
     delta_urls_count = serializers.SerializerMethodField(read_only=True)
-    curated_urls_count = serializers.SerializerMethodField(read_only=True)
     tdamm_tag = serializers.SerializerMethodField()
 
     def get_tdamm_tag(self, obj):
@@ -82,10 +81,6 @@ class DeltaURLSerializer(serializers.ModelSerializer):
     def get_delta_urls_count(self, obj):
         titlepattern = obj.deltatitlepatterns.last()
         return titlepattern.delta_urls.count() if titlepattern else 0
-
-    def get_curated_urls_count(self, obj):
-        titlepattern = obj.deltatitlepatterns.last()
-        return titlepattern.curated_urls.count() if titlepattern else 0
 
     def get_generated_title_id(self, obj):
         titlepattern = obj.deltatitlepatterns.last()
@@ -107,7 +102,6 @@ class DeltaURLSerializer(serializers.ModelSerializer):
             "generated_title_id",
             "match_pattern_type",
             "delta_urls_count",
-            "curated_urls_count",
             "document_type",
             "document_type_display",
             "division",
