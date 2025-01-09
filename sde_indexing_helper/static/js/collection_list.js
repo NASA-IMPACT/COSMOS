@@ -8,9 +8,11 @@ const COLUMNS = {
   CURATOR: 5,
   CONNECTOR_TYPE: 6,
   REINDEXING_STATUS: 7,
-  WORKFLOW_STATUS_RAW: 8,
-  CURATOR_ID: 9,
-  REINDEXING_STATUS_RAW: 10
+  REINDEXING_CURATOR: 8,
+  WORKFLOW_STATUS_RAW: 9,
+  CURATOR_ID: 10,
+  REINDEXING_STATUS_RAW: 11,
+  REINDEXING_CURATOR_ID: 12
 };
 
 var uniqueId; //used for logic related to contents on column customization modal
@@ -121,11 +123,24 @@ let table = $("#collection_table").DataTable({
       },
     },
   ],
+    searchPanes: {
+      controls: true,
+      layout: 'columns-6',
+      columns: [
+        COLUMNS.DIVISION,
+        COLUMNS.DELTA_URLS,
+        COLUMNS.WORKFLOW_STATUS,
+        COLUMNS.CURATOR,
+        COLUMNS.CONNECTOR_TYPE,
+        COLUMNS.REINDEXING_STATUS
+      ]
+    },
+  
   columnDefs: [
     // hide the data columns
     {
-      targets: [COLUMNS.WORKFLOW_STATUS_RAW, COLUMNS.CURATOR_ID, COLUMNS.REINDEXING_STATUS_RAW],
-      visible: false,
+      targets: [COLUMNS.WORKFLOW_STATUS_RAW, COLUMNS.CURATOR_ID, COLUMNS.REINDEXING_STATUS_RAW, COLUMNS.REINDEXING_CURATOR_ID],
+      visible: false, width: "0px", responsivePriority: -1
     },
     { width: "200px", targets: COLUMNS.URL },
     {
@@ -178,13 +193,6 @@ let table = $("#collection_table").DataTable({
       targets: [COLUMNS.DELTA_URLS],
       type: "num-fmt",
     },
-    // hide the data panes
-    {
-      searchPanes: {
-        show: false,
-      },
-      targets: [COLUMNS.WORKFLOW_STATUS_RAW, COLUMNS.CURATOR_ID, COLUMNS.REINDEXING_STATUS_RAW],
-    },
     {
       searchPanes: {
         dtOpts: {
@@ -202,6 +210,7 @@ let table = $("#collection_table").DataTable({
       targets: [COLUMNS.CONNECTOR_TYPE],
     },
   ],
+  autoWidth: false,
 });
 
 $("#workflow-status-selector").on("change", function () {
@@ -446,8 +455,6 @@ $(document).ready(function () {
 
   // Remove the search input and add custom titles
   var paneTitles = [
-    null,
-    null,
     "Division",
     "Delta URLs",
     "Workflow Status",
@@ -486,6 +493,7 @@ $(document).ready(function () {
     }
     // Check if the pane title exists for the current index
     else {
+      console.log(index, paneTitles[index])
       if (paneTitles[index]) {
         $(this)
           .find(".dtsp-topRow .dtsp-subRow1")

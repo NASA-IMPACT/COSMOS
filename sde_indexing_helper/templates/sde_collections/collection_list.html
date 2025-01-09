@@ -34,6 +34,7 @@
             <th class="hideDisplay"></th>
             <th class="hideDisplay"></th>
             <th class="hideDisplay"></th>
+            <th class="hideDisplay"></th>
         </tr>
 
         <!-- Filter Row - Contains inputs and dropdowns for filtering table data -->
@@ -121,6 +122,7 @@
             <td class="hideDisplay"></td>  <!-- Stores raw workflow_status value (number) -->
             <td class="hideDisplay"></td>  <!-- Stores raw curated_by_id value -->
             <td class="hideDisplay"></td>  <!-- Stores raw reindexing_status value (number) -->
+            <td class="hideDisplay"></td>  <!-- Stores raw reindexing_curated_by_id value -->
         </tr>
     </thead>
         <tbody>
@@ -278,6 +280,7 @@
                     <td class="hideDisplay">{{ collection.workflow_status }}</td>
                     <td class="hideDisplay">{{ collection.curated_by_id }}</td>
                     <td class="hideDisplay">{{ collection.reindexing_status }}</td>
+                    <td class="hideDisplay">{{ collection.curated_by_id }}</td>
                 </tr>
             {% endfor %}
         </tbody>
