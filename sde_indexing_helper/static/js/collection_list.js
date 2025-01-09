@@ -234,10 +234,9 @@ $("#reindexing-status-selector").on("change", function () {
     .draw();
 });
 
-// Need to change this to reflect REINDEXING CURATOR CHANGE
 $("#reindexing-curator-selector").on("change", function () {
   table
-    .columns(COLUMNS.CURATOR_ID)
+    .columns(COLUMNS.REINDEXING_CURATOR_ID)
     .search(this.value ? "^" + this.value + "$" : "", true, false)
     .draw();
 });
@@ -392,6 +391,37 @@ function handleCuratorSelect() {
   });
 }
 
+function handleReindexingCuratorSelect() {
+  $("body").on("click", ".reindexing_curator_select", function () {
+    const collection_id = $(this).data("collection-id");
+    const reindexing_curator_id = $(this).attr("value");
+    const reindexing_curator_text = $(this).text();
+    
+    // Update button text and style
+    const $button = $(`#reindexing-curator-button-${collection_id}`).last();
+    $button
+      .text(reindexing_curator_text)
+      .removeClass("btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-dark")
+      .addClass("btn-success");
+
+    // Update DataTable
+    const rowIndex = table.row("#" + collection_id).index();
+    table.data()[rowIndex][COLUMNS.REINDEXING_CURATOR] = createReindexingCuratorButton(reindexing_curator_text);
+    // table.searchPanes.rebuildPane(COLUMNS.REINDEXING_CURATOR);
+
+    // Send update to server
+    postReindexingCurator(collection_id, reindexing_curator_id);
+  });
+}
+
+// Helper function to create reindexing curator button HTML
+function createReindexingCuratorButton(reindexing_curator_text) {
+  const buttonClass = reindexing_curator_text === "NONE" ? "btn-dark" : "btn-success";
+  return `<div class="dropdown reindexing_curator_dropdown">
+    <button class="btn ${buttonClass} btn-sm dropdown-toggle">${reindexing_curator_text}</button>
+  </div>`;
+}
+
 function postReindexingStatus(collection_id, reindexing_status) {
   var url = `/api/collections/${collection_id}/`;
   $.ajax({
@@ -406,6 +436,16 @@ function postReindexingStatus(collection_id, reindexing_status) {
     },
     success: function (data) {
       toastr.success("Reindexing Status Updated!");
+
+      // If reindexing_status is REINDEXING_NOT_NEEDED, set Reindexing Curator field to None (reset to default)
+      if (reindexing_status == 1) {
+        const $button = $(`#reindexing-curator-button-${collection_id}`).last();
+        $button.text("NONE").removeClass("btn-success").addClass("btn-dark");
+        // Update DataTable
+        const rowIndex = table.row("#" + collection_id).index();
+        table.data()[rowIndex][COLUMNS.REINDEXING_CURATOR] = createReindexingCuratorButton("NONE");
+        // table.searchPanes.rebuildPane(COLUMNS.REINDEXING_CURATOR);
+      }
     },
   });
 }
@@ -443,6 +483,24 @@ function postCurator(collection_id, curator_id) {
     },
     success: function (data) {
       toastr.success("Curator Updated!");
+    },
+  });
+}
+
+function postReindexingCurator(collection_id, reindexing_curator_id) {
+  var url = `/api/collections/${collection_id}/`;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    data: {
+      reindexing_curated_by: reindexing_curator_id,
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      toastr.success("Reindexing Curator Updated!");
     },
   });
 }
@@ -493,7 +551,6 @@ $(document).ready(function () {
     }
     // Check if the pane title exists for the current index
     else {
-      console.log(index, paneTitles[index])
       if (paneTitles[index]) {
         $(this)
           .find(".dtsp-topRow .dtsp-subRow1")
@@ -509,6 +566,7 @@ function setupClickHandlers() {
   handleWorkflowStatusSelect();
   handleReindexingStatusSelect();
   handleCuratorSelect();
+  handleReindexingCuratorSelect();
 }
 
 function clearSearchValues() {

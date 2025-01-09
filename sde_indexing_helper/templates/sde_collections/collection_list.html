@@ -251,24 +251,24 @@
 
                     <!-- Reindexing Curator Dropdown -->
                     <td class="noBorder">
-                        <div class="dropdown curator_dropdown"
+                        <div class="dropdown reindexing_curator_dropdown"
                              data-match-pattern
                              remove_protocol
                              row
                              url>
-                            <!-- Curator button - green if assigned, dark if not -->
-                            <button class="btn {% if collection.curated_by %} btn-success {% else %} btn-dark {% endif %} btn-sm dropdown-toggle"
+                            <!-- Reindexing Curator button - green if assigned, dark if not -->
+                            <button class="btn {% if collection.reindexing_curated_by %} btn-success {% else %} btn-dark {% endif %} btn-sm dropdown-toggle"
                                     type="button"
-                                    id="curator-button-{{ collection.id }}"
+                                    id="reindexing-curator-button-{{ collection.id }}"
                                     data-toggle="dropdown"
                                     aria-haspopup="true"
-                                    aria-expanded="false">{{ collection.curated_by }}</button>
+                                    aria-expanded="false">{{ collection.reindexing_curated_by }}</button>
                             <!-- Dropdown menu with all possible curators -->
                             <div class="dropdown-menu"
-                                 aria-labelledby="curator-button-{{ collection.id }}">
+                                 aria-labelledby="reindexing-curator-button-{{ collection.id }}">
                                 {% for curator in curators %}
                                     <a key="{{ curator.pk }}"
-                                       class="dropdown-item curator_select"
+                                       class="dropdown-item reindexing_curator_select"
                                        value="{{ curator.pk }}"
                                        data-collection-id={{ collection.id }}>{{ curator.username }}</a>
                                 {% endfor %}
@@ -280,7 +280,7 @@
                     <td class="hideDisplay">{{ collection.workflow_status }}</td>
                     <td class="hideDisplay">{{ collection.curated_by_id }}</td>
                     <td class="hideDisplay">{{ collection.reindexing_status }}</td>
-                    <td class="hideDisplay">{{ collection.curated_by_id }}</td>
+                    <td class="hideDisplay">{{ collection.reindexing_curated_by_id }}</td>
                 </tr>
             {% endfor %}
         </tbody>

@@ -28,6 +28,7 @@ class CollectionSerializer(serializers.ModelSerializer):
             "workflow_status_display",
             "reindexing_status_display",
             "curated_by",
+            "reindexing_curated_by",
             "division",
             "document_type",
             "name",
@@ -44,6 +45,13 @@ class CollectionSerializer(serializers.ModelSerializer):
         #     "config_folder": {"required": False},
         #     "division": {"required": False},
         # }
+
+    def update(self, instance, validated_data):
+        # If reindexing_status is REINDEXING_NOT_NEEDED, set Reindexing Curator field to None (reset to default)
+        if validated_data.get('reindexing_status') == 1:
+            validated_data['reindexing_curated_by'] = None
+            
+        return super().update(instance, validated_data)
 
 
 class CollectionReadSerializer(serializers.ModelSerializer):

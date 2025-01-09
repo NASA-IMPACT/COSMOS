@@ -85,6 +85,7 @@ class Collection(models.Model):
     tracker = FieldTracker(fields=["workflow_status", "reindexing_status"])
 
     curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    reindexing_curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True, default=None, related_name="reindexing_curated_by")
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
 
     class Meta:
@@ -550,6 +551,7 @@ class Collection(models.Model):
         for collection in json_results:
             print("Creating collection: ", collection["name"])
             collection.pop("curated_by")
+            collection.pop("reindexing_curated_by")
             cls.objects.create(**collection)
 
     @classmethod
