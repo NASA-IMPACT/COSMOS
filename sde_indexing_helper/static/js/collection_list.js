@@ -416,7 +416,7 @@ function handleReindexingCuratorSelect() {
 
 // Helper function to create reindexing curator button HTML
 function createReindexingCuratorButton(reindexing_curator_text) {
-  const buttonClass = reindexing_curator_text === "NONE" ? "btn-dark" : "btn-success";
+  const buttonClass = reindexing_curator_text === "None" ? "btn-dark" : "btn-success";
   return `<div class="dropdown reindexing_curator_dropdown">
     <button class="btn ${buttonClass} btn-sm dropdown-toggle">${reindexing_curator_text}</button>
   </div>`;
@@ -440,10 +440,10 @@ function postReindexingStatus(collection_id, reindexing_status) {
       // If reindexing_status is REINDEXING_NOT_NEEDED, set Reindexing Curator field to None (reset to default)
       if (reindexing_status == 1) {
         const $button = $(`#reindexing-curator-button-${collection_id}`).last();
-        $button.text("NONE").removeClass("btn-success").addClass("btn-dark");
+        $button.text("None").removeClass("btn-success").addClass("btn-dark");
         // Update DataTable
         const rowIndex = table.row("#" + collection_id).index();
-        table.data()[rowIndex][COLUMNS.REINDEXING_CURATOR] = createReindexingCuratorButton("NONE");
+        table.data()[rowIndex][COLUMNS.REINDEXING_CURATOR] = createReindexingCuratorButton("None");
         // table.searchPanes.rebuildPane(COLUMNS.REINDEXING_CURATOR);
       }
     },
