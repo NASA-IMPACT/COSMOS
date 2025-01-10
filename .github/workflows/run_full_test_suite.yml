@@ -28,10 +28,10 @@ jobs:
       - name: Build the Docker environment
         run: docker-compose -f local.yml build
 
-      - name: Run test suite
+      - name: Run test suite with Pytest
         env:
           DJANGO_ENV: test
-        run: docker-compose -f local.yml run --rm django bash ./init.sh
+        run: docker-compose -f local.yml run --rm django pytest
 
       - name: Cleanup
         run: docker-compose -f local.yml down --volumes
