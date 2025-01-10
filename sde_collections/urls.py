@@ -54,7 +54,7 @@ urlpatterns = [
     # Create a new DeltaURL instance: /delta-urls/
     # Update an existing DeltaURL instance: /delta-urls/{id}/
     # Delete an existing DeltaURL instance: /delta-urls/{id}/
-    path("api/", include(router.urls)),
+    path("api/", include((router.urls, "sde_collections"), namespace="api")),
     path(
         "delta-urls-api/<str:config_folder>/",
         view=views.DeltaURLAPIView.as_view(),
