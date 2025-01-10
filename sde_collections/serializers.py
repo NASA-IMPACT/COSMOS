@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models.collection import Collection, WorkflowHistory
+from .models.collection import Collection, ReindexingHistory, WorkflowHistory
 from .models.collection_choice_fields import Divisions, DocumentTypes
 from .models.delta_patterns import (
     DeltaDivisionPattern,
@@ -36,7 +36,7 @@ class CollectionSerializer(serializers.ModelSerializer):
             "division": {"required": False},
             "document_type": {"required": False},
             "name": {"required": False},
-            "reindexing_status": {"required": False},
+            # "reindexing_status": {"required": False},
         }
 
         # extra_kwargs = {
@@ -58,6 +58,12 @@ class WorkflowHistorySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ReindexingHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReindexingHistory
+        fields = "__all__"
+
+
 class DeltaURLSerializer(serializers.ModelSerializer):
     excluded = serializers.BooleanField(required=False)
     document_type_display = serializers.CharField(source="get_document_type_display", read_only=True)
@@ -67,6 +73,8 @@ class DeltaURLSerializer(serializers.ModelSerializer):
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
     delta_urls_count = serializers.SerializerMethodField(read_only=True)
     tdamm_tag = serializers.SerializerMethodField()
+    exclude_pattern_type = serializers.IntegerField(read_only=True)
+    include_pattern_id = serializers.IntegerField(read_only=True)
 
     def get_tdamm_tag(self, obj):
         tags = obj.tdamm_tag
@@ -102,6 +110,8 @@ class DeltaURLSerializer(serializers.ModelSerializer):
             "division_display",
             "visited",
             "tdamm_tag",
+            "exclude_pattern_type",
+            "include_pattern_id",
         )
 
 
@@ -255,9 +265,13 @@ class CuratedURLAPISerializer(serializers.ModelSerializer):
 class BasePatternSerializer(serializers.ModelSerializer):
     match_pattern_type_display = serializers.CharField(source="get_match_pattern_type_display", read_only=True)
     delta_urls_count = serializers.SerializerMethodField(read_only=True)
+    curated_urls_count = serializers.SerializerMethodField(read_only=True)
 
     def get_delta_urls_count(self, instance):
         return instance.delta_urls.count()
+
+    def get_curated_urls_count(self, instance):
+        return instance.curated_urls.count()
 
     class Meta:
         fields = (
@@ -267,6 +281,7 @@ class BasePatternSerializer(serializers.ModelSerializer):
             "match_pattern_type",
             "match_pattern_type_display",
             "delta_urls_count",
+            "curated_urls_count",
         )
         abstract = True
 

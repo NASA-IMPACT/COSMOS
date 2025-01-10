@@ -14,33 +14,61 @@
 - Delta URL exists with pattern effect
 - Pattern is removed
 ```
-Curated: None
-Delta: division=BIOLOGY (from pattern)
-[Pattern removed]
-Result: Delta remains with division=None
+Curated: None exists
+Delta: url=new.com, division=None
+```
+`[Pattern: division=BIOLOGY], created`
+```
+Curated: None exists
+Delta: url=new.com, division=BIOLOGY
+```
+`[Pattern: division=BIOLOGY], deleted`
+```
+Curated: None exists
+Delta: url=new.com, division=None
 ```
 
-### Case 2: Delta and Curated Exist
+### Case 2: Delta Created to Apply Pattern
 **Scenario:**
-- Both curated and delta URLs exist
+- A Curated with no division already exists
+- A pattern is created
+- A delta is created to  to apply a pattern
 - Pattern is removed
+- Delta should be deleted
 ```
-Curated: division=GENERAL
+Curated: division=None
+```
+`[Pattern: division=BIOLOGY], created`
+```
+Curated: division=None
 Delta: division=BIOLOGY (from pattern)
-[Pattern removed]
-Result: Delta reverts to curated value (division=GENERAL)
-If delta now matches curated exactly, delta is deleted
+```
+`[Pattern: division=BIOLOGY], deleted`
+```
+Curated: division=None
 ```
 
-### Case 3: Curated Only
-**Scenario:**
-- Only curated URL exists
+### Case 3: Pre-existing Delta
+- A Curated with no division already exists
+- A Delta with an updated scraped_title exists
+- A pattern is created to set division
+- A delta is created to apply a pattern
 - Pattern is removed
+- Delta should be maintained because of scraped_title
+
 ```
-Curated: division=GENERAL
-Delta: None
-[Pattern removed]
-Result: New delta created with division=None
+Curated: division=None
+Delta: scraped_title="Modified", division=None
+```
+`[Pattern: division=BIOLOGY], created`
+```
+Curated: division=None
+Delta: scraped_title="Modified", division=BIOLOGY (from pattern)
+```
+`[Pattern: division=BIOLOGY], deleted`
+```
+Curated: division=None
+Delta: scraped_title="Modified", division=None
 ```
 
 ### Case 4: Multiple Pattern Effects
@@ -48,22 +76,43 @@ Result: New delta created with division=None
 - Delta has changes from multiple patterns
 - One pattern is removed
 ```
-Curated: division=GENERAL, doc_type=DOCUMENTATION
 Delta: division=BIOLOGY, doc_type=DATA (from two patterns)
-[Division pattern removed]
-Result: Delta remains with division=GENERAL, doc_type=DATA preserved
+Pattern: division=BIOLOGY
+Pattern: doc_type=DATA
+```
+`[Pattern: division=BIOLOGY], deleted`
+```
+Delta: division=None, doc_type=DATA
+Pattern: doc_type=DATA
 ```
 
-### Case 5: Pattern Removal with Manual Changes
-**Scenario:**
-- Delta has both pattern effect and manual changes
-- Pattern is removed
+### Case 5: Overlapping Patterns, Specific Deleted
 ```
-Curated: division=GENERAL, title="Original"
-Delta: division=BIOLOGY, title="Modified" (pattern + manual)
-[Pattern removed]
-Result: Delta remains with division=GENERAL, title="Modified" preserved
+Delta: division=ASTROPHYSICS (because of specific pattern)
+Specific Pattern: division=ASTROPHYSICS
+General Pattern: division=BIOLOGY
 ```
+`[Specific Pattern: division=ASTROPHYSICS], deleted`
+
+```
+Delta: division=BIOLOGY (because of general pattern)
+General Pattern: division=BIOLOGY
+```
+
+
+### Case 6: Overlapping Patterns, General Deleted
+```
+Delta: division=ASTROPHYSICS (because of specific pattern)
+Specific Pattern: division=ASTROPHYSICS
+General Pattern: division=BIOLOGY
+```
+`[General Pattern: division=BIOLOGY], deleted`
+
+```
+Delta: division=ASTROPHYSICS (because of specific pattern)
+Specific Pattern: division=ASTROPHYSICS
+```
+
 
 ## Implementation Steps
 

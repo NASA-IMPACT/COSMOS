@@ -71,7 +71,10 @@ class CollectionListView(LoginRequiredMixin, ListView):
             super()
             .get_queryset()
             .filter(delete=False)
-            .annotate(num_delta_urls=models.Count("delta_urls"))
+            .annotate(
+                num_delta_urls=models.Count("delta_urls", distinct=True),
+                num_curated_urls=models.Count("curated_urls", distinct=True),
+            )
             .order_by("-num_delta_urls")
         )
 
@@ -179,6 +182,7 @@ class CollectionDetailView(LoginRequiredMixin, DetailView):
             "-created_at"
         )
         context["workflow_status_choices"] = WorkflowStatusChoices
+        context["reindexing_status_choices"] = ReindexingStatusChoices
 
         return context
 
@@ -227,6 +231,7 @@ class DeltaURLsListView(LoginRequiredMixin, ListView):
         )  # 2=regex patterns
         context["title_patterns"] = self.collection.titlepattern.all()
         context["workflow_status_choices"] = WorkflowStatusChoices
+        context["reindexing_status_choices"] = ReindexingStatusChoices
         context["is_multi_division"] = self.collection.is_multi_division
 
         return context
@@ -274,10 +279,30 @@ class DeltaURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         if self.request.method == "GET":
+            collection_id = self.request.GET.get("collection_id")
             # Filter based on exclusion status
             is_excluded = self.request.GET.get("is_excluded")
             if is_excluded:
                 queryset = self._filter_by_is_excluded(queryset, is_excluded)
+
+            # Annotate queryset with two pieces of information:
+            # 1. exclude_pattern_type: Type of exclude pattern (1=Individual URL, 2=Multi-URL Pattern)
+            #    Ordered by -match_pattern_type to prioritize multi-url patterns (type 2)
+            # 2. include_pattern_id: ID of any include pattern affecting this URL
+            #    Used when we need to delete the include pattern during re-exclusion
+            queryset = queryset.annotate(
+                exclude_pattern_type=models.Subquery(
+                    DeltaExcludePattern.objects.filter(delta_urls=models.OuterRef("pk"), collection_id=collection_id)
+                    .order_by("-match_pattern_type")
+                    .values("match_pattern_type")[:1]
+                ),
+                include_pattern_id=models.Subquery(
+                    DeltaIncludePattern.objects.filter(
+                        delta_urls=models.OuterRef("pk"), collection_id=collection_id
+                    ).values("id")[:1]
+                ),
+            )
+
         return queryset.order_by("url")
 
     def update_division(self, request, pk=None):

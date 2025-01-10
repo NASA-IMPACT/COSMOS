@@ -10,7 +10,7 @@ services:
       dockerfile: ./compose/production/django/Dockerfile
     image: sde_indexing_helper_production_django
     volumes:
-      - ./backups:/app/backups
+      - ./backups:/app/backups:z
     depends_on:
       - postgres
     env_file:

@@ -4,13 +4,14 @@ const COLUMNS = {
   URL: 1,
   DIVISION: 2,
   DELTA_URLS: 3,
-  WORKFLOW_STATUS: 4,
-  CURATOR: 5,
-  CONNECTOR_TYPE: 6,
-  REINDEXING_STATUS: 7,
-  WORKFLOW_STATUS_RAW: 8,
-  CURATOR_ID: 9,
-  REINDEXING_STATUS_RAW: 10
+  CURATED_URLS: 4,
+  WORKFLOW_STATUS: 5,
+  CURATOR: 6,
+  CONNECTOR_TYPE: 7,
+  REINDEXING_STATUS: 8,
+  WORKFLOW_STATUS_RAW: 9,
+  CURATOR_ID: 10,
+  REINDEXING_STATUS_RAW: 11
 };
 
 var uniqueId; //used for logic related to contents on column customization modal
@@ -178,6 +179,56 @@ let table = $("#collection_table").DataTable({
       targets: [COLUMNS.DELTA_URLS],
       type: "num-fmt",
     },
+    {
+      searchPanes: {
+        options: [
+          {
+            label: "0 URLs",
+            value: function (rowData, rowIdx) {
+              return $(rowData[COLUMNS.CURATED_URLS]).text() == 0;
+            },
+          },
+          {
+            label: "1 solo URL",
+            value: function (rowData, rowIdx) {
+              return $(rowData[COLUMNS.CURATED_URLS]).text() == 1;
+            },
+          },
+          {
+            label: "1 to 100 URLs",
+            value: function (rowData, rowIdx) {
+              return $(rowData[COLUMNS.CURATED_URLS]).text() <= 100 && $(rowData[COLUMNS.CURATED_URLS]).text() > 1;
+            },
+          },
+          {
+            label: "100 to 1,000 URLs",
+            value: function (rowData, rowIdx) {
+              return $(rowData[COLUMNS.CURATED_URLS]).text() <= 1000 && $(rowData[COLUMNS.CURATED_URLS]).text() > 100;
+            },
+          },
+          {
+            label: "1,000 to 10,000 URLs",
+            value: function (rowData, rowIdx) {
+              return $(rowData[COLUMNS.CURATED_URLS]).text() <= 10000 && $(rowData[COLUMNS.CURATED_URLS]).text() > 1000;
+            },
+          },
+          {
+            label: "10,000 to 100,000 URLs",
+            value: function (rowData, rowIdx) {
+              return $(rowData[COLUMNS.CURATED_URLS]).text() <= 100000 && $(rowData[COLUMNS.CURATED_URLS]).text() > 10000;
+            },
+          },
+          {
+            label: "Over 100,000 URLs",
+            value: function (rowData, rowIdx) {
+              return $(rowData[COLUMNS.CURATED_URLS]).text() > 100000;
+            },
+          },
+        ],
+      },
+      targets: [COLUMNS.CURATED_URLS],
+      type: "num-fmt",
+    },
     // hide the data panes
     {
       searchPanes: {
@@ -304,12 +355,13 @@ function handleReindexingStatusSelect() {
     var reindexing_status = $(this).attr("value");
     var reindexing_status_text = $(this).text();
     var color_choices = {
-      1: "btn-light",    // REINDEXING_NOT_NEEDED
-      2: "btn-warning",  // REINDEXING_NEEDED_ON_DEV
+      1: "btn-light",     // REINDEXING_NOT_NEEDED
+      2: "btn-warning",   // REINDEXING_NEEDED_ON_DEV
       3: "btn-secondary", // REINDEXING_FINISHED_ON_DEV
-      4: "btn-info",     // REINDEXING_READY_FOR_CURATION
-      5: "btn-primary",  // REINDEXING_CURATED
-      6: "btn-success",  // REINDEXING_INDEXED_ON_PROD
+      4: "btn-info",      // REINDEXING_READY_FOR_CURATION
+      5: "btn-warning",   // REINDEXING_CURATION_IN_PROGRESS
+      6: "btn-primary",   // REINDEXING_CURATED
+      7: "btn-success"    // REINDEXING_INDEXED_ON_PROD
     };
 
     $possible_buttons = $("body").find(
@@ -440,7 +492,8 @@ $(document).ready(function () {
     null,
     null,
     "Division",
-    "Candidate URLs",
+    "Delta URLs",
+    "Curated URLs",
     "Workflow Status",
     "Curator",
     "Connector Type",
