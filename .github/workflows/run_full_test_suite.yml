@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - dev
-      - feature/add-github-actions
 
 jobs:
   run-tests:
@@ -29,10 +28,10 @@ jobs:
       - name: Build the Docker environment
         run: docker-compose -f local.yml build
 
-      - name: Run test suite with Pytest
+      - name: Run test suite
         env:
           DJANGO_ENV: test
-        run: docker-compose -f local.yml run --rm django pytest
+        run: docker-compose -f local.yml run --rm django bash ./init.sh
 
       - name: Cleanup
         run: docker-compose -f local.yml down --volumes
