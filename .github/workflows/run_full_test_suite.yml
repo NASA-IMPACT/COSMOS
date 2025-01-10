@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - dev
+      - feature/add-github-actions
 
 jobs:
   run-tests:
