@@ -125,7 +125,7 @@ let table = $("#collection_table").DataTable({
   ],
     searchPanes: {
       controls: true,
-      layout: 'columns-6',
+      // layout: 'columns-6',
       columns: [
         COLUMNS.DIVISION,
         COLUMNS.DELTA_URLS,
