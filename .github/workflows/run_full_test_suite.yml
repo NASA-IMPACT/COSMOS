@@ -28,6 +28,9 @@ jobs:
       - name: Build the Docker environment
         run: docker-compose -f local.yml build
 
+      - name: Clear Python cache
+        run: docker-compose -f local.yml run --rm django find . -type f -name "*.pyc" -delete && find . -type d -name "__pycache__" -exec rm -rf {} +
+
       - name: Run test suite
         env:
           DJANGO_ENV: test
