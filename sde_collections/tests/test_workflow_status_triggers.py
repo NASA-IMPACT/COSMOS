@@ -63,26 +63,24 @@ class TestWorkflowStatusTransitions(TestCase):
 
 class TestReindexingStatusTransitions(TestCase):
     def setUp(self):
-    # Mock the GitHubHandler to return valid XML content
-     self.mock_github_handler = patch(
-        "sde_collections.models.collection.GitHubHandler"
-    ).start()
+        # Mock the GitHubHandler to return valid XML content
+        self.mock_github_handler = patch("sde_collections.models.collection.GitHubHandler").start()
 
-     self.mock_github_handler.return_value._get_file_contents.return_value.decoded_content = (
-        b"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        b"<Sinequa>\n"
-        b"    <KeepHashFragmentInUrl>false</KeepHashFragmentInUrl>\n"
-        b"    <CollectionSelection>Sample Collection</CollectionSelection>\n"
-        b"</Sinequa>"
-    )
-    
-     self.addCleanup(patch.stopall)
+        self.mock_github_handler.return_value._get_file_contents.return_value.decoded_content = (
+            b'<?xml version="1.0" encoding="UTF-8"?>\n'
+            b"<Sinequa>\n"
+            b"    <KeepHashFragmentInUrl>false</KeepHashFragmentInUrl>\n"
+            b"    <CollectionSelection>Sample Collection</CollectionSelection>\n"
+            b"</Sinequa>"
+        )
 
-    # Create the collection with the mock applied
-     self.collection = CollectionFactory(
-        workflow_status=WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
-        reindexing_status=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
-    )
+        self.addCleanup(patch.stopall)
+
+        # Create the collection with the mock applied
+        self.collection = CollectionFactory(
+            workflow_status=WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
+            reindexing_status=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
+        )
 
     @patch("sde_collections.tasks.fetch_and_replace_full_text.delay")
     def test_reindexing_finished_triggers_full_text_fetch(self, mock_fetch):
