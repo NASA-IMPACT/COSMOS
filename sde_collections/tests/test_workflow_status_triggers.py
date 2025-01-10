@@ -63,6 +63,16 @@ class TestWorkflowStatusTransitions(TestCase):
 
 class TestReindexingStatusTransitions(TestCase):
     def setUp(self):
+        # Mock the GitHubHandler to return valid XML content
+        self.mock_github_handler = patch("sde_collections.models.collection.GitHubHandler").start()
+        self.mock_github_handler.return_value._get_file_contents.return_value.decoded_content = b"""<?xml version="1.0" encoding="UTF-8"?>
+        <Sinequa>
+            <KeepHashFragmentInUrl>false</KeepHashFragmentInUrl>
+            <CollectionSelection>Sample Collection</CollectionSelection>
+        </Sinequa>"""
+        self.addCleanup(patch.stopall)
+
+        # Create the collection with the mock applied
         self.collection = CollectionFactory(
             workflow_status=WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
             reindexing_status=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
