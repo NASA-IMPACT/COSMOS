@@ -231,6 +231,7 @@
                         <th scope="col" class="text-center col-1"><strong>Match Pattern Type</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Reason</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Affected Delta URLs</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Affected Curated URLs</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Actions</strong></th>
                         <th scope="col" class="text-center col-1"><strong>ID</strong></th>
                     </tr>
@@ -262,6 +263,9 @@
                         </th>
                         <th scope="col" class="text-center col-1">
                             <strong>Affected Delta URLs</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Affected Curated URLs</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
                             <strong>Actions</strong>
@@ -301,6 +305,9 @@
                             <strong>Affected Delta URLs</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
+                            <strong>Affected Curated URLs</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
                             <strong>Actions</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
@@ -338,6 +345,9 @@
                             <strong>Affected Delta URLs</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
+                            <strong>Affected Curated URLs</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
                             <strong>Actions</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
@@ -372,6 +382,7 @@
                         <th scope="col" class="text-center col-1"><strong>Match Pattern Type</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Division</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Affected Delta URLs</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Affected Curated URLs</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Actions</strong></th>
                         <th scope="col" class="text-center col-1"><strong>ID</strong></th>
                     </tr>
@@ -425,15 +436,30 @@
             <form id="exclude_pattern_form">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
+                        <label for="match_pattern_input" class="form-label">Match Pattern<div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
+                    </div>
+                    <div class="form-group pattern-form-group">
+                        <label for="pattern_type_input" class="form-label">Pattern Type<div class="asterik">*</div></label>
+                        <div class="input-group">
+                            <input type="hidden" name="match_pattern_type" class="form-control" id="pattern_type_input" required>
+                            <div class="input-group-append pattern-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle pattern-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Pattern Type</button>
+                                <div class="pattern-type-form dropdown-menu">
+                                    <a class="dropdown-item pattern_type_form_select" value="1">Individual URL Pattern</a>
+                                    <a class="dropdown-item pattern_type_form_select" value="2">Multi-URL Pattern</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <div class="button-wrapper">
-                    <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
-                </div></div>
+                        <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
@@ -453,6 +479,20 @@
                     <div class="form-group">
                         <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
+                    </div>
+                    <div class="form-group pattern-form-group">
+                        <label for="pattern_type_input" class="form-label">Pattern Type<div class="asterik">*</div></label>
+                        <div class="input-group">
+                            <input type="hidden" name="match_pattern_type" class="form-control" id="pattern_type_input" required>
+                            <div class="input-group-append pattern-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle pattern-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Pattern Type</button>
+                                <div class="pattern-type-form dropdown-menu">
+                                    <a class="dropdown-item pattern_type_form_select" value="1">Individual URL Pattern</a>
+                                    <a class="dropdown-item pattern_type_form_select" value="2">Multi-URL Pattern</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -483,6 +523,20 @@
                     <div class="form-group title_pattern-form-group">
                         <label for="title_pattern_input" class="form-label">Title Pattern <div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="title_pattern_input" required name="title_pattern">
+                    </div>
+                    <div class="form-group pattern-form-group">
+                        <label for="pattern_type_input" class="form-label">Pattern Type<div class="asterik">*</div></label>
+                        <div class="input-group">
+                            <input type="hidden" name="match_pattern_type" class="form-control" id="pattern_type_input" required>
+                            <div class="input-group-append pattern-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle pattern-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Pattern Type</button>
+                                <div class="pattern-type-form dropdown-menu">
+                                    <a class="dropdown-item pattern_type_form_select" value="1">Individual URL Pattern</a>
+                                    <a class="dropdown-item pattern_type_form_select" value="2">Multi-URL Pattern</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -529,6 +583,20 @@
                             </div>
                         </div>
                     </div>
+                    <div class="form-group pattern-form-group">
+                        <label for="pattern_type_input" class="form-label">Pattern Type<div class="asterik">*</div></label>
+                        <div class="input-group">
+                            <input type="hidden" name="match_pattern_type" class="form-control" id="pattern_type_input" required>
+                            <div class="input-group-append pattern-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle pattern-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Pattern Type</button>
+                                <div class="pattern-type-form dropdown-menu">
+                                    <a class="dropdown-item pattern_type_form_select" value="1">Individual URL Pattern</a>
+                                    <a class="dropdown-item pattern_type_form_select" value="2">Multi-URL Pattern</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <div class="button-wrapper">
@@ -569,6 +637,20 @@
                                     <a class="dropdown-item division_form_select" value="3">Earth Science</a>
                                     <a class="dropdown-item division_form_select" value="4">Heliophysics</a>
                                     <a class="dropdown-item division_form_select" value="5">Planetary Science</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group pattern-form-group">
+                        <label for="pattern_type_input" class="form-label">Pattern Type<div class="asterik">*</div></label>
+                        <div class="input-group">
+                            <input type="hidden" name="match_pattern_type" class="form-control" id="pattern_type_input" required>
+                            <div class="input-group-append pattern-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle pattern-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Pattern Type</button>
+                                <div class="pattern-type-form dropdown-menu">
+                                    <a class="dropdown-item pattern_type_form_select" value="1">Individual URL Pattern</a>
+                                    <a class="dropdown-item pattern_type_form_select" value="2">Multi-URL Pattern</a>
                                 </div>
                             </div>
                         </div>
