@@ -31,7 +31,7 @@ jobs:
       - name: Run test suite
         env:
           DJANGO_ENV: test
-        run: docker-compose -f local.yml run --rm django bash ./init.sh
+        run: docker-compose -f local.yml run --rm django pytest
 
       - name: Cleanup
         run: docker-compose -f local.yml down --volumes
