@@ -1,28 +1,37 @@
 import csv
 
+from django import forms
 from django.contrib import admin, messages
 from django.http import HttpResponse
 
+from sde_collections.models.delta_patterns import (
+    DeltaDivisionPattern,
+    DeltaResolvedTitle,
+    DeltaTitlePattern,
+)
+
 from .models.candidate_url import CandidateURL, ResolvedTitle
-from .models.collection import Collection, WorkflowHistory
+from .models.collection import Collection, ReindexingHistory, WorkflowHistory
+from .models.collection_choice_fields import TDAMMTags
+from .models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
-from .tasks import fetch_and_update_full_text, import_candidate_urls_from_api
+from .tasks import fetch_and_replace_full_text, import_candidate_urls_from_api
 
 
-def fetch_and_update_text_for_server(modeladmin, request, queryset, server_name):
+def fetch_and_replace_text_for_server(modeladmin, request, queryset, server_name):
     for collection in queryset:
-        fetch_and_update_full_text.delay(collection.id, server_name)
+        fetch_and_replace_full_text.delay(collection.id, server_name)
     modeladmin.message_user(request, f"Started importing URLs from {server_name.upper()} Server")
 
 
 @admin.action(description="Import candidate URLs from LRM Dev Server with Full Text")
 def fetch_full_text_lrm_dev_action(modeladmin, request, queryset):
-    fetch_and_update_text_for_server(modeladmin, request, queryset, "lrm_dev")
+    fetch_and_replace_text_for_server(modeladmin, request, queryset, "lrm_dev")
 
 
 @admin.action(description="Import candidate URLs from XLI Server with Full Text")
-def fetch_full_text_lis_action(modeladmin, request, queryset):
-    fetch_and_update_text_for_server(modeladmin, request, queryset, "xli")
+def fetch_full_text_xli_action(modeladmin, request, queryset):
+    fetch_and_replace_text_for_server(modeladmin, request, queryset, "xli")
 
 
 @admin.action(description="Generate deployment message")
@@ -208,6 +217,7 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
                     "source",
                     "turned_on",
                     "is_multi_division",
+                    "reindexing_status",
                 ),
             },
         ),
@@ -234,29 +244,55 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
     list_display = (
         "name",
         "candidate_urls_count",
+        "included_candidate_urls_count",
+        "delta_urls_count",
+        "included_delta_urls_count",
+        "included_curated_urls_count",
         "config_folder",
         "url",
         "division",
         "new_collection",
         "is_multi_division",
+        "reindexing_status",
     )
+
+    def included_candidate_urls_count(self, obj) -> int:
+        return obj.candidate_urls.filter(excluded=False).count()
+
+    included_candidate_urls_count.short_description = "Included Candidate URLs Count"
+
+    def delta_urls_count(self, obj) -> int:
+        return obj.delta_urls.count()
+
+    delta_urls_count.short_description = "Total Delta URLs Count"
+
+    def included_delta_urls_count(self, obj) -> int:
+        return obj.delta_urls.filter(excluded=False).count()
+
+    included_delta_urls_count.short_description = "Included Delta URLs Count"
+
+    def included_curated_urls_count(self, obj) -> int:
+        return obj.curated_urls.filter(excluded=False).count()
+
+    included_curated_urls_count.short_description = "Included Curated URLs Count"
+
     readonly_fields = ("config_folder",)
-    list_filter = ("division", "curation_status", "workflow_status", "turned_on", "is_multi_division")
+    list_filter = (
+        "division",
+        "curation_status",
+        "workflow_status",
+        "turned_on",
+        "is_multi_division",
+        "reindexing_status",
+    )
     search_fields = ("name", "url", "config_folder")
     actions = [
         generate_deployment_message,
         "export_as_csv",
         "update_config",
         download_candidate_urls_as_csv,
-        import_candidate_urls_test,
-        import_candidate_urls_production,
-        import_candidate_urls_secret_test,
-        import_candidate_urls_secret_production,
-        import_candidate_urls_xli_server,
-        import_candidate_urls_lrm_dev_server,
-        import_candidate_urls_lrm_qa_server,
         fetch_full_text_lrm_dev_action,
-        fetch_full_text_lis_action,
+        fetch_full_text_xli_action,
     ]
     ordering = ("cleaning_order",)
 
@@ -280,11 +316,90 @@ def exclude_and_delete_children(modeladmin, request, queryset):
         candidate_url.get_children().delete()
 
 
-class CandidateURLAdmin(admin.ModelAdmin):
-    """Admin View for CandidateURL"""
+class TDAMMFormMixin(forms.ModelForm):
+    """Mixin for forms that need TDAMM tag fields"""
 
-    list_display = ("url", "scraped_title", "collection")
-    list_filter = ("collection",)
+    tdamm_tag_manual = forms.MultipleChoiceField(
+        choices=TDAMMTags.choices,
+        required=False,
+        label="TDAMM Manual Tags",
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+    tdamm_tag_ml = forms.MultipleChoiceField(
+        choices=TDAMMTags.choices,
+        required=False,
+        label="TDAMM ML Tags",
+        widget=forms.CheckboxSelectMultiple,
+    )
+
+
+class TDAMMAdminMixin:
+    """Mixin for admin classes that handle TDAMM tags"""
+
+    list_display = ("url", "scraped_title", "generated_title", "collection")
+    list_filter = ["collection"]
+    search_fields = ("url", "collection__name")
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = [
+            (
+                "Overall Information",
+                {
+                    "fields": (
+                        "collection",
+                        "url",
+                        "scraped_title",
+                        "scraped_text",
+                        "generated_title",
+                        "visited",
+                        "document_type",
+                        "division",
+                    )
+                },
+            ),
+            (
+                "TDAMM Tags",
+                {
+                    "fields": (
+                        "tdamm_tag_ml",
+                        "tdamm_tag_manual",
+                    ),
+                    "classes": ("collapse",),
+                },
+            ),
+        ]
+        return fieldsets
+
+
+class CandidateURLForm(TDAMMFormMixin):
+    class Meta:
+        model = CandidateURL
+        fields = "__all__"
+
+
+class DumpURLForm(TDAMMFormMixin, forms.ModelForm):
+    class Meta:
+        model = DumpUrl
+        fields = "__all__"
+
+
+class DeltaURLForm(TDAMMFormMixin, forms.ModelForm):
+    class Meta:
+        model = DeltaUrl
+        fields = "__all__"
+
+
+class CuratedURLForm(TDAMMFormMixin, forms.ModelForm):
+    class Meta:
+        model = CuratedUrl
+        fields = "__all__"
+
+
+class CandidateURLAdmin(TDAMMAdminMixin, admin.ModelAdmin):
+    """Admin view for CandidateURL"""
+
+    form = CandidateURLForm
 
 
 class TitlePatternAdmin(admin.ModelAdmin):
@@ -308,6 +423,12 @@ class WorkflowHistoryAdmin(admin.ModelAdmin):
     list_filter = ["workflow_status", "old_status"]
 
 
+class ReindexingHistoryAdmin(admin.ModelAdmin):
+    list_display = ("collection", "old_status", "reindexing_status", "created_at")
+    search_fields = ["collection__name"]
+    list_filter = ["reindexing_status", "old_status"]
+
+
 class ResolvedTitleAdmin(admin.ModelAdmin):
     list_display = ["title_pattern", "candidate_url", "resolved_title", "created_at"]
 
@@ -317,9 +438,66 @@ class DivisionPatternAdmin(admin.ModelAdmin):
     search_fields = ("match_pattern", "division")
 
 
+# deltas below
+class DeltaTitlePatternAdmin(admin.ModelAdmin):
+    """Admin View for DeltaTitlePattern"""
+
+    list_display = (
+        "match_pattern",
+        "title_pattern",
+        "collection",
+        "match_pattern_type",
+    )
+    list_filter = (
+        "match_pattern_type",
+        "collection",
+    )
+
+
+class DeltaResolvedTitleAdmin(admin.ModelAdmin):
+    list_display = ["title_pattern", "delta_url", "resolved_title", "created_at"]
+
+
+class DeltaDivisionPatternAdmin(admin.ModelAdmin):
+    list_display = ("collection", "match_pattern", "division")
+    search_fields = ("match_pattern", "division")
+
+
+class DumpUrlAdmin(TDAMMAdminMixin, admin.ModelAdmin):
+    """Admin View for DumpUrl"""
+
+    form = DumpURLForm
+
+
+class DeltaUrlAdmin(TDAMMAdminMixin, admin.ModelAdmin):
+    """Admin View for DeltaUrl"""
+
+    form = DeltaURLForm
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        fieldsets[0][1]["fields"] += ("to_delete",)
+        return fieldsets
+
+
+class CuratedUrlAdmin(TDAMMAdminMixin, admin.ModelAdmin):
+    """Admin View for CuratedUrl"""
+
+    form = CuratedURLForm
+
+
+admin.site.register(ReindexingHistory, ReindexingHistoryAdmin)
 admin.site.register(WorkflowHistory, WorkflowHistoryAdmin)
 admin.site.register(CandidateURL, CandidateURLAdmin)
 admin.site.register(TitlePattern, TitlePatternAdmin)
 admin.site.register(IncludePattern)
 admin.site.register(ResolvedTitle, ResolvedTitleAdmin)
 admin.site.register(DivisionPattern, DivisionPatternAdmin)
+
+
+admin.site.register(DeltaTitlePattern, DeltaTitlePatternAdmin)
+admin.site.register(DeltaResolvedTitle, DeltaResolvedTitleAdmin)
+admin.site.register(DeltaDivisionPattern, DeltaDivisionPatternAdmin)
+admin.site.register(DumpUrl, DumpUrlAdmin)
+admin.site.register(DeltaUrl, DeltaUrlAdmin)
+admin.site.register(CuratedUrl, CuratedUrlAdmin)
