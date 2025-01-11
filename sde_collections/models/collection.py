@@ -1,4 +1,5 @@
 import json
+import os
 import urllib.parse
 
 import requests
@@ -274,7 +275,7 @@ class Collection(models.Model):
 
     @property
     def server_url_secret_prod(self) -> str:
-        base_url = "https://sciencediscoveryengine.nasa.gov"  # noqa: E231
+        base_url = os.getenv("BASE_URL_SECRET_TEST")  # noqa: E231
         payload = {
             "name": "secret-prod",
             "scope": "All",
@@ -288,7 +289,7 @@ class Collection(models.Model):
 
     @property
     def server_url_prod(self) -> str:
-        base_url = "https://sciencediscoveryengine.nasa.gov"  # noqa: E231
+        base_url = os.getenv("BASE_URL_PROD")  # noqa: E231
         payload = {
             "name": "query-smd-primary",
             "scope": "All",

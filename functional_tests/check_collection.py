@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import time
 import urllib.parse
@@ -16,8 +17,8 @@ except IndexError:
 
 def server_url(config_folder, server="test", secret=True) -> str:
     URLS = {
-        "test": "https://sciencediscoveryengine.test.nasa.gov",
-        "prod": "https://sciencediscoveryengine.nasa.gov",
+        "test": os.getenv("BASE_URL_TEST"),
+        "prod": os.getenv("BASE_URL_PROD"),
     }
     if secret:
         query = "query-sde-primary"
