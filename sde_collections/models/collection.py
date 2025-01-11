@@ -85,7 +85,9 @@ class Collection(models.Model):
     tracker = FieldTracker(fields=["workflow_status", "reindexing_status"])
 
     curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
-    reindexing_curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True, default=None, related_name="reindexing_curated_by")
+    reindexing_curated_by = models.ForeignKey(
+        User, on_delete=models.DO_NOTHING, null=True, blank=True, default=None, related_name="reindexing_curated_by"
+    )
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
 
     class Meta:

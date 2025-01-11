@@ -9,7 +9,7 @@ const COLUMNS = {
   CURATOR: 6,
   CONNECTOR_TYPE: 7,
   REINDEXING_STATUS: 8,
-  REINDEXING_CURATOR: 9, 
+  REINDEXING_CURATOR: 9,
   WORKFLOW_STATUS_RAW: 10,
   CURATOR_ID: 11,
   REINDEXING_STATUS_RAW: 12,
@@ -137,7 +137,7 @@ let table = $("#collection_table").DataTable({
         COLUMNS.REINDEXING_STATUS
       ]
     },
-  
+
   columnDefs: [
     // hide the data columns
     {
@@ -448,7 +448,7 @@ function handleReindexingCuratorSelect() {
     const collection_id = $(this).data("collection-id");
     const reindexing_curator_id = $(this).attr("value");
     const reindexing_curator_text = $(this).text();
-    
+
     // Update button text and style
     const $button = $(`#reindexing-curator-button-${collection_id}`).last();
     $button

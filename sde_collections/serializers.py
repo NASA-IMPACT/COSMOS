@@ -48,9 +48,9 @@ class CollectionSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         # If reindexing_status is REINDEXING_NOT_NEEDED, set Reindexing Curator field to None (reset to default)
-        if validated_data.get('reindexing_status') == 1:
-            validated_data['reindexing_curated_by'] = None
-            
+        if validated_data.get("reindexing_status") == 1:
+            validated_data["reindexing_curated_by"] = None
+
         return super().update(instance, validated_data)
 
 
