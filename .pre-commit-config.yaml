@@ -76,9 +76,10 @@ repos:
     hooks:
       - id: hadolint
         name: Lint Dockerfiles
-        entry: bash -c "docker run --rm -i hadolint/hadolint < /dev/stdin"
+        entry: bash -c 'if [ -z "$CI" ]; then docker run --rm -i hadolint/hadolint hadolint -- -; fi'
         language: system
         types: [dockerfile]
+        pass_filenames: false
 
 ci:
   autoupdate_schedule: weekly
