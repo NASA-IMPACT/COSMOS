@@ -23,7 +23,7 @@ STATUS_CHANGE_NOTIFICATIONS = {
         "message": "LRM QC passed for {name}. Ready for final quality check! :white_check_mark:",
     },
     (WorkflowStatusChoices.READY_FOR_FINAL_QUALITY_CHECK, WorkflowStatusChoices.QUALITY_CHECK_FAILED): {
-        "message": "<!here> <@U056B4HMGEP> <@U06L5SKQ5QA> Quality check on {name} has failed. Changes needed! :x:",
+        "message": "<@U056B4HMGEP> <@U06L5SKQ5QA> Quality check on {name} has failed. Changes needed! :x:",
     },
     (WorkflowStatusChoices.READY_FOR_FINAL_QUALITY_CHECK, WorkflowStatusChoices.QUALITY_CHECK_PERFECT): {
         "message": "{name} has passed all quality checks and is ready for public production! :white_check_mark:",
