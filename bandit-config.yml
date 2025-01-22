@@ -7,7 +7,7 @@ exclude:
   - ./tests/         # Exclude test directories
   - ./migrations/    # Exclude migration directories
   - ./venv/          # Exclude virtual environment
-  
+
 tests:
   - B105             # Include test for hardcoded password strings
   - B602             # Include test for subprocess call with shell equals true
