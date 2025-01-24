@@ -8,6 +8,8 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+      - id: check-merge-conflict
+      - id: debug-statements
 
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.17.0
@@ -37,14 +39,41 @@ repos:
     hooks:
       - id: mypy
         args: ["--strict"]
-        # ignoring everything for now
-        exclude: .
-        additional_dependencies: [django-stubs, celery,  django-environ, django-extensions, django-crispy-forms,
-        crispy-bootstrap5, django-allauth, django-celery-beat, djangorestframework, djangorestframework-datatables,
-        django-debug-toolbar, psycopg2-binary, python-slugify, xmltodict, PyGithub, boto3, scrapy, types-requests]
+        exclude: "."
+        additional_dependencies:
+          - django-stubs
+          - celery
+          - django-environ
+          - django-extensions
+          - django-crispy-forms
+          - crispy-bootstrap5
+          - django-allauth
+          - django-celery-beat
+          - djangorestframework
+          - djangorestframework-datatables
+          - django-debug-toolbar
+          - psycopg2-binary
+          - python-slugify
+          - xmltodict
+          - PyGithub
+          - boto3
+          - scrapy
+          - types-requests
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: '1.7.0'
+    hooks:
+      - id: bandit
+        args: ['-r', '--configfile=bandit-config.yml']
+
+  - repo: https://github.com/zricethezav/gitleaks
+    rev: 'v8.0.4'
+    hooks:
+      - id: gitleaks
+        args: ['--config=gitleaks-config.toml']
 
 
-# sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
+
 ci:
   autoupdate_schedule: weekly
   skip: []
