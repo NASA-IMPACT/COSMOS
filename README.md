@@ -225,6 +225,7 @@ $ pip install pre-commit
 $ pre-commit install
 $ pre-commit run --all-files
 ```
+For detailed information on the coding standards and conventions we enforce, please see our [Coding Standards and Conventions](CODE_STANDARDS.md).
 
 ### Sentry Setup
 
