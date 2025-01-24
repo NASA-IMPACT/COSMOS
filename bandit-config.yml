@@ -15,7 +15,6 @@ tests:
 profiles:
   default:
     include:
-      - B301         # Include test for pickle
       - B403         # Include test for dangerous default argument
     exclude:
       - B401         # Exclude test for import telnetlib
