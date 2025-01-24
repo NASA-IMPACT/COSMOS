@@ -34,7 +34,6 @@ STATUS_CHANGE_NOTIFICATIONS = {
     },
     (WorkflowStatusChoices.READY_FOR_FINAL_QUALITY_CHECK, WorkflowStatusChoices.QUALITY_CHECK_PERFECT): {
         "message": "{name} has passed all quality checks and is ready for public production! :white_check_mark:",
-        "mention_users": ["channel"],
     },
     (WorkflowStatusChoices.READY_FOR_FINAL_QUALITY_CHECK, WorkflowStatusChoices.QUALITY_CHECK_MINOR): {
         "message": "{name} has passed all quality checks and is ready for public production! :white_check_mark:",
