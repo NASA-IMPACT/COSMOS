@@ -39,7 +39,7 @@ STATUS_CHANGE_NOTIFICATIONS = {
         "message": "{name} has passed all quality checks and is ready for public production! :white_check_mark:",
     },
     (WorkflowStatusChoices.QUALITY_CHECK_PERFECT, WorkflowStatusChoices.PROD_PERFECT): {
-        "message": "<!here> {name} is now live on Public Prod! Congrats team! :sparkles:",
+        "message": "{name} is now live on Public Prod! Congrats team! :sparkles:",
         "mention_users": ["channel"],
     },
     (WorkflowStatusChoices.QUALITY_CHECK_MINOR, WorkflowStatusChoices.PROD_MINOR): {
