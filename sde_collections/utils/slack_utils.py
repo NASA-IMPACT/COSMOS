@@ -43,7 +43,7 @@ STATUS_CHANGE_NOTIFICATIONS = {
         "mention_users": ["channel"],
     },
     (WorkflowStatusChoices.QUALITY_CHECK_MINOR, WorkflowStatusChoices.PROD_MINOR): {
-        "message": "<!here> {name} is now live on Public Prod! Congrats team! :sparkles:",
+        "message": "{name} is now live on Public Prod! Congrats team! :sparkles:",
         "mention_users": ["channel"],
     },
 }
