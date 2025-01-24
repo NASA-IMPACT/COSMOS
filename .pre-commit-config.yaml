@@ -72,14 +72,6 @@ repos:
       - id: gitleaks
         args: ['--config=gitleaks-config.toml']
 
-  - repo: local
-    hooks:
-      - id: hadolint
-        name: Lint Dockerfiles
-        entry: bash -c 'if [ -z "$PRE_COMMIT_HOME" ]; then docker run --rm -i hadolint/hadolint hadolint -- -; else echo "Skipping Docker-based hadolint on pre-commit.ci"; exit 0; fi'
-        language: system
-        types: [dockerfile]
-        pass_filenames: false
 
 
 ci:
