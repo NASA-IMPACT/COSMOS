@@ -3,6 +3,12 @@ from django.conf import settings
 
 from ..models.collection_choice_fields import WorkflowStatusChoices
 
+SLACK_ID_MAPPING = {
+    "Shravan Vishwanathan": "<@U056B4HMGEP>",
+    "Advait Yogaonkar": "<@U06L5SKQ5QA>",
+    "channel": "<!here>",
+}
+
 STATUS_CHANGE_NOTIFICATIONS = {
     (WorkflowStatusChoices.RESEARCH_IN_PROGRESS, WorkflowStatusChoices.READY_FOR_ENGINEERING): {
         "message": "Research on {name} is complete. Ready for engineering! :rocket:",
@@ -23,19 +29,23 @@ STATUS_CHANGE_NOTIFICATIONS = {
         "message": "LRM QC passed for {name}. Ready for final quality check! :white_check_mark:",
     },
     (WorkflowStatusChoices.READY_FOR_FINAL_QUALITY_CHECK, WorkflowStatusChoices.QUALITY_CHECK_FAILED): {
-        "message": "<@U056B4HMGEP> <@U06L5SKQ5QA> Quality check on {name} has failed. Changes needed! :x:",
+        "message": "Quality check on {name} has failed. Changes needed! :x:",
+        "mention_users": ["Shravan Vishwanathan", "Advait Yogaonkar"],
     },
     (WorkflowStatusChoices.READY_FOR_FINAL_QUALITY_CHECK, WorkflowStatusChoices.QUALITY_CHECK_PERFECT): {
         "message": "{name} has passed all quality checks and is ready for public production! :white_check_mark:",
+        "mention_users": ["channel"],
     },
     (WorkflowStatusChoices.READY_FOR_FINAL_QUALITY_CHECK, WorkflowStatusChoices.QUALITY_CHECK_MINOR): {
         "message": "{name} has passed all quality checks and is ready for public production! :white_check_mark:",
     },
     (WorkflowStatusChoices.QUALITY_CHECK_PERFECT, WorkflowStatusChoices.PROD_PERFECT): {
         "message": "<!here> {name} is now live on Public Prod! Congrats team! :sparkles:",
+        "mention_users": ["channel"],
     },
     (WorkflowStatusChoices.QUALITY_CHECK_MINOR, WorkflowStatusChoices.PROD_MINOR): {
         "message": "<!here> {name} is now live on Public Prod! Congrats team! :sparkles:",
+        "mention_users": ["channel"],
     },
 }
 
@@ -44,6 +54,9 @@ def format_slack_message(name, details, collection_id):
     message_template = details["message"]
     link = f"https://sde-indexing-helper.nasa-impact.net/{collection_id}/"  # noqa: E231
     linked_name = f"<{link}|{name}>"
+    if "mention_users" in details:
+        slack_mentions = " ".join(SLACK_ID_MAPPING[user] for user in details["mention_users"])
+        return slack_mentions + " " + message_template.format(name=linked_name)
     return message_template.format(name=linked_name)
 
 
