@@ -1,12 +1,21 @@
 from rest_framework import generics
 
-from .models import ContentCurationRequest, Feedback
-from .serializers import ContentCurationRequestSerializer, FeedbackSerializer
+from .models import ContentCurationRequest, Feedback, FeedbackFormDropdown
+from .serializers import (
+    ContentCurationRequestSerializer,
+    FeedbackFormDropdownSerializer,
+    FeedbackSerializer,
+)
 
 
 class ContactFormModelView(generics.CreateAPIView):
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
+
+
+class FeedbackFormDropdownListView(generics.ListAPIView):
+    queryset = FeedbackFormDropdown.objects.all()
+    serializer_class = FeedbackFormDropdownSerializer
 
 
 class ContentCurationRequestView(generics.CreateAPIView):
