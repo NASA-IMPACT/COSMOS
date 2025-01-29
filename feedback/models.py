@@ -56,7 +56,7 @@ class Feedback(models.Model):
         """
         Returns a formatted notification message containing details from this Feedback instance.
         """
-        dropdown_option_text = self.dropdown_option.name if self.dropdown_option else "Not Specified"
+        dropdown_option_text = self.dropdown_option.name if self.dropdown_option else "No Option Selected"
         notification_message = (
             f"<!here> New Feedback Received : \n"  # noqa: E203
             f"Name: {self.name}\n"
