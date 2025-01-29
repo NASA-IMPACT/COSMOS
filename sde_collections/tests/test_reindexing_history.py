@@ -3,7 +3,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 
-from sde_collections.models.collection import ReindexingHistory
+from sde_collections.models.collection import Collection, ReindexingHistory
 from sde_collections.models.collection_choice_fields import ReindexingStatusChoices
 from sde_collections.tests.factories import CollectionFactory, UserFactory
 
@@ -60,6 +60,9 @@ class TestReindexingHistory:
         self.collection.reindexing_status = ReindexingStatusChoices.REINDEXING_NEEDED_ON_DEV
         self.collection.reindexing_curated_by = self.user1
         self.collection.save()
+
+        # Re-fetch the object
+        self.collection = Collection.objects.get(id=self.collection.id)
 
         # Second change
         self.collection.reindexing_status = ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV
