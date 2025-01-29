@@ -4,12 +4,36 @@ from django.utils import timezone
 from sde_collections.utils.slack_utils import send_slack_message
 
 
+class FeedbackFormDropdown(models.Model):
+    DEFAULT_OPTIONS = [
+        {"name": "I need help or have a general question", "display_order": 1},
+        {"name": "I have a data/content question or comment", "display_order": 2},
+        {"name": "I would like to report an error", "display_order": 3},
+        {"name": "I have an idea or suggested improvement to share", "display_order": 4},
+        {"name": "General comment or feedback", "display_order": 5},
+    ]
+
+    name = models.CharField(max_length=200)
+    display_order = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ["display_order", "name"]
+        verbose_name = "Dropdowm Option"
+        verbose_name_plural = "Dropdown Options"
+
+    def __str__(self):
+        return self.name
+
+
 class Feedback(models.Model):
     name = models.CharField(max_length=150)
     email = models.EmailField()
     subject = models.CharField(max_length=400)
     comments = models.TextField()
     source = models.CharField(max_length=50, default="SDE", blank=True)
+    dropdown_option = models.ForeignKey(
+        FeedbackFormDropdown, on_delete=models.SET_NULL, null=True, related_name="feedback"
+    )
     created_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -32,10 +56,12 @@ class Feedback(models.Model):
         """
         Returns a formatted notification message containing details from this Feedback instance.
         """
+        dropdown_option_text = self.dropdown_option.name if self.dropdown_option else "Not Specified"
         notification_message = (
             f"<!here> New Feedback Received : \n"  # noqa: E203
             f"Name: {self.name}\n"
             f"Email: {self.email}\n"
+            f"Dropdwon Choice: {dropdown_option_text}\n"
             f"Subject: {self.subject}\n"
             f"Comments: {self.comments}\n"
             f"Source: {self.source}\n"
