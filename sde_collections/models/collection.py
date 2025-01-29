@@ -756,6 +756,7 @@ def log_workflow_history(sender, instance, created, **kwargs):
             reindexing_status=instance.reindexing_status,
             curated_by=instance.reindexing_curated_by,
             old_status=instance.old_reindexing_status,
+            old_curator=instance.old_reindexing_curated_by,
         )
 
 
@@ -767,6 +768,9 @@ class ReindexingHistory(models.Model):
     )
     old_status = models.IntegerField(choices=ReindexingStatusChoices.choices, null=True)
     curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    old_curator = models.ForeignKey(
+        User, on_delete=models.DO_NOTHING, null=True, blank=True, related_name="old_curator"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
