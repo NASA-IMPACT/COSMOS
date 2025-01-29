@@ -758,6 +758,9 @@ def log_workflow_history(sender, instance, created, **kwargs):
             old_status=instance.old_reindexing_status,
             old_curator=instance.old_reindexing_curated_by,
         )
+        # Update the old values after creating the history entry
+        instance.old_reindexing_status = instance.reindexing_status
+        instance.old_reindexing_curated_by = instance.reindexing_curated_by
 
 
 class ReindexingHistory(models.Model):
