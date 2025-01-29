@@ -666,6 +666,7 @@ class Collection(models.Model):
         super().__init__(*args, **kwargs)
         self.old_workflow_status = self.workflow_status
         self.old_reindexing_status = self.reindexing_status
+        self.old_reindexing_curated_by = self.reindexing_curated_by
 
 
 class RequiredUrls(models.Model):
@@ -746,11 +747,14 @@ def log_workflow_history(sender, instance, created, **kwargs):
             old_status=instance.old_workflow_status,
         )
 
-    if instance.reindexing_status != instance.old_reindexing_status:
+    if (
+        instance.reindexing_status != instance.old_reindexing_status
+        or instance.reindexing_curated_by != instance.old_reindexing_curated_by
+    ):
         ReindexingHistory.objects.create(
             collection=instance,
             reindexing_status=instance.reindexing_status,
-            curated_by=instance.curated_by,
+            curated_by=instance.reindexing_curated_by,
             old_status=instance.old_reindexing_status,
         )
 

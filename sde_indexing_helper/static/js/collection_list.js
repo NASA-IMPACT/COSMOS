@@ -459,7 +459,6 @@ function handleReindexingCuratorSelect() {
     // Update DataTable
     const rowIndex = table.row("#" + collection_id).index();
     table.data()[rowIndex][COLUMNS.REINDEXING_CURATOR] = createReindexingCuratorButton(reindexing_curator_text);
-    // table.searchPanes.rebuildPane(COLUMNS.REINDEXING_CURATOR);
 
     // Send update to server
     postReindexingCurator(collection_id, reindexing_curator_id);
@@ -488,16 +487,6 @@ function postReindexingStatus(collection_id, reindexing_status) {
     },
     success: function (data) {
       toastr.success("Reindexing Status Updated!");
-
-      // If reindexing_status is REINDEXING_NOT_NEEDED, set Reindexing Curator field to None (reset to default)
-      if (reindexing_status == 1) {
-        const $button = $(`#reindexing-curator-button-${collection_id}`).last();
-        $button.text("None").removeClass("btn-success").addClass("btn-dark");
-        // Update DataTable
-        const rowIndex = table.row("#" + collection_id).index();
-        table.data()[rowIndex][COLUMNS.REINDEXING_CURATOR] = createReindexingCuratorButton("None");
-        // table.searchPanes.rebuildPane(COLUMNS.REINDEXING_CURATOR);
-      }
     },
   });
 }
