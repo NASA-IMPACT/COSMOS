@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
-from .models import ContentCurationRequest, Feedback
+from .models import ContentCurationRequest, Feedback, FeedbackFormDropdown
+
+
+class FeedbackFormDropdownSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FeedbackFormDropdown
+        fields = ["id", "name"]
 
 
 class FeedbackSerializer(serializers.ModelSerializer):
@@ -12,6 +18,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
             "subject",
             "comments",
             "source",
+            "dropdown_option",
             "created_at",
         ]
 
