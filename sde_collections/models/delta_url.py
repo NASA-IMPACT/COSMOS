@@ -134,6 +134,14 @@ class BaseUrl(models.Model):
                 parts.append((part_string, part))
         return parts
 
+    def get_tag_source(self):
+        """Returns the source of the TDAMM tags: 'manual', 'ml', or 'Not Set'"""
+        if self.tdamm_tag_manual and self.tdamm_tag_manual != []:
+            return "manual"
+        elif self.tdamm_tag_ml and self.tdamm_tag_ml != []:
+            return "ml"
+        return "Not Set"
+
     @property
     def path(self) -> str:
         parsed = urlparse(self.url)
