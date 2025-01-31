@@ -73,10 +73,14 @@ class DeltaURLSerializer(serializers.ModelSerializer):
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
     delta_urls_count = serializers.SerializerMethodField(read_only=True)
     tdamm_tag = serializers.SerializerMethodField()
+    tag_source = serializers.SerializerMethodField()
 
     def get_tdamm_tag(self, obj):
         tags = obj.tdamm_tag
         return tags if tags is not None else []
+
+    def get_tag_source(self, obj):
+        return obj.get_tag_source()
 
     def get_delta_urls_count(self, obj):
         titlepattern = obj.deltatitlepatterns.last()
@@ -108,6 +112,7 @@ class DeltaURLSerializer(serializers.ModelSerializer):
             "division_display",
             "visited",
             "tdamm_tag",
+            "tag_source",
         )
 
 
@@ -120,10 +125,14 @@ class CuratedURLSerializer(serializers.ModelSerializer):
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
     curated_urls_count = serializers.SerializerMethodField(read_only=True)
     tdamm_tag = serializers.SerializerMethodField()
+    tag_source = serializers.SerializerMethodField()
 
     def get_tdamm_tag(self, obj):
         tags = obj.tdamm_tag
         return tags if tags is not None else []
+
+    def get_tag_source(self, obj):
+        return obj.get_tag_source()
 
     def get_curated_urls_count(self, obj):
         titlepattern = obj.deltatitlepatterns.last()
@@ -154,6 +163,7 @@ class CuratedURLSerializer(serializers.ModelSerializer):
             "division_display",
             "visited",
             "tdamm_tag",
+            "tag_source",
         )
 
 
