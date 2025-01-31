@@ -464,3 +464,7 @@ div.dt-container div.dt-paging ul.pagination {
     margin: 2px;
     display: inline-block;
 }
+
+.tdamm-tag-manual {
+    background-color: #28a745; /* Green background */
+}
