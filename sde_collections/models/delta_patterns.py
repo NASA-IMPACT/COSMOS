@@ -476,10 +476,10 @@ class DeltaTitlePattern(BaseMatchPattern):
 
     def apply(self) -> None:
         """
-        Apply the title pattern to matching URLs:
+        Queue title pattern resolution for matching URLs:
         1. Find new Curated URLs that match but weren't previously affected
         2. Create Delta URLs only where the generated title differs
-        3. Update all matching Delta URLs with new titles
+        3. Queue background tasks for title resolution
         4. Track title resolution status and errors
         """
         DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
@@ -670,21 +670,33 @@ class DeltaResolvedTitleBase(models.Model):
     title_pattern = models.ForeignKey(DeltaTitlePattern, on_delete=models.CASCADE)
     delta_url = models.OneToOneField("sde_collections.DeltaUrl", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
 
 
 class DeltaResolvedTitle(DeltaResolvedTitleBase):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        PROCESSING = "processing", "Processing"
+        RESOLVED = "resolved", "Resolved"
+        FAILED = "failed", "Failed"
+
     resolved_title = models.CharField(blank=True, default="")
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
 
     class Meta:
         verbose_name = "Resolved Title"
         verbose_name_plural = "Resolved Titles"
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+        ]
 
     def save(self, *args, **kwargs):
-        # Finds the linked delta URL and deletes DeltaResolvedTitleError objects linked to it
-        DeltaResolvedTitleError.objects.filter(delta_url=self.delta_url).delete()
+        if self.status == self.Status.RESOLVED:
+            # Finds the linked delta URL and deletes DeltaResolvedTitleError objects linked to it
+            DeltaResolvedTitleError.objects.filter(delta_url=self.delta_url).delete()
         super().save(*args, **kwargs)
 
 
@@ -692,27 +704,36 @@ class DeltaResolvedTitleError(DeltaResolvedTitleBase):
     error_string = models.TextField(null=False, blank=False)
     http_status_code = models.IntegerField(null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        # When saving an error, update the related DeltaResolvedTitle status
+        DeltaResolvedTitle.objects.update_or_create(
+            delta_url=self.delta_url,
+            title_pattern=self.title_pattern,
+            defaults={"status": DeltaResolvedTitle.Status.FAILED, "resolved_title": ""},
+        )
+        super().save(*args, **kwargs)
 
-class TitleResolutionStatus(models.Model):
-    """Tracks the status of title resolution tasks."""
 
-    class Status(models.TextChoices):
-        PENDING = "pending", "Pending"
-        PROCESSING = "processing", "Processing"
-        RESOLVED = "resolved", "Resolved"
-        FAILED = "failed", "Failed"
+# class TitleResolutionStatus(models.Model):
+#     """Tracks the status of title resolution tasks."""
 
-    title_pattern = models.ForeignKey(DeltaTitlePattern, on_delete=models.CASCADE)
-    delta_url = models.ForeignKey("DeltaUrl", on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
-    error_message = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
+#     class Status(models.TextChoices):
+#         PENDING = "pending", "Pending"
+#         PROCESSING = "processing", "Processing"
+#         RESOLVED = "resolved", "Resolved"
+#         FAILED = "failed", "Failed"
 
-    class Meta:
-        verbose_name = "Title Resolution Status"
-        verbose_name_plural = "Title Resolution Statuses"
-        unique_together = ("title_pattern", "delta_url")
-        indexes = [
-            models.Index(fields=["status", "created_at"]),
-        ]
+#     title_pattern = models.ForeignKey(DeltaTitlePattern, on_delete=models.CASCADE)
+#     delta_url = models.ForeignKey("DeltaUrl", on_delete=models.CASCADE)
+#     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+#     error_message = models.TextField(blank=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now_add=True)
+
+#     class Meta:
+#         verbose_name = "Title Resolution Status"
+#         verbose_name_plural = "Title Resolution Statuses"
+#         unique_together = ("title_pattern", "delta_url")
+#         indexes = [
+#             models.Index(fields=["status", "created_at"]),
+#         ]
