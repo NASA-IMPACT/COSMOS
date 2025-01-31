@@ -29,8 +29,10 @@
             <th class="text-center noBorder" style="padding-right:25px !important">Curator</th>
             <th class="text-center noBorder" style="padding-right:25px !important">Connector Type</th>
             <th class="text-center noBorder" style="padding-right:25px !important">Reindexing Status</th>
+            <th class="text-center noBorder" style="padding-right:25px !important">Reindexing Curator</th>
 
             <!-- Hidden Columns - Used for internal data storage -->
+            <th class="hideDisplay"></th>
             <th class="hideDisplay"></th>
             <th class="hideDisplay"></th>
             <th class="hideDisplay"></th>
@@ -70,7 +72,7 @@
 
             <!-- Dropdown filter for Workflow Status -->
             <td class="filterRowBottom">
-                <select id="collection-dropdown-4" class="select-dropdown selectStyling">
+                <select id="workflow-status-selector" class="select-dropdown selectStyling">
                     <option value="">SELECT</option>
                     {% for choice in workflow_status_choices %}
                         <option value="{{ choice }}"
@@ -81,7 +83,7 @@
 
             <!-- Dropdown filter for Curator -->
             <td class="filterRowBottom">
-                <select id="collection-dropdown-5" class="select-dropdown selectStyling">
+                <select id="curator-selector" class="select-dropdown selectStyling">
                     <option value="">SELECT</option>
                     {% for curator in curators %}
                         <option value="{{ curator.pk }}"
@@ -100,7 +102,7 @@
 
             <!-- Dropdown filter for Reindexing Status -->
             <td class="filterRowBottom">
-                <select id="collection-dropdown-6" class="select-dropdown selectStyling">
+                <select id="reindexing-status-selector" class="select-dropdown selectStyling">
                     <option value="">SELECT</option>
                     {% for choice in reindexing_status_choices %}
                         <option value="{{ choice }}"
@@ -109,10 +111,22 @@
                 </select>
             </td>
 
+            <!-- Dropdown filter for Reindexing Curator -->
+            <td class="filterRowBottom">
+                <select id="reindexing-curator-selector" class="select-dropdown selectStyling">
+                    <option value="">SELECT</option>
+                    {% for curator in curators %}
+                        <option value="{{ curator.pk }}"
+                                data-collection-id={{ collection.id }}>{{ curator.username }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+
             <!-- Hidden cells corresponding to hidden columns -->
             <td class="hideDisplay"></td>  <!-- Stores raw workflow_status value (number) -->
             <td class="hideDisplay"></td>  <!-- Stores raw curated_by_id value -->
             <td class="hideDisplay"></td>  <!-- Stores raw reindexing_status value (number) -->
+            <td class="hideDisplay"></td>  <!-- Stores raw reindexing_curated_by_id value -->
         </tr>
     </thead>
         <tbody>
@@ -246,10 +260,38 @@
                         </div>
                     </td>
 
+                    <!-- Reindexing Curator Dropdown -->
+                    <td class="noBorder">
+                        <div class="dropdown reindexing_curator_dropdown"
+                             data-match-pattern
+                             remove_protocol
+                             row
+                             url>
+                            <!-- Reindexing Curator button - green if assigned, dark if not -->
+                            <button class="btn {% if collection.reindexing_curated_by %} btn-success {% else %} btn-dark {% endif %} btn-sm dropdown-toggle"
+                                    type="button"
+                                    id="reindexing-curator-button-{{ collection.id }}"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">{{ collection.reindexing_curated_by }}</button>
+                            <!-- Dropdown menu with all possible curators -->
+                            <div class="dropdown-menu"
+                                 aria-labelledby="reindexing-curator-button-{{ collection.id }}">
+                                {% for curator in curators %}
+                                    <a key="{{ curator.pk }}"
+                                       class="dropdown-item reindexing_curator_select"
+                                       value="{{ curator.pk }}"
+                                       data-collection-id={{ collection.id }}>{{ curator.username }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </td>
+
                     <!-- Hidden columns for internal use -->
                     <td class="hideDisplay">{{ collection.workflow_status }}</td>
                     <td class="hideDisplay">{{ collection.curated_by_id }}</td>
                     <td class="hideDisplay">{{ collection.reindexing_status }}</td>
+                    <td class="hideDisplay">{{ collection.reindexing_curated_by_id }}</td>
                 </tr>
             {% endfor %}
         </tbody>

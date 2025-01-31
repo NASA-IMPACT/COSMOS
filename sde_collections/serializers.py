@@ -28,6 +28,7 @@ class CollectionSerializer(serializers.ModelSerializer):
             "workflow_status_display",
             "reindexing_status_display",
             "curated_by",
+            "reindexing_curated_by",
             "division",
             "document_type",
             "name",

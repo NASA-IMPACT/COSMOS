@@ -85,6 +85,9 @@ class Collection(models.Model):
     tracker = FieldTracker(fields=["workflow_status", "reindexing_status"])
 
     curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    reindexing_curated_by = models.ForeignKey(
+        User, on_delete=models.DO_NOTHING, null=True, blank=True, default=None, related_name="reindexing_curated_by"
+    )
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
 
     class Meta:
@@ -550,6 +553,7 @@ class Collection(models.Model):
         for collection in json_results:
             print("Creating collection: ", collection["name"])
             collection.pop("curated_by")
+            collection.pop("reindexing_curated_by")
             cls.objects.create(**collection)
 
     @classmethod
@@ -662,6 +666,7 @@ class Collection(models.Model):
         super().__init__(*args, **kwargs)
         self.old_workflow_status = self.workflow_status
         self.old_reindexing_status = self.reindexing_status
+        self.old_reindexing_curated_by = self.reindexing_curated_by
 
 
 class RequiredUrls(models.Model):
@@ -742,12 +747,16 @@ def log_workflow_history(sender, instance, created, **kwargs):
             old_status=instance.old_workflow_status,
         )
 
-    if instance.reindexing_status != instance.old_reindexing_status:
+    if (
+        instance.reindexing_status != instance.old_reindexing_status
+        or instance.reindexing_curated_by != instance.old_reindexing_curated_by
+    ):
         ReindexingHistory.objects.create(
             collection=instance,
             reindexing_status=instance.reindexing_status,
-            curated_by=instance.curated_by,
+            curated_by=instance.reindexing_curated_by,
             old_status=instance.old_reindexing_status,
+            old_curator=instance.old_reindexing_curated_by,
         )
 
 
@@ -759,6 +768,9 @@ class ReindexingHistory(models.Model):
     )
     old_status = models.IntegerField(choices=ReindexingStatusChoices.choices, null=True)
     curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    old_curator = models.ForeignKey(
+        User, on_delete=models.DO_NOTHING, null=True, blank=True, related_name="old_curator"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -9,9 +9,11 @@ const COLUMNS = {
   CURATOR: 6,
   CONNECTOR_TYPE: 7,
   REINDEXING_STATUS: 8,
-  WORKFLOW_STATUS_RAW: 9,
-  CURATOR_ID: 10,
-  REINDEXING_STATUS_RAW: 11
+  REINDEXING_CURATOR: 9,
+  WORKFLOW_STATUS_RAW: 10,
+  CURATOR_ID: 11,
+  REINDEXING_STATUS_RAW: 12,
+  REINDEXING_CURATOR_ID: 13
 };
 
 var uniqueId; //used for logic related to contents on column customization modal
@@ -122,11 +124,25 @@ let table = $("#collection_table").DataTable({
       },
     },
   ],
+    searchPanes: {
+      controls: true,
+      // layout: 'columns-6',
+      columns: [
+        COLUMNS.DIVISION,
+        COLUMNS.DELTA_URLS,
+        COLUMNS.CURATED_URLS,
+        COLUMNS.WORKFLOW_STATUS,
+        COLUMNS.CURATOR,
+        COLUMNS.CONNECTOR_TYPE,
+        COLUMNS.REINDEXING_STATUS
+      ]
+    },
+
   columnDefs: [
     // hide the data columns
     {
-      targets: [COLUMNS.WORKFLOW_STATUS_RAW, COLUMNS.CURATOR_ID, COLUMNS.REINDEXING_STATUS_RAW],
-      visible: false,
+      targets: [COLUMNS.WORKFLOW_STATUS_RAW, COLUMNS.CURATOR_ID, COLUMNS.REINDEXING_STATUS_RAW, COLUMNS.REINDEXING_CURATOR_ID],
+      visible: false, width: "0px", responsivePriority: -1
     },
     { width: "200px", targets: COLUMNS.URL },
     {
@@ -229,13 +245,6 @@ let table = $("#collection_table").DataTable({
       targets: [COLUMNS.CURATED_URLS],
       type: "num-fmt",
     },
-    // hide the data panes
-    {
-      searchPanes: {
-        show: false,
-      },
-      targets: [COLUMNS.WORKFLOW_STATUS_RAW, COLUMNS.CURATOR_ID, COLUMNS.REINDEXING_STATUS_RAW],
-    },
     {
       searchPanes: {
         dtOpts: {
@@ -253,25 +262,33 @@ let table = $("#collection_table").DataTable({
       targets: [COLUMNS.CONNECTOR_TYPE],
     },
   ],
+  autoWidth: false,
 });
 
-$("#collection-dropdown-4").on("change", function () {
+$("#workflow-status-selector").on("change", function () {
   table
     .columns(COLUMNS.WORKFLOW_STATUS_RAW)
     .search(this.value ? "^" + this.value + "$" : "", true, false)
     .draw();
 });
 
-$("#collection-dropdown-5").on("change", function () {
+$("#curator-selector").on("change", function () {
   table
     .columns(COLUMNS.CURATOR_ID)
     .search(this.value ? "^" + this.value + "$" : "", true, false)
     .draw();
 });
 
-$("#collection-dropdown-6").on("change", function () {
+$("#reindexing-status-selector").on("change", function () {
   table
     .columns(COLUMNS.REINDEXING_STATUS_RAW)
+    .search(this.value ? "^" + this.value + "$" : "", true, false)
+    .draw();
+});
+
+$("#reindexing-curator-selector").on("change", function () {
+  table
+    .columns(COLUMNS.REINDEXING_CURATOR_ID)
     .search(this.value ? "^" + this.value + "$" : "", true, false)
     .draw();
 });
@@ -426,6 +443,36 @@ function handleCuratorSelect() {
   });
 }
 
+function handleReindexingCuratorSelect() {
+  $("body").on("click", ".reindexing_curator_select", function () {
+    const collection_id = $(this).data("collection-id");
+    const reindexing_curator_id = $(this).attr("value");
+    const reindexing_curator_text = $(this).text();
+
+    // Update button text and style
+    const $button = $(`#reindexing-curator-button-${collection_id}`).last();
+    $button
+      .text(reindexing_curator_text)
+      .removeClass("btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-dark")
+      .addClass("btn-success");
+
+    // Update DataTable
+    const rowIndex = table.row("#" + collection_id).index();
+    table.data()[rowIndex][COLUMNS.REINDEXING_CURATOR] = createReindexingCuratorButton(reindexing_curator_text);
+
+    // Send update to server
+    postReindexingCurator(collection_id, reindexing_curator_id);
+  });
+}
+
+// Helper function to create reindexing curator button HTML
+function createReindexingCuratorButton(reindexing_curator_text) {
+  const buttonClass = reindexing_curator_text === "None" ? "btn-dark" : "btn-success";
+  return `<div class="dropdown reindexing_curator_dropdown">
+    <button class="btn ${buttonClass} btn-sm dropdown-toggle">${reindexing_curator_text}</button>
+  </div>`;
+}
+
 function postReindexingStatus(collection_id, reindexing_status) {
   var url = `/api/collections/${collection_id}/`;
   $.ajax({
@@ -481,6 +528,24 @@ function postCurator(collection_id, curator_id) {
   });
 }
 
+function postReindexingCurator(collection_id, reindexing_curator_id) {
+  var url = `/api/collections/${collection_id}/`;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    data: {
+      reindexing_curated_by: reindexing_curator_id,
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      toastr.success("Reindexing Curator Updated!");
+    },
+  });
+}
+
 $(document).ready(function () {
   setupClickHandlers();
 
@@ -489,8 +554,6 @@ $(document).ready(function () {
 
   // Remove the search input and add custom titles
   var paneTitles = [
-    null,
-    null,
     "Division",
     "Delta URLs",
     "Curated URLs",
@@ -545,6 +608,7 @@ function setupClickHandlers() {
   handleWorkflowStatusSelect();
   handleReindexingStatusSelect();
   handleCuratorSelect();
+  handleReindexingCuratorSelect();
 }
 
 function clearSearchValues() {
