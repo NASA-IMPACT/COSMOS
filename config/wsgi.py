@@ -1,5 +1,5 @@
 """
-WSGI config for SDE Indexing Helper project.
+WSGI config for COSMOS.
 
 This module contains the WSGI application used by Django's development server
 and any production WSGI deployments. It should expose a module-level variable

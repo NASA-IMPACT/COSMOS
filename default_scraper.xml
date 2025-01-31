@@ -33,8 +33,7 @@
         <StoreInCollectionCache>false</StoreInCollectionCache>
         <GetFilePropertiesFromConverter>false</GetFilePropertiesFromConverter>
     </Indexation>
-    <System>
-    </System>
+    <System> </System>
     <DisplayLongProperties>false</DisplayLongProperties>
     <LongPropertyLimit></LongPropertyLimit>
     <UsePerformanceMetrics>true</UsePerformanceMetrics>
@@ -143,7 +142,7 @@
     <CurationIdPattern></CurationIdPattern>
     <RunIndexMiningInIndexer>false</RunIndexMiningInIndexer>
     <Namespace></Namespace>
-    <WorkerCount>8</WorkerCount>
+    <WorkerCount>3</WorkerCount>
     <MaxWorkerPerHost></MaxWorkerPerHost>
     <Url>enter your url here</Url>
     <UrlList></UrlList>

@@ -268,8 +268,4 @@
         <Name>id</Name>
         <Value>doc.url1</Value>
     </Mapping>
-    <Mapping>
-        <Name>version</Name>
-        <Value>Md5(doc.url1)</Value>
-    </Mapping>
 </Sinequa>

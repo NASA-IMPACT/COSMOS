@@ -313,3 +313,50 @@ margin-bottom: 0 !important;
       .search-container input:focus {
         font-style: italic;
       }
+
+      .pattern-dropdown {
+        width: 100%;
+        background: #A7BACD !important;
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 17.58px;
+        color: #1F2935;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-transform: capitalize;
+        border-radius: 4px;
+        margin-bottom: 0;
+    }
+
+    .pattern-dropdown-input {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .pattern-type-form {
+        width: 100%;
+        background: #15232E;
+        color: white;
+        border: 1px solid white;
+        padding: 24px 15px;
+        border-radius: 4px;
+    }
+
+    .pattern-form-group {
+        margin-top: 40px;
+    }
+
+    .form-label {
+        color: white;
+        display: flex;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        margin-bottom: 8px;
+    }
+
+    .form-label .asterik {
+        color: #C3001A;
+        margin-left: 4px;
+    }
