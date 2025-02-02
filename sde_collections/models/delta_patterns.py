@@ -482,9 +482,13 @@ class DeltaTitlePattern(BaseMatchPattern):
         3. Queue background tasks for title resolution
         4. Track title resolution status and errors
         """
+        # Inserting here to avoid circular import issue
+        from ..tasks import process_title_resolutions
+
+        pattern_url_pairs = []
+
         DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
         DeltaResolvedTitle = apps.get_model("sde_collections", "DeltaResolvedTitle")
-        DeltaResolvedTitleError = apps.get_model("sde_collections", "DeltaResolvedTitleError")
 
         # Get newly matching Curated URLs
         matching_curated_urls = self.get_matching_curated_urls()
@@ -497,60 +501,45 @@ class DeltaTitlePattern(BaseMatchPattern):
             if not self.is_most_distinctive_pattern(curated_url):
                 continue
 
-            new_title, error = self.generate_title_for_url(curated_url)
-
-            if error:
-                DeltaResolvedTitleError.objects.update_or_create(
-                    delta_url=curated_url, defaults={"title_pattern": self, "error_string": error}  # lookup field
-                )
-                continue
-
-            # Skip if the generated title matches existing or if Delta already exists
-            if (
-                curated_url.generated_title == new_title
-                or DeltaUrl.objects.filter(url=curated_url.url, collection=self.collection).exists()
-            ):
-                continue
-
-            # Create new Delta URL with the new title
+            # Create a new Delta URL (without title initially)
             fields = {
                 field.name: getattr(curated_url, field.name)
                 for field in curated_url._meta.fields
                 if field.name not in ["id", "collection"]
             }
-            fields["generated_title"] = new_title
             fields["to_delete"] = False
             fields["collection"] = self.collection
-
             delta_url = DeltaUrl.objects.create(**fields)
+            # Create initial resolution record
+            resolution = DeltaResolvedTitle.objects.create(
+                title_pattern=self, delta_url=delta_url, status=DeltaResolvedTitle.Status.PENDING
+            )
+            print(f"PENDING created for CuratedURL {delta_url.id}; Pattern ID is {self.id}")
 
-            # Record successful title resolution
-            DeltaResolvedTitle.objects.create(title_pattern=self, delta_url=delta_url, resolved_title=new_title)
+            # Queue the background task using delay()
+            # resolve_title_pattern.delay(self.id, delta_url.id)
+            pattern_url_pairs.append((self.id, delta_url.id))
 
-        # Update titles for all matching Delta URLs
         for delta_url in self.get_matching_delta_urls():
             if not self.is_most_distinctive_pattern(delta_url):
                 continue
 
-            new_title, error = self.generate_title_for_url(delta_url)
-
-            if error:
-                DeltaResolvedTitleError.objects.update_or_create(
-                    delta_url=delta_url, defaults={"title_pattern": self, "error_string": error}  # lookup field
-                )
-                continue
-
-            # Update title and record resolution - key change here
-            DeltaResolvedTitle.objects.update_or_create(
-                delta_url=delta_url,  # Only use delta_url for lookup
-                defaults={"title_pattern": self, "resolved_title": new_title},
+            # Create/update resolution record
+            resolution, _ = DeltaResolvedTitle.objects.update_or_create(
+                delta_url=delta_url, defaults={"title_pattern": self, "status": DeltaResolvedTitle.Status.PENDING}
             )
+            # resolve_title_pattern.delay(self.id, delta_url.id)
+            pattern_url_pairs.append((self.id, delta_url.id))
 
-            delta_url.generated_title = new_title
-            delta_url.save()
+        if pattern_url_pairs:
+            print(pattern_url_pairs)
+            print("URL pairs created; Sent for resolution")
+            process_title_resolutions.delay(pattern_url_pairs)
 
         # Update pattern relationships
+        print("Finished resolution; Starting pattern relationships")
         self.update_affected_delta_urls_list()
+        print("Finished this block")
 
     def unapply(self) -> None:
         """

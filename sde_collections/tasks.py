@@ -3,6 +3,7 @@ import os
 import shutil
 
 import boto3
+from celery import group
 from django.apps import apps
 from django.conf import settings
 from django.core import management
@@ -148,11 +149,85 @@ def pull_latest_collection_metadata_from_github():
     s3_client.upload_file(FILENAME, s3_bucket_name, s3_key)
 
 
-@celery_app.task()
-def resolve_title_pattern(title_pattern_id):
-    TitlePattern = apps.get_model("sde_collections", "TitlePattern")
-    title_pattern = TitlePattern.objects.get(id=title_pattern_id)
-    title_pattern.apply()
+# @celery_app.task()
+# def resolve_title_pattern(title_pattern_id):
+#     TitlePattern = apps.get_model("sde_collections", "TitlePattern")
+#     title_pattern = TitlePattern.objects.get(id=title_pattern_id)
+#     title_pattern.apply()
+
+
+@celery_app.task(name="sde_collections.tasks.resolve_title_pattern")
+def resolve_title_pattern(title_pattern_id: int, delta_url_id: int) -> None:
+    """Background task to resolve a title pattern for a specific URL"""
+    DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
+    DeltaTitlePattern = apps.get_model("sde_collections", "DeltaTitlePattern")
+    DeltaResolvedTitle = apps.get_model("sde_collections", "DeltaResolvedTitle")
+    DeltaResolvedTitleError = apps.get_model("sde_collections", "DeltaResolvedTitleError")
+
+    try:
+        with transaction.atomic():
+            # First attempt to get an existing record or create a new one
+            resolution, created = DeltaResolvedTitle.objects.get_or_create(
+                title_pattern_id=title_pattern_id,
+                delta_url_id=delta_url_id,
+                defaults={"status": DeltaResolvedTitle.Status.PROCESSING},
+            )
+
+            # If we found an existing record (created=False)
+            if not created:
+                resolution.status = DeltaResolvedTitle.Status.PROCESSING
+                resolution.save()
+                print(f"Not created for DeltaURL {delta_url_id}; Pattern ID is {title_pattern_id}")
+
+            if DeltaResolvedTitle.objects.filter(
+                delta_url_id=delta_url_id,
+                created_at__gt=resolution.created_at,
+                status__in=[DeltaResolvedTitle.Status.PENDING, DeltaResolvedTitle.Status.PROCESSING],
+            ).exists():
+                print(f"Returning for DeltaURL {delta_url_id}; Pattern ID is {title_pattern_id}")
+                return
+
+            with open("/tmp/celery_debug.log", "a") as f:
+                f.write(f"PROCESSING created for DeltaURL {delta_url_id}; Pattern ID is {title_pattern_id}")
+
+            # Get pattern and URL
+            pattern = DeltaTitlePattern.objects.get(id=title_pattern_id)
+            delta_url = DeltaUrl.objects.get(id=delta_url_id)
+
+            # Generate new title
+            new_title, error = pattern.generate_title_for_url(delta_url)
+
+            if error:
+                DeltaResolvedTitleError.objects.create(
+                    title_pattern=pattern,
+                    delta_url=delta_url,
+                    error_string=str(error),
+                    http_status_code=getattr(error, "status_code", None),
+                )
+                print(f"FAILED created for DeltaURL {delta_url_id}; Pattern ID is {title_pattern_id}")
+                return
+
+            delta_url.generated_title = new_title
+            delta_url.save()
+
+            resolution.resolved_title = new_title
+            resolution.status = DeltaResolvedTitle.Status.RESOLVED
+            resolution.save()
+
+            print(f"RESOLVED created for DeltaURL {delta_url_id}; Pattern ID is {title_pattern_id}")
+
+    except Exception as e:
+        DeltaResolvedTitleError.objects.create(
+            title_pattern_id=title_pattern_id, delta_url_id=delta_url_id, error_string=str(e)
+        )
+
+
+@celery_app.task(name="sde_collections.tasks.process_title_resolutions")
+def process_title_resolutions(pattern_url_pairs: list[tuple[int, int]]) -> None:
+    """Creates a group of tasks and processes them with Celery's native batching"""
+    # Create a group of tasks
+    tasks = [resolve_title_pattern.s(pattern_id, url_id) for pattern_id, url_id in pattern_url_pairs]
+    group(tasks).apply_async()
 
 
 @celery_app.task(soft_time_limit=600)
