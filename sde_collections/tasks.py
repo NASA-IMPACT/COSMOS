@@ -159,6 +159,67 @@ def pull_latest_collection_metadata_from_github():
 #     title_pattern.apply()
 
 
+@celery_app.task(name="sde_collections.tasks.process_title_resolutions")
+def process_title_resolutions(pattern_id: int) -> None:
+    """Background task to prepare and queue title resolutions"""
+    try:
+
+        DeltaTitlePattern = apps.get_model("sde_collections", "DeltaTitlePattern")
+        DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
+        DeltaResolvedTitle = apps.get_model("sde_collections", "DeltaResolvedTitle")
+
+        pattern = DeltaTitlePattern.objects.get(id=pattern_id)
+        pattern_url_pairs = []
+
+        with transaction.atomic():
+            # Process curated URLs
+            matching_curated_urls = pattern.get_matching_curated_urls()
+            previously_unaffected_curated = matching_curated_urls.exclude(
+                id__in=pattern.curated_urls.values_list("id", flat=True)
+            )
+
+            for curated_url in previously_unaffected_curated:
+                if not pattern.is_most_distinctive_pattern(curated_url):
+                    continue
+
+                # Create Delta URL
+                fields = {
+                    field.name: getattr(curated_url, field.name)
+                    for field in curated_url._meta.fields
+                    if field.name not in ["id", "collection"]
+                }
+                fields["to_delete"] = False
+                fields["collection"] = pattern.collection
+                delta_url = DeltaUrl.objects.create(**fields)
+
+                # Create resolution record
+                DeltaResolvedTitle.objects.create(
+                    title_pattern=pattern, delta_url=delta_url, status=DeltaResolvedTitle.Status.PENDING
+                )
+                pattern_url_pairs.append((pattern_id, delta_url.id))
+
+            # Process delta URLs
+            for delta_url in pattern.get_matching_delta_urls():
+                if not pattern.is_most_distinctive_pattern(delta_url):
+                    continue
+
+                DeltaResolvedTitle.objects.update_or_create(
+                    delta_url=delta_url,
+                    defaults={"title_pattern": pattern, "status": DeltaResolvedTitle.Status.PENDING},
+                )
+                pattern_url_pairs.append((pattern_id, delta_url.id))
+
+            # Update relationships
+            pattern.update_affected_delta_urls_list()
+
+        # Queue the resolution tasks
+        if pattern_url_pairs:
+            group(resolve_title_pattern.s(pattern_id, url_id) for pattern_id, url_id in pattern_url_pairs)()
+
+    except Exception as e:
+        logger.error(f"Error in process_title_resolutions for pattern {pattern_id}: {str(e)}")
+
+
 @celery_app.task(name="sde_collections.tasks.resolve_title_pattern")
 def resolve_title_pattern(title_pattern_id: int, delta_url_id: int) -> None:
     """Background task to resolve a title pattern for a specific URL"""
@@ -170,7 +231,6 @@ def resolve_title_pattern(title_pattern_id: int, delta_url_id: int) -> None:
     DeltaResolvedTitleError = apps.get_model("sde_collections", "DeltaResolvedTitleError")
 
     try:
-        # with transaction.atomic():
         # First attempt to get an existing record or create a new one
         resolution, created = DeltaResolvedTitle.objects.get_or_create(
             title_pattern_id=title_pattern_id,
@@ -183,15 +243,7 @@ def resolve_title_pattern(title_pattern_id: int, delta_url_id: int) -> None:
             resolution.status = DeltaResolvedTitle.Status.PROCESSING
             resolution.save()
 
-        logger.info(f"PROCESSING created for DeltaURL {delta_url_id}; Pattern ID is {title_pattern_id}")
-
-        # if DeltaResolvedTitle.objects.filter(
-        #     delta_url_id=delta_url_id,
-        #     created_at__gt=resolution.created_at,
-        #     status__in=[DeltaResolvedTitle.Status.PENDING, DeltaResolvedTitle.Status.PROCESSING],
-        # ).exists():
-        #     logger.info(f"Returning for DeltaURL {delta_url_id}; Pattern ID is {title_pattern_id}")
-        #     return
+        logger.info(f"PROCESSING status created for DeltaURL {delta_url_id}; Pattern ID {title_pattern_id}")
 
         # Get pattern and URL
         pattern = DeltaTitlePattern.objects.get(id=title_pattern_id)
@@ -206,7 +258,7 @@ def resolve_title_pattern(title_pattern_id: int, delta_url_id: int) -> None:
                 error_string=str(error),
                 http_status_code=getattr(error, "status_code", None),
             )
-            logger.info(f"FAILED created for DeltaURL {delta_url_id}; Pattern ID is {title_pattern_id}")
+            logger.info(f"FAILED status created for DeltaURL {delta_url_id}; Pattern ID {title_pattern_id}")
             return
 
         delta_url.generated_title = new_title
@@ -214,29 +266,12 @@ def resolve_title_pattern(title_pattern_id: int, delta_url_id: int) -> None:
         resolution.resolved_title = new_title
         resolution.status = DeltaResolvedTitle.Status.RESOLVED
         resolution.save()
-        logger.info(f"RESOLVED created for DeltaURL {delta_url_id}; Pattern ID is {title_pattern_id}")
+        logger.info(f"RESOLVED status created for DeltaURL {delta_url_id}; Pattern ID {title_pattern_id}")
 
     except Exception as e:
         DeltaResolvedTitleError.objects.create(
             title_pattern_id=title_pattern_id, delta_url_id=delta_url_id, error_string=str(e)
         )
-
-
-@celery_app.task(name="sde_collections.tasks.process_title_resolutions")
-def process_title_resolutions(pattern_url_pairs: list[tuple[int, int]]) -> None:
-    """Creates a group of tasks and processes them with Celery's native batching"""
-
-    logger.info("Bulk resolution task received.")
-
-    # Create a group of tasks
-    tasks = [resolve_title_pattern.s(pattern_id, url_id) for pattern_id, url_id in pattern_url_pairs]
-    # group(tasks).apply_async()
-    group(tasks)().delay()
-
-    # group(
-    #     resolve_title_pattern.delay(pattern_id, url_id)
-    #     for pattern_id, url_id in pattern_url_pairs
-    # )
 
 
 @celery_app.task(soft_time_limit=600)

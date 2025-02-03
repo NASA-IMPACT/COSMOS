@@ -3,7 +3,7 @@ from typing import Any
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 
 from ..utils.title_resolver import (
     is_valid_xpath,
@@ -482,64 +482,15 @@ class DeltaTitlePattern(BaseMatchPattern):
         3. Queue background tasks for title resolution
         4. Track title resolution status and errors
         """
+
         # Inserting here to avoid circular import issue
         from ..tasks import process_title_resolutions
 
-        pattern_url_pairs = []
+        def queue_task():
+            process_title_resolutions.delay(self.id)
 
-        DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
-        DeltaResolvedTitle = apps.get_model("sde_collections", "DeltaResolvedTitle")
-
-        # Get newly matching Curated URLs
-        matching_curated_urls = self.get_matching_curated_urls()
-        previously_unaffected_curated = matching_curated_urls.exclude(
-            id__in=self.curated_urls.values_list("id", flat=True)
-        )
-
-        # Process each previously unaffected curated URL
-        for curated_url in previously_unaffected_curated:
-            if not self.is_most_distinctive_pattern(curated_url):
-                continue
-
-            # Create a new Delta URL (without title initially)
-            fields = {
-                field.name: getattr(curated_url, field.name)
-                for field in curated_url._meta.fields
-                if field.name not in ["id", "collection"]
-            }
-            fields["to_delete"] = False
-            fields["collection"] = self.collection
-            delta_url = DeltaUrl.objects.create(**fields)
-
-            # Create initial resolution record
-            resolution = DeltaResolvedTitle.objects.create(
-                title_pattern=self, delta_url=delta_url, status=DeltaResolvedTitle.Status.PENDING
-            )
-            print(f"PENDING created for CuratedURL {delta_url.id}; Pattern ID is {self.id}")
-
-            # Add the pattern url pairs to the list for background queuing
-            pattern_url_pairs.append((self.id, delta_url.id))
-            # resolve_title_pattern.delay(self.id, delta_url.id)
-
-        for delta_url in self.get_matching_delta_urls():
-            if not self.is_most_distinctive_pattern(delta_url):
-                continue
-
-            # Create/update resolution record
-            resolution, _ = DeltaResolvedTitle.objects.update_or_create(
-                delta_url=delta_url, defaults={"title_pattern": self, "status": DeltaResolvedTitle.Status.PENDING}
-            )
-            print(f"PENDING created for DeltaURL {delta_url.id}; Pattern ID is {self.id}")
-
-            pattern_url_pairs.append((self.id, delta_url.id))
-            # resolve_title_pattern.delay(self.id, delta_url.id)
-
-        if pattern_url_pairs:
-            process_title_resolutions.delay(pattern_url_pairs)
-
-        self.update_affected_delta_urls_list()
-
-        # print("Finished this block")
+        # Queue the background task only after the transaction commits (i.e, after apply() method)
+        transaction.on_commit(queue_task)
 
     def unapply(self) -> None:
         """
