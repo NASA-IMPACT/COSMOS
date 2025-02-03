@@ -652,28 +652,3 @@ class DeltaResolvedTitleError(DeltaResolvedTitleBase):
             defaults={"status": DeltaResolvedTitle.Status.FAILED, "resolved_title": ""},
         )
         super().save(*args, **kwargs)
-
-
-# class TitleResolutionStatus(models.Model):
-#     """Tracks the status of title resolution tasks."""
-
-#     class Status(models.TextChoices):
-#         PENDING = "pending", "Pending"
-#         PROCESSING = "processing", "Processing"
-#         RESOLVED = "resolved", "Resolved"
-#         FAILED = "failed", "Failed"
-
-#     title_pattern = models.ForeignKey(DeltaTitlePattern, on_delete=models.CASCADE)
-#     delta_url = models.ForeignKey("DeltaUrl", on_delete=models.CASCADE)
-#     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
-#     error_message = models.TextField(blank=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now_add=True)
-
-#     class Meta:
-#         verbose_name = "Title Resolution Status"
-#         verbose_name_plural = "Title Resolution Statuses"
-#         unique_together = ("title_pattern", "delta_url")
-#         indexes = [
-#             models.Index(fields=["status", "created_at"]),
-#         ]
