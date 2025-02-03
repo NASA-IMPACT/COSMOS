@@ -256,6 +256,24 @@ class Collection(models.Model):
         scraper_content = scraper_editor.update_config_xml()
         gh.create_or_update_file(query_path, scraper_content)
 
+    def has_tdamm_tags(self):
+        """Check if any URLs in this collection have TDAMM tags."""
+        # Check DeltaUrls
+        has_delta_tags = (
+            self.delta_urls.filter(models.Q(tdamm_tag_manual__isnull=False) | models.Q(tdamm_tag_ml__isnull=False))
+            .exclude(models.Q(tdamm_tag_manual=[]) & models.Q(tdamm_tag_ml=[]))
+            .exists()
+        )
+
+        # Check CuratedUrls
+        has_curated_tags = (
+            self.curated_urls.filter(models.Q(tdamm_tag_manual__isnull=False) | models.Q(tdamm_tag_ml__isnull=False))
+            .exclude(models.Q(tdamm_tag_manual=[]) & models.Q(tdamm_tag_ml=[]))
+            .exists()
+        )
+
+        return has_delta_tags or has_curated_tags
+
     @property
     def _scraper_config_path(self) -> str:
         return f"sources/scrapers/{self.config_folder}/default.xml"

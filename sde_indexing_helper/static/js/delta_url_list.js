@@ -1314,7 +1314,8 @@ function getTdammTagColumn() {
   return {
     data: "tdamm_tag",
     width: "10%",
-    className: "text-center whiteText",  // Changed from class to className
+    visible: (has_tdamm_tags === 'true'),
+    className: "text-center whiteText",
     render: function (data, type, row) {
       return data && data.length ? data.join(", ") : "None";
     }

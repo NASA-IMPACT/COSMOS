@@ -230,6 +230,7 @@ class DeltaURLsListView(LoginRequiredMixin, ListView):
         context["workflow_status_choices"] = WorkflowStatusChoices
         context["reindexing_status_choices"] = ReindexingStatusChoices
         context["is_multi_division"] = self.collection.is_multi_division
+        context["has_tdamm_tags"] = self.collection.has_tdamm_tags()
 
         return context
 
