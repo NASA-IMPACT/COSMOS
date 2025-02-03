@@ -1843,7 +1843,7 @@ function pollTitleResolutionStatus(patternId, match_pattern) {
               if (data.failed === 0) {
                 toastr.success(
                     `Title Resolution completed successfully for pattern: ${match_pattern}\n` +
-                    `${data.resolved} URLs processed`
+                    `[ ${data.resolved} URLs processed ]`
                 );
                 }
 
@@ -1851,7 +1851,7 @@ function pollTitleResolutionStatus(patternId, match_pattern) {
                 else {
                     toastr.warning(
                         `Title Resolution completed with some issues for pattern: ${match_pattern}\n` +
-                        `${data.resolved} succeeded, ${data.failed} failed`
+                        `[ ${data.resolved} succeeded, ${data.failed} failed ]`
                     );
                 }
 
