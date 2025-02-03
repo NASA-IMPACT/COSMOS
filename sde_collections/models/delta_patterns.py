@@ -510,15 +510,16 @@ class DeltaTitlePattern(BaseMatchPattern):
             fields["to_delete"] = False
             fields["collection"] = self.collection
             delta_url = DeltaUrl.objects.create(**fields)
+
             # Create initial resolution record
             resolution = DeltaResolvedTitle.objects.create(
                 title_pattern=self, delta_url=delta_url, status=DeltaResolvedTitle.Status.PENDING
             )
             print(f"PENDING created for CuratedURL {delta_url.id}; Pattern ID is {self.id}")
 
-            # Queue the background task using delay()
-            # resolve_title_pattern.delay(self.id, delta_url.id)
+            # Add the pattern url pairs to the list for background queuing
             pattern_url_pairs.append((self.id, delta_url.id))
+            # resolve_title_pattern.delay(self.id, delta_url.id)
 
         for delta_url in self.get_matching_delta_urls():
             if not self.is_most_distinctive_pattern(delta_url):
@@ -528,18 +529,17 @@ class DeltaTitlePattern(BaseMatchPattern):
             resolution, _ = DeltaResolvedTitle.objects.update_or_create(
                 delta_url=delta_url, defaults={"title_pattern": self, "status": DeltaResolvedTitle.Status.PENDING}
             )
-            # resolve_title_pattern.delay(self.id, delta_url.id)
+            print(f"PENDING created for DeltaURL {delta_url.id}; Pattern ID is {self.id}")
+
             pattern_url_pairs.append((self.id, delta_url.id))
+            # resolve_title_pattern.delay(self.id, delta_url.id)
 
         if pattern_url_pairs:
-            print(pattern_url_pairs)
-            print("URL pairs created; Sent for resolution")
             process_title_resolutions.delay(pattern_url_pairs)
 
-        # Update pattern relationships
-        print("Finished resolution; Starting pattern relationships")
         self.update_affected_delta_urls_list()
-        print("Finished this block")
+
+        # print("Finished this block")
 
     def unapply(self) -> None:
         """
