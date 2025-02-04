@@ -1,3 +1,4 @@
+import json
 import re
 
 from django.contrib import messages
@@ -26,6 +27,7 @@ from .models.collection_choice_fields import (
     Divisions,
     DocumentTypes,
     ReindexingStatusChoices,
+    TDAMMTags,
     WorkflowStatusChoices,
 )
 from .models.delta_patterns import (
@@ -232,6 +234,13 @@ class DeltaURLsListView(LoginRequiredMixin, ListView):
         context["reindexing_status_choices"] = ReindexingStatusChoices
         context["is_multi_division"] = self.collection.is_multi_division
         context["has_tdamm_tags"] = self.collection.has_tdamm_tags()
+
+        tdamm_choices = [
+            {"code": choice[0], "label": choice[1], "display": f"{choice[0]}: {choice[1]}"}
+            for choice in TDAMMTags.choices
+            # if choice[0] != 'Not TDAMM'
+        ]
+        context["tdamm_choices"] = json.dumps(tdamm_choices)
 
         return context
 
