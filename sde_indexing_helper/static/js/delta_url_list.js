@@ -264,6 +264,7 @@ function initializeDataTable() {
       { data: "match_pattern_type", visible: false, searchable: false },
       { data: "delta_urls_count", visible: false, searchable: false },
       { data: "excluded", visible: false, searchable: false },
+      { data: "tag_source", visible: false, searchable: false },
       {
         data: null,
         render: function (data, type, row) {
@@ -480,6 +481,7 @@ function initializeDataTable() {
       { data: "match_pattern_type", visible: false, searchable: false },
       { data: "curated_urls_count", visible: false, searchable: false },
       { data: "excluded", visible: false, searchable: false },
+      { data: "tag_source", visible: false, searchable: false },
       {
         data: null,
         render: function (data, type, row) {
@@ -1042,6 +1044,7 @@ function setupClickHandlers() {
   handleDivisionSelect();
   handleExcludeIndividualUrlClick();
   handleNewTitleChange();
+  handleTagDeletion();
 
   handleUrlLinkClick();
   handleTabsClick();
@@ -1315,9 +1318,28 @@ function getTdammTagColumn() {
     data: "tdamm_tag",
     width: "10%",
     visible: (has_tdamm_tags === 'true'),
-    className: "text-center whiteText",
-    render: function (data, type, row) {
-      return data && data.length ? data.join(", ") : "None";
+    className: "text-center",
+    render: function(data, type, row) {
+      if (!data || !data.length) return "None";
+
+      // console.log('Row data for tags:', {
+      //   data,
+      //   tagSource: row.tag_source,
+      //   fullRow: row
+      // });
+
+      const tagSource = row.tag_source;
+      const tags = data.map(tag => `
+        <div class="tdamm-tag">
+          <span class="tag-text">${tag}</span>
+          <button class="delete-tag"
+            data-url-id="${row.id}"
+            data-tag="${tag}"
+            data-source="${tagSource}">×</button>
+        </div>
+      `).join('');
+
+      return `<div class="tdamm-tags-container">${tags}</div>`;
     }
   };
 }
@@ -2259,5 +2281,45 @@ function handleReindexingStatusSelect() {
           break;
       }
     });
+  });
+}
+
+function handleTagDeletion() {
+  $("body").on("click", ".delete-tag", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const $button = $(this);
+    const urlId = $button.data("url-id");
+    const tagToDelete = $button.data("tag");
+    const source = $button.data("source");
+
+    // console.log('Tag deletion data:', {
+    //   urlId,
+    //   tagToDelete,
+    //   source,
+    //   buttonData: $button.data()
+    // });
+
+    // Confirm deletion
+    if (confirm(`Are you sure you want to remove the tag "${tagToDelete}"?`)) {
+      $.ajax({
+        url: `/api/delta-urls/${urlId}/remove_tag/`,
+        type: "POST",
+        data: {
+          tag: tagToDelete,
+          source: source,
+          csrfmiddlewaretoken: csrftoken
+        },
+        success: function(response) {
+          $("#delta_urls_table").DataTable().ajax.reload(null, false);
+          toastr.success("Tag removed successfully");
+          window.location.reload();
+        },
+        error: function(xhr, status, error) {
+          toastr.error("Error removing tag: " + error);
+        }
+      });
+    }
   });
 }

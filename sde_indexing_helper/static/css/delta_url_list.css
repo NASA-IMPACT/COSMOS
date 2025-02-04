@@ -468,3 +468,36 @@ div.dt-container div.dt-paging ul.pagination {
 .tdamm-tag-manual {
     background-color: #28a745; /* Green background */
 }
+
+.tdamm-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+}
+
+.tdamm-tag {
+    display: inline-flex;
+    align-items: center;
+    background: #304050;
+    border-radius: 16px;
+    padding: 2px 8px;
+    margin: 2px;
+    color: white;
+    font-size: 0.9em;
+}
+
+.delete-tag {
+    background: none;
+    border: none;
+    color: #ff9999;
+    margin-left: 4px;
+    padding: 0 4px;
+    cursor: pointer;
+    font-size: 1.2em;
+    line-height: 1;
+}
+
+.delete-tag:hover {
+    color: #ff0000;
+}

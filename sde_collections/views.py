@@ -12,6 +12,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
 from rest_framework import generics, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
@@ -291,6 +292,45 @@ class DeltaURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             delta_url.save()
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "Division is required."})
+
+    @action(detail=True, methods=["post"], url_path="remove_tag")
+    def remove_tag(self, request, pk=None):
+        delta_url = self.get_object()
+        tag_to_remove = request.data.get("tag")
+        source = request.data.get("source")
+
+        if not tag_to_remove:
+            return Response({"error": "Tag to remove not specified"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # print(f"Current state - ML tags: {delta_url.tdamm_tag_ml}, Manual tags: {delta_url.tdamm_tag_manual}")
+            # print(f"Source: {source}, Tag to remove: {tag_to_remove}")
+
+            if source == "ml":
+                # Get current ML tags
+                ml_tags = delta_url.tdamm_tag_ml
+                if ml_tags:
+                    # Create a new list from ML tags, excluding the one to remove
+                    new_manual_tags = [tag for tag in ml_tags if tag != tag_to_remove]
+                    # Set the new list to manual tags
+                    delta_url.tdamm_tag_manual = new_manual_tags
+                    # print(f"New manual tags after copy and remove: {delta_url.tdamm_tag_manual}")
+            else:
+                if delta_url.tdamm_tag_manual:
+                    manual_tags = delta_url.tdamm_tag_manual
+                    if tag_to_remove in manual_tags:
+                        manual_tags.remove(tag_to_remove)
+                        delta_url.tdamm_tag_manual = manual_tags
+                        # print(f"New manual tags after remove: {delta_url.tdamm_tag_manual}")
+
+            delta_url.save()
+            # print(f"Final state - ML tags: {delta_url.tdamm_tag_ml}, Manual tags: {delta_url.tdamm_tag_manual}")
+
+            return Response({"status": "success"})
+
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):

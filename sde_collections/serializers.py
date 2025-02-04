@@ -77,9 +77,14 @@ class DeltaURLSerializer(serializers.ModelSerializer):
 
     def get_tdamm_tag(self, obj):
         tags = obj.tdamm_tag
+        # print(f"TDAMM tags for {obj.url}:")
+        # print(f"- Raw tags: {tags}")
+        # print(f"- Manual tags: {obj.tdamm_tag_manual}")
+        # print(f"- ML tags: {obj.tdamm_tag_ml}")
         return tags if tags is not None else []
 
     def get_tag_source(self, obj):
+        # print(f"get_tag_source called for {obj.url}, returning: {obj.get_tag_source()}")
         return obj.get_tag_source()
 
     def get_delta_urls_count(self, obj):
