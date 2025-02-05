@@ -1045,6 +1045,7 @@ function setupClickHandlers() {
   handleExcludeIndividualUrlClick();
   handleNewTitleChange();
   handleTagDeletion();
+  handleTagAddition();
 
   handleUrlLinkClick();
   handleTabsClick();
@@ -1320,8 +1321,15 @@ function getTdammTagColumn() {
     visible: (has_tdamm_tags === 'true'),
     className: "text-center",
     render: function(data, type, row) {
-      if (!data || !data.length) return "None";
-
+      if (!data || !data.length) {
+        return `<div class="tdamm-tags-container">
+            <button class="btn btn-sm btn-outline-primary add-tdamm-tag"
+                data-url-id="${row.id}"
+                data-source="manual">
+                Add Tag
+            </button>
+        </div>`;
+      }
       // console.log('Row data for tags:', {
       //   data,
       //   tagSource: row.tag_source,
@@ -1339,7 +1347,14 @@ function getTdammTagColumn() {
         </div>
       `).join('');
 
-      return `<div class="tdamm-tags-container">${tags}</div>`;
+      return `<div class="tdamm-tags-container">
+          ${tags}
+          <button class="btn btn-sm btn-outline-primary add-tdamm-tag"
+              data-url-id="${row.id}"
+              data-source="${tagSource}">
+              Add Tag
+          </button>
+      </div>`;
     }
   };
 }
@@ -2314,7 +2329,7 @@ function handleTagDeletion() {
         success: function(response) {
           $("#delta_urls_table").DataTable().ajax.reload(null, false);
           toastr.success("Tag removed successfully");
-          window.location.reload();
+          // window.location.reload();
         },
         error: function(xhr, status, error) {
           toastr.error("Error removing tag: " + error);
@@ -2323,3 +2338,100 @@ function handleTagDeletion() {
     }
   });
 }
+
+function handleTagAddition() {
+  let activeDropdown = null;
+
+  function createDropdownContent() {
+    return tdamm_choices.map(choice =>
+        `<div class="tdamm-option" data-value="${choice.code}">
+            ${choice.display}
+        </div>`
+    ).join('');
+}
+
+  function hideDropdown(dropdown) {
+      if (dropdown) {
+          dropdown.remove();
+          activeDropdown = null;
+      }
+  }
+
+  $('body').on('click', '.add-tdamm-tag', function(e) {
+      // console.log("Add tag button clicked");
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Hide any existing dropdown
+      if (activeDropdown) {
+          hideDropdown(activeDropdown);
+      }
+
+      const $button = $(this);
+      const urlId = $button.data('url-id');
+      const source = $button.data('source');
+
+      // console.log("Button data:", { urlId, source });
+
+      // Clone dropdown template
+      const dropdown = $('#tdammDropdownTemplate').children().first().clone();
+      // console.log("Cloned template:", dropdown.html());
+
+      const optionsList = dropdown.find('.tdamm-options-list');
+      optionsList.html(createDropdownContent());
+
+      // Position dropdown
+      dropdown.css({
+          position: 'absolute',
+          top: $button.offset().top + $button.outerHeight() + 5,
+          left: $button.offset().left,
+          display: 'block',
+          width: '300px',
+          // zIndex: 1000
+          zIndex: 9999
+          // background: 'red',
+          // border: '2px solid yellow'
+      });
+
+      optionsList.on('click', '.tdamm-option', function() {
+          const selectedTag = $(this).data('value');
+          $.ajax({
+              url: `/api/delta-urls/${urlId}/add_tag/`,
+              type: 'POST',
+              data: {
+                  tag: selectedTag,
+                  source: source,
+                  csrfmiddlewaretoken: csrftoken
+              },
+              success: function(response) {
+                  $("#delta_urls_table").DataTable().ajax.reload(null, false);
+                  toastr.success("Tag added successfully");
+                  hideDropdown(dropdown[0]);
+              },
+              error: function(xhr, status, error) {
+                  toastr.error("Error adding tag: " + error);
+              }
+          });
+      });
+
+      if ($button.offset().left + 300 > $(window).width()) {
+          dropdown.css({
+              left: 'auto',
+              right: $(window).width() - ($button.offset().left + $button.outerWidth())
+          });
+      }
+
+      // Add to document and store reference
+      $('body').append(dropdown);
+      // console.log("Dropdown appended to body:", dropdown);
+      activeDropdown = dropdown[0];
+  });
+
+  // Close dropdown when clicking outside
+  $(document).on('click', function(e) {
+      if (activeDropdown && !$(e.target).closest('.tdamm-dropdown').length) {
+          hideDropdown(activeDropdown);
+      }
+  });
+}
+//

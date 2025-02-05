@@ -1,4 +1,3 @@
-import json
 import re
 
 from django.contrib import messages
@@ -240,7 +239,9 @@ class DeltaURLsListView(LoginRequiredMixin, ListView):
             for choice in TDAMMTags.choices
             # if choice[0] != 'Not TDAMM'
         ]
-        context["tdamm_choices"] = json.dumps(tdamm_choices)
+        context["tdamm_choices"] = tdamm_choices
+
+        # print("TDAMM choices:", context['tdamm_choices'])
 
         return context
 
@@ -339,6 +340,37 @@ class DeltaURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 
         except Exception as e:
             print(f"Error occurred: {str(e)}")
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=["post"], url_path="add_tag")
+    def add_tag(self, request, pk=None):
+        delta_url = self.get_object()
+        tag_to_add = request.data.get("tag")
+        source = request.data.get("source")
+
+        if not tag_to_add:
+            return Response({"error": "Tag to add not specified"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Get current tags
+            if source == "ml":
+                # If source is ML, copy ML tags to manual and add new tag
+                current_tags = delta_url.tdamm_tag_ml or []
+                new_tags = list(current_tags)  # Create a copy
+                if tag_to_add not in new_tags:
+                    new_tags.append(tag_to_add)
+                delta_url.tdamm_tag_manual = new_tags
+            else:
+                # For manual source, just add to existing manual tags
+                current_tags = delta_url.tdamm_tag_manual or []
+                if tag_to_add not in current_tags:
+                    current_tags.append(tag_to_add)
+                    delta_url.tdamm_tag_manual = current_tags
+
+            delta_url.save()
+            return Response({"status": "success"})
+
+        except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
