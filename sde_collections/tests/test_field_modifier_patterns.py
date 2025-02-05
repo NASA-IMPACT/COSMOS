@@ -47,6 +47,7 @@ class TestFieldModifierPatternBasics(TestCase):
             collection=self.collection,
             match_pattern="https://example.com/docs/guide.pdf",
             document_type=DocumentTypes.DOCUMENTATION,
+            match_pattern_type=DeltaDocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
         )
         assert pattern.match_pattern_type == DeltaDocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL
         assert pattern.document_type == DocumentTypes.DOCUMENTATION

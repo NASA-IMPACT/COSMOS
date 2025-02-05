@@ -56,7 +56,7 @@ class TestDeltaExcludePatternBasics(TestCase):
         pattern = DeltaExcludePattern.objects.create(
             collection=self.collection, match_pattern="https://example.com/exclude-me", reason="Test exclusion"
         )
-        assert pattern.match_pattern_type == DeltaExcludePattern.MatchPatternTypeChoices.INDIVIDUAL_URL
+        assert pattern.match_pattern_type == DeltaExcludePattern.MatchPatternTypeChoices.MULTI_URL_PATTERN
 
     def test_exclude_single_curated_url(self):
         """Test excluding a single curated URL creates appropriate delta."""
