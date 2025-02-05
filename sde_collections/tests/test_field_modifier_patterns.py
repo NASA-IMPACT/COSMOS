@@ -69,6 +69,7 @@ class TestFieldModifierPatternBasics(TestCase):
             collection=self.collection,
             match_pattern="https://example.com/helio/data.html",
             division=Divisions.HELIOPHYSICS,
+            match_pattern_type=DeltaDivisionPattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
         )
         assert pattern.match_pattern_type == DeltaDivisionPattern.MatchPatternTypeChoices.INDIVIDUAL_URL
         assert pattern.division == Divisions.HELIOPHYSICS
