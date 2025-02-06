@@ -456,19 +456,6 @@ div.dt-container div.dt-paging ul.pagination {
     width: 100%;
 }
 
-/* .tdamm-tags {
-    color: white;
-    background-color: #3F4A58;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin: 2px;
-    display: inline-block;
-} */
-
-/* .tdamm-tag-manual {
-    background-color: #28a745;
-} */
-
 .tdamm-tags-container {
     display: flex;
     flex-wrap: wrap;
@@ -479,12 +466,24 @@ div.dt-container div.dt-paging ul.pagination {
 .tdamm-tag {
     display: inline-flex;
     align-items: center;
-    background: #304050;
+    /* background: #304050; */
     border-radius: 16px;
     padding: 2px 8px;
     margin: 2px;
     color: white;
     font-size: 0.9em;
+}
+
+.tdamm-tags-container[data-source="manual"] .tdamm-tag {
+    background: #28a745;
+}
+
+.tdamm-tags-container[data-source="ml"] .tdamm-tag {
+    background: #0066CA;
+}
+
+.tdamm-tags-container[data-source="Not Set"] .tdamm-tag {
+    background: #304050;
 }
 
 .delete-tag {
@@ -506,7 +505,6 @@ div.dt-container div.dt-paging ul.pagination {
     position: absolute;
     min-width: 300px;
     background: #15232E;
-    /* border: 1px solid #A7BACD; */
     border: 2px solid red !important;
     border-radius: 4px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.3);
@@ -525,39 +523,10 @@ div.dt-container div.dt-paging ul.pagination {
     margin: 0;
 }
 
-/* .tdamm-tag-menu {
-    position: absolute;
-    width: 300px;
-} */
-
-/* .tdamm-search {
-    margin: 10px;
-    padding: 5px 10px;
-    width: calc(100% - 20px);
-    background: #3F4A58;
-    border: 1px solid #A7BACD;
-    color: white;
-    border-radius: 4px;
-} */
-
 .tdamm-options {
-    /* max-height: 300px; */
-    /* overflow-y: auto; */
     min-height: 50px;
     background: rgba(255,255,255,0.1);
 }
-
-/* .tdamm-option {
-    padding: 8px 12px;
-    cursor: pointer;
-    color: white;
-    border-radius: 4px;
-    margin-bottom: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    background: rgba(255,255,255,0.1);
-} */
 
 .tdamm-option:hover {
     background: #0066CA;
@@ -568,15 +537,6 @@ div.dt-container div.dt-paging ul.pagination {
     padding: 2px 8px;
     font-size: 0.9em;
 }
-
-/* .tdamm-dropdown-container {
-    position: absolute;
-    background: #15232E;
-    border: 1px solid #A7BACD;
-    border-radius: 4px;
-    padding: 5px;
-    z-index: 9999;
-} */
 
 .tdamm-dropdown-container {
     position: absolute;
@@ -598,18 +558,3 @@ div.dt-container div.dt-paging ul.pagination {
     color: white;
     transition: background-color 0.2s;
 }
-
-/* .tdamm-select {
-    width: 300px;
-    background: #3F4A58;
-    color: white;
-    border: 1px solid #A7BACD;
-    border-radius: 4px;
-    padding: 5px;
-}
-
-.tdamm-select option {
-    background: #15232E;
-    color: white;
-    padding: 5px;
-} */
