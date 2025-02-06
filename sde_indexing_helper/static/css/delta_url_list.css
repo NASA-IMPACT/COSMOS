@@ -456,18 +456,18 @@ div.dt-container div.dt-paging ul.pagination {
     width: 100%;
 }
 
-.tdamm-tags {
+/* .tdamm-tags {
     color: white;
     background-color: #3F4A58;
     padding: 2px 6px;
     border-radius: 4px;
     margin: 2px;
     display: inline-block;
-}
+} */
 
-.tdamm-tag-manual {
-    background-color: #28a745; /* Green background */
-}
+/* .tdamm-tag-manual {
+    background-color: #28a745;
+} */
 
 .tdamm-tags-container {
     display: flex;
@@ -525,12 +525,12 @@ div.dt-container div.dt-paging ul.pagination {
     margin: 0;
 }
 
-.tdamm-tag-menu {
+/* .tdamm-tag-menu {
     position: absolute;
     width: 300px;
-}
+} */
 
-.tdamm-search {
+/* .tdamm-search {
     margin: 10px;
     padding: 5px 10px;
     width: calc(100% - 20px);
@@ -538,7 +538,7 @@ div.dt-container div.dt-paging ul.pagination {
     border: 1px solid #A7BACD;
     color: white;
     border-radius: 4px;
-}
+} */
 
 .tdamm-options {
     /* max-height: 300px; */
