@@ -1347,7 +1347,7 @@ function getTdammTagColumn() {
         </div>
       `).join('');
 
-      return `<div class="tdamm-tags-container">
+      return `<div class="tdamm-tags-container" data-source="${tagSource}">
           ${tags}
           <button class="btn btn-sm btn-outline-primary add-tdamm-tag"
               data-url-id="${row.id}"

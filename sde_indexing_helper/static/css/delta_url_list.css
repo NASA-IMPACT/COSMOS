@@ -466,7 +466,7 @@ div.dt-container div.dt-paging ul.pagination {
 .tdamm-tag {
     display: inline-flex;
     align-items: center;
-    /* background: #304050; */
+    background: #304050;
     border-radius: 16px;
     padding: 2px 8px;
     margin: 2px;
@@ -475,11 +475,11 @@ div.dt-container div.dt-paging ul.pagination {
 }
 
 .tdamm-tags-container[data-source="manual"] .tdamm-tag {
-    background: #28a745;
+    background: #31a728;
 }
 
 .tdamm-tags-container[data-source="ml"] .tdamm-tag {
-    background: #0066CA;
+    background: #00a2ca;
 }
 
 .tdamm-tags-container[data-source="Not Set"] .tdamm-tag {
