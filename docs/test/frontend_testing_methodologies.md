@@ -216,12 +216,37 @@ A combination for testing HTML structure and content.
 
 ## Implementation Steps
 
-1. Set up testing environment:
-```bash
-pip install selenium pytest pytest-django
+1. Add testing dependencies to requirements file `requirements/local.txt`:
+```text
+# Testing Dependencies
+selenium>=4.15.2
+pytest-xdist>=3.3.1
+pytest-cov>=4.1.0
 ```
 
-2. Create base test classes:
+2. Update Dockerfile `compose/local/django/Dockerfile` to install Chrome and ChromeDriver:
+```dockerfile
+# Install Chrome and ChromeDriver for Selenium tests
+RUN apt-get update && apt-get install -y \
+    chromium \
+    chromium-driver \
+    && rm -rf /var/lib/apt/lists/*
+```
+
+3. Rebuild Docker container to apply changes:
+```bash
+docker-compose -f local.yml build django
+```
+
+4. Create test directory structure:
+```bash
+mkdir -p tests/frontend
+touch tests/frontend/__init__.py
+touch tests/frontend/base.py
+touch tests/frontend/test_setup.py
+```
+
+5. Create base test classes:
 ```python
 import pytest
 from selenium import webdriver
@@ -238,7 +263,7 @@ class BaseUITest:
         pass
 ```
 
-3. Organize tests by feature:
+6. Organize tests by feature:
 ```python
 class TestCollectionManagement(BaseUITest):
     def test_create_collection(self):
@@ -250,4 +275,9 @@ class TestCollectionManagement(BaseUITest):
 class TestURLPatterns(BaseUITest):
     def test_add_include_pattern(self):
         pass
+```
+
+7. Run tests:
+```bash
+docker-compose -f local.yml run --rm django pytest tests/frontend/test_setup.py -v
 ```
