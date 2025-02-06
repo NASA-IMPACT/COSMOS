@@ -2313,6 +2313,8 @@ function handleReindexingStatusSelect() {
 }
 
 function handleTagDeletion() {
+  let currentTagData = null;
+
   $("body").on("click", ".delete-tag", function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -2322,6 +2324,8 @@ function handleTagDeletion() {
     const tagToDelete = $button.data("tag");
     const source = $button.data("source");
 
+    currentTagData = { urlId, tagToDelete, source };
+
     // console.log('Tag deletion data:', {
     //   urlId,
     //   tagToDelete,
@@ -2330,7 +2334,22 @@ function handleTagDeletion() {
     // });
 
     // Confirm deletion
-    if (confirm(`Are you sure you want to remove the tag "${tagToDelete}"?`)) {
+    $("#deleteTagModal").modal();
+    $(".delete-tag-caption").text(`Are you sure you want to remove the tag "${tagToDelete}"?`);
+  });
+
+  $("#deleteTagModalForm").on("click", "button", function(event) {
+    event.preventDefault();
+    const buttonId = $(this).attr("id");
+
+    if (buttonId === "dontDeleteTag") {
+      $("#deleteTagModal").modal("hide");
+      return;
+    }
+
+    if (buttonId === "deleteTag" && currentTagData) {
+      const { urlId, tagToDelete, source } = currentTagData;
+
       $.ajax({
         url: `/api/delta-urls/${urlId}/remove_tag/`,
         type: "POST",
@@ -2342,12 +2361,37 @@ function handleTagDeletion() {
         success: function(response) {
           $("#delta_urls_table").DataTable().ajax.reload(null, false);
           toastr.success("Tag removed successfully");
-          // window.location.reload();
         },
         error: function(xhr, status, error) {
           toastr.error("Error removing tag: " + error);
         }
       });
+    }
+  });
+
+  $("#deleteTagModal").on("keydown", function(event) {
+    if (event.key === "Enter" && currentTagData) {
+      const { urlId, tagToDelete, source } = currentTagData;
+
+      $.ajax({
+        url: `/api/delta-urls/${urlId}/remove_tag/`,
+        type: "POST",
+        data: {
+          tag: tagToDelete,
+          source: source,
+          csrfmiddlewaretoken: csrftoken
+        },
+        success: function(response) {
+          $("#deleteTagModal").modal("hide");
+          $("#delta_urls_table").DataTable().ajax.reload(null, false);
+          toastr.success("Tag removed successfully");
+        },
+        error: function(xhr, status, error) {
+          toastr.error("Error removing tag: " + error);
+        }
+      });
+    } else if (event.key === "Escape") {
+      $("#deleteTagModal").modal("hide");
     }
   });
 }
