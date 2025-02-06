@@ -184,6 +184,20 @@ A combination for testing HTML structure and content.
 - Basic functionality only
 - No real browser simulation
 
+## Feature Comparison Table
+
+| Feature                    | Selenium | Django Test Client | Playwright | Beautiful Soup |
+|---------------------------|----------|-------------------|------------|----------------|
+| JavaScript Support        | ✅ Yes    | ❌ No             | ✅ Yes      | ❌ No          |
+| Setup Complexity          | 🟡 Medium   | 🟢 Low            | 🟡 Medium   | 🟢 Low         |
+| Execution Speed           | 🔴 Slow   | 🟢 Fast           | 🟡 Medium   | 🟢 Fast        |
+| Modal Testing             | ✅ Yes    | ❌ No             | ✅ Yes      | ❌ No          |
+| AJAX Testing              | ✅ Yes    | ❌ No             | ✅ Yes      | ❌ No          |
+| Cross-browser Testing     | ✅ Yes    | ❌ No             | ✅ Yes      | ❌ No          |
+| Real User Interaction     | ✅ Yes    | ❌ No             | ✅ Yes      | ❌ No          |
+| Documentation Quality    | ✅ Excellent| ✅ Good          | ✅ Good     | ✅ Good        |
+| Community Support        | ✅ Large   | ✅ Large          | 🟡 Growing  | ✅ Large       |
+
 ## Testing Strategy Recommendations
 
 1. **Primary Testing Tool**: Selenium with Python
