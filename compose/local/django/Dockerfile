@@ -52,6 +52,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
   && apt-get update \
   && apt-get install -y postgresql-15 postgresql-client-15 \
+  && apt-get install -y chromium chromium-driver \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
