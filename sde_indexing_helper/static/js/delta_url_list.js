@@ -1337,15 +1337,28 @@ function getTdammTagColumn() {
       // });
 
       const tagSource = row.tag_source;
-      const tags = data.map(tag => `
-        <div class="tdamm-tag">
-          <span class="tag-text">${tag}</span>
-          <button class="delete-tag"
-            data-url-id="${row.id}"
-            data-tag="${tag}"
-            data-source="${tagSource}">×</button>
-        </div>
-      `).join('');
+      // const tags = data.map(tag => `
+      //   <div class="tdamm-tag">
+      //     <span class="tag-text">${tag}</span>
+      //     <button class="delete-tag"
+      //       data-url-id="${row.id}"
+      //       data-tag="${tag}"
+      //       data-source="${tagSource}">×</button>
+      //   </div>
+      // `).join('');
+
+      const tags = data.map(tag => {
+        const fullName = tdamm_choices.find(choice => choice.code === tag)?.label || tag;
+        return `
+          <div class="tdamm-tag" data-full-name="${fullName}">
+            <span class="tag-text">${tag}</span>
+            <button class="delete-tag"
+              data-url-id="${row.id}"
+              data-tag="${tag}"
+              data-source="${tagSource}">×</button>
+          </div>
+        `;
+      }).join('');
 
       return `<div class="tdamm-tags-container" data-source="${tagSource}">
           ${tags}
