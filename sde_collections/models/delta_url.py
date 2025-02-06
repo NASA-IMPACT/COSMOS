@@ -196,6 +196,34 @@ class DeltaUrl(BaseUrl):
         verbose_name_plural = "Delta Urls"
         ordering = ["url"]
 
+    def add_tag(self, tag: str, source: str) -> None:
+        if source == "ml":
+            current_tags = self.tdamm_tag_ml or []
+            new_tags = list(current_tags)
+            if tag not in new_tags:
+                new_tags.append(tag)
+            self.tdamm_tag_manual = new_tags
+        else:
+            current_tags = self.tdamm_tag_manual or []
+            if tag not in current_tags:
+                current_tags.append(tag)
+                self.tdamm_tag_manual = current_tags
+        self.save()
+
+    def remove_tag(self, tag: str, source: str) -> None:
+        if source == "ml":
+            ml_tags = self.tdamm_tag_ml
+            if ml_tags:
+                new_manual_tags = [t for t in ml_tags if t != tag]
+                self.tdamm_tag_manual = new_manual_tags
+        else:
+            if self.tdamm_tag_manual:
+                manual_tags = self.tdamm_tag_manual
+                if tag in manual_tags:
+                    manual_tags.remove(tag)
+                    self.tdamm_tag_manual = manual_tags
+        self.save()
+
 
 class CuratedUrl(BaseUrl):
     """Urls that are curated and ready for production"""
