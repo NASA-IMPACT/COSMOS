@@ -328,45 +328,6 @@ class DeltaURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "Division is required."})
 
-    # @action(detail=True, methods=["post"], url_path="remove_tag")
-    # def remove_tag(self, request, pk=None):
-    #     delta_url = self.get_object()
-    #     tag_to_remove = request.data.get("tag")
-    #     source = request.data.get("source")
-
-    #     if not tag_to_remove:
-    #         return Response({"error": "Tag to remove not specified"}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     try:
-    #         # print(f"Current state - ML tags: {delta_url.tdamm_tag_ml}, Manual tags: {delta_url.tdamm_tag_manual}")
-    #         # print(f"Source: {source}, Tag to remove: {tag_to_remove}")
-
-    #         if source == "ml":
-    #             # Get current ML tags
-    #             ml_tags = delta_url.tdamm_tag_ml
-    #             if ml_tags:
-    #                 # Create a new list from ML tags, excluding the one to remove
-    #                 new_manual_tags = [tag for tag in ml_tags if tag != tag_to_remove]
-    #                 # Set the new list to manual tags
-    #                 delta_url.tdamm_tag_manual = new_manual_tags
-    #                 # print(f"New manual tags after copy and remove: {delta_url.tdamm_tag_manual}")
-    #         else:
-    #             if delta_url.tdamm_tag_manual:
-    #                 manual_tags = delta_url.tdamm_tag_manual
-    #                 if tag_to_remove in manual_tags:
-    #                     manual_tags.remove(tag_to_remove)
-    #                     delta_url.tdamm_tag_manual = manual_tags
-    #                     # print(f"New manual tags after remove: {delta_url.tdamm_tag_manual}")
-
-    #         delta_url.save()
-    #         # print(f"Final state - ML tags: {delta_url.tdamm_tag_ml}, Manual tags: {delta_url.tdamm_tag_manual}")
-
-    #         return Response({"status": "success"})
-
-    #     except Exception as e:
-    #         print(f"Error occurred: {str(e)}")
-    #         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
     @action(detail=True, methods=["post"], url_path="remove_tag")
     def remove_tag(self, request, pk=None):
         delta_url = self.get_object()
@@ -382,37 +343,6 @@ class DeltaURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
         except Exception as e:
             logger.error(f"Error occurred: {str(e)}")
             return Response({"error": "An internal error has occurred."}, status=500)
-
-    # @action(detail=True, methods=["post"], url_path="add_tag")
-    # def add_tag(self, request, pk=None):
-    #     delta_url = self.get_object()
-    #     tag_to_add = request.data.get("tag")
-    #     source = request.data.get("source")
-
-    #     if not tag_to_add:
-    #         return Response({"error": "Tag to add not specified"}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     try:
-    #         # Get current tags
-    #         if source == "ml":
-    #             # If source is ML, copy ML tags to manual and add new tag
-    #             current_tags = delta_url.tdamm_tag_ml or []
-    #             new_tags = list(current_tags)  # Create a copy
-    #             if tag_to_add not in new_tags:
-    #                 new_tags.append(tag_to_add)
-    #             delta_url.tdamm_tag_manual = new_tags
-    #         else:
-    #             # For manual source, just add to existing manual tags
-    #             current_tags = delta_url.tdamm_tag_manual or []
-    #             if tag_to_add not in current_tags:
-    #                 current_tags.append(tag_to_add)
-    #                 delta_url.tdamm_tag_manual = current_tags
-
-    #         delta_url.save()
-    #         return Response({"status": "success"})
-
-    #     except Exception as e:
-    #         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=["post"], url_path="add_tag")
     def add_tag(self, request, pk=None):
