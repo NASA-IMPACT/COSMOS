@@ -1,4 +1,4 @@
-# docker-compose -f local.yml run --rm django pytest -s inference/tests/test_inference_integration.py
+# docker-compose -f local.yml run --rm django pytest -s inference/tests/local_test_inference_integration.py
 """
 This is a test designed to be run on a local machine which has the inference pipeline running,
     to ensure that the pipeline is functioning correctly.
