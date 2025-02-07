@@ -84,6 +84,7 @@ LOCAL_APPS = [
     "feedback",
     "sde_collections",
     "sde_indexing_helper.users",
+    "inference",
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
