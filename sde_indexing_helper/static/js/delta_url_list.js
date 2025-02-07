@@ -260,6 +260,8 @@ function initializeDataTable() {
       getTdammTagColumn(),
       getDivisionColumn(),
       { data: "id", visible: false, searchable: false },
+      { data: "exclude_pattern_type", visible: false, searchable: false },
+      { data: "include_pattern_id", visible: false, searchable: false },
       { data: "generated_title_id", visible: false, searchable: false },
       { data: "match_pattern_type", visible: false, searchable: false },
       { data: "delta_urls_count", visible: false, searchable: false },
@@ -610,6 +612,11 @@ function initializeDataTable() {
         sortable: true,
       },
       {
+        data: "curated_urls_count",
+        class: "text-center whiteText",
+        sortable: true,
+      },
+      {
         data: null,
         sortable: false,
         class: "text-center",
@@ -691,6 +698,11 @@ function initializeDataTable() {
         sortable: true,
       },
       {
+        data: "curated_urls_count",
+        class: "text-center whiteText",
+        sortable: true,
+      },
+      {
         data: null,
         sortable: false,
         class: "text-center",
@@ -767,6 +779,11 @@ function initializeDataTable() {
       { data: "title_pattern", class: "whiteText" },
       {
         data: "delta_urls_count",
+        class: "text-center whiteText",
+        sortable: true,
+      },
+      {
+        data: "curated_urls_count",
         class: "text-center whiteText",
         sortable: true,
       },
@@ -887,6 +904,11 @@ function initializeDataTable() {
         sortable: true,
       },
       {
+        data: "curated_urls_count",
+        class: "text-center whiteText",
+        sortable: true,
+      },
+      {
         data: null,
         sortable: false,
         class: "text-center",
@@ -984,6 +1006,11 @@ var division_patterns_table = $("#division_patterns_table").DataTable({
     { data: "division_display", class: "whiteText" },
     {
       data: "delta_urls_count",
+      class: "text-center whiteText",
+      sortable: true,
+    },
+    {
+      data: "curated_urls_count",
       class: "text-center whiteText",
       sortable: true,
     },
@@ -1107,6 +1134,8 @@ function handleDivisionSelect() {
   $("body").on("click", ".division_select", function () {
     var match_pattern = $(this).closest(".document_type_dropdown").data("match-pattern");
     var division = $(this).attr("value");
+    // var match_pattern_type = $(this).attr("match-pattern-type");
+    // postDivisionPatterns(match_pattern, match_pattern_type, division);
     postDivisionPatterns(match_pattern, 1, division);
   });
 }
@@ -1140,7 +1169,7 @@ $("#division_pattern_form").on("submit", function (e) {
 
   console.log("Form Inputs:", inputs);  // Debugging line to check inputs
 
-  postDivisionPatterns(inputs.match_pattern, 2, inputs.division_pattern);
+  postDivisionPatterns(inputs.match_pattern, inputs.match_pattern_type, inputs.division_pattern);
 
   // Close the modal if it is open
   $("#divisionPatternModal").modal("hide");
@@ -1524,11 +1553,54 @@ function handleUrlPartButton() {
 
 function handleExcludeIndividualUrlClick() {
   $("body").on("click", ".exclude_individual_url", function () {
-    postExcludePatterns(
-      (match_pattern = $(this).attr("value")),
-      (match_pattern_type = 1),
-      true
-    );
+    const url = $(this).attr("value");
+    // "check" for excluded, "close" for not excluded
+    const isExcluded = $(this).children("i").text() === "check";
+    const row = $(this).closest("tr");
+    const table = $("#delta_urls_table").DataTable();
+    const rowData = table.row(row).data();
+    const isAffectedByMultiPattern = rowData.exclude_pattern_type === MULTI_URL_PATTERN;
+    const patternId = rowData.include_pattern_id;
+
+    if (isAffectedByMultiPattern) {
+      // For URLs affected by multi-URL exclude patterns:
+      // - If excluded: Create individual include pattern to override
+      // - If not excluded: Delete the override include pattern
+      if (isExcluded) {
+        postIncludePatterns((match_pattern = url), (match_pattern_type = 1));
+      } else {
+        deletePatternWithoutPrompt(`/api/include-patterns/${patternId}/`);
+      }
+    } else {
+      // For URLs not affected by multi-URL patterns:
+      // Toggle individual exclude pattern
+      postExcludePatterns(
+        (match_pattern = url),
+        (match_pattern_type = 1),
+        true
+      );
+    }
+  });
+}
+
+function deletePatternWithoutPrompt(url) {
+  $.ajax({
+    url: url,
+    type: "DELETE",
+    data: {
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      $("#delta_urls_table").DataTable().ajax.reload(null, false);
+      $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+      $("#include_patterns_table").DataTable().ajax.reload(null, false);
+      $("#title_patterns_table").DataTable().ajax.reload(null, false);
+      $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
+      $("#division_patterns_table").DataTable().ajax.reload(null, false);
+    },
   });
 }
 
@@ -2043,6 +2115,12 @@ $(".custom-menu li").click(function () {
   $(".custom-menu").hide(100);
 });
 
+$(".pattern_type_form_select").on("click", function (e) {
+  e.preventDefault();
+  $('input[name="match_pattern_type"]').val($(this).attr("value"));
+  $(".pattern-dropdown").text($(this).text());
+});
+
 $("#exclude_pattern_form").on("submit", function (e) {
   e.preventDefault();
 
@@ -2064,7 +2142,7 @@ $("#exclude_pattern_form").on("submit", function (e) {
 
   postExcludePatterns(
     (match_pattern = inputs.match_pattern),
-    (match_pattern_type = 2)
+    (match_pattern_type = inputs.match_pattern_type)
   );
 
   // close the modal if it is open
@@ -2092,7 +2170,7 @@ $("#include_pattern_form").on("submit", function (e) {
 
   postIncludePatterns(
     (match_pattern = inputs.match_pattern),
-    (match_pattern_type = 2)
+    (match_pattern_type = inputs.match_pattern_type)
   );
 
   // close the modal if it is open
@@ -2110,7 +2188,7 @@ $("#title_pattern_form").on("submit", function (e) {
   postTitlePatterns(
     (match_pattern = inputs.match_pattern),
     (title_pattern = inputs.title_pattern),
-    (match_pattern_type = 2)
+    (match_pattern_type = inputs.match_pattern_type)
   );
 
   // close the modal if it is open
@@ -2127,7 +2205,7 @@ $("#document_type_pattern_form").on("submit", function (e) {
 
   postDocumentTypePatterns(
     inputs.match_pattern,
-    2,
+    inputs.match_pattern_type,
     inputs.document_type_pattern
   );
 

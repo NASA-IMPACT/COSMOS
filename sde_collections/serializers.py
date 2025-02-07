@@ -74,6 +74,8 @@ class DeltaURLSerializer(serializers.ModelSerializer):
     delta_urls_count = serializers.SerializerMethodField(read_only=True)
     tdamm_tag = serializers.SerializerMethodField()
     tag_source = serializers.SerializerMethodField()
+    exclude_pattern_type = serializers.IntegerField(read_only=True)
+    include_pattern_id = serializers.IntegerField(read_only=True)
 
     def get_tdamm_tag(self, obj):
         tags = obj.tdamm_tag
@@ -118,6 +120,8 @@ class DeltaURLSerializer(serializers.ModelSerializer):
             "visited",
             "tdamm_tag",
             "tag_source",
+            "exclude_pattern_type",
+            "include_pattern_id",
         )
 
 
@@ -276,9 +280,13 @@ class CuratedURLAPISerializer(serializers.ModelSerializer):
 class BasePatternSerializer(serializers.ModelSerializer):
     match_pattern_type_display = serializers.CharField(source="get_match_pattern_type_display", read_only=True)
     delta_urls_count = serializers.SerializerMethodField(read_only=True)
+    curated_urls_count = serializers.SerializerMethodField(read_only=True)
 
     def get_delta_urls_count(self, instance):
         return instance.delta_urls.count()
+
+    def get_curated_urls_count(self, instance):
+        return instance.curated_urls.count()
 
     class Meta:
         fields = (
@@ -288,6 +296,7 @@ class BasePatternSerializer(serializers.ModelSerializer):
             "match_pattern_type",
             "match_pattern_type_display",
             "delta_urls_count",
+            "curated_urls_count",
         )
         abstract = True
 
