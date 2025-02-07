@@ -136,19 +136,6 @@ class BaseUrl(models.Model):
 
     def get_tag_source(self):
         """Returns the source of the TDAMM tags: 'manual', 'ml', or 'Not Set'"""
-        # print("Checking tag sources for URL:", self.url)
-        # print("Manual tags:", self.tdamm_tag_manual)
-        # print("ML tags:", self.tdamm_tag_ml)
-
-        # if self.tdamm_tag_manual and self.tdamm_tag_manual != []:
-        #     print("Using manual tags")
-        #     return "manual"
-        # elif self.tdamm_tag_ml and self.tdamm_tag_ml != []:
-        #     print("Using ML tags")
-        #     return "ml"
-
-        # print("No tags found, using 'Not Set'")
-        # return "Not Set"
         # Convert None to empty list for comparison
         manual_tags = self.tdamm_tag_manual or []
         ml_tags = self.tdamm_tag_ml or []
