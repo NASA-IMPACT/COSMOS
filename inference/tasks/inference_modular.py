@@ -57,7 +57,9 @@ class InferenceAPIClient:
 
     def submit_batch(self, model_identifier: str, batch_data: list[dict]) -> str | None:
         """Submit a batch of URLs for inference"""
-        response = self.make_api_request("POST", f"{model_identifier}/jobs", json={"input_data": batch_data})
+        # Extract just the text data for the model
+        text_data = [item["text"] for item in batch_data]
+        response = self.make_api_request("POST", f"{model_identifier}/jobs", json={"input_data": text_data})
         return response.get("job_id") if response else None
 
     def get_job_status(self, model_identifier: str, job_id: str) -> dict:
