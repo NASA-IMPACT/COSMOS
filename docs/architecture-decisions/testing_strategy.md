@@ -263,3 +263,12 @@ etc.
 
 
 ### Add additional areas below
+
+
+### What Pipelines Does the Repo Have?
+You can use this list as a starting point to think about what the COSMOS repo does, from a process perspective:
+1. COSMOS imports data from LRM Dev
+2. Sinequa config files are generated
+3. Imported data is processed
+4. Curators update URL metadata
+5. Sinequa reads results from the COSMOS APIs
