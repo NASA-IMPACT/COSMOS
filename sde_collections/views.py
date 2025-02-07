@@ -404,7 +404,8 @@ class DeltaURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             delta_url.add_tag(tag, source)
             return Response({"status": "success"})
         except Exception as e:
-            return Response({"error": str(e)}, status=500)
+            logger.error("An error occurred while adding a tag to DeltaURL: %s", str(e))
+            return Response({"error": "An internal error has occurred."}, status=500)
 
 
 class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
@@ -449,7 +450,8 @@ class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             curated_url.add_tag(tag, source)
             return Response({"status": "success"})
         except Exception as e:
-            return Response({"error": str(e)}, status=500)
+            logger.error("An error occurred while adding a tag to CuratedURL: %s", str(e))
+            return Response({"error": "An internal error has occurred."}, status=500)
 
     @action(detail=True, methods=["post"], url_path="remove_tag")
     def remove_tag(self, request, pk=None):
@@ -464,7 +466,8 @@ class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             curated_url.remove_tag(tag, source)
             return Response({"status": "success"})
         except Exception as e:
-            return Response({"error": str(e)}, status=500)
+            logger.error("An error occurred while removing a tag from CuratedURL: %s", str(e))
+            return Response({"error": "An internal error has occurred."}, status=500)
 
 
 class DeltaURLBulkCreateView(generics.ListCreateAPIView):
