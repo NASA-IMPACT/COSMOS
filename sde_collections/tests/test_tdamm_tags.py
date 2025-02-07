@@ -195,3 +195,87 @@ class TestTDAMMTagPromotion:
         curated_url = CuratedUrl.objects.get(url="https://example.com")
         assert curated_url.tdamm_tag == ["MMA_M_G"]
         assert curated_url.tdamm_tag_manual == ["MMA_M_G"]
+
+
+@pytest.mark.django_db
+class TestTDAMMTagUtilityMethods:
+    """Test additional TDAMM tag utility methods"""
+
+    def test_get_tag_source_method(self):
+        """Test the get_tag_source method for different tag scenarios"""
+        url = DeltaUrlFactory()
+
+        # Scenario 1: No tags
+        assert url.get_tag_source() == "Not Set"
+
+        # Scenario 2: Only ML tags
+        url.tdamm_tag_ml = ["MMA_M_EM"]
+        assert url.get_tag_source() == "ml"
+
+        # Scenario 3: Only manual tags
+        url.tdamm_tag_ml = None
+        url.tdamm_tag = ["MMA_M_G"]
+        assert url.get_tag_source() == "manual"
+
+        # Scenario 4: Both ML and manual tags (manual should take precedence)
+        url.tdamm_tag_ml = ["MMA_M_EM"]
+        assert url.get_tag_source() == "manual"
+
+    def test_add_tag_method(self):
+        """Test the add_tag method for different sources"""
+        url = DeltaUrlFactory()
+
+        # Prepare initial ml tags
+        url.tdamm_tag_ml = ["MMA_O_BH"]
+
+        # Add manual tag since the source was ml
+        url.add_tag("MMA_M_G", "ml")
+        assert url.tdamm_tag_manual == ["MMA_O_BH", "MMA_M_G"]
+
+        # Add manual tag
+        url.add_tag("MMA_M_EM", "manual")
+        assert url.tdamm_tag_manual == ["MMA_O_BH", "MMA_M_G", "MMA_M_EM"]
+        assert url.tdamm_tag_ml == ["MMA_O_BH"]
+
+        # # Prevent duplicate tags
+        url.add_tag("MMA_M_EM", "manual")
+        assert url.tdamm_tag_manual == ["MMA_O_BH", "MMA_M_G", "MMA_M_EM"]
+
+    def test_remove_tag_method(self):
+        """Test the remove_tag method for different sources"""
+        url = DeltaUrlFactory()
+
+        # Prepare initial tags
+        url.tdamm_tag_ml = ["MMA_M_EM", "MMA_O_N"]
+
+        # Confirm no manual tags
+        assert True if url.tdamm_tag_manual is None else False
+
+        # Remove tag if source was ml
+        url.remove_tag("MMA_M_EM", "ml")
+        assert url.tdamm_tag_ml == ["MMA_M_EM", "MMA_O_N"]
+        assert url.tdamm_tag_manual == ["MMA_O_N"]
+
+        # Remove tag if source was manual
+        url.remove_tag("MMA_O_N", "manual")
+        assert url.tdamm_tag_manual == []
+
+        # Default to ML tags if manual tags are empty
+        assert url.tdamm_tag == ["MMA_M_EM", "MMA_O_N"]
+        assert url.tdamm_tag_ml == ["MMA_M_EM", "MMA_O_N"]
+
+    def test_tdamm_tag_collection_method(self):
+        """Test the collection method for checking TDAMM tags"""
+        collection = CollectionFactory()
+
+        # Create URLs with different tag scenarios
+        DeltaUrlFactory(collection=collection, tdamm_tag_manual=["MMA_M_EM"])
+        DeltaUrlFactory(collection=collection, tdamm_tag_ml=["MMA_O_BH"])
+        DeltaUrlFactory(collection=collection)  # No tags
+
+        # Verify has_tdamm_tags method
+        assert collection.has_tdamm_tags() is True
+
+        # Create a new collection with no tagged URLs
+        empty_collection = CollectionFactory()
+        assert empty_collection.has_tdamm_tags() is False
