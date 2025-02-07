@@ -1,4 +1,5 @@
 import re
+import logging
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -57,6 +58,7 @@ from .tasks import push_to_github_task
 from .utils.health_check import generate_db_github_metadata_differences
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 class CollectionListView(LoginRequiredMixin, ListView):
@@ -355,7 +357,8 @@ class DeltaURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             delta_url.remove_tag(tag, source)
             return Response({"status": "success"})
         except Exception as e:
-            return Response({"error": str(e)}, status=500)
+            logger.error(f"Error occurred: {str(e)}")
+            return Response({"error": "An internal error has occurred."}, status=500)
 
     # @action(detail=True, methods=["post"], url_path="add_tag")
     # def add_tag(self, request, pk=None):
