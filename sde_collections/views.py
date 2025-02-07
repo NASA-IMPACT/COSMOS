@@ -433,6 +433,36 @@ class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "Division is required."})
 
+    @action(detail=True, methods=["post"], url_path="add_tag")
+    def add_tag(self, request, pk=None):
+        curated_url = self.get_object()
+        tag = request.data.get("tag")
+        source = request.data.get("source")
+
+        if not tag:
+            return Response({"error": "Tag not specified"}, status=400)
+
+        try:
+            curated_url.add_tag(tag, source)
+            return Response({"status": "success"})
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+    @action(detail=True, methods=["post"], url_path="remove_tag")
+    def remove_tag(self, request, pk=None):
+        curated_url = self.get_object()
+        tag = request.data.get("tag")
+        source = request.data.get("source")
+
+        if not tag:
+            return Response({"error": "Tag not specified"}, status=400)
+
+        try:
+            curated_url.remove_tag(tag, source)
+            return Response({"status": "success"})
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
 
 class DeltaURLBulkCreateView(generics.ListCreateAPIView):
     queryset = DeltaUrl.objects.all()

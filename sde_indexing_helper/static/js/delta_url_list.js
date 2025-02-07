@@ -2312,17 +2312,22 @@ function handleReindexingStatusSelect() {
   });
 }
 
+function getApiEndpoint($element) {
+  return $element.closest('#curated_urls_table').length > 0 ? 'curated-urls' : 'delta-urls';
+}
+
 function handleTagDeletion() {
   let currentTagData = null;
+  let $clickedButton = null;
 
   $("body").on("click", ".delete-tag", function(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    const $button = $(this);
-    const urlId = $button.data("url-id");
-    const tagToDelete = $button.data("tag");
-    const source = $button.data("source");
+    $clickedButton = $(this);
+    const urlId = $clickedButton.data("url-id");
+    const tagToDelete = $clickedButton.data("tag");
+    const source = $clickedButton.data("source");
 
     currentTagData = { urlId, tagToDelete, source };
 
@@ -2349,32 +2354,10 @@ function handleTagDeletion() {
 
     if (buttonId === "deleteTag" && currentTagData) {
       const { urlId, tagToDelete, source } = currentTagData;
+      const apiEndpoint = getApiEndpoint($clickedButton);
 
       $.ajax({
-        url: `/api/delta-urls/${urlId}/remove_tag/`,
-        type: "POST",
-        data: {
-          tag: tagToDelete,
-          source: source,
-          csrfmiddlewaretoken: csrftoken
-        },
-        success: function(response) {
-          $("#delta_urls_table").DataTable().ajax.reload(null, false);
-          toastr.success("Tag removed successfully");
-        },
-        error: function(xhr, status, error) {
-          toastr.error("Error removing tag: " + error);
-        }
-      });
-    }
-  });
-
-  $("#deleteTagModal").on("keydown", function(event) {
-    if (event.key === "Enter" && currentTagData) {
-      const { urlId, tagToDelete, source } = currentTagData;
-
-      $.ajax({
-        url: `/api/delta-urls/${urlId}/remove_tag/`,
+        url: `/api/${apiEndpoint}/${urlId}/remove_tag/`,
         type: "POST",
         data: {
           tag: tagToDelete,
@@ -2384,14 +2367,13 @@ function handleTagDeletion() {
         success: function(response) {
           $("#deleteTagModal").modal("hide");
           $("#delta_urls_table").DataTable().ajax.reload(null, false);
+          $("#curated_urls_table").DataTable().ajax.reload(null, false);
           toastr.success("Tag removed successfully");
         },
         error: function(xhr, status, error) {
           toastr.error("Error removing tag: " + error);
         }
       });
-    } else if (event.key === "Escape") {
-      $("#deleteTagModal").modal("hide");
     }
   });
 }
@@ -2401,17 +2383,17 @@ function handleTagAddition() {
 
   function createDropdownContent() {
     return tdamm_choices.map(choice =>
-        `<div class="tdamm-option" data-value="${choice.code}">
-            ${choice.display}
-        </div>`
+      `<div class="tdamm-option" data-value="${choice.code}">
+        ${choice.display}
+      </div>`
     ).join('');
-}
+  }
 
   function hideDropdown(dropdown) {
-      if (dropdown) {
-          dropdown.remove();
-          activeDropdown = null;
-      }
+    if (dropdown) {
+      dropdown.remove();
+      activeDropdown = null;
+    }
   }
 
   $('body').on('click', '.add-tdamm-tag', function(e) {
@@ -2419,9 +2401,8 @@ function handleTagAddition() {
       e.preventDefault();
       e.stopPropagation();
 
-      // Hide any existing dropdown
       if (activeDropdown) {
-          hideDropdown(activeDropdown);
+        hideDropdown(activeDropdown);
       }
 
       const $button = $(this);
@@ -2452,31 +2433,34 @@ function handleTagAddition() {
 
       optionsList.on('click', '.tdamm-option', function() {
           const selectedTag = $(this).data('value');
-          $.ajax({
-              url: `/api/delta-urls/${urlId}/add_tag/`,
-              type: 'POST',
-              data: {
-                  tag: selectedTag,
-                  source: source,
-                  csrfmiddlewaretoken: csrftoken
-              },
-              success: function(response) {
-                  $("#delta_urls_table").DataTable().ajax.reload(null, false);
-                  toastr.success("Tag added successfully");
-                  hideDropdown(dropdown[0]);
-              },
-              error: function(xhr, status, error) {
-                  toastr.error("Error adding tag: " + error);
-              }
-          });
-      });
+          const apiEndpoint = getApiEndpoint($button);
 
-      if ($button.offset().left + 300 > $(window).width()) {
-          dropdown.css({
-              left: 'auto',
-              right: $(window).width() - ($button.offset().left + $button.outerWidth())
+          $.ajax({
+            url: `/api/${apiEndpoint}/${urlId}/add_tag/`,
+            type: 'POST',
+            data: {
+              tag: selectedTag,
+              source: source,
+              csrfmiddlewaretoken: csrftoken
+            },
+            success: function(response) {
+              $("#delta_urls_table").DataTable().ajax.reload(null, false);
+              $("#curated_urls_table").DataTable().ajax.reload(null, false);
+              toastr.success("Tag added successfully");
+              hideDropdown(dropdown[0]);
+            },
+            error: function(xhr, status, error) {
+              toastr.error("Error adding tag: " + error);
+            }
           });
-      }
+        });
+
+        if ($button.offset().left + 300 > $(window).width()) {
+          dropdown.css({
+            left: 'auto',
+            right: $(window).width() - ($button.offset().left + $button.outerWidth())
+          });
+        }
 
       // Add to document and store reference
       $('body').append(dropdown);
