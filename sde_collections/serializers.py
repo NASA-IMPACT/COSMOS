@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models.collection import Collection, ReindexingHistory, WorkflowHistory
-from .models.collection_choice_fields import Divisions, DocumentTypes
+from .models.collection_choice_fields import Divisions, DocumentTypes, TDAMMTags
 from .models.delta_patterns import (
     DeltaDivisionPattern,
     DeltaDocumentTypePattern,
@@ -240,62 +240,22 @@ class CuratedURLAPISerializer(serializers.ModelSerializer):
 
         categorized_tags = {"messengers": [], "objects": [], "signals": []}
 
-        tag_transformations = {
-            "MMA_M_EM": "Messenger/EM Radiation",
-            "MMA_M_EM_G": "Messenger/EM Radiation/Gamma rays",
-            "MMA_M_EM_X": "Messenger/EM Radiation/X-rays",
-            "MMA_M_EM_U": "Messenger/EM Radiation/Ultraviolet",
-            "MMA_M_EM_O": "Messenger/EM Radiation/Optical",
-            "MMA_M_EM_I": "Messenger/EM Radiation/Infrared",
-            "MMA_M_EM_M": "Messenger/EM Radiation/Microwave",
-            "MMA_M_EM_R": "Messenger/EM Radiation/Radio",
-            "MMA_M_G": "Messenger/Gravitational Waves",
-            "MMA_M_G_CBI": "Messenger/Gravitational Waves/Compact Binary Inspiral",
-            "MMA_M_G_S": "Messenger/Gravitational Waves/Stochastic",
-            "MMA_M_G_CON": "Messenger/Gravitational Waves/Continuous",
-            "MMA_M_G_B": "Messenger/Gravitational Waves/Burst",
-            "MMA_M_C": "Messenger/Cosmic Rays",
-            "MMA_M_N": "Messenger/Neutrinos",
-            "MMA_O_BI": "Objects/Binaries",
-            "MMA_O_BI_BBH": "Objects/Binaries/Binary Black Holes",
-            "MMA_O_BI_BNS": "Objects/Binaries/Binary Neutron Stars",
-            "MMA_O_BI_C": "Objects/Binaries/Cataclysmic Variables",
-            "MMA_O_BI_N": "Objects/Binaries/Neutron Star-Black Hole",
-            "MMA_O_BI_B": "Objects/Binaries/Binary Pulsars",
-            "MMA_O_BI_W": "Objects/Binaries/White Dwarf Binaries",
-            "MMA_O_BH": "Objects/Black Holes",
-            "MMA_O_BH_AGN": "Objects/Black Holes/Active Galactic Nuclei",
-            "MMA_O_BH_IM": "Objects/Black Holes/Intermediate mass",
-            "MMA_O_BH_STM": "Objects/Black Holes/Stellar mass",
-            "MMA_O_BH_SUM": "Objects/Black Holes/Supermassive",
-            "MMA_O_E": "Objects/Exoplanets",
-            "MMA_O_N": "Objects/Neutron Stars",
-            "MMA_O_N_M": "Objects/Neutron Stars/Magnetars",
-            "MMA_O_N_P": "Objects/Neutron Stars/Pulsars",
-            "MMA_O_N_PWN": "Objects/Neutron Stars/Pulsar Wind Nebula",
-            "MMA_O_S": "Objects/Supernova Remnants",
-            "MMA_S_F": "Signals/Fast Radio Bursts",
-            "MMA_S_G": "Signals/Gamma-ray Bursts",
-            "MMA_S_K": "Signals/Kilonovae",
-            "MMA_S_N": "Signals/Novae",
-            "MMA_S_P": "Signals/Pevatrons",
-            "MMA_S_ST": "Signals/Stellar flares",
-            "MMA_S_SU": "Signals/Supernovae",
-        }
-
         for tag in obj.tdamm_tag:
             if tag == "NOT_TDAMM":
                 continue
 
-            transformed_tag = tag_transformations.get(tag)
-            if not transformed_tag:
+            tag_text = dict(TDAMMTags.choices).get(tag)
+            if not tag_text:
                 continue
 
             if tag.startswith("MMA_M_"):
+                transformed_tag = tag_text.replace(" - ", "/")
                 categorized_tags["messengers"].append(transformed_tag)
             elif tag.startswith("MMA_O_"):
+                transformed_tag = tag_text.replace(" - ", "/")
                 categorized_tags["objects"].append(transformed_tag)
             elif tag.startswith("MMA_S_"):
+                transformed_tag = tag_text.replace(" - ", "/")
                 categorized_tags["signals"].append(transformed_tag)
 
         return categorized_tags
