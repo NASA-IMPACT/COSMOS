@@ -13,24 +13,60 @@
 {% endblock stylesheets %}
 {% block content %}
 {% csrf_token %}
-<div class="headerDiv">
-<h1 class="pageTitle">Delta URLs</h1>
-<button class="btn badge {{ collection.workflow_status_button_color }} dropdown-toggle title-dropdown btn-sm"
-type="button"
-data-toggle="dropdown"
-aria-haspopup="true"
-id="workflow-status-button-{{ collection.id }}"
-aria-expanded="false">{{ collection.get_workflow_status_display }}</button>
-<div class="dropdown-menu"
-aria-labelledby="workflow-status-button-{{ collection.id }}">
-{% for choice in workflow_status_choices %}
-<a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
-{% endfor %}
+
+
+<div class="headerDiv d-flex justify-content-between align-items-center">
+    <h1 class="pageTitle mb-0">URLs</h1>
+
+    <div class="d-flex">
+      <div class="btn-group mr-2">
+        <button class="btn badge {{ collection.workflow_status_button_color }} dropdown-toggle title-dropdown btn-sm"
+                type="button"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                id="workflow-status-button-{{ collection.id }}"
+                aria-expanded="false">
+          {{ collection.get_workflow_status_display }}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="workflow-status-button-{{ collection.id }}">
+          {% for choice in workflow_status_choices %}
+            <a class="dropdown-item workflow_status_select"
+               value="{{ choice }}"
+               data-collection-id="{{ collection.id }}">
+              {{ choice.label }}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="btn-group mr-2">
+        <button class="btn badge {{ collection.reindexing_status_button_color }} dropdown-toggle title-dropdown btn-sm"
+                type="button"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                id="reindexing-status-button-{{ collection.id }}"
+                aria-expanded="false">
+          {{ collection.get_reindexing_status_display }}
+        </button>
+        <div class="dropdown-menu" aria-labelledby="reindexing-status-button-{{ collection.id }}">
+          {% for choice in reindexing_status_choices %}
+            <a class="dropdown-item reindexing_status_select"
+               value="{{ choice }}"
+               data-collection-id="{{ collection.id }}">
+              {{ choice.label }}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
 </div>
-</div>
+
+
 <div class="deltaUrlContainer">
 <h3 class="whiteText deltaTitle">
-    {{ delta_urls.count|intcomma }} Delta URLs for <a
+    <!-- {{ delta_urls.count|intcomma }} Delta URLs for  -->
+      Collection Name:
+    <a
         href="{% url 'sde_collections:detail' collection.pk %}"><strong class="urlStyle underline">{{ collection.name }}</strong></a>
     <br>
     <!-- <small class="muted">Base URL: <a href="{{ collection.url }}" target="_blank">{{ collection.url }}</a></small> -->
@@ -72,6 +108,7 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                     <tr>
                         <th scope="col" class="text-center col-1"><div class="header-title">URL</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">Exclude</div></th>
+                        <th class="text-center col-1" scope="col"><div class="header-title">Deleted</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">Scraped Title</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">New Title</div></th>
                         <th scope="col" class="text-center col-1"><div class="header-title">Document Type</div></th>
@@ -91,6 +128,10 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                     <tr>
                         <td ><input type="text" class="table_filter_row_input textBoxStyling" id="deltaUrlFilter" placeholder="URL" /></td>
                         <td ><select class="dropdown-1 select-dropdown selectStyling"><option value="">SELECT</option>
+                            <option value="false">FALSE</option>
+                            <option value="true">TRUE</option>
+                        </select></td>
+                        <td ><select class="dropdown-2 select-dropdown selectStyling"><option value="">SELECT</option>
                             <option value="false">FALSE</option>
                             <option value="true">TRUE</option>
                         </select></td>
@@ -190,6 +231,7 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         <th scope="col" class="text-center col-1"><strong>Match Pattern Type</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Reason</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Affected Delta URLs</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Affected Curated URLs</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Actions</strong></th>
                         <th scope="col" class="text-center col-1"><strong>ID</strong></th>
                     </tr>
@@ -221,6 +263,9 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         </th>
                         <th scope="col" class="text-center col-1">
                             <strong>Affected Delta URLs</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
+                            <strong>Affected Curated URLs</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
                             <strong>Actions</strong>
@@ -260,6 +305,9 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                             <strong>Affected Delta URLs</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
+                            <strong>Affected Curated URLs</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
                             <strong>Actions</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
@@ -297,6 +345,9 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                             <strong>Affected Delta URLs</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
+                            <strong>Affected Curated URLs</strong>
+                        </th>
+                        <th scope="col" class="text-center col-1">
                             <strong>Actions</strong>
                         </th>
                         <th scope="col" class="text-center col-1">
@@ -331,6 +382,7 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                         <th scope="col" class="text-center col-1"><strong>Match Pattern Type</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Division</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Affected Delta URLs</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Affected Curated URLs</strong></th>
                         <th scope="col" class="text-center col-1"><strong>Actions</strong></th>
                         <th scope="col" class="text-center col-1"><strong>ID</strong></th>
                     </tr>
@@ -384,15 +436,30 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
             <form id="exclude_pattern_form">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
+                        <label for="match_pattern_input" class="form-label">Match Pattern<div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
+                    </div>
+                    <div class="form-group pattern-form-group">
+                        <label for="pattern_type_input" class="form-label">Pattern Type<div class="asterik">*</div></label>
+                        <div class="input-group">
+                            <input type="hidden" name="match_pattern_type" class="form-control" id="pattern_type_input" required>
+                            <div class="input-group-append pattern-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle pattern-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Pattern Type</button>
+                                <div class="pattern-type-form dropdown-menu">
+                                    <a class="dropdown-item pattern_type_form_select" value="1">Individual URL Pattern</a>
+                                    <a class="dropdown-item pattern_type_form_select" value="2">Multi-URL Pattern</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <div class="button-wrapper">
-                    <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
-                </div></div>
+                        <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
@@ -412,6 +479,20 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                     <div class="form-group">
                         <label for="match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="match_pattern_input" required name="match_pattern">
+                    </div>
+                    <div class="form-group pattern-form-group">
+                        <label for="pattern_type_input" class="form-label">Pattern Type<div class="asterik">*</div></label>
+                        <div class="input-group">
+                            <input type="hidden" name="match_pattern_type" class="form-control" id="pattern_type_input" required>
+                            <div class="input-group-append pattern-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle pattern-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Pattern Type</button>
+                                <div class="pattern-type-form dropdown-menu">
+                                    <a class="dropdown-item pattern_type_form_select" value="1">Individual URL Pattern</a>
+                                    <a class="dropdown-item pattern_type_form_select" value="2">Multi-URL Pattern</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -442,6 +523,20 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                     <div class="form-group title_pattern-form-group">
                         <label for="title_pattern_input" class="form-label">Title Pattern <div class="asterik">*</div></label>
                         <input type="text" class="form-control" id="title_pattern_input" required name="title_pattern">
+                    </div>
+                    <div class="form-group pattern-form-group">
+                        <label for="pattern_type_input" class="form-label">Pattern Type<div class="asterik">*</div></label>
+                        <div class="input-group">
+                            <input type="hidden" name="match_pattern_type" class="form-control" id="pattern_type_input" required>
+                            <div class="input-group-append pattern-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle pattern-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Pattern Type</button>
+                                <div class="pattern-type-form dropdown-menu">
+                                    <a class="dropdown-item pattern_type_form_select" value="1">Individual URL Pattern</a>
+                                    <a class="dropdown-item pattern_type_form_select" value="2">Multi-URL Pattern</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -488,6 +583,20 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                             </div>
                         </div>
                     </div>
+                    <div class="form-group pattern-form-group">
+                        <label for="pattern_type_input" class="form-label">Pattern Type<div class="asterik">*</div></label>
+                        <div class="input-group">
+                            <input type="hidden" name="match_pattern_type" class="form-control" id="pattern_type_input" required>
+                            <div class="input-group-append pattern-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle pattern-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Pattern Type</button>
+                                <div class="pattern-type-form dropdown-menu">
+                                    <a class="dropdown-item pattern_type_form_select" value="1">Individual URL Pattern</a>
+                                    <a class="dropdown-item pattern_type_form_select" value="2">Multi-URL Pattern</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <div class="button-wrapper">
@@ -528,6 +637,20 @@ aria-labelledby="workflow-status-button-{{ collection.id }}">
                                     <a class="dropdown-item division_form_select" value="3">Earth Science</a>
                                     <a class="dropdown-item division_form_select" value="4">Heliophysics</a>
                                     <a class="dropdown-item division_form_select" value="5">Planetary Science</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group pattern-form-group">
+                        <label for="pattern_type_input" class="form-label">Pattern Type<div class="asterik">*</div></label>
+                        <div class="input-group">
+                            <input type="hidden" name="match_pattern_type" class="form-control" id="pattern_type_input" required>
+                            <div class="input-group-append pattern-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle pattern-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Pattern Type</button>
+                                <div class="pattern-type-form dropdown-menu">
+                                    <a class="dropdown-item pattern_type_form_select" value="1">Individual URL Pattern</a>
+                                    <a class="dropdown-item pattern_type_form_select" value="2">Multi-URL Pattern</a>
                                 </div>
                             </div>
                         </div>
@@ -598,19 +721,45 @@ aria-labelledby="workflowStatusChangeModal" aria-hidden="true">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-            <div class="modal-body" id="modal-body">
-                <h5 class="modal-title">Are you sure?</h5>
-                <p class="workflow-status-change-caption" id="caption"></p>
-            </div>
-            <div class="modal-footer">
-                <form id="workflowStatusChangeModalForm">
-                    <div class="button-wrapper">
+        <div class="modal-body" id="workflow-modal-body">
+            <h5 class="modal-title">Are you sure?</h5>
+            <p class="workflow-status-change-caption" id="workflow-caption"></p>
+        </div>
+        <div class="modal-footer">
+            <form id="workflowStatusChangeModalForm">
+                <div class="button-wrapper">
                     <button type="submit" class="btn btn-secondary modal-button-1" id="cancelworkflowStatusChange">No</button>
                     <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="changeWorkflowStatus">Yes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+
+<div class="modal" id="reindexingStatusChangeModal" tabindex="-1"
+aria-labelledby="reindexingStatusChangeModal" aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modalHeader">
+            <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close" id="closereindexingStatusChangeModal">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+            <div class="modal-body" id="reindexing-modal-body">
+                <h5 class="modal-title">Are you sure?</h5>
+                <p class="reindexing-status-change-caption" id="reindexing-caption"></p>
+            </div>
+            <div class="modal-footer">
+                <form id="reindexingStatusChangeModalForm">
+                    <div class="button-wrapper">
+                    <button type="submit" class="btn btn-secondary modal-button-1" id="cancelreindexingStatusChange">No</button>
+                    <button type="submit" class="btn btn-primary modal-button-2" data-dismiss="modal" id="changeReindexingStatus">Yes</button>
                     </div>
                     </form>
             </div>
     </div>
+</div>
 </div>
 
 {% endblock content %}

@@ -229,7 +229,7 @@ function initializeDataTable() {
       },
     },
     initComplete: function (data) {
-      const addDropdownSelect = [1, 4, 5];
+      const addDropdownSelect = [1, 2, 4, 5];
       const dict = {
         1: "Images",
         2: "Data",
@@ -253,11 +253,14 @@ function initializeDataTable() {
     columns: [
       getURLColumn(),
       getExcludedColumn(true_icon, false_icon),
+      getDeletedColumn(true_icon, false_icon),
       getScrapedTitleColumn(),
       getGeneratedTitleColumn(),
       getDocumentTypeColumn(),
       getDivisionColumn(),
       { data: "id", visible: false, searchable: false },
+      { data: "exclude_pattern_type", visible: false, searchable: false },
+      { data: "include_pattern_id", visible: false, searchable: false },
       { data: "generated_title_id", visible: false, searchable: false },
       { data: "match_pattern_type", visible: false, searchable: false },
       { data: "delta_urls_count", visible: false, searchable: false },
@@ -538,7 +541,8 @@ function initializeDataTable() {
   );
 
   var exclude_patterns_table = $("#exclude_patterns_table").DataTable({
-    // scrollY: true,
+    serverSide: true,
+    paging: true,
     dom: "lBrtip",
     buttons: [
       {
@@ -561,7 +565,7 @@ function initializeDataTable() {
       ["Show 25", "Show 50", "Show 100", "Show 500"],
     ],
     orderCellsTop: true,
-    pageLength: 100,
+    pageLength: 50,
     ajax: `/api/exclude-patterns/?format=datatables&collection_id=${collection_id}`,
     initComplete: function (data) {
       var table = $("#exclude_patterns_table").DataTable();
@@ -604,6 +608,11 @@ function initializeDataTable() {
         sortable: true,
       },
       {
+        data: "curated_urls_count",
+        class: "text-center whiteText",
+        sortable: true,
+      },
+      {
         data: null,
         sortable: false,
         class: "text-center",
@@ -625,7 +634,8 @@ function initializeDataTable() {
   });
 
   var include_patterns_table = $("#include_patterns_table").DataTable({
-    // scrollY: true,
+    serverSide: true,
+    paging: true,
     lengthMenu: [
       [25, 50, 100, 500],
       ["Show 25", "Show 50", "Show 100", "Show 500"],
@@ -647,7 +657,7 @@ function initializeDataTable() {
         },
       },
     ],
-    pageLength: 100,
+    pageLength: 50,
     orderCellsTop: true,
     ajax: `/api/include-patterns/?format=datatables&collection_id=${collection_id}`,
     initComplete: function (data) {
@@ -680,6 +690,11 @@ function initializeDataTable() {
       },
       {
         data: "delta_urls_count",
+        class: "text-center whiteText",
+        sortable: true,
+      },
+      {
+        data: "curated_urls_count",
         class: "text-center whiteText",
         sortable: true,
       },
@@ -760,6 +775,11 @@ function initializeDataTable() {
       { data: "title_pattern", class: "whiteText" },
       {
         data: "delta_urls_count",
+        class: "text-center whiteText",
+        sortable: true,
+      },
+      {
+        data: "curated_urls_count",
         class: "text-center whiteText",
         sortable: true,
       },
@@ -876,6 +896,11 @@ function initializeDataTable() {
         sortable: true,
       },
       {
+        data: "curated_urls_count",
+        class: "text-center whiteText",
+        sortable: true,
+      },
+      {
         data: null,
         sortable: false,
         class: "text-center",
@@ -977,6 +1002,11 @@ var division_patterns_table = $("#division_patterns_table").DataTable({
       sortable: true,
     },
     {
+      data: "curated_urls_count",
+      class: "text-center whiteText",
+      sortable: true,
+    },
+    {
       data: null,
       sortable: false,
       class: "text-center",
@@ -1038,6 +1068,7 @@ function setupClickHandlers() {
   handleTabsClick();
 
   handleWorkflowStatusSelect();
+  handleReindexingStatusSelect();
 }
 
 function getDivisionColumn() {
@@ -1093,6 +1124,8 @@ function handleDivisionSelect() {
   $("body").on("click", ".division_select", function () {
     var match_pattern = $(this).closest(".document_type_dropdown").data("match-pattern");
     var division = $(this).attr("value");
+    // var match_pattern_type = $(this).attr("match-pattern-type");
+    // postDivisionPatterns(match_pattern, match_pattern_type, division);
     postDivisionPatterns(match_pattern, 1, division);
   });
 }
@@ -1126,7 +1159,7 @@ $("#division_pattern_form").on("submit", function (e) {
 
   console.log("Form Inputs:", inputs);  // Debugging line to check inputs
 
-  postDivisionPatterns(inputs.match_pattern, 2, inputs.division_pattern);
+  postDivisionPatterns(inputs.match_pattern, inputs.match_pattern_type, inputs.division_pattern);
 
   // Close the modal if it is open
   $("#divisionPatternModal").modal("hide");
@@ -1205,6 +1238,17 @@ function getCuratedURLColumn() {
       )}</span>
       <a target="_blank" href="${data}" data-url="/api/curated-urls/${row["id"]
         }/" class="url-link"> <i class="material-icons url-icon">open_in_new</i></a></div>`;
+    },
+  };
+}
+
+function getDeletedColumn(true_icon, false_icon) {
+  return {
+    data: "to_delete",
+    width: "10%",
+    class: "col-1 text-center",
+    render: function (data, type, row) {
+      return data === true ? true_icon : false_icon;
     },
   };
 }
@@ -1441,11 +1485,54 @@ function handleUrlPartButton() {
 
 function handleExcludeIndividualUrlClick() {
   $("body").on("click", ".exclude_individual_url", function () {
-    postExcludePatterns(
-      (match_pattern = $(this).attr("value")),
-      (match_pattern_type = 1),
-      true
-    );
+    const url = $(this).attr("value");
+    // "check" for excluded, "close" for not excluded
+    const isExcluded = $(this).children("i").text() === "check";
+    const row = $(this).closest("tr");
+    const table = $("#delta_urls_table").DataTable();
+    const rowData = table.row(row).data();
+    const isAffectedByMultiPattern = rowData.exclude_pattern_type === MULTI_URL_PATTERN;
+    const patternId = rowData.include_pattern_id;
+
+    if (isAffectedByMultiPattern) {
+      // For URLs affected by multi-URL exclude patterns:
+      // - If excluded: Create individual include pattern to override
+      // - If not excluded: Delete the override include pattern
+      if (isExcluded) {
+        postIncludePatterns((match_pattern = url), (match_pattern_type = 1));
+      } else {
+        deletePatternWithoutPrompt(`/api/include-patterns/${patternId}/`);
+      }
+    } else {
+      // For URLs not affected by multi-URL patterns:
+      // Toggle individual exclude pattern
+      postExcludePatterns(
+        (match_pattern = url),
+        (match_pattern_type = 1),
+        true
+      );
+    }
+  });
+}
+
+function deletePatternWithoutPrompt(url) {
+  $.ajax({
+    url: url,
+    type: "DELETE",
+    data: {
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      $("#delta_urls_table").DataTable().ajax.reload(null, false);
+      $("#exclude_patterns_table").DataTable().ajax.reload(null, false);
+      $("#include_patterns_table").DataTable().ajax.reload(null, false);
+      $("#title_patterns_table").DataTable().ajax.reload(null, false);
+      $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
+      $("#division_patterns_table").DataTable().ajax.reload(null, false);
+    },
   });
 }
 
@@ -1960,6 +2047,12 @@ $(".custom-menu li").click(function () {
   $(".custom-menu").hide(100);
 });
 
+$(".pattern_type_form_select").on("click", function (e) {
+  e.preventDefault();
+  $('input[name="match_pattern_type"]').val($(this).attr("value"));
+  $(".pattern-dropdown").text($(this).text());
+});
+
 $("#exclude_pattern_form").on("submit", function (e) {
   e.preventDefault();
 
@@ -1981,7 +2074,7 @@ $("#exclude_pattern_form").on("submit", function (e) {
 
   postExcludePatterns(
     (match_pattern = inputs.match_pattern),
-    (match_pattern_type = 2)
+    (match_pattern_type = inputs.match_pattern_type)
   );
 
   // close the modal if it is open
@@ -2009,7 +2102,7 @@ $("#include_pattern_form").on("submit", function (e) {
 
   postIncludePatterns(
     (match_pattern = inputs.match_pattern),
-    (match_pattern_type = 2)
+    (match_pattern_type = inputs.match_pattern_type)
   );
 
   // close the modal if it is open
@@ -2027,7 +2120,7 @@ $("#title_pattern_form").on("submit", function (e) {
   postTitlePatterns(
     (match_pattern = inputs.match_pattern),
     (title_pattern = inputs.title_pattern),
-    (match_pattern_type = 2)
+    (match_pattern_type = inputs.match_pattern_type)
   );
 
   // close the modal if it is open
@@ -2044,7 +2137,7 @@ $("#document_type_pattern_form").on("submit", function (e) {
 
   postDocumentTypePatterns(
     inputs.match_pattern,
-    2,
+    inputs.match_pattern_type,
     inputs.document_type_pattern
   );
 
@@ -2071,8 +2164,62 @@ function postWorkflowStatus(collection_id, workflow_status) {
       "X-CSRFToken": csrftoken,
     },
     success: function (data) {
+      $('#workflowStatusChangeModal button').blur();
+      $("#workflowStatusChangeModal")
+        .removeClass('show')
+        .removeAttr('aria-hidden')
+        .modal('hide');
+      $('.modal-backdrop').remove();
+      $('body').removeClass('modal-open');
       toastr.success("Workflow Status Updated!");
+
+      // Refresh page after modal closes and success message shows
+      setTimeout(function () {
+        window.location = window.location.href;
+      }, 1500);
     },
+    error: function (xhr, status, error) {
+      $('#workflowStatusChangeModal button').blur();
+      $("#workflowStatusChangeModal").modal('hide');
+      $('.modal-backdrop').remove();
+      toastr.error("Error updating workflow status: " + error);
+    }
+  });
+}
+
+function postReindexingStatus(collection_id, reindexing_status) {
+  var url = `/api/collections/${collection_id}/`;
+  $.ajax({
+    url: url,
+    type: "PUT",
+    data: {
+      reindexing_status: reindexing_status,
+      csrfmiddlewaretoken: csrftoken,
+    },
+    headers: {
+      "X-CSRFToken": csrftoken,
+    },
+    success: function (data) {
+      $('#reindexingStatusChangeModal button').blur();
+      $("#reindexingStatusChangeModal")
+        .removeClass('show')
+        .removeAttr('aria-hidden')
+        .modal('hide');
+      $('.modal-backdrop').remove();
+      $('body').removeClass('modal-open');
+      toastr.success("Reindexing Status Updated!");
+
+      // Refresh page after modal closes and success message shows
+      setTimeout(function () {
+        window.location = window.location.href;
+      }, 1500);
+    },
+    error: function (xhr, status, error) {
+      $('#reindexingStatusChangeModal button').blur();
+      $("#reindexingStatusChangeModal").modal('hide');
+      $('.modal-backdrop').remove();
+      toastr.error("Error updating reindexing status: " + error);
+    }
   });
 }
 
@@ -2124,6 +2271,51 @@ function handleWorkflowStatusSelect() {
           $button.addClass(color_choices[parseInt(workflow_status)]);
           postWorkflowStatus(collection_id, workflow_status);
           $("#workflowStatusChangeModal").modal("hide");
+          break;
+      }
+    });
+  });
+}
+
+function handleReindexingStatusSelect() {
+  $("body").on("click", ".reindexing_status_select", function () {
+    $("#reindexingStatusChangeModal").modal();
+    var collectionName = $(".urlStyle").text();
+    var collection_id = $(this).data("collection-id");
+    var reindexing_status = $(this).attr("value");
+    var new_reindexing_status = $(this).text();
+
+    $(".reindexing-status-change-caption").html(
+      `<div>Reindexing status for <b class="bold">${collectionName}</b> will change to <b class="bold">${new_reindexing_status}</b></div>`
+    );
+    $("#reindexingStatusChangeModalForm").on("click", "button", function (event) {
+      event.preventDefault();
+      var buttonId = $(this).attr("id");
+
+      switch (buttonId) {
+        case "cancelreindexingStatusChange":
+          $("#reindexingStatusChangeModal").modal("hide");
+          break;
+        case "changeReindexingStatus":
+          var color_choices = {
+            1: "btn-light",     // REINDEXING_NOT_NEEDED
+            2: "btn-danger",    // REINDEXING_NEEDED_ON_DEV (matching Ready For Engineering)
+            3: "btn-info",      // REINDEXING_FINISHED_ON_DEV (matching Indexing Finished on LRM Dev)
+            4: "btn-info",      // REINDEXING_READY_FOR_CURATION (matching Ready for Curation)
+            5: "btn-success",   // REINDEXING_CURATION_IN_PROGRESS (matching Curation in Progress)
+            6: "btn-primary",   // REINDEXING_CURATED (matching Curated)
+            7: "btn-primary"    // REINDEXING_INDEXED_ON_PROD (matching Prod: Perfect)
+        };
+
+          $button = $(`#reindexing-status-button-${collection_id}`);
+
+          $button.text(new_reindexing_status);
+          $button.removeClass(
+            "btn-light btn-danger btn-warning btn-info btn-success btn-primary btn-secondary"
+          );
+          $button.addClass(color_choices[parseInt(reindexing_status)]);
+          postReindexingStatus(collection_id, reindexing_status);
+          $("#reindexingStatusChangeModal").modal("hide");
           break;
       }
     });

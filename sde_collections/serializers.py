@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models.collection import Collection, WorkflowHistory
+from .models.collection import Collection, ReindexingHistory, WorkflowHistory
 from .models.collection_choice_fields import Divisions, DocumentTypes
 from .models.delta_patterns import (
     DeltaDivisionPattern,
@@ -15,6 +15,7 @@ from .models.delta_url import CuratedUrl, DeltaUrl
 class CollectionSerializer(serializers.ModelSerializer):
     curation_status_display = serializers.CharField(source="get_curation_status_display", read_only=True)
     workflow_status_display = serializers.CharField(source="get_workflow_status_display", read_only=True)
+    reindexing_status_display = serializers.CharField(source="get_reindexing_status_display", read_only=True)
 
     class Meta:
         model = Collection
@@ -22,8 +23,10 @@ class CollectionSerializer(serializers.ModelSerializer):
             "id",
             "curation_status",
             "workflow_status",
+            "reindexing_status",
             "curation_status_display",
             "workflow_status_display",
+            "reindexing_status_display",
             "curated_by",
             "division",
             "document_type",
@@ -33,6 +36,7 @@ class CollectionSerializer(serializers.ModelSerializer):
             "division": {"required": False},
             "document_type": {"required": False},
             "name": {"required": False},
+            # "reindexing_status": {"required": False},
         }
 
         # extra_kwargs = {
@@ -54,6 +58,12 @@ class WorkflowHistorySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ReindexingHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReindexingHistory
+        fields = "__all__"
+
+
 class DeltaURLSerializer(serializers.ModelSerializer):
     excluded = serializers.BooleanField(required=False)
     document_type_display = serializers.CharField(source="get_document_type_display", read_only=True)
@@ -62,6 +72,13 @@ class DeltaURLSerializer(serializers.ModelSerializer):
     generated_title_id = serializers.SerializerMethodField(read_only=True)
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
     delta_urls_count = serializers.SerializerMethodField(read_only=True)
+    tdamm_tag = serializers.SerializerMethodField()
+    exclude_pattern_type = serializers.IntegerField(read_only=True)
+    include_pattern_id = serializers.IntegerField(read_only=True)
+
+    def get_tdamm_tag(self, obj):
+        tags = obj.tdamm_tag
+        return tags if tags is not None else []
 
     def get_delta_urls_count(self, obj):
         titlepattern = obj.deltatitlepatterns.last()
@@ -81,6 +98,7 @@ class DeltaURLSerializer(serializers.ModelSerializer):
             "id",
             "excluded",
             "url",
+            "to_delete",
             "scraped_title",
             "generated_title",
             "generated_title_id",
@@ -91,6 +109,9 @@ class DeltaURLSerializer(serializers.ModelSerializer):
             "division",
             "division_display",
             "visited",
+            "tdamm_tag",
+            "exclude_pattern_type",
+            "include_pattern_id",
         )
 
 
@@ -102,6 +123,11 @@ class CuratedURLSerializer(serializers.ModelSerializer):
     generated_title_id = serializers.SerializerMethodField(read_only=True)
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
     curated_urls_count = serializers.SerializerMethodField(read_only=True)
+    tdamm_tag = serializers.SerializerMethodField()
+
+    def get_tdamm_tag(self, obj):
+        tags = obj.tdamm_tag
+        return tags if tags is not None else []
 
     def get_curated_urls_count(self, obj):
         titlepattern = obj.deltatitlepatterns.last()
@@ -131,6 +157,7 @@ class CuratedURLSerializer(serializers.ModelSerializer):
             "division",
             "division_display",
             "visited",
+            "tdamm_tag",
         )
 
 
@@ -148,6 +175,7 @@ class DeltaURLAPISerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
     file_extension = serializers.SerializerMethodField()
     tree_root = serializers.SerializerMethodField()
+    tdamm_tag = serializers.SerializerMethodField()
 
     class Meta:
         model = DeltaUrl
@@ -157,7 +185,12 @@ class DeltaURLAPISerializer(serializers.ModelSerializer):
             "document_type",
             "file_extension",
             "tree_root",
+            "tdamm_tag",
         )
+
+    def get_tdamm_tag(self, obj):
+        tags = obj.tdamm_tag
+        return tags if tags is not None else []
 
     def get_document_type(self, obj):
         if obj.document_type is not None:
@@ -188,6 +221,7 @@ class CuratedURLAPISerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
     file_extension = serializers.SerializerMethodField()
     tree_root = serializers.SerializerMethodField()
+    tdamm_tag = serializers.SerializerMethodField()
 
     class Meta:
         model = CuratedUrl
@@ -197,7 +231,12 @@ class CuratedURLAPISerializer(serializers.ModelSerializer):
             "document_type",
             "file_extension",
             "tree_root",
+            "tdamm_tag",
         )
+
+    def get_tdamm_tag(self, obj):
+        tags = obj.tdamm_tag
+        return tags if tags is not None else []
 
     def get_document_type(self, obj):
         if obj.document_type is not None:
@@ -226,9 +265,13 @@ class CuratedURLAPISerializer(serializers.ModelSerializer):
 class BasePatternSerializer(serializers.ModelSerializer):
     match_pattern_type_display = serializers.CharField(source="get_match_pattern_type_display", read_only=True)
     delta_urls_count = serializers.SerializerMethodField(read_only=True)
+    curated_urls_count = serializers.SerializerMethodField(read_only=True)
 
     def get_delta_urls_count(self, instance):
         return instance.delta_urls.count()
+
+    def get_curated_urls_count(self, instance):
+        return instance.curated_urls.count()
 
     class Meta:
         fields = (
@@ -238,6 +281,7 @@ class BasePatternSerializer(serializers.ModelSerializer):
             "match_pattern_type",
             "match_pattern_type_display",
             "delta_urls_count",
+            "curated_urls_count",
         )
         abstract = True
 

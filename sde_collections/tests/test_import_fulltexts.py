@@ -3,14 +3,25 @@
 from unittest.mock import patch
 
 import pytest
+from django.db.models.signals import post_save
 
+from sde_collections.models.collection import create_configs_on_status_change
 from sde_collections.models.delta_url import DeltaUrl, DumpUrl
 from sde_collections.tasks import fetch_and_replace_full_text
 from sde_collections.tests.factories import CollectionFactory
 
 
+@pytest.fixture
+def disconnect_signals():
+    # Disconnect the signal before each test
+    post_save.disconnect(create_configs_on_status_change, sender="sde_collections.Collection")
+    yield
+    # Reconnect the signal after each test
+    post_save.connect(create_configs_on_status_change, sender="sde_collections.Collection")
+
+
 @pytest.mark.django_db
-def test_fetch_and_replace_full_text():
+def test_fetch_and_replace_full_text(disconnect_signals):
     collection = CollectionFactory(config_folder="test_folder")
 
     mock_batch = [
@@ -31,7 +42,7 @@ def test_fetch_and_replace_full_text():
 
 
 @pytest.mark.django_db
-def test_fetch_and_replace_full_text_large_dataset():
+def test_fetch_and_replace_full_text_large_dataset(disconnect_signals):
     """Test processing a large number of records with proper pagination and batching."""
     collection = CollectionFactory(config_folder="test_folder")
 

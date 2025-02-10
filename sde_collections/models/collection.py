@@ -11,6 +11,7 @@ from model_utils import FieldTracker
 from slugify import slugify
 
 from config_generation.db_to_xml import XmlEditor
+from sde_collections.tasks import fetch_and_replace_full_text
 
 from ..utils.github_helper import GitHubHandler
 from ..utils.slack_utils import (
@@ -23,6 +24,7 @@ from .collection_choice_fields import (
     CurationStatusChoices,
     Divisions,
     DocumentTypes,
+    ReindexingStatusChoices,
     SourceChoices,
     UpdateFrequencies,
     WorkflowStatusChoices,
@@ -75,7 +77,12 @@ class Collection(models.Model):
         choices=WorkflowStatusChoices.choices,
         default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
     )
-    tracker = FieldTracker(fields=["workflow_status"])
+    reindexing_status = models.IntegerField(
+        choices=ReindexingStatusChoices.choices,
+        default=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
+        verbose_name="Reindexing Status",
+    )
+    tracker = FieldTracker(fields=["workflow_status", "reindexing_status"])
 
     curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
@@ -200,21 +207,22 @@ class Collection(models.Model):
                 updated_fields = {}
                 for field in delta._meta.fields:
                     field_name = field.name
-                    if field_name == "to_delete":
+                    if field_name in ["to_delete", "id"]:
                         continue
 
                     delta_value = getattr(delta, field_name)
-                    if delta_value not in [None, ""] and getattr(curated, field_name) != delta_value:
+                    if getattr(curated, field_name) != delta_value:
                         updated_fields[field_name] = delta_value
 
                 if updated_fields:
                     CuratedUrl.objects.filter(pk=curated.pk).update(**updated_fields)
             else:
-                # If no matching CuratedUrl, create a new one using all non-null and non-empty fields
+                # Previously, we excluded fields with values of None and ""
+                # however, such null values are considered meaningful and should be copied over
                 new_data = {
                     field.name: getattr(delta, field.name)
                     for field in delta._meta.fields
-                    if field.name not in ["to_delete", "collection"] and getattr(delta, field.name) not in [None, ""]
+                    if field.name not in ["to_delete", "collection", "id"] and getattr(delta, field.name)
                 }
                 CuratedUrl.objects.create(collection=self, **new_data)
 
@@ -247,20 +255,6 @@ class Collection(models.Model):
         scraper_editor.update_or_add_element_value("CollectionSelection", collections)
         scraper_content = scraper_editor.update_config_xml()
         gh.create_or_update_file(query_path, scraper_content)
-
-    @property
-    def included_urls_count(self):
-        return self.candidate_urls.filter(excluded=False).count()
-
-    @property
-    def delta_urls_count(self):
-        """get the total number of delta urls"""
-        return self.delta_urls.filter(excluded=False).count()
-
-    @property
-    def included_curated_urls_count(self):
-        """get the number of included, curated urls"""
-        return self.curated_urls.filter(excluded=False).count()
 
     @property
     def _scraper_config_path(self) -> str:
@@ -352,6 +346,19 @@ class Collection(models.Model):
             23: "btn-light",
         }
         return color_choices[self.workflow_status]
+
+    @property
+    def reindexing_status_button_color(self) -> str:
+        color_choices = {
+            1: "btn-light",  # REINDEXING_NOT_NEEDED
+            2: "btn-danger",  # REINDEXING_NEEDED_ON_DEV (matching Ready For Engineering)
+            3: "btn-info",  # REINDEXING_FINISHED_ON_DEV (matching Indexing Finished on LRM Dev)
+            4: "btn-info",  # REINDEXING_READY_FOR_CURATION (matching Ready for Curation)
+            5: "btn-success",  # REINDEXING_CURATION_IN_PROGRESS (matching Curation in Progress)
+            6: "btn-primary",  # REINDEXING_CURATED (matching Curated)
+            7: "btn-primary",  # REINDEXING_INDEXED_ON_PROD (matching Prod: Perfect)
+        }
+        return color_choices[self.reindexing_status]
 
     def _process_exclude_list(self):
         """Process the exclude list."""
@@ -670,6 +677,7 @@ class Collection(models.Model):
         # Create a cached version of the last workflow_status to compare against
         super().__init__(*args, **kwargs)
         self.old_workflow_status = self.workflow_status
+        self.old_reindexing_status = self.reindexing_status
 
 
 class RequiredUrls(models.Model):
@@ -750,24 +758,73 @@ def log_workflow_history(sender, instance, created, **kwargs):
             old_status=instance.old_workflow_status,
         )
 
+    if instance.reindexing_status != instance.old_reindexing_status:
+        ReindexingHistory.objects.create(
+            collection=instance,
+            reindexing_status=instance.reindexing_status,
+            curated_by=instance.curated_by,
+            old_status=instance.old_reindexing_status,
+        )
+
+
+class ReindexingHistory(models.Model):
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name="reindexing_history", null=True)
+    reindexing_status = models.IntegerField(
+        choices=ReindexingStatusChoices.choices,
+        default=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
+    )
+    old_status = models.IntegerField(choices=ReindexingStatusChoices.choices, null=True)
+    curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.collection) + str(self.reindexing_status)
+
+    @property
+    def reindexing_status_button_color(self) -> str:
+        color_choices = {
+            1: "btn-light",  # REINDEXING_NOT_NEEDED
+            2: "btn-warning",  # REINDEXING_NEEDED_ON_DEV
+            3: "btn-secondary",  # REINDEXING_FINISHED_ON_DEV
+            4: "btn-info",  # REINDEXING_READY_FOR_CURATION
+            5: "btn-primary",  # REINDEXING_CURATED
+            6: "btn-success",  # REINDEXING_INDEXED_ON_PROD
+        }
+        return color_choices[self.reindexing_status]
+
 
 @receiver(post_save, sender=Collection)
 def create_configs_on_status_change(sender, instance, created, **kwargs):
-    """
-    Creates various config files on certain workflow status changes
-    """
+    """Creates various config files on certain workflow status changes"""
 
-    if "workflow_status" in instance.tracker.changed():
-        if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
-            instance.create_indexer_config(overwrite=True)
-            instance.create_indexer_job(overwrite=False)
-        elif instance.workflow_status == WorkflowStatusChoices.CURATED:
-            instance.promote_to_curated()
-        elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
-            instance.create_scraper_config(overwrite=False)
-            instance.create_scraper_job(overwrite=False)
-        elif instance.workflow_status in [
-            WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
-            WorkflowStatusChoices.QUALITY_CHECK_MINOR,
-        ]:
-            instance.add_to_public_query()
+    if getattr(instance, "_handling_status_change", False):
+        return
+
+    try:
+        instance._handling_status_change = True
+
+        if "workflow_status" in instance.tracker.changed():
+            if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
+                instance.create_indexer_config(overwrite=True)
+                instance.create_indexer_job(overwrite=False)
+            elif instance.workflow_status == WorkflowStatusChoices.CURATED:
+                instance.promote_to_curated()
+            elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
+                instance.create_scraper_config(overwrite=False)
+                instance.create_scraper_job(overwrite=False)
+            elif instance.workflow_status == WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV:
+                fetch_and_replace_full_text.delay(instance.id, "lrm_dev")
+            elif instance.workflow_status in [
+                WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
+                WorkflowStatusChoices.QUALITY_CHECK_MINOR,
+            ]:
+                instance.add_to_public_query()
+
+        if "reindexing_status" in instance.tracker.changed():
+            if instance.reindexing_status == ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV:
+                fetch_and_replace_full_text.delay(instance.id, "lrm_dev")
+            elif instance.reindexing_status == ReindexingStatusChoices.REINDEXING_CURATED:
+                instance.promote_to_curated()
+
+    finally:
+        instance._handling_status_change = False
