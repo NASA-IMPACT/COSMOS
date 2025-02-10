@@ -15,7 +15,6 @@ config/settings/__init__.py  |                                                  
 config/settings/base.py  |                                                                                  94 |      0 |   100% |
 config/settings/local.py  |                                                                                 20 |     20 |     0% |   1-65
 config/settings/production.py  |                                                                            48 |     48 |     0% |   1-162
-config/settings/test.py  |                                                                                   7 |      0 |   100% |
 config/urls.py  |                                                                                           14 |      4 |    71% |   26-47
 config/wsgi.py  |                                                                                            8 |      8 |     0% |   17-36
 config_generation/__init__.py  |                                                                             0 |      0 |   100% |
@@ -36,37 +35,19 @@ config_generation/generate_scrapers.py  |                                       
 config_generation/minimum_api.py  |                                                                         33 |     33 |     0% |   1-81
 config_generation/preprocess_sources.py  |                                                                  25 |     25 |     0% |   1-50
 config_generation/sources_to_scrape.py  |                                                                   28 |     28 |     0% |   2-1631
-config_generation/tests/__init__.py  |                                                                       0 |      0 |   100% |
-config_generation/tests/test_db_to_xml.py  |                                                                23 |      3 |    87% |   20, 24, 28
 docs/__init__.py  |                                                                                          0 |      0 |   100% |
 docs/conf.py  |                                                                                             17 |     17 |     0% |   13-62
 environmental_justice/__init__.py  |                                                                         0 |      0 |   100% |
 environmental_justice/admin.py  |                                                                            5 |      0 |   100% |
 environmental_justice/apps.py  |                                                                             4 |      0 |   100% |
-environmental_justice/migrations/0001_initial.py  |                                                          5 |      0 |   100% |
-environmental_justice/migrations/0002_environmentaljusticerow_sde_links.py  |                                4 |      0 |   100% |
-environmental_justice/migrations/0003_remove_environmentaljusticerow_sde_links_and_more.py  |                4 |      0 |   100% |
-environmental_justice/migrations/0004_alter_environmentaljusticerow_data_visualization_and_more.py  |        4 |      0 |   100% |
-environmental_justice/migrations/0005_environmentaljusticerow_destination_server.py  |                       7 |      2 |    71% |   5-6
-environmental_justice/migrations/0006_remove_environmentaljusticerow_destination_server_and_more.py  |       9 |      4 |    56% |   7-20
-environmental_justice/migrations/__init__.py  |                                                              0 |      0 |   100% |
 environmental_justice/models.py  |                                                                          29 |      1 |    97% |   44
 environmental_justice/serializers.py  |                                                                      6 |      0 |   100% |
-environmental_justice/tests/conftest.py  |                                                                  15 |      0 |   100% |
-environmental_justice/tests/factories.py  |                                                                 24 |      0 |   100% |
-environmental_justice/tests/test_ej_api.py  |                                                               74 |      0 |   100% |
 environmental_justice/views.py  |                                                                           23 |      0 |   100% |
 feedback/__init__.py  |                                                                                      0 |      0 |   100% |
 feedback/admin.py  |                                                                                        14 |      0 |   100% |
 feedback/apps.py  |                                                                                          4 |      0 |   100% |
-feedback/migrations/0001_initial.py  |                                                                       5 |      0 |   100% |
-feedback/migrations/0002_alter_contentcurationrequest_additional_info.py  |                                  4 |      0 |   100% |
-feedback/migrations/0003_feedback_source.py  |                                                               4 |      0 |   100% |
-feedback/migrations/0004_contentcurationrequest_created_at_and_more.py  |                                    4 |      0 |   100% |
-feedback/migrations/__init__.py  |                                                                           0 |      0 |   100% |
 feedback/models.py  |                                                                                       42 |     15 |    64% |   20-29, 35-44, 61-63
 feedback/serializers.py  |                                                                                  10 |      0 |   100% |
-feedback/tests.py  |                                                                                         0 |      0 |   100% |
 feedback/urls.py  |                                                                                          4 |      0 |   100% |
 feedback/views.py  |                                                                                         9 |      0 |   100% |
 manage.py  |                                                                                                16 |     16 |     0% |   2-31
@@ -82,91 +63,6 @@ sde_collections/apps.py  |                                                      
 sde_collections/forms.py  |                                                                                 15 |      0 |   100% |
 sde_collections/management/commands/database_backup.py  |                                                   62 |      1 |    98% |   68
 sde_collections/management/commands/database_restore.py  |                                                  83 |      8 |    90% |   34, 36, 87-89, 142-145
-sde_collections/migrations/0001_initial.py  |                                                                6 |      0 |   100% |
-sde_collections/migrations/0002_remove_collection_machine_name.py  |                                         4 |      0 |   100% |
-sde_collections/migrations/0003_alter_collection_config_folder.py  |                                         4 |      0 |   100% |
-sde_collections/migrations/0004_collection_cleaning_order.py  |                                              4 |      0 |   100% |
-sde_collections/migrations/0005_alter_candidateurl_url.py  |                                                 4 |      0 |   100% |
-sde_collections/migrations/0006_alter_candidateurl_generated_title_and_more.py  |                            4 |      0 |   100% |
-sde_collections/migrations/0007_excludepattern_pattern_type.py  |                                            4 |      0 |   100% |
-sde_collections/migrations/0008_alter_excludepattern_match_pattern.py  |                                     4 |      0 |   100% |
-sde_collections/migrations/0009_titlepattern_pattern_type.py  |                                              4 |      0 |   100% |
-sde_collections/migrations/0010_rename_pattern_type_titlepattern_match_pattern_type_and_more.py  |           4 |      0 |   100% |
-sde_collections/migrations/0011_alter_titlepattern_title_pattern_type.py  |                                  4 |      0 |   100% |
-sde_collections/migrations/0012_collection_curated_by_collection_curation_started_and_more.py  |             6 |      0 |   100% |
-sde_collections/migrations/0013_alter_titlepattern_options_and_more.py  |                                    5 |      0 |   100% |
-sde_collections/migrations/0014_alter_documenttypepattern_unique_together_and_more.py  |                     4 |      0 |   100% |
-sde_collections/migrations/0015_candidateurl_document_type.py  |                                             4 |      0 |   100% |
-sde_collections/migrations/0016_alter_documenttypepattern_candidate_urls_and_more.py  |                      5 |      0 |   100% |
-sde_collections/migrations/0017_requiredurls.py  |                                                           5 |      0 |   100% |
-sde_collections/migrations/0018_alter_requiredurls_url.py  |                                                 4 |      0 |   100% |
-sde_collections/migrations/0019_alter_requiredurls_url.py  |                                                 4 |      0 |   100% |
-sde_collections/migrations/0020_alter_collection_curation_status.py  |                                       4 |      0 |   100% |
-sde_collections/migrations/0021_alter_collection_curation_status.py  |                                       4 |      0 |   100% |
-sde_collections/migrations/0022_alter_candidateurl_unique_together.py  |                                     4 |      0 |   100% |
-sde_collections/migrations/0023_collection_github_issue_number.py  |                                         4 |      0 |   100% |
-sde_collections/migrations/0024_alter_collection_curation_status.py  |                                       4 |      0 |   100% |
-sde_collections/migrations/0025_alter_documenttypepattern_match_pattern_type_and_more.py  |                  4 |      0 |   100% |
-sde_collections/migrations/0026_alter_collection_curation_status_and_more.py  |                              4 |      0 |   100% |
-sde_collections/migrations/0027_alter_collection_connector.py  |                                             4 |      0 |   100% |
-sde_collections/migrations/0028_collection_has_sinequa_config.py  |                                          4 |      0 |   100% |
-sde_collections/migrations/0029_alter_candidateurl_document_type_and_more.py  |                              4 |      0 |   100% |
-sde_collections/migrations/0030_candidateurl_inference_by.py  |                                              4 |      0 |   100% |
-sde_collections/migrations/0031_candidateurl_is_pdf.py  |                                                    4 |      0 |   100% |
-sde_collections/migrations/0032_collection_workflow_status.py  |                                             4 |      0 |   100% |
-sde_collections/migrations/0033_alter_collection_config_folder.py  |                                         4 |      0 |   100% |
-sde_collections/migrations/0034_rename_tree_root_collection_tree_root_deprecated.py  |                       4 |      0 |   100% |
-sde_collections/migrations/0035_alter_candidateurl_unique_together.py  |                                     4 |      0 |   100% |
-sde_collections/migrations/0036_candidateurl_present_on_prod_and_more.py  |                                  4 |      0 |   100% |
-sde_collections/migrations/0037_alter_collection_source.py  |                                                4 |      0 |   100% |
-sde_collections/migrations/0037_remove_collection_has_sinequa_config.py  |                                   4 |      0 |   100% |
-sde_collections/migrations/0038_merge_20231126_1152.py  |                                                    4 |      0 |   100% |
-sde_collections/migrations/0039_includepattern.py  |                                                         5 |      0 |   100% |
-sde_collections/migrations/0040_candidateurl_hash.py  |                                                      4 |      0 |   100% |
-sde_collections/migrations/0041_alter_candidateurl_hash.py  |                                                4 |      0 |   100% |
-sde_collections/migrations/0042_alter_collection_division_and_more.py  |                                     4 |      0 |   100% |
-sde_collections/migrations/0043_comments.py  |                                                               6 |      0 |   100% |
-sde_collections/migrations/0044_alter_collection_document_type.py  |                                         4 |      0 |   100% |
-sde_collections/migrations/0045_alter_collection_workflow_status.py  |                                       4 |      0 |   100% |
-sde_collections/migrations/0045_workflowhistory.py  |                                                        6 |      0 |   100% |
-sde_collections/migrations/0046_resolvedtitle_candidateurl_resolved_title.py  |                              6 |      0 |   100% |
-sde_collections/migrations/0046_workflowhistory_old_status.py  |                                             4 |      0 |   100% |
-sde_collections/migrations/0047_remove_candidateurl_resolved_title_and_more.py  |                            5 |      0 |   100% |
-sde_collections/migrations/0048_alter_resolvedtitle_candidate_url.py  |                                      5 |      0 |   100% |
-sde_collections/migrations/0049_alter_resolvedtitle_resolution_date_time.py  |                               4 |      0 |   100% |
-sde_collections/migrations/0050_alter_resolvedtitle_resolved_title.py  |                                     4 |      0 |   100% |
-sde_collections/migrations/0051_alter_resolvedtitle_error_string_and_more.py  |                              4 |      0 |   100% |
-sde_collections/migrations/0052_rename_resolution_date_time_resolvedtitle_created_at_and_more.py  |          5 |      0 |   100% |
-sde_collections/migrations/0053_alter_collection_url.py  |                                                   4 |      0 |   100% |
-sde_collections/migrations/0054_merge_20240531_1332.py  |                                                    4 |      0 |   100% |
-sde_collections/migrations/0055_alter_workflowhistory_old_status_and_more.py  |                              4 |      0 |   100% |
-sde_collections/migrations/0056_alter_candidateurl_document_type_and_more.py  |                              4 |      0 |   100% |
-sde_collections/migrations/0057_alter_collection_workflow_status_and_more.py  |                              4 |      0 |   100% |
-sde_collections/migrations/0058_candidateurl_division_collection_is_multi_division_and_more.py  |            5 |      0 |   100% |
-sde_collections/migrations/0059_candidateurl_scraped_text.py  |                                              4 |      0 |   100% |
-sde_collections/migrations/0059_candidateurl_tdamm_tag_manual_and_more.py  |                                 5 |      0 |   100% |
-sde_collections/migrations/0059_url_curatedurl_deltaurl_dumpurl.py  |                                        5 |      0 |   100% |
-sde_collections/migrations/0060_alter_candidateurl_scraped_text.py  |                                        4 |      0 |   100% |
-sde_collections/migrations/0060_remove_deltaurl_url_ptr_remove_dumpurl_url_ptr_and_more.py  |                4 |      0 |   100% |
-sde_collections/migrations/0061_dumpurl_deltaurl_curatedurl.py  |                                            5 |      0 |   100% |
-sde_collections/migrations/0062_deltatitlepattern_deltaresolvedtitleerror_and_more.py  |                     6 |      0 |   100% |
-sde_collections/migrations/0063_merge_20241112_1428.py  |                                                    4 |      0 |   100% |
-sde_collections/migrations/0064_alter_curatedurl_options_and_more.py  |                                      4 |      0 |   100% |
-sde_collections/migrations/0065_rename_delete_deltaurl_to_delete_and_more.py  |                              5 |      0 |   100% |
-sde_collections/migrations/0066_alter_deltadivisionpattern_unique_together_and_more.py  |                    5 |      0 |   100% |
-sde_collections/migrations/0066_merge_20241120_0158.py  |                                                    4 |      0 |   100% |
-sde_collections/migrations/0067_alter_deltadivisionpattern_options_and_more.py  |                            4 |      0 |   100% |
-sde_collections/migrations/0067_remove_candidateurl_tdamm_tag_manual_and_more.py  |                          4 |      0 |   100% |
-sde_collections/migrations/0068_alter_deltadivisionpattern_collection_and_more.py  |                         6 |      0 |   100% |
-sde_collections/migrations/0068_curatedurl_tdamm_tag_manual_curatedurl_tdamm_tag_ml_and_more.py  |           5 |      0 |   100% |
-sde_collections/migrations/0069_candidateurl_tdamm_tag_manual_and_more.py  |                                 5 |      0 |   100% |
-sde_collections/migrations/0070_merge_20241205_1437.py  |                                                    4 |      0 |   100% |
-sde_collections/migrations/0071_alter_candidateurl_tdamm_tag_manual_and_more.py  |                           5 |      0 |   100% |
-sde_collections/migrations/0072_collection_reindexing_status_reindexinghistory.py  |                        26 |     19 |    27% |   8-52
-sde_collections/migrations/0073_alter_collection_workflow_status_and_more.py  |                              4 |      0 |   100% |
-sde_collections/migrations/0074_alter_collection_reindexing_status_and_more.py  |                            4 |      0 |   100% |
-sde_collections/migrations/0075_alter_collection_reindexing_status_and_more.py  |                           25 |     19 |    24% |   7-20, 24-39
-sde_collections/migrations/__init__.py  |                                                                    0 |      0 |   100% |
 sde_collections/models/__init__.py  |                                                                        0 |      0 |   100% |
 sde_collections/models/candidate_url.py  |                                                                  89 |     16 |    82% |   124, 128-134, 138-142, 145, 176-177
 sde_collections/models/collection.py  |                                                                    414 |    144 |    65% |   241, 269, 277-287, 291-301, 305-315, 319-344, 348-357, 361, 365, 369-376, 380-387, 394, 403-406, 419, 436-439, 449-470, 478, 482-515, 519, 523, 527, 531-532, 536, 540-546, 550-553, 558-567, 575-617, 640, 679, 689, 703, 707-732, 765, 769-777, 785
@@ -177,28 +73,6 @@ sde_collections/models/pattern.py  |                                            
 sde_collections/serializers.py  |                                                                          191 |     47 |    75% |   80-81, 84-85, 88-89, 92-93, 129-130, 133-134, 137-138, 141-142, 197, 201, 211-214, 244-247, 257-260, 271, 274, 307-315, 335-343, 358-366
 sde_collections/sinequa_api.py  |                                                                          102 |      3 |    97% |   65, 255, 289
 sde_collections/tasks.py  |                                                                                119 |     67 |    44% |   25-67, 72-108, 113-117, 122-125, 130-148, 153-155, 215-216
-sde_collections/tests.py  |                                                                                 24 |     24 |     0% |   1-36
-sde_collections/tests/__init__.py  |                                                                         0 |      0 |   100% |
-sde_collections/tests/factories.py  |                                                                       57 |      0 |   100% |
-sde_collections/tests/test_database_backup.py  |                                                            96 |      0 |   100% |
-sde_collections/tests/test_database_restore.py  |                                                          139 |      0 |   100% |
-sde_collections/tests/test_delta_patterns.py  |                                                            118 |      0 |   100% |
-sde_collections/tests/test_exclude_patterns.py  |                                                          142 |      7 |    95% |   21-41
-sde_collections/tests/test_field_modifier_patterns.py  |                                                   170 |      4 |    98% |   20-31
-sde_collections/tests/test_field_modifier_unapply.py  |                                                     85 |      0 |   100% |
-sde_collections/tests/test_fileext.py  |                                                                    15 |      0 |   100% |
-sde_collections/tests/test_import_fulltexts.py  |                                                           43 |      0 |   100% |
-sde_collections/tests/test_include_patterns.py  |                                                           53 |      0 |   100% |
-sde_collections/tests/test_migrate_dump.py  |                                                              188 |      0 |   100% |
-sde_collections/tests/test_migration.py  |                                                                  93 |      0 |   100% |
-sde_collections/tests/test_pattern_specificity.py  |                                                        84 |      0 |   100% |
-sde_collections/tests/test_promote_collection.py  |                                                        164 |      2 |    99% |   169, 184
-sde_collections/tests/test_sinequa_api.py  |                                                               147 |      2 |    99% |   25-26
-sde_collections/tests/test_tdamm_tags.py  |                                                                108 |      0 |   100% |
-sde_collections/tests/test_title_pattern_unapply.py  |                                                      94 |      0 |   100% |
-sde_collections/tests/test_title_resolution.py  |                                                           59 |      0 |   100% |
-sde_collections/tests/test_url_apis.py  |                                                                  162 |      0 |   100% |
-sde_collections/tests/test_workflow_status_triggers.py  |                                                  105 |      0 |   100% |
 sde_collections/urls.py  |                                                                                  17 |      0 |   100% |
 sde_collections/utils/__init__.py  |                                                                         0 |      0 |   100% |
 sde_collections/utils/bulk_github_push.py  |                                                                 8 |      8 |     0% |   7-22
@@ -213,31 +87,14 @@ sde_indexing_helper/__init__.py  |                                              
 sde_indexing_helper/conftest.py  |                                                                           9 |      0 |   100% |
 sde_indexing_helper/contrib/__init__.py  |                                                                   0 |      0 |   100% |
 sde_indexing_helper/contrib/sites/__init__.py  |                                                             0 |      0 |   100% |
-sde_indexing_helper/contrib/sites/migrations/0001_initial.py  |                                              6 |      0 |   100% |
-sde_indexing_helper/contrib/sites/migrations/0002_alter_domain_unique.py  |                                  5 |      0 |   100% |
-sde_indexing_helper/contrib/sites/migrations/0003_set_site_domain_and_name.py  |                            20 |     12 |    40% |   12-31, 39-40, 50-51
-sde_indexing_helper/contrib/sites/migrations/0004_alter_options_ordering_domain.py  |                        4 |      0 |   100% |
-sde_indexing_helper/contrib/sites/migrations/__init__.py  |                                                  0 |      0 |   100% |
 sde_indexing_helper/users/__init__.py  |                                                                     0 |      0 |   100% |
 sde_indexing_helper/users/adapters.py  |                                                                    11 |     11 |     0% |   1-16
 sde_indexing_helper/users/admin.py  |                                                                       13 |      0 |   100% |
 sde_indexing_helper/users/apps.py  |                                                                        10 |      0 |   100% |
 sde_indexing_helper/users/context_processors.py  |                                                           3 |      0 |   100% |
 sde_indexing_helper/users/forms.py  |                                                                       15 |      0 |   100% |
-sde_indexing_helper/users/migrations/0001_initial.py  |                                                      8 |      0 |   100% |
-sde_indexing_helper/users/migrations/0002_contactformmodel_contentcurationrequestmodel.py  |                 4 |      0 |   100% |
-sde_indexing_helper/users/migrations/0003_delete_contactformmodel_and_more.py  |                             4 |      0 |   100% |
-sde_indexing_helper/users/migrations/__init__.py  |                                                          0 |      0 |   100% |
 sde_indexing_helper/users/models.py  |                                                                      10 |      0 |   100% |
 sde_indexing_helper/users/tasks.py  |                                                                        6 |      0 |   100% |
-sde_indexing_helper/users/tests/__init__.py  |                                                               0 |      0 |   100% |
-sde_indexing_helper/users/tests/factories.py  |                                                             16 |      0 |   100% |
-sde_indexing_helper/users/tests/test_admin.py  |                                                            23 |      0 |   100% |
-sde_indexing_helper/users/tests/test_forms.py  |                                                            10 |      0 |   100% |
-sde_indexing_helper/users/tests/test_models.py  |                                                            3 |      0 |   100% |
-sde_indexing_helper/users/tests/test_tasks.py  |                                                            11 |      0 |   100% |
-sde_indexing_helper/users/tests/test_urls.py  |                                                             11 |      0 |   100% |
-sde_indexing_helper/users/tests/test_views.py  |                                                            65 |      1 |    98% |   30
 sde_indexing_helper/users/urls.py  |                                                                         4 |      0 |   100% |
 sde_indexing_helper/users/views.py  |                                                                       27 |      0 |   100% |
 sde_indexing_helper/utils/__init__.py  |                                                                     0 |      0 |   100% |
@@ -246,29 +103,82 @@ sde_indexing_helper/utils/storages.py  |                                        
 tests/test_merge_production_dotenvs_in_dotenv.py  |                                                         13 |      0 |   100 |%
 
 ## Critical Areas
-### Config Generation Pipeline
-This portion of the code creates config files that are used by Sinequa to index new content. A incomplete list of critical files is given here: 
+### Config Generation
 - config_generation/db_to_xml.py
-- sde_collections/models/collection.py
-  - create_scraper_config()
-  - create_indexer_config()
-  - _write_to_github()
-- sde_collections/utils/github_helper.py
+   - update_or_add_element_value()
+   - _update_config_xml()
+   - convert_template_to_scraper()
+   - add_document_type()
+   - add_url_exclude()
+   - add_title_mapping()
+   - add_job_list_item()
+   - get_tag_value()
+   - fetch_treeroot()
+   - fetch_document_type()
+- config_generation/generate_jobs.py
+   - make_all_parallel_jobs()
 
-### APIs, Serializers, and Views
-Any APIs that serve data to Sinequa, such as at the DeltaURLAPIView.
+### Models
+  - environmental_justice/models.py
+  - sde_collections/models/collection.py
+    - clear_delta_urls()
+    - clear_dump_urls()
+    - refresh_url_lists_for_all_patterns ()
+    - migrate_dump_to_delta ()
+    - create_or_update_delta_url
+    - promote_to_curate
+    - add_to_public_query()
+    - create_scraper_config()
+    - create_indexer_config()
+    - create_plugin_config()
+    - _write_to_github()
+    - update_config_xml()
+    - apply_all_patterns()
+    - create_configs_on_status_change()
+  - sde_collections/models/collection_choice_fields.py
+  - sde_collections/models/delta_patterns.py
+  - sde_collections/models/delta_url.py
+  - sde_collections/models/pattern.py
+  - sde_indexing_helper/users/models.py
 
-### Project Configs
-etc.
+### Views
+  - environmental_justice/views.py
+  - sde_collections/views.py
+  - sde_indexing_helper/users/views.py
 
+### Serializers and APIs
+  - environmental_justice/serializers.py
+  - sde_collections/serializers.py
 
-### Add additional areas below
+### Admin Interface
+  - environmental_justice/admin.py
+  - sde_collections/admin.py
+    - fetch_full_text_lrm_dev_action()
+    - fetch_full_text_xli_action()
+  - sde_indexing_helper/users/admin.py
 
+### Utilities and Helpers
+  - sde_collections/utils/github_helper.py
+  - sde_collections/utils/health_check.py
+  - sde_collections/utils/title_resolver.py
+  - sde_collections/utils/github_helper.py
+     - fetch_metadata()
+     - _get_contents_from_path()
 
-### What Pipelines Does the Repo Have?
-You can use this list as a starting point to think about what the COSMOS repo does, from a process perspective:
-1. COSMOS imports data from LRM Dev
-2. Sinequa config files are generated
+### Task Automation and Background Jobs
+  - sde_collections/tasks.py
+
+### Key Operational Pipelines in the Repository
+The selection of critical areas for testing is guided by the following pipelines of the repository:
+1. Sinequa config files are generated
+2. COSMOS imports data from LRM Dev
 3. Imported data is processed
 4. Curators update URL metadata
 5. Sinequa reads results from the COSMOS APIs
+
+### Critical Areas Lacking Tests
+- **Config Generation**: Config generation files are under-tested. Develop unit tests for all critical functions in the config_generation files.
+- **Project Settings**: Environment-specific configurations (`local.py`, `production.py`) have no tests.
+- **Frontend Features**: Currently, there are no tests covering frontend logic and interactions.
+- **Utilities and Helpers**: Essential utility modules like github_helper.py and health_check.py lack tests
+
