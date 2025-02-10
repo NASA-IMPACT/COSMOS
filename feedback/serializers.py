@@ -18,7 +18,6 @@ class HTMLFreeCharField(serializers.CharField):
 class FeedbackSerializer(serializers.ModelSerializer):
 
     name = HTMLFreeCharField(max_length=150)
-    email = serializers.EmailField()
     subject = HTMLFreeCharField(max_length=400)
     comments = HTMLFreeCharField()
     source = HTMLFreeCharField(max_length=50, required=False, default="SDE")
