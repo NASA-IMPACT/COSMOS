@@ -12,3 +12,8 @@ For each PR made, an entry should be added to this changelog. It should contain
   - etc.
 
 ## Changelog
+- 1030-resolve-0-value-document-type-in-nasa_science
+  - Description: Around 2000 of the docs coming out of the COSMOS api for nasa_scince have a doc type vaule of 0.
+  - Changes:
+    - Added `obj.document_type != 0` as a condition in the `get_document_type` method within the `CuratedURLAPISerializer`
+    - Added a changelog.md file
