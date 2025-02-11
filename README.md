@@ -18,7 +18,6 @@ $ docker-compose -f local.yml build
 ```bash
 $ docker-compose -f local.yml up
 ```
-
 ### Non-Docker Local Setup
 
 If you prefer to run the project without Docker, follow these steps:
@@ -69,57 +68,103 @@ $ docker-compose -f local.yml run --rm django python manage.py createsuperuser
 #### Creating Additional Users
 
 Create additional users through the admin interface (/admin).
+## Database Backup and Restore
 
-### Loading Fixtures
+COSMOS provides dedicated management commands for backing up and restoring your PostgreSQL database. These commands handle both compressed and uncompressed backups and work seamlessly in both local and production environments using Docker.
 
-To load collections:
+### Backup Directory Structure
 
+All backups are stored in the `/backups` directory at the root of your project. This directory is mounted as a volume in both local and production Docker configurations, making it easy to manage backups across different environments.
+
+- Local development: `./backups/`
+- Production server: `/path/to/project/backups/`
+
+If the directory doesn't exist, create it:
 ```bash
-$ docker-compose -f local.yml run --rm django python manage.py loaddata sde_collections/fixtures/collections.json
+mkdir backups
 ```
 
-### Manually Creating and Loading a ContentTypeless Backup
-Navigate to the server running prod, then to the project folder. Run the following command to create a backup:
+### Creating a Database Backup
+
+To create a backup of your database:
 
 ```bash
-docker-compose -f production.yml run --rm --user root django python manage.py dumpdata --natural-foreign --natural-primary --exclude=contenttypes --exclude=auth.Permission --indent 2 --output /app/backups/prod_backup-20240812.json
+# Create a compressed backup (recommended)
+docker-compose -f local.yml run --rm django python manage.py database_backup
+
+# Create an uncompressed backup
+docker-compose -f local.yml run --rm django python manage.py database_backup --no-compress
+
+# Specify custom output location within backups directory
+docker-compose -f local.yml run --rm django python manage.py database_backup --output my_custom_backup.sql
 ```
-This will have saved the backup in a folder outside of the docker container. Now you can copy it to your local machine.
+
+The backup command will automatically:
+- Detect your server environment (Production/Staging/Local)
+- Use database credentials from your environment settings
+- Generate a dated filename if no output path is specified
+- Save the backup to the mounted `/backups` directory
+- Compress the backup by default (can be disabled with --no-compress)
+
+### Restoring from a Database Backup
+
+To restore your database from a backup, it will need to be in the `/backups` directory. You can then run the following command:
 
 ```bash
-mv ~/prod_backup-20240812.json <project_path>/prod_backup-20240812.json
-scp sde:/home/ec2-user/sde_indexing_helper/backups/prod_backup-20240812.json prod_backup-20240812.json
+# Restore from a backup (handles both .sql and .sql.gz files)
+docker-compose -f local.yml run --rm django python manage.py database_restore backups/backup_file_name.sql.gz
 ```
 
-Finally, load the backup into your local database:
+The restore command will:
+- Automatically detect if the backup is compressed (.gz)
+- Terminate existing database connections
+- Drop and recreate the database
+- Restore all data from the backup
+- Handle all database credentials from your environment settings
+
+### Working with Remote Servers
+
+When working with production or staging servers:
+
+1. First, SSH into the appropriate server:
+```bash
+# For production
+ssh user@production-server
+cd /path/to/project
+```
+
+2. Create a backup on the remote server:
+```bash
+docker-compose -f production.yml run --rm django python manage.py database_backup
+```
+
+3. Copy the backup from the remote server's backup directory to your local machine:
+```bash
+scp user@remote-server:/path/to/project/backups/backup_name.sql.gz ./backups/
+```
+
+4. Restore locally:
+```bash
+docker-compose -f local.yml run --rm django python manage.py database_restore backups/backup_name.sql.gz
+```
+
+### Alternative Methods
+
+While the database_backup and database_restore commands are the recommended approach, you can also use Django's built-in fixtures for smaller datasets:
 
 ```bash
-docker-compose -f local.yml run --rm django python manage.py loaddata prod_backup-20240812.json
+# Create a backup excluding content types
+docker-compose -f production.yml run --rm django python manage.py dumpdata \
+    --natural-foreign --natural-primary \
+    --exclude=contenttypes --exclude=auth.Permission \
+    --indent 2 \
+    --output backups/prod_backup-$(date +%Y%m%d).json
+
+# Restore from a fixture
+docker-compose -f local.yml run --rm django python manage.py loaddata backups/backup_name.json
 ```
 
-### Loading the Database from an Arbitrary Backup
-
-1. Build the project and run the necessary containers (as documented above).
-2. Clear out content types using the Django shell:
-
-```bash
-$ docker-compose -f local.yml run --rm django python manage.py shell
->>> from django.contrib.contenttypes.models import ContentType
->>> ContentType.objects.all().delete()
->>> exit()
-```
-
-3. Load your backup database:
-
-```bash
-$ docker cp /path/to/your/backup.json container_name:/path/inside/container/backup.json
-$ docker-compose -f local.yml run --rm django python manage.py loaddata /path/inside/the/container/backup.json
-$ docker-compose -f local.yml run --rm django python manage.py migrate
-```
-### Restoring the Database from a SQL Dump
-If the JSON file is particularly large (>1.5GB), Docker might struggle with this method. In such cases, you can use SQL dump and restore commands as an alternative, as described [here](./SQLDumpRestoration.md).
-
-
+Note: For large databases (>1.5GB), the database_backup and database_restore commands are strongly recommended over JSON fixtures as they handle large datasets more efficiently.
 
 ## Additional Commands
 
@@ -180,6 +225,7 @@ $ pip install pre-commit
 $ pre-commit install
 $ pre-commit run --all-files
 ```
+For detailed information on the coding standards and conventions we enforce, please see our [Coding Standards and Conventions](CODE_STANDARDS.md).
 
 ### Sentry Setup
 
@@ -208,3 +254,24 @@ Eventually, job creation will be done seamlessly by the webapp. Until then, edit
   - JavaScript: `/sde_indexing_helper/static/js`
   - CSS: `/sde_indexing_helper/static/css`
   - Images: `/sde_indexing_helper/static/images`
+
+
+## Running Long Scripts on the Server
+```shell
+tmux new -s docker_django
+```
+Once you are inside, you can run dmshell or for example a managment command:
+
+```shell
+docker-compose -f production.yml run --rm django python manage.py deduplicate_urls
+```
+
+Later, you can do this to get back in.
+```shell
+tmux attach -t docker_django
+```
+
+To delete the session:
+```shell
+tmux kill-session -t docker_django
+```

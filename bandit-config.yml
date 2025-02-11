@@ -1,0 +1,26 @@
+# bandit-config.yml
+skips:
+  - B101  # Skip assert used (often used in tests)
+  - B403  # Skip import from the pickle module
+
+exclude:
+  - ./tests/         # Exclude test directories
+  - ./migrations/    # Exclude migration directories
+  - ./venv/          # Exclude virtual environment
+
+tests:
+  - B105             # Include test for hardcoded password strings
+  - B602             # Include test for subprocess call with shell equals true
+
+profiles:
+  default:
+    include:
+      - B403         # Include test for dangerous default argument
+    exclude:
+      - B401         # Exclude test for import telnetlib
+
+# Set the severity level to focus on higher-risk issues
+severity: 'HIGH'
+
+# Set the confidence level to ensure that reported issues are likely true positives
+confidence: 'HIGH'
