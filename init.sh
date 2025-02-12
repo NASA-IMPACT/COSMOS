@@ -40,3 +40,4 @@ else
     echo "All tests passed successfully!"
     echo "Coverage data collected. Coverage report will be generated separately."
 fi
+
