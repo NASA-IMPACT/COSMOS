@@ -35,3 +35,24 @@ jobs:
 
       - name: Cleanup
         run: docker-compose -f local.yml down --volumes
+
+  report-coverage:
+    needs: run-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out merged code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+      - name: Build the Docker environment
+        run: docker-compose -f local.yml build
+
+      - name: Extract coverage data
+        run: docker-compose -f local.yml run --rm django coverage report
+
+      - name: Cleanup after coverage
+        run: docker-compose -f local.yml down --volumes
