@@ -33,12 +33,25 @@ jobs:
           DJANGO_ENV: test
         run: docker-compose -f local.yml run --rm django bash ./init.sh
 
+      - name: Save coverage data
+        run: |
+          mkdir -p coverage_data
+          docker-compose -f local.yml run --rm django cp .coverage coverage_data/
+        continue-on-error: true
+
+      - name: Upload coverage data as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-data
+          path: coverage_data/.coverage
+
       - name: Cleanup
         run: docker-compose -f local.yml down --volumes
 
   report-coverage:
     needs: run-tests
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out merged code
         uses: actions/checkout@v2
@@ -51,7 +64,12 @@ jobs:
       - name: Build the Docker environment
         run: docker-compose -f local.yml build
 
-      - name: Extract coverage data
+      - name: Download coverage data
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage-data
+
+      - name: Generate Coverage Report
         run: docker-compose -f local.yml run --rm django coverage report
 
       - name: Cleanup after coverage

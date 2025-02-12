@@ -21,10 +21,10 @@ include = */*.py
 [report]
 show_missing = True" > .coveragerc
 
-# Run each test file with coverage
+# Run each test file with coverage (without generating report yet)
 for test_file in $test_files; do
     echo "Running $test_file..."
-    coverage run --append -m pytest "$test_file"  # Using settings from .coveragerc
+    coverage run --append -m pytest "$test_file"  # Collect coverage data
 
     # Check the exit status of pytest
     if [ $? -ne 0 ]; then
@@ -33,15 +33,11 @@ for test_file in $test_files; do
     fi
 done
 
-# Generate coverage reports
-echo "Generating coverage report..."
-coverage report
-
-# Report the results
+# Report the results without generating the coverage report
 if [ $failure_count -ne 0 ]; then
     echo "$failure_count test(s) failed. Refer to the terminal output for details."
     exit 1
 else
     echo "All tests passed successfully!"
-    echo "Coverage summary has been output to the terminal."
+    echo "Coverage data collected. Coverage report will be generated separately."
 fi
