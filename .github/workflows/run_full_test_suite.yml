@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Check out merged code
-        uses: actions/checkout@v2
+        uses: actions/checkout@latest
 
       - name: Set up Docker Compose
         run: |
@@ -35,12 +35,10 @@ jobs:
 
       - name: Save coverage data
         run: |
-          mkdir -p coverage_data
-          docker-compose -f local.yml run --rm django cp .coverage coverage_data/
-        continue-on-error: true
+          docker-compose -f local.yml run --rm django bash -c "mkdir -p coverage_data && cp .coverage coverage_data/"
 
       - name: Upload coverage data as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: coverage-data
           path: coverage_data/.coverage
@@ -54,23 +52,23 @@ jobs:
 
     steps:
       - name: Check out merged code
-        uses: actions/checkout@v2
+        uses: actions/checkout@latest
 
       - name: Set up Docker Compose
         run: |
           sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
 
-      - name: Build the Docker environment
-        run: docker-compose -f local.yml build
-
       - name: Download coverage data
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: coverage-data
 
       - name: Generate Coverage Report
-        run: docker-compose -f local.yml run --rm django coverage report
+        run: |
+          mkdir -p coverage_data
+          mv coverage-data/.coverage ./.coverage
+          docker-compose -f local.yml run --rm django coverage report
 
       - name: Cleanup after coverage
         run: docker-compose -f local.yml down --volumes
