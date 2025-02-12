@@ -18,8 +18,8 @@ class TestWorkflowStatusTransitions(TestCase):
     def setUp(self):
         self.collection = CollectionFactory()
 
-    @patch('sde_collections.models.collection.GitHubHandler')
-    @patch('sde_collections.models.collection.Collection.create_scraper_config')
+    @patch("sde_collections.models.collection.GitHubHandler")
+    @patch("sde_collections.models.collection.Collection.create_scraper_config")
     def test_ready_for_engineering_triggers_config_creation(self, mock_scraper, mock_github_handler):
         """When status changes to READY_FOR_ENGINEERING, it should create configs"""
         self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
@@ -36,7 +36,7 @@ class TestWorkflowStatusTransitions(TestCase):
         mock_fetch.assert_called_once_with(self.collection.id, "lrm_dev")
 
     @patch("sde_collections.models.collection.Collection.create_indexer_config")
-    @patch('sde_collections.models.collection.GitHubHandler')
+    @patch("sde_collections.models.collection.GitHubHandler")
     def test_ready_for_curation_triggers_indexer_config(self, mock_github_handler, mock_indexer):
         """When status changes to READY_FOR_CURATION, it should create indexer config"""
         self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_CURATION
