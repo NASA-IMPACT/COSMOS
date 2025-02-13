@@ -1,4 +1,4 @@
-from xml.etree.ElementTree import ParseError, ElementTree
+from xml.etree.ElementTree import ParseError, ElementTree, fromstring
 
 from ..db_to_xml import XmlEditor
 import pytest
@@ -29,8 +29,9 @@ def xmls_equal(xml1, xml2):
             return False
         return all(elements_equal(c1, c2) for c1, c2 in zip(e1, e2))
 
-    tree1 = ElementTree(ET.fromstring(xml1))
-    tree2 = ElementTree(ET.fromstring(xml2))
+    tree1 = ElementTree(fromstring(xml1))
+    tree2 = ElementTree(fromstring(xml2))
+
     return elements_equal(tree1.getroot(), tree2.getroot())
 
 # Tests for valid and invalid XML initializations
