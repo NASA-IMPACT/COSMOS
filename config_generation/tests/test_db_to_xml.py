@@ -1,4 +1,4 @@
-from xml.etree.ElementTree import ParseError, ElementTree, fromstring
+from xml.etree.ElementTree import ElementTree, ParseError, fromstring
 
 from ..db_to_xml import XmlEditor
 
