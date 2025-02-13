@@ -2,12 +2,7 @@
 from django.db import models
 from django.utils import timezone
 
-from inference.models.inference_choice_fields import (
-    ClassificationType,
-    ExternalJob,
-    ExternalJobStatus,
-    InferenceJobStatus,
-)
+from inference.models import ClassificationType, ExternalJobStatus, InferenceJobStatus
 from inference.utils.batch import BatchConfig, BatchProcessor
 from inference.utils.inference_api_client import InferenceAPIClient, ModelManager
 
@@ -19,10 +14,40 @@ class ModelVersion(models.Model):
 
     api_identifier = models.CharField(max_length=255)
     description = models.TextField()
-    classification_type = models.ForeignKey(ClassificationType, on_delete=models.CASCADE)
+    classification_type = models.IntegerField(
+        choices=ClassificationType.choices, help_text="Type of classification this model performs"
+    )
+    is_active = models.BooleanField(
+        default=True, help_text="Whether this is the current active version for its classification type"
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["classification_type", "is_active"],
+                condition=models.Q(is_active=True),
+                name="unique_active_version",
+            )
+        ]
 
     def __str__(self):
-        return self.api_identifier
+        return f"{self.get_classification_type_display()} - {self.api_identifier}"
+
+    @classmethod
+    def get_active_version(cls, classification_type: int) -> "ModelVersion":
+        """Get the current active model version for a classification type."""
+        return cls.objects.get(classification_type=classification_type, is_active=True)
+
+    def set_as_active(self):
+        """Set this version as the active one for its classification type."""
+        # Deactivate other versions of this classification type
+        ModelVersion.objects.filter(classification_type=self.classification_type, is_active=True).exclude(
+            id=self.id
+        ).update(is_active=False)
+
+        # Set this one as active
+        self.is_active = True
+        self.save()
 
 
 class InferenceJob(models.Model):
@@ -31,9 +56,13 @@ class InferenceJob(models.Model):
     One InferenceJob can have multiple ExternalJobs (one per batch).
     """
 
-    collection = models.ForeignKey("Collection", on_delete=models.CASCADE, related_name="inference_jobs")
-    classification_type = models.IntegerField(
-        choices=ClassificationType.choices, help_text="Type of classification to perform"
+    collection = models.ForeignKey(
+        "sde_collections.Collection", on_delete=models.CASCADE, related_name="inference_jobs"
+    )
+    model_version = models.ForeignKey(
+        ModelVersion,
+        on_delete=models.PROTECT,  # Prevent deletion of ModelVersions that have associated jobs
+        related_name="inference_jobs",
     )
 
     created_at = models.DateTimeField(default=timezone.now)
@@ -41,20 +70,20 @@ class InferenceJob(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
 
     status = models.IntegerField(choices=InferenceJobStatus.choices, default=InferenceJobStatus.QUEUED)
-    error_message = models.TextField(blank=True)  # can hold model loading errors
+    error_message = models.TextField(blank=True)
 
     class Meta:
         ordering = ["-created_at"]
         constraints = [
             models.UniqueConstraint(
-                fields=["collection", "classification_type"],
+                fields=["collection", "model_version"],
                 condition=models.Q(status__in=[InferenceJobStatus.QUEUED, InferenceJobStatus.PENDING]),
                 name="unique_active_job",
             )
         ]
 
     def __str__(self):
-        return f"Job {self.id} - {self.collection} - {self.get_classification_type_display()}"
+        return f"Job {self.id} - {self.collection} - {self.model_version}"
 
     @property
     def is_ongoing(self) -> bool:
@@ -98,9 +127,8 @@ class InferenceJob(models.Model):
     def initiate(self) -> None:
         """Initialize job and create batches"""
         try:
-            # Load appropriate model
-            model_version = ModelVersion.objects.get(classification_type=self.classification_type)
-            model_manager = ModelManager(InferenceAPIClient(), model_version.api_identifier)
+            # Load model
+            model_manager = ModelManager(InferenceAPIClient(), self.model_version.api_identifier)
 
             if not model_manager.ensure_model_loaded():
                 # TODO: shouldn't we be getting an exact error out of the api client that we can store?
@@ -126,14 +154,13 @@ class InferenceJob(models.Model):
         except Exception as e:
             self.set_error(str(e))
 
-    def create_external_job(self, batch_data) -> ExternalJob:
+    def create_external_job(self, batch_data) -> "ExternalJob":
         """Create and submit an external job for a batch"""
         try:
             api_client = InferenceAPIClient()
-            model_version = ModelVersion.objects.get(classification_type=self.classification_type)
 
-            # Submit batch to API
-            job_id = api_client.submit_batch(model_version.api_identifier, batch_data)
+            # Submit batch to API using model version identifier
+            job_id = api_client.submit_batch(self.model_version.api_identifier, batch_data)
 
             if not job_id:
                 # TODO: can't we get an exact error out of the api client?
@@ -181,11 +208,10 @@ class InferenceJob(models.Model):
         try:
             # Unload model if no other jobs need it
             if not InferenceJob.objects.filter(
-                classification_type=self.classification_type, status=InferenceJobStatus.PENDING
+                model_version=self.model_version, status=InferenceJobStatus.PENDING
             ).exists():
-                model_version = ModelVersion.objects.get(classification_type=self.classification_type)
-                model_manager = ModelManager(InferenceAPIClient(), model_version.api_identifier)
-                model_manager.api_client.unload_model(model_version.api_identifier)
+                model_manager = ModelManager(InferenceAPIClient(), self.model_version.api_identifier)
+                model_manager.api_client.unload_model(self.model_version.api_identifier)
 
         except Exception as e:
             self.set_error(f"Cleanup error: {str(e)}")
