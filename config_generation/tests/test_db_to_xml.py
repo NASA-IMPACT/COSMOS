@@ -1,7 +1,7 @@
 from xml.etree.ElementTree import ParseError, ElementTree, fromstring
 
 from ..db_to_xml import XmlEditor
-
+import pytest
 
 def xmls_equal(xml1, xml2):
     """
