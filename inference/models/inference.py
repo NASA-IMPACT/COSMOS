@@ -112,7 +112,7 @@ class InferenceJob(models.Model):
             self.completed_at = timezone.now()
             self.save()
 
-    def cleanup_external_jobs(self):
+    def delete_external_jobs(self):
         """Delete all external jobs"""
         if self.completed:
             self.external_jobs.all().delete()
