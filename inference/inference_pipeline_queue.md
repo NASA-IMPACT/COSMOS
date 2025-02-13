@@ -12,49 +12,72 @@ We can log into flower locally at http://localhost:5555. The user and password c
 
 ### Collections and URLs
 - **Collections**: Store website-level metadata
-- **DeltaUrl/CuratedUrl**: Store individual URL metadata including full text content and paired field descriptors
+- **DeltaUrl/CuratedUrl**: Store individual URL metadata including full text content and paired field descriptors which will hold classification results
 
 ### Job Structure
 The inference pipeline uses a two-level job system:
 
 1. **InferenceJob**
    - Created for each collection that needs processing
-   - Tracks overall progress and classification type
-   - Contains multiple ExternalJobs
+   - Links to a Collection
+   - Tracks classification type
+   - References multiple ExternalJobs
+   - Tracks overall progress of children ExternalJobs
    - Manages cleanup of completed jobs
 
 2. **ExternalJob**
    - Created for each batch of URLs from a collection
-   - Tracks specific inference API job status and results
-   - Links back to parent InferenceJob
-   - Stores API job IDs for result retrieval
+   - Links to a parent InferenceJob
+   - Links to a specific API job_id
+   - Tracks job_id's: status, results, and error
 
 ### Classification Process
-1. **Initiation**
+1. **def generate_inference_job(collection, classification_type)**
    - Curator/engineer triggers classification via COSMOS UI
-   - Collection is added to processing queue with specified classification type
-   - InferenceJob is created for the collection
+   - InferenceJob is created for the collection/classification pair
 
-2. **Batch Processing**
-   - Collection URLs are divided into batches
-   - Each batch creates an ExternalJob
-   - ExternalJobs are sent to inference API
-   - Job IDs and status are tracked
+2. **Chron**
+   - Every 5 minutes, between 6pm-7am, attempts to process_inference_job_queue()
+     - this could either mean batching and api sending
+     - or it could mean reading in results from an open InferenceJob
 
-3. **Results Processing**
-   - System polls inference API for ExternalJob status
-   - When a batch completes:
-     1. Results are retrieved from API
-     2. Database is updated using PairedFieldDescriptor
-     3. ExternalJob is marked complete
-   - When all ExternalJobs complete:
-     1. InferenceJob is marked complete
-     2. Cleanup process removes ExternalJobs
+3. **def process_inference_job_queue()**
+   - Loop through all InferenceJob objects to find status=Pending
+     - If none, find an InferenceJob.status=Queued and initiate_inference_job()
+     - If exists, for all InferenceJob.ExternalJobs.status=Pending, process_external_job()
+     - Evaluate if InferenceJob is complete
 
-4. **Data Storage**
-   - Results are stored using PairedFieldDescriptor system
-   - For example, TDAMM classifications update `deltaurl.tdamm_tag_ml`
-   - Manual entries (`_manual`) take precedence over ML results (`_ml`)
+4. **def initiate_inference_job(inference_job)**
+   - load_model()
+   - Batch urls
+   - For each batch:
+     - Generate ExternalJob
+
+5. **def batch_urls(collection?)**
+   - iterator?
+   - returns ([url_list], [full_text_list])
+   - batches should be based on sum(len(full_text)), not count(url)
+
+6. **def generate_external_job(batch, classification_type)**
+   - send full texts to API and recieve job_id
+   - create ExternalJob with all metadata
+
+7. **def process_external_job**
+   - Ping API with the current ExternalJob.job_id
+   - Record status
+   - Optionally record results or error
+
+8. **def evaluate_inference_job**
+   - Can be InProgress, Completed, or Failed
+   - If All ExternalJobs.status=Completed
+    - InferenceJob.status=Completed
+   - If any ExternalJob.status=PENDING
+    - InferenceJob.status=InProgress
+   - If no ExternalJobs.status=PENDING and any ExternalJobs.status=FAILED,UNKNOWN,NOT_FOUND,CANCELLED
+    - InferenceJob.status=Failed
+
+9. **def cleanup_inference_job**
+   - unload_model()
 
 ## Key Functions
 
@@ -76,69 +99,14 @@ def unload_model():
     """
 ```
 
-### Job Management
-```python
-def create_inference_job(collection, classification_type):
-    """
-    Creates main InferenceJob for a collection:
-    - Validates collection status
-    - Sets up job tracking
-    - Initializes external job creation
-    """
-
-def create_external_jobs(inference_job):
-    """
-    Creates batch-level ExternalJobs:
-    - Batches collection URLs
-    - Creates API jobs
-    - Links jobs to parent InferenceJob
-    """
-
-def cleanup_completed_job(inference_job):
-    """
-    Performs cleanup after job completion:
-    - Verifies all ExternalJobs are complete
-    - Updates final statuses
-    - Removes ExternalJob records
-    """
-```
-
-### Data Processing
-```python
-def process_batch_results(external_job):
-    """
-    Handles completed batch results:
-    1. Retrieves results from API
-    2. Updates database using PairedFieldDescriptor
-    3. Marks ExternalJob as complete
-    """
-
-def update_ml_fields(urls, results):
-    """
-    Updates ML fields in database:
-    - Maps API results to correct URLs
-    - Uses PairedFieldDescriptor to update _ml fields
-    - Preserves existing manual entries
-    """
-```
-
-
-## Architecture Notes
-
-### Classification Type Management
-- InferenceJob tracks classification type
-- Model selection handled by ClassificationTypes.get_model_identifier()
-- Future consideration: Add model tracking for classification provenance
-  - Consider creating a model to link classifications with their source models
-  - Enable tracking of which model version produced which classifications
-
-### Data Storage Patterns
-- Uses PairedFieldDescriptor for all ML-enhanced fields
-- Maintains separation between manual and ML data
-- Enables easy comparison and override of ML results
-- Supports automated updates without affecting manual entries
 
 ## Resources
 - [Inference Pipeline Example Usage](https://github.com/NASA-IMPACT/llm-app-classifier-pipeline?tab=readme-ov-file#example-usage)
 - [Inference Pipeline API Documentation](https://github.com/NASA-IMPACT/llm-app-classifier-pipeline/blob/develop/API.md)
 - [Inference Pipeline Doc](https://docs.google.com/document/d/1KapWcHZdHw91h_bs8Nx3XtZ5Puhc3IYJNDYle89NEP4/edit?tab=t.15jmko27foev#heading=h.1620ajmrp24g)
+
+
+## Todo
+- database saving and job sending should be handled at a batch level, so that we can retry batches which failed, without needing to re-run the entire collection
+- database should not allow the creation of a a second InferenceJob if an existing Job exists where InferenceJob(collection=collection,classification_type=classification_type,completed=False)
+- Long-term:Enable tracking of which model version produced which classifications. this should be stored at the level of the paired field

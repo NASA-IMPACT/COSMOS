@@ -1,3 +1,4 @@
+# inference/models/inference_choice_fields.py
 from django.db import models
 
 
@@ -6,7 +7,15 @@ class ClassificationType(models.IntegerChoices):
     DIVISION = 2, "Division Classification"
 
 
-class JobStatus(models.IntegerChoices):
+class InferenceJobStatus(models.IntegerChoices):
+    QUEUED = 1, "Queued"
+    PENDING = 2, "Pending"
+    COMPLETED = 3, "Completed"
+    FAILED = 4, "Failed"
+    CANCELLED = 5, "Cancelled"
+
+
+class ExternalJobStatus(models.IntegerChoices):
     """Mirror the API's job status options"""
 
     QUEUED = 1, "Queued"
