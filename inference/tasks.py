@@ -31,8 +31,7 @@ def process_inference_job_queue():
             if pending_jobs.exists():
                 # Process pending jobs
                 for job in pending_jobs:
-                    job.process_external_jobs()
-                    job.evaluate_status()
+                    job.refresh_external_jobs_status_and_store_results()
             else:
                 # If no pending jobs, try to initiate a queued job
                 queued_job = (

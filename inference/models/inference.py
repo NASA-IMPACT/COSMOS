@@ -85,12 +85,11 @@ class InferenceJob(models.Model):
     def __str__(self):
         return f"Job {self.id} - {self.collection} - {self.model_version}"
 
-    @property
-    def is_ongoing(self) -> bool:
-        """Check if job still has active external jobs"""
-        return self.external_jobs.filter(status__in=[ExternalJobStatus.QUEUED, ExternalJobStatus.PENDING]).exists()
+    def get_ongoing_external_jobs(self):
+        """Return QuerySet of ongoing external jobs"""
+        return self.external_jobs.filter(status__in=[ExternalJobStatus.QUEUED, ExternalJobStatus.PENDING])
 
-    def get_failed_jobs(self):
+    def get_failed_external_jobs(self):
         """Return QuerySet of failed external jobs"""
         return self.external_jobs.filter(
             status__in=[
@@ -101,28 +100,45 @@ class InferenceJob(models.Model):
             ]
         )
 
-    def check_completion(self):
-        """
-        Check if all ExternalJobs are completed and results stored.
-        If so, mark the InferenceJob as completed.
-        """
-        incomplete_jobs = self.external_jobs.exclude(status=ExternalJobStatus.COMPLETED)
-        if not incomplete_jobs.exists():
-            self.status = InferenceJobStatus.COMPLETED
-            self.completed_at = timezone.now()
-            self.save()
-
     def delete_external_jobs(self):
-        """Delete all external jobs"""
-        if self.completed:
+        """
+        Delete all external jobs
+        But only if no ongoing external jobs exist
+        """
+        if not self.get_ongoing_external_jobs().exists():
             self.external_jobs.all().delete()
 
-    def set_error(self, error_msg: str) -> None:
+    def log_error_and_set_status_failed(self, error_msg: str) -> None:
         """Set general error and mark job as failed"""
         self.error_message = error_msg
         self.status = InferenceJobStatus.FAILED
         self.completed_at = timezone.now()
         self.save(update_fields=["error_message", "status", "completed_at", "updated_at"])
+
+    def create_external_job(self, batch_data) -> "ExternalJob":
+        """Create and submit an external job for a batch"""
+        try:
+            api_client = InferenceAPIClient()
+
+            # Submit batch to API using model version identifier
+            job_id = api_client.submit_batch(self.model_version.api_identifier, batch_data)
+
+            if not job_id:
+                # TODO: can't we get an exact error out of the api client?
+                self.log_error_and_set_status_failed("Failed to get job ID from API")
+                return None
+
+            # Create external job record
+            return ExternalJob.objects.create(
+                inference_job=self,
+                external_job_id=job_id,
+                url_ids=[item["url_id"] for item in batch_data],
+                status=ExternalJobStatus.QUEUED,
+            )
+
+        except Exception as e:
+            self.log_error_and_set_status_failed(f"Failed to create external job: {str(e)}")
+            return None
 
     def initiate(self) -> None:
         """Initialize job and create batches"""
@@ -132,7 +148,7 @@ class InferenceJob(models.Model):
 
             if not model_manager.ensure_model_loaded():
                 # TODO: shouldn't we be getting an exact error out of the api client that we can store?
-                self.set_error("Failed to load model")
+                self.log_error_and_set_status_failed("Failed to load model")
                 return
 
             # Create batches
@@ -145,76 +161,47 @@ class InferenceJob(models.Model):
                 self.create_external_job(batch)
 
             if not self.external_jobs.exists():
-                self.set_error("No batches created")
+                self.log_error_and_set_status_failed("No batches created")
                 return
 
             self.status = InferenceJobStatus.PENDING
             self.save()
 
         except Exception as e:
-            self.set_error(str(e))
+            self.log_error_and_set_status_failed(str(e))
 
-    def create_external_job(self, batch_data) -> "ExternalJob":
-        """Create and submit an external job for a batch"""
-        try:
-            api_client = InferenceAPIClient()
-
-            # Submit batch to API using model version identifier
-            job_id = api_client.submit_batch(self.model_version.api_identifier, batch_data)
-
-            if not job_id:
-                # TODO: can't we get an exact error out of the api client?
-                self.set_error("Failed to get job ID from API")
-                return None
-
-            # Create external job record
-            return ExternalJob.objects.create(
-                inference_job=self,
-                external_job_id=job_id,
-                url_ids=[item["url_id"] for item in batch_data],
-                status=ExternalJobStatus.QUEUED,
-            )
-
-        except Exception as e:
-            self.set_error(f"Failed to create external job: {str(e)}")
-            return None
-
-    def process_external_jobs(self) -> None:
+    def refresh_external_jobs_status_and_store_results(self) -> None:
         """Process all pending external jobs"""
-        pending_jobs = self.external_jobs.filter(status__in=[ExternalJobStatus.QUEUED, ExternalJobStatus.PENDING])
+        pending_jobs = self.get_ongoing_external_jobs()
 
         for external_job in pending_jobs:
-            external_job.process()
+            external_job.refresh_status_and_store_results()
 
-    def evaluate_status(self) -> None:
+    def reevaluate_progress_and_update_status(self) -> None:
         """Evaluate overall job status and handle completion"""
 
-        if self.is_ongoing:
+        if self.get_ongoing_external_jobs().exists():
             self.status = InferenceJobStatus.PENDING
         else:
-            failed_jobs = self.get_failed_jobs()
-            if failed_jobs.exists():
+            if self.get_failed_external_jobs().exists():
                 self.status = InferenceJobStatus.FAILED
             else:
                 self.status = InferenceJobStatus.COMPLETED
-                self.cleanup()
-
             self.completed_at = timezone.now()
-
+            self.unload_model()
         self.save()
 
-    def cleanup(self) -> None:
-        """Handle cleanup after job completion"""
-        try:
-            # Unload model if no other jobs need it
-            if not InferenceJob.objects.filter(
-                model_version=self.model_version, status=InferenceJobStatus.PENDING
-            ).exists():
-                model_manager = ModelManager(InferenceAPIClient(), self.model_version.api_identifier)
-                model_manager.api_client.unload_model(self.model_version.api_identifier)
+    def unload_model(self) -> None:
+        """
+        Check that no other jobs are using the loaded model
+        Unload the model
+        """
 
-        except Exception as e:
-            self.set_error(f"Cleanup error: {str(e)}")
+        if not InferenceJob.objects.filter(
+            model_version=self.model_version, status=InferenceJobStatus.PENDING
+        ).exists():
+            model_manager = ModelManager(InferenceAPIClient(), self.model_version.api_identifier)
+            model_manager.api_client.unload_model(self.model_version.api_identifier)
 
 
 class ExternalJob(models.Model):
@@ -236,15 +223,16 @@ class ExternalJob(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
-    def set_status(self, status: ExternalJobStatus) -> None:
+    def set_status(self, status: str) -> None:
         """Update job status"""
-        self.status = status
+        self.status = ExternalJobStatus.from_api_status(status)
         self.save(update_fields=["status", "updated_at"])
 
-    @property
-    def is_ongoing(self) -> bool:
-        """Check if job is currently processing"""
-        return self.status in [ExternalJobStatus.QUEUED, ExternalJobStatus.PENDING]
+    def log_error_and_set_status_failed(self, error_msg: str) -> None:
+        """Set error message and mark as failed"""
+        self.error_message = error_msg
+        self.status = ExternalJobStatus.FAILED
+        self.save(update_fields=["error_message", "status", "updated_at"])
 
     def mark_completed(self):
         """Mark batch as completed and check parent job completion"""
@@ -252,7 +240,16 @@ class ExternalJob(models.Model):
         self.completed_at = timezone.now()
         self.save()
 
-    def process(self) -> None:
+    def store_results(self, results) -> None:
+        """Store results and mark as completed"""
+        try:
+            self.results = results
+            self.mark_completed()
+
+        except Exception as e:
+            self.log_error_and_set_status_failed(f"Error storing results: {str(e)}")
+
+    def refresh_status_and_store_results(self) -> None:
         """Process this external job and update status/results"""
         try:
             api_client = InferenceAPIClient()
@@ -263,30 +260,13 @@ class ExternalJob(models.Model):
             # Update status
             new_status = ExternalJobStatus.from_api_status(response["status"])
             self.status = new_status
+            self.updated_at = timezone.now()
 
             # Handle completion or failure
             if new_status == ExternalJobStatus.COMPLETED:
                 self.store_results(response.get("results"))
-            elif new_status in [ExternalJobStatus.FAILED, ExternalJobStatus.CANCELLED]:
-                self.set_error(response.get("message", ""))
-
+                self.completed_at = timezone.now()
             self.save()
 
         except Exception as e:
-            self.set_error(f"Processing error: {str(e)}")
-
-    def store_results(self, results) -> None:
-        """Store results and mark as completed"""
-        try:
-            self.results = results
-            self.completed_at = timezone.now()
-            self.save()
-
-        except Exception as e:
-            self.set_error(f"Error storing results: {str(e)}")
-
-    def set_error(self, error_msg: str) -> None:
-        """Set error message and mark as failed"""
-        self.error_message = error_msg
-        self.status = ExternalJobStatus.FAILED
-        self.save(update_fields=["error_message", "status", "updated_at"])
+            self.log_error_and_set_status_failed(f"Processing error: {str(e)}")
