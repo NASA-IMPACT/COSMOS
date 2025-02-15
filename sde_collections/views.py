@@ -37,6 +37,7 @@ from .models.delta_patterns import (
     DeltaIncludePattern,
     DeltaResolvedTitle,
     DeltaResolvedTitleError,
+    DeltaTdammTagPattern,
     DeltaTitlePattern,
 )
 from .models.delta_url import CuratedUrl, DeltaUrl
@@ -338,7 +339,13 @@ class DeltaURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             return Response({"error": "Tag not specified"}, status=400)
 
         try:
-            delta_url.remove_tag(tag, source)
+            # delta_url.remove_tag(tag, source)
+            pattern = DeltaTdammTagPattern.objects.filter(
+                collection=delta_url.collection, match_pattern=delta_url.url, tag=tag, source=source
+            ).first()
+
+            if pattern:
+                pattern.delete()
             return Response({"status": "success"})
         except Exception as e:
             logger.error(f"Error occurred: {str(e)}")
@@ -354,7 +361,14 @@ class DeltaURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             return Response({"error": "Tag not specified"}, status=400)
 
         try:
-            delta_url.add_tag(tag, source)
+            # delta_url.add_tag(tag, source)
+            DeltaTdammTagPattern.objects.create(
+                collection=delta_url.collection,
+                match_pattern=delta_url.url,
+                match_pattern_type=1,
+                tag=tag,
+                source=source,
+            )
             return Response({"status": "success"})
         except Exception as e:
             logger.error("An error occurred while adding a tag to DeltaURL: %s", str(e))
