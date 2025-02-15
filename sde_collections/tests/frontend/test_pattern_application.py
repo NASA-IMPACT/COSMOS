@@ -1,3 +1,5 @@
+# docker-compose -f local.yml run --rm django pytest -s sde_collections/tests/frontend/test_pattern_application.py
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
