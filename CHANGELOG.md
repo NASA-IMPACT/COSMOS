@@ -23,3 +23,10 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Added a new API endpoint `feedback-form-dropdown-options-api/` where the list is going to be accesible
     - Added a list view called `FeedbackFormDropdownListView`
     - Added tests
+
+- 1217-add-data-validation-to-the-feedback-form-api-to-restrict-html-content
+  - Description: The feedback form API does not currently have any form of data validation on the backend which makes it easy for the user with the endpoint to send in data with html tags. We need to have a validation scheme on the backend to protect this from happening.
+  - Changes:
+    - Defined a class `HTMLFreeCharField` which inherits `serializers.CharField`
+    - Used regex to catch any HTML content comming in as an input to form fields
+    - Called this class within the serializer for necessary fields
