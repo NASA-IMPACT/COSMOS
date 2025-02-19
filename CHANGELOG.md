@@ -12,6 +12,11 @@ For each PR made, an entry should be added to this changelog. It should contain
   - etc.
 
 ## Changelog
+- 2889-serialize-the-tdamm-tags
+  - Description: Have TDAMM serialzed in a specific way and exposed via the Curated URLs API to be consumed into SDE Test/Prod
+  - Changes:
+    - Changed `get_tdamm_tag` method in the `CuratedURLAPISerializer` to process the TDAMM tags and pass them to the API endpoint
+
 - 960-notifications-add-a-dropdown-with-options-on-the-feedback-form
   - Description: Generate an API endpoint and publish all the dropdown options necessary as a list for LRM to consume it.
   - Changes:
