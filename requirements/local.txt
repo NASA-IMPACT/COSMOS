@@ -13,6 +13,7 @@ pytest==8.0.0  # https://github.com/pytest-dev/pytest
 pytest-sugar==1.0.0  # https://github.com/Frozenball/pytest-sugar
 types-requests # maybe instead, we should add `mypy --install-types` to the dockerfile?
 types-xmltodict
+coverage
 
 # Documentation
 # ------------------------------------------------------------------------------
