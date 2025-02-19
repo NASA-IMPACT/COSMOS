@@ -17,10 +17,10 @@ class HTMLFreeCharField(serializers.CharField):
 
 class FeedbackSerializer(serializers.ModelSerializer):
 
-    name = HTMLFreeCharField(max_length=150)
-    subject = HTMLFreeCharField(max_length=400)
+    name = HTMLFreeCharField()
+    subject = HTMLFreeCharField()
     comments = HTMLFreeCharField()
-    source = HTMLFreeCharField(max_length=50, required=False, default="SDE")
+    source = HTMLFreeCharField()
 
     class Meta:
         model = Feedback
