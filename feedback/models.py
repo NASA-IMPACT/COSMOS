@@ -61,7 +61,7 @@ class Feedback(models.Model):
             f"<!here> New Feedback Received : \n"  # noqa: E203
             f"Name: {self.name}\n"
             f"Email: {self.email}\n"
-            f"Dropdwon Choice: {dropdown_option_text}\n"
+            f"Dropdown Choice: {dropdown_option_text}\n"
             f"Subject: {self.subject}\n"
             f"Comments: {self.comments}\n"
             f"Source: {self.source}\n"
