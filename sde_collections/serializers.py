@@ -235,10 +235,12 @@ class CuratedURLAPISerializer(serializers.ModelSerializer):
         )
 
     def get_tdamm_tag(self, obj):
+        empty_categories = {"messengers": [], "objects": [], "signals": []}
         if not obj.tdamm_tag or obj.tdamm_tag == ["NOT_TDAMM"]:
-            return {"messengers": [], "objects": [], "signals": []}
+            return empty_categories
 
-        categorized_tags = {"messengers": [], "objects": [], "signals": []}
+        categories = empty_categories.copy()
+        prefix_mapping = {"MMA_M_": "messengers", "MMA_O_": "objects", "MMA_S_": "signals"}
 
         for tag in obj.tdamm_tag:
             if tag == "NOT_TDAMM":
@@ -248,17 +250,12 @@ class CuratedURLAPISerializer(serializers.ModelSerializer):
             if not tag_text:
                 continue
 
-            if tag.startswith("MMA_M_"):
-                transformed_tag = tag_text.replace(" - ", "/")
-                categorized_tags["messengers"].append(transformed_tag)
-            elif tag.startswith("MMA_O_"):
-                transformed_tag = tag_text.replace(" - ", "/")
-                categorized_tags["objects"].append(transformed_tag)
-            elif tag.startswith("MMA_S_"):
-                transformed_tag = tag_text.replace(" - ", "/")
-                categorized_tags["signals"].append(transformed_tag)
+            for prefix, category in prefix_mapping.items():
+                if tag.startswith(prefix):
+                    categories[category].append(tag_text.replace(" - ", "/"))
+                    break
 
-        return categorized_tags
+        return categories
 
     def get_document_type(self, obj):
         if obj.document_type is not None:
