@@ -1465,7 +1465,8 @@ function handleHideorShowSubmitButton() {
 }
 
 function handleDocumentTypeSelect() {
-  $("body").on("click", ".document_type_select", function () {
+  $("body").on("click", ".document_type_select", function (e) {
+    e.preventDefault();
     $match_pattern = $(this)
       .parents(".document_type_dropdown")
       .data("match-pattern");
@@ -1646,6 +1647,8 @@ function postDocumentTypePatterns(
     return;
   }
 
+  const scrollPosition = window.scrollY;
+
   $.ajax({
     url: "/api/document-type-patterns/",
     type: "POST",
@@ -1657,7 +1660,9 @@ function postDocumentTypePatterns(
       csrfmiddlewaretoken: csrftoken,
     },
     success: function (data) {
-      $("#delta_urls_table").DataTable().ajax.reload(null, false);
+      $("#delta_urls_table").DataTable().ajax.reload(function() {
+        window.scrollTo(0, scrollPosition);
+      }, false);
       $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
       if (currentTab === "") { //Only add a notification if we are on the first tab
         newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
