@@ -754,12 +754,10 @@ function initializeDataTable() {
             $("#title-patterns-dropdown-1").prop("disabled", true);
           } else if (index === 1) {
             $("#title-patterns-dropdown-1").on("change", function () {
-              if ($(this).val() === "") table.columns(6).search("").draw();
+              if ($(this).val() === "") table.columns(7).search("").draw();
               else {
-                table
-                  .column(6)
-                  .search(matchPatternTypeMap[$(this).val()])
-                  .draw();
+                const patternType = matchPatternTypeMap[$(this).val()];
+                table.column(7).search(patternType).draw();
               }
             });
           }
@@ -792,7 +790,7 @@ function initializeDataTable() {
         },
       },
       { data: "id", visible: false, searchable: false },
-      { data: "match_pattern_type", visible: false },
+      { data: "match_pattern_type", visible: false, searchable: true },
     ],
   });
 
