@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models.collection import Collection, ReindexingHistory, WorkflowHistory
-from .models.collection_choice_fields import Divisions, DocumentTypes
+from .models.collection_choice_fields import Divisions, DocumentTypes, TDAMMTags
 from .models.delta_patterns import (
     DeltaDivisionPattern,
     DeltaDocumentTypePattern,
@@ -235,8 +235,27 @@ class CuratedURLAPISerializer(serializers.ModelSerializer):
         )
 
     def get_tdamm_tag(self, obj):
-        tags = obj.tdamm_tag
-        return tags if tags is not None else []
+        empty_categories = {"messengers": [], "objects": [], "signals": []}
+        if not obj.tdamm_tag or obj.tdamm_tag == ["NOT_TDAMM"]:
+            return empty_categories
+
+        categories = empty_categories.copy()
+        prefix_mapping = {"MMA_M_": "messengers", "MMA_O_": "objects", "MMA_S_": "signals"}
+
+        for tag in obj.tdamm_tag:
+            if tag == "NOT_TDAMM":
+                continue
+
+            tag_text = dict(TDAMMTags.choices).get(tag)
+            if not tag_text:
+                continue
+
+            for prefix, category in prefix_mapping.items():
+                if tag.startswith(prefix):
+                    categories[category].append(tag_text.replace(" - ", "/"))
+                    break
+
+        return categories
 
     def get_document_type(self, obj):
         if obj.document_type and obj.document_type not in DocumentTypes.values:
