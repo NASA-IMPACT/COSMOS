@@ -3,7 +3,7 @@ from django.db import models
 from django.utils import timezone
 
 from inference.models import ClassificationType, ExternalJobStatus, InferenceJobStatus
-from inference.utils.batch import BatchConfig, BatchProcessor
+from inference.utils.batch import BatchProcessor
 from inference.utils.inference_api_client import InferenceAPIClient, ModelManager
 
 
@@ -145,24 +145,25 @@ class InferenceJob(models.Model):
         try:
             # Load model
             model_manager = ModelManager(InferenceAPIClient(), self.model_version.api_identifier)
-
             if not model_manager.ensure_model_loaded():
-                # TODO: shouldn't we be getting an exact error out of the api client that we can store?
+                # TODO: can't we get an exact error out of the model manager?
                 self.log_error_and_set_status_failed("Failed to load model")
                 return
 
-            # Create batches
-            batch_processor = BatchProcessor(BatchConfig())
+            batch_processor = BatchProcessor()
             urls = self.collection.curated_urls.all()
-            batches = batch_processor.create_batches(urls)
+            created_batch = False
 
-            # Create external jobs for batches
-            for batch in batches:
-                self.create_external_job(batch)
+            for batch in batch_processor.iter_url_batches(urls):
+                external_job = self.create_external_job(batch)
+                if external_job:
+                    created_batch = True
+                else:
+                    self.log_error_and_set_status_failed("Failed to create external job for batch")
+                    return  # Exit on first batch failure
 
-            if not self.external_jobs.exists():
-                self.log_error_and_set_status_failed("No batches created")
-                return
+            if not created_batch:
+                self.log_error_and_set_status_failed("No external jobs created")
 
             self.status = InferenceJobStatus.PENDING
             self.save()
