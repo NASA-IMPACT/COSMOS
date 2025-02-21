@@ -35,3 +35,11 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Defined a class `HTMLFreeCharField` which inherits `serializers.CharField`
     - Used regex to catch any HTML content comming in as an input to form fields
     - Called this class within the serializer for necessary fields
+
+- 1014-add-logs-when-importing-urls-so-we-know-how-many-were-expected-how-many-succeeded-and-how-many-failed
+  - Description: When URLs of a given collection are imported into COSMOS, a Slack notification is sent. This notification includes the total count of the existing curated URLs, URLs imported from the server, dump URLs imported, delta URLs identified and delta URLs marked for deletion.
+  - Changes:
+    - Updated collection class to include the following functions: count_curated_urls(),count_dump_urls(),count_delta_urls(),count_marked_for_deletion_urls()
+    - fetch_and_replace_full_text() triggers send_detailed_import_notification()
+    - Added a function send_detailed_import_notification() in sde_collections/utils/slack_utils.py to structure the notification to be sent.
+    - Updated the associated tests effected due to inclusion of this functionality.
