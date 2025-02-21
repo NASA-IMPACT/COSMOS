@@ -151,7 +151,7 @@ def pull_latest_collection_metadata_from_github():
     s3_client.upload_file(FILENAME, s3_bucket_name, s3_key)
 
 
-@celery_app.task(name="sde_collections.tasks.process_title_resolutions")
+@celery_app.task(name="sde_collections.tasks.process_title_resolutions", soft_time_limit=10000)
 def process_title_resolutions(pattern_id: int) -> None:
     """Background task to process and resolve title patterns"""
 
@@ -201,7 +201,12 @@ def process_title_resolutions(pattern_id: int) -> None:
 
         delta_url = DeltaUrl.objects.create(**fields)
 
-        DeltaResolvedTitle.objects.create(title_pattern=pattern, delta_url=delta_url, resolved_title=new_title)
+        DeltaResolvedTitle.objects.create(
+            title_pattern=pattern,
+            delta_url=delta_url,
+            resolved_title=new_title,
+            status=DeltaResolvedTitle.Status.RESOLVED,
+        )
 
     # Process delta URLs
     # Set PENDING status initially to all the matching URLs
