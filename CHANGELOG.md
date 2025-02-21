@@ -35,3 +35,10 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Defined a class `HTMLFreeCharField` which inherits `serializers.CharField`
     - Used regex to catch any HTML content comming in as an input to form fields
     - Called this class within the serializer for necessary fields
+
+- 3227-bugfix-title-patterns-selecting-multi-url-pattern-does-nothing
+  - Description: When selecting options from the match pattern type filter, the system does not filter the results as expected. Instead of displaying only the chosen variety of patterns, it continues to show all patterns.
+  - Changes:
+    - In `title_patterns_table` definition, corrected the column reference
+    - Made `match_pattern_type` searchable
+    - Corrected the column references and made code consistent on all the other tables, i.e., `exclude_patterns_table`, `include_patterns_table`, `division_patterns_table` and `document_type_patterns_table`
