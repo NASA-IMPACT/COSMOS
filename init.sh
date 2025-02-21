@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "Running all test cases across the project..."
+echo "Running all test cases across the project with coverage analysis..."
 
 # Initialize a failure counter
 failure_count=0
@@ -10,10 +10,20 @@ excluded_dirs="document_classifier functional_tests"
 # Find all test files except those in excluded directories
 test_files=$(find . -type f -name "test_*.py" | grep -Ev "$(echo $excluded_dirs | sed 's/ /|/g')")
 
-# Run each test file
+coverage erase  # Clear any existing coverage data
+
+# Setup .coveragerc configuration to include all Python files
+echo "[run]
+source = .
+include = */*.py
+
+[report]
+show_missing = True" > .coveragerc
+
+# Run each test file with coverage (without generating report yet)
 for test_file in $test_files; do
     echo "Running $test_file..."
-    pytest "$test_file"
+    coverage run --append -m pytest "$test_file"  # Collect coverage data
 
     # Check the exit status of pytest
     if [ $? -ne 0 ]; then
@@ -22,10 +32,11 @@ for test_file in $test_files; do
     fi
 done
 
-# Report the results
+# Report the results without generating the coverage report
 if [ $failure_count -ne 0 ]; then
-    echo "$failure_count test(s) failed."
+    echo "$failure_count test(s) failed. Refer to the terminal output for details."
     exit 1
 else
     echo "All tests passed successfully!"
+    echo "Coverage data collected. Coverage report will be generated separately."
 fi

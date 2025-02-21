@@ -33,5 +33,10 @@ jobs:
           DJANGO_ENV: test
         run: docker-compose -f local.yml run --rm django bash ./init.sh
 
+      - name: Generate Coverage Report
+        env:
+          DJANGO_ENV: test
+        run: docker-compose -f local.yml run --rm django bash -c "coverage report"
+
       - name: Cleanup
         run: docker-compose -f local.yml down --volumes
