@@ -108,9 +108,10 @@ class TestFullTextImport(TestCase):
             {"url": "http://example.com/2", "title": "Title 2", "full_text": "Content 2"},
         ]
 
+    @patch("sde_collections.utils.slack_utils.send_detailed_import_notification")
     @patch("sde_collections.tasks.Api")
     @patch("sde_collections.models.collection.GitHubHandler")
-    def test_full_text_import_workflow(self, MockGitHub, MockApi):
+    def test_full_text_import_workflow(self, MockGitHub, MockApi, MockSlackNotification):
         """Test the full process of importing full text data"""
         # Setup mock GitHub handler with proper XML content
         mock_github = Mock()
