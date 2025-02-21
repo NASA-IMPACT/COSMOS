@@ -1,6 +1,6 @@
 # docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_title_pattern_unapply.py
 
-from django.test import TestCase
+from django.test import TransactionTestCase
 
 from sde_collections.models.delta_patterns import (
     DeltaResolvedTitle,
@@ -12,7 +12,7 @@ from sde_collections.models.delta_url import CuratedUrl, DeltaUrl
 from .factories import CollectionFactory, DumpUrlFactory
 
 
-class TestTitlePatternUnapplyLogic(TestCase):
+class TestTitlePatternUnapplyLogic(TransactionTestCase):
     """Test complete lifecycle of title pattern application and removal."""
 
     def setUp(self):

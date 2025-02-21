@@ -453,10 +453,10 @@ class TitlePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 
 class TitlePatternStatusView(APIView):
     def get(self, request, pattern_id):
-        try:
-            pattern = DeltaTitlePattern.objects.get(id=pattern_id)
+        pattern = DeltaTitlePattern.objects.get(id=pattern_id)
 
-            # Get counts for each status
+        # Get counts for each status
+        if DeltaResolvedTitle.objects.filter(title_pattern=pattern).exists():
             status_counts = (
                 DeltaResolvedTitle.objects.filter(title_pattern=pattern)
                 .values("status")
@@ -475,8 +475,8 @@ class TitlePatternStatusView(APIView):
 
             return Response(result)
 
-        except DeltaTitlePattern.DoesNotExist:
-            return Response({"error": f"Pattern {pattern_id} not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({"error": "DeltaResolvedTitleNotFound"})
 
 
 class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):

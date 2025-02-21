@@ -1834,8 +1834,13 @@ function pollTitleResolutionStatus(patternId, match_pattern) {
           const response = await fetch(`/api/title-patterns/${patternId}/status/`);
           const data = await response.json();
 
+          if (data.error && data.error === "DeltaResolvedTitleNotFound") {
+            toastr.error("No URLs were affected by this pattern.");
+            clearInterval(pollInterval);
+          }
+
           // Check resolution status and show appropriate message
-          if (data.total > 0) {
+          else if (data.total > 0) {
             if(data.pending === 0 && data.processing === 0) {
               clearInterval(pollInterval);
 

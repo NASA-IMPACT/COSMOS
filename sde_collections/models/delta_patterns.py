@@ -624,7 +624,7 @@ class DeltaResolvedTitle(DeltaResolvedTitleBase):
         FAILED = "failed", "Failed"
 
     resolved_title = models.CharField(blank=True, default="")
-    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    status = models.CharField(max_length=20, choices=Status.choices, default="")
 
     class Meta:
         verbose_name = "Resolved Title"
