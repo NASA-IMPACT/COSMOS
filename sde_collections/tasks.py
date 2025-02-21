@@ -1,14 +1,13 @@
 import json
 import os
 import shutil
-
 import boto3
 from django.apps import apps
 from django.conf import settings
 from django.core import management
 from django.core.management.commands import loaddata
 from django.db import transaction
-
+from sde_collections.utils import slack_utils
 from config import celery_app
 from sde_collections.models.collection_choice_fields import (
     ReindexingStatusChoices,
@@ -215,6 +214,14 @@ def fetch_and_replace_full_text(collection_id, server_name):
             collection.reindexing_status = ReindexingStatusChoices.REINDEXING_READY_FOR_CURATION
             collection.save()
 
+        curated_count = collection.count_curated_urls()
+        dump_count = collection.count_dump_urls()
+        delta_count = collection.count_delta_urls()
+        deletion_count = collection.count_marked_for_deletion_urls()
+
+        slack_utils.send_detailed_import_notification(
+            collection.name, total_processed, curated_count, dump_count, delta_count, deletion_count
+        )
         return f"Successfully processed {total_processed} records and updated the database."
 
     except Exception as e:

@@ -634,6 +634,22 @@ class Collection(models.Model):
         for pattern in self.deltadivisionpatterns.all():
             pattern.apply()
 
+    def count_curated_urls(self):
+        """Return the count of Curated URLs for the collection."""
+        return CuratedUrl.objects.filter(collection=self).count()
+
+    def count_dump_urls(self):
+        """Return the count of all Dump URLs for the collection."""
+        return DumpUrl.objects.filter(collection=self).count()
+
+    def count_delta_urls(self):
+        """Return the count of Delta URLs identified."""
+        return DeltaUrl.objects.filter(collection=self).count()
+
+    def count_marked_for_deletion_urls(self):
+        """Return the count of Delta URLs marked for deletion."""
+        return DeltaUrl.objects.filter(collection=self, to_delete=True).count()
+    
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
         if not self.config_folder:
