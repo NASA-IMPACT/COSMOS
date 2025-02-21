@@ -649,7 +649,7 @@ class Collection(models.Model):
     def count_marked_for_deletion_urls(self):
         """Return the count of Delta URLs marked for deletion."""
         return DeltaUrl.objects.filter(collection=self, to_delete=True).count()
-    
+
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
         if not self.config_folder:

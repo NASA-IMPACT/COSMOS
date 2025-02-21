@@ -1,18 +1,20 @@
 import json
 import os
 import shutil
+
 import boto3
 from django.apps import apps
 from django.conf import settings
 from django.core import management
 from django.core.management.commands import loaddata
 from django.db import transaction
-from sde_collections.utils import slack_utils
+
 from config import celery_app
 from sde_collections.models.collection_choice_fields import (
     ReindexingStatusChoices,
     WorkflowStatusChoices,
 )
+from sde_collections.utils import slack_utils
 
 from .models.delta_url import DumpUrl
 from .sinequa_api import Api
