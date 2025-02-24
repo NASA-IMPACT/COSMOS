@@ -123,10 +123,13 @@ let table = $("#collection_table").DataTable({
     },
   ],
   columnDefs: [
-    // hide the data columns
+    // hide the data columns and search panes for these columns
     {
       targets: [COLUMNS.WORKFLOW_STATUS_RAW, COLUMNS.CURATOR_ID, COLUMNS.REINDEXING_STATUS_RAW],
       visible: false,
+      searchPanes: {
+        show: false,
+      },
     },
     { width: "200px", targets: COLUMNS.URL },
     {
@@ -175,6 +178,7 @@ let table = $("#collection_table").DataTable({
             },
           },
         ],
+        show: true,
       },
       targets: [COLUMNS.DELTA_URLS],
       type: "num-fmt",
@@ -225,19 +229,14 @@ let table = $("#collection_table").DataTable({
             },
           },
         ],
+        show: true,
       },
       targets: [COLUMNS.CURATED_URLS],
       type: "num-fmt",
     },
-    // hide the data panes
     {
       searchPanes: {
-        show: false,
-      },
-      targets: [COLUMNS.WORKFLOW_STATUS_RAW, COLUMNS.CURATOR_ID, COLUMNS.REINDEXING_STATUS_RAW],
-    },
-    {
-      searchPanes: {
+        show: true,
         dtOpts: {
           scrollY: "100%",
         },
@@ -246,11 +245,19 @@ let table = $("#collection_table").DataTable({
     },
     {
       searchPanes: {
+        show: true,
         dtOpts: {
           scrollY: "100%",
         },
       },
       targets: [COLUMNS.CONNECTOR_TYPE],
+    },
+    // Explicitly enable required searchPanes – Selenium requires searchPanes to be explicitly enabled for proper functionality during testing.
+    {
+      searchPanes: {
+        show: true,
+      },
+      targets: [COLUMNS.DIVISION, COLUMNS.DELTA_URLS, COLUMNS.CURATED_URLS, COLUMNS.WORKFLOW_STATUS, COLUMNS.CURATOR, COLUMNS.CONNECTOR_TYPE, COLUMNS.REINDEXING_STATUS ],
     },
   ],
 });
