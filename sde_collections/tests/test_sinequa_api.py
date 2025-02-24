@@ -249,7 +249,7 @@ class TestApiClass:
         ]
 
         batches = list(api_instance.get_full_texts("test_folder", batch_size=100, min_batch_size=1))
-        records_batches = [batch[0] for batch in batches] 
+        records_batches = [batch[0] for batch in batches]
 
         # Verify the batches were processed correctly after size reduction
         assert len(batches) == 1
