@@ -42,3 +42,9 @@ For each PR made, an entry should be added to this changelog. It should contain
     - In `title_patterns_table` definition, corrected the column reference
     - Made `match_pattern_type` searchable
     - Corrected the column references and made code consistent on all the other tables, i.e., `exclude_patterns_table`, `include_patterns_table`, `division_patterns_table` and `document_type_patterns_table`
+
+- 1190-add-tests-for-job-generation-pipeline
+  - Description: Tests have been added to enhance coverage for the config and job creation pipeline, alongside comprehensive tests for XML processing.
+  - Changes:
+    - Added config_generation/tests/test_config_generation_pipeline.py which tests the config and job generation pipeline, ensuring all components interact correctly
+    - config_generation/tests/test_db_to_xml.py is updated to include comprehensive tests for XML Processing
