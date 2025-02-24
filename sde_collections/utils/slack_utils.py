@@ -60,12 +60,12 @@ def format_slack_message(name, details, collection_id):
 
 
 def send_detailed_import_notification(
-    collection_name, total_processed, curated_count, dump_count, delta_count, deletion_count
+    collection_name, total_server_count, curated_count, dump_count, delta_count, marked_for_deletion_count
 ):
     message = (
         f"'{collection_name}' brought into COSMOS. "
-        f"Prior Curated: {curated_count}, URL counts - [Server: {total_processed}, "
-        f"Dump: {dump_count}, New Deltas: {delta_count}, Deleted: {deletion_count}]"
+        f"Prior Curated: {curated_count}, URL Counts - [Server: {total_server_count}, "
+        f"URLs Imported: {dump_count}, New Deltas: {delta_count}, Marked For Deletion: {marked_for_deletion_count}]"
     )
 
     webhook_url = settings.SLACK_WEBHOOK_URL

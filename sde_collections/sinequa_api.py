@@ -257,7 +257,7 @@ class Api:
                 if total_count is None:
                     total_count = response.get("TotalRowCount", 0)
 
-                yield self._process_rows_to_records(rows)
+                yield (self._process_rows_to_records(rows),total_count)
 
                 current_offset += len(rows)
 
