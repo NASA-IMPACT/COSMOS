@@ -36,10 +36,19 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Used regex to catch any HTML content comming in as an input to form fields
     - Called this class within the serializer for necessary fields
 
+
 - 1014-add-logs-when-importing-urls-so-we-know-how-many-were-expected-how-many-succeeded-and-how-many-failed
-  - Description: When URLs of a given collection are imported into COSMOS, a Slack notification is sent. This notification includes the total count of the existing curated URLs, URLs imported from the server, dump URLs imported, delta URLs identified and delta URLs marked for deletion.
+  - Description: When URLs of a given collection are imported into COSMOS, a Slack notification is sent. This notification includes the name of the collection imported,count of the existing curated URLs, total URLs count as per the server, URLs successfully imported from the server, delta URLs identified and delta URLs marked for deletion.
   - Changes:
-    - Updated collection class to include the following functions: count_curated_urls(),count_dump_urls(),count_delta_urls(),count_marked_for_deletion_urls()
-    - fetch_and_replace_full_text() triggers send_detailed_import_notification()
+    - The get_full_texts() function in sde_collections/sinequa_api.py is updated to yeild total_count along with rows.
+    - fetch_and_replace_full_text() function in sde_collections/tasks.py captures the total_server_count and triggers send_detailed_import_notification().
     - Added a function send_detailed_import_notification() in sde_collections/utils/slack_utils.py to structure the notification to be sent.
     - Updated the associated tests effected due to inclusion of this functionality.
+
+- 3227-bugfix-title-patterns-selecting-multi-url-pattern-does-nothing
+  - Description: When selecting options from the match pattern type filter, the system does not filter the results as expected. Instead of displaying only the chosen variety of patterns, it continues to show all patterns.
+  - Changes:
+    - In `title_patterns_table` definition, corrected the column reference
+    - Made `match_pattern_type` searchable
+    - Corrected the column references and made code consistent on all the other tables, i.e., `exclude_patterns_table`, `include_patterns_table`, `division_patterns_table` and `document_type_patterns_table`
+
