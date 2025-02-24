@@ -1,4 +1,4 @@
-#docker-compose -f local.yml run --rm django pytest config_generation/tests/test_db_to_xml.py
+# docker-compose -f local.yml run --rm django pytest config_generation/tests/test_db_to_xml.py
 from xml.etree.ElementTree import ElementTree, ParseError, fromstring
 
 import pytest
@@ -85,20 +85,22 @@ def test_add_new_element():
     updated_xml = editor.update_config_xml()
     assert "Value" in updated_xml and "<newchild>Value</newchild>" in updated_xml
 
+
 def test_add_third_level_hierarchy():
     xml_string = "<root></root>"
     editor = XmlEditor(xml_string)
     editor.update_or_add_element_value("parent/child/grandchild", "DeeplyNested")
     updated_xml = editor.update_config_xml()
     root = fromstring(updated_xml)
-    grandchild = root.find('.//grandchild')
+    grandchild = root.find(".//grandchild")
     assert grandchild is not None, "Grandchild element not found"
     assert grandchild.text == "DeeplyNested", "Grandchild does not contain the correct text"
-    
+
     # Check complete path
-    parent = root.find('.//parent/child/grandchild')
+    parent = root.find(".//parent/child/grandchild")
     assert parent is not None, "Complete path to grandchild not found"
     assert parent.text == "DeeplyNested", "Complete path to grandchild does not contain correct text"
+
 
 # Test transformations and generic mapping
 def test_convert_indexer_to_scraper_transformation():
