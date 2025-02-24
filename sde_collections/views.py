@@ -53,6 +53,7 @@ from .serializers import (
     DocumentTypePatternSerializer,
     ExcludePatternSerializer,
     IncludePatternSerializer,
+    TdammTagPatternSerializer,
     TitlePatternSerializer,
 )
 from .tasks import push_to_github_task
@@ -580,6 +581,14 @@ class DivisionPatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             return super().create(request, *args, **kwargs)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "Division is required."})
+
+
+class TdammTagPatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
+    queryset = DeltaTdammTagPattern.objects.all()
+    serializer_class = TdammTagPatternSerializer
+
+    def get_queryset(self):
+        return super().get_queryset().order_by("match_pattern")
 
 
 class CollectionViewSet(viewsets.ModelViewSet):

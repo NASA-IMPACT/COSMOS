@@ -7,6 +7,7 @@ from .models.delta_patterns import (
     DeltaDocumentTypePattern,
     DeltaExcludePattern,
     DeltaIncludePattern,
+    DeltaTdammTagPattern,
     DeltaTitlePattern,
 )
 from .models.delta_url import CuratedUrl, DeltaUrl
@@ -379,3 +380,17 @@ class DivisionPatternSerializer(BasePatternSerializer, serializers.ModelSerializ
         except DeltaDivisionPattern.DoesNotExist:
             pass
         return value
+
+
+class TdammTagPatternSerializer(BasePatternSerializer, serializers.ModelSerializer):
+    tag_display = serializers.CharField(source="get_tag_display", read_only=True)
+    operation_display = serializers.CharField(source="get_operation_display", read_only=True)
+
+    class Meta:
+        model = DeltaTdammTagPattern
+        fields = BasePatternSerializer.Meta.fields + (
+            "tag",
+            "tag_display",
+            "operation",
+            "operation_display",
+        )
