@@ -170,17 +170,17 @@ class TestApiClass:
 
         # Collect all batches from the iterator
         batches = list(api_instance.get_full_texts("test_folder"))
-
-        assert len(batches) == 2  # Should have two batches
-        assert len(batches[0]) == 2  # First batch has 2 records
-        assert len(batches[1]) == 1  # Second batch has 1 record
+        records_batches = [batch[0] for batch in batches]
+        assert len(records_batches) == 2  # Should have two batches
+        assert len(records_batches[0]) == 2  # First batch has 2 records
+        assert len(records_batches[1]) == 1  # Second batch has 1 record
 
         # Verify content of batches
-        assert batches[0] == [
+        assert records_batches[0] == [
             {"url": "http://example.com/1", "full_text": "Text 1", "title": "Title 1"},
             {"url": "http://example.com/2", "full_text": "Text 2", "title": "Title 2"},
         ]
-        assert batches[1] == [{"url": "http://example.com/3", "full_text": "Text 3", "title": "Title 3"}]
+        assert records_batches[1] == [{"url": "http://example.com/3", "full_text": "Text 3", "title": "Title 3"}]
 
     def test_get_full_texts_missing_index(self, api_instance):
         """
@@ -249,11 +249,12 @@ class TestApiClass:
         ]
 
         batches = list(api_instance.get_full_texts("test_folder", batch_size=100, min_batch_size=1))
+        records_batches = [batch[0] for batch in batches] 
 
         # Verify the batches were processed correctly after size reduction
         assert len(batches) == 1
-        assert len(batches[0]) == 1
-        assert batches[0][0]["url"] == "http://example.com/1"
+        assert len(records_batches[0]) == 1
+        assert records_batches[0][0]["url"] == "http://example.com/1"
 
         # Verify batch size reduction logic
         assert mock_execute_sql.call_count == 2
