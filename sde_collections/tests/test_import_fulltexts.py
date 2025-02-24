@@ -30,7 +30,7 @@ def test_fetch_and_replace_full_text(disconnect_signals):
     ]
 
     def mock_generator():
-        yield mock_batch
+        yield (mock_batch, len(mock_batch))
 
     with patch("sde_collections.sinequa_api.Api.get_full_texts") as mock_get_full_texts, patch(
         "sde_collections.utils.slack_utils.send_detailed_import_notification"
@@ -61,7 +61,7 @@ def test_fetch_and_replace_full_text_large_dataset(disconnect_signals):
         total_records = 20000
 
         for start in range(0, total_records, batch_size):
-            yield create_batch(start, min(batch_size, total_records - start))
+            yield (create_batch(start, min(batch_size, total_records - start)), total_records)
 
     with patch("sde_collections.sinequa_api.Api.get_full_texts") as mock_get_full_texts, patch(
         "sde_collections.utils.slack_utils.send_detailed_import_notification"
