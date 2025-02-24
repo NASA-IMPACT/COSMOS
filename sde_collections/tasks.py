@@ -16,7 +16,7 @@ from sde_collections.models.collection_choice_fields import (
 )
 from sde_collections.utils import slack_utils
 
-from .models.delta_url import DumpUrl,DeltaUrl,CuratedUrl
+from .models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
 from .sinequa_api import Api
 from .utils.github_helper import GitHubHandler
 
@@ -174,11 +174,11 @@ def fetch_and_replace_full_text(collection_id, server_name):
     # Step 1: Delete existing DumpUrl entries
     deleted_count, _ = DumpUrl.objects.filter(collection=collection).delete()
     print(f"Deleted {deleted_count} old records.")
-    total_server_count=0
+    total_server_count = 0
     try:
         # Step 2: Process data in batches
         total_processed = 0
-        for batch,total_count in api.get_full_texts(collection.config_folder):
+        for batch, total_count in api.get_full_texts(collection.config_folder):
             if total_server_count == 0:
                 total_server_count = total_count
             with transaction.atomic():

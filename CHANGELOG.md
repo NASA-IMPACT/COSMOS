@@ -51,4 +51,3 @@ For each PR made, an entry should be added to this changelog. It should contain
     - In `title_patterns_table` definition, corrected the column reference
     - Made `match_pattern_type` searchable
     - Corrected the column references and made code consistent on all the other tables, i.e., `exclude_patterns_table`, `include_patterns_table`, `division_patterns_table` and `document_type_patterns_table`
-
