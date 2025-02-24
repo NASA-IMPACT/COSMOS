@@ -42,3 +42,9 @@ For each PR made, an entry should be added to this changelog. It should contain
     - In `title_patterns_table` definition, corrected the column reference
     - Made `match_pattern_type` searchable
     - Corrected the column references and made code consistent on all the other tables, i.e., `exclude_patterns_table`, `include_patterns_table`, `division_patterns_table` and `document_type_patterns_table`
+
+- 1001-tests-for-critical-functionalities
+  - Description: Critical functionalities have been identified and listed, and critical areas lacking tests listed
+  - Changes:
+    - Integrated coverage.py as an indicative tool in the workflow for automated coverage reports on PRs, with separate display from test results.
+    - Introduced docs/architecture-decisions/testing_strategy.md, which includes the coverage report, lists critical areas, and specifically identifies those critical areas that are untested or under-tested.
