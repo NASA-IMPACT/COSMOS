@@ -51,3 +51,26 @@ For each PR made, an entry should be added to this changelog. It should contain
     - In `title_patterns_table` definition, corrected the column reference
     - Made `match_pattern_type` searchable
     - Corrected the column references and made code consistent on all the other tables, i.e., `exclude_patterns_table`, `include_patterns_table`, `division_patterns_table` and `document_type_patterns_table`
+
+- 1001-tests-for-critical-functionalities
+  - Description: Critical functionalities have been identified and listed, and critical areas lacking tests listed
+  - Changes:
+    - Integrated coverage.py as an indicative tool in the workflow for automated coverage reports on PRs, with separate display from test results.
+    - Introduced docs/architecture-decisions/testing_strategy.md, which includes the coverage report, lists critical areas, and specifically identifies those critical areas that are untested or under-tested.
+
+- 1192-finalize-the-infrastructure-for-frontend-testing
+  - Description: Set up comprehensive frontend testing infrastructure using Selenium WebDriver with Chrome, establishing a foundation for automated UI testing.
+  - Changes:
+    - Added Selenium testing dependency to `requirements/local.txt`
+    - Updated Dockerfile to support Chrome and ChromeDriver
+    - Created BaseTestCase and AuthenticationMixin for reusable test components
+    - Implemented core authentication test suite
+
+- 1195-implement-unit-test-for-forms-on-the-frontend
+  - Description: Implemented comprehensive frontend test suite covering authentication, collection management, search functionality, and pattern application forms.
+  - Changes:
+    - Added tests for authentication flows
+    - Implemented collection display and data table tests
+    - Added universal search functionality tests
+    - Created search pane filter tests
+    - Added pattern application form tests with validation checks
