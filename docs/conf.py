@@ -28,7 +28,7 @@ django.setup()
 
 # -- Project information -----------------------------------------------------
 
-project = "SDE Indexing Helper"
+project = "COSMOS"
 copyright = """2023, NASA IMPACT"""
 author = "NASA IMPACT"
 

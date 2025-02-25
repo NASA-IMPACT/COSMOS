@@ -127,12 +127,12 @@ def _health_check_exclude_pattern(collection, candidate_urls_sinequa):
 
         # check with http://
         if match_pattern.find("http://") == -1:
-            url = f"http://{match_pattern}"
+            url = f"http://{match_pattern}"  # noqa: E231
             if url in candidate_urls_sinequa:
                 exclude_pattern_report.append(create_exclude_pattern_report(match_pattern, url))
 
         if match_pattern.find("https://") == -1:
-            url = f"https://{match_pattern}"
+            url = f"https://{match_pattern}"  # noqa: E231
             if url in candidate_urls_sinequa:
                 exclude_pattern_report.append(create_exclude_pattern_report(match_pattern, url))
         else:

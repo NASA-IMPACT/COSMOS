@@ -8,7 +8,7 @@
     <domain></domain>
     <Revision>1</Revision>
     <visibility></visibility>
-    <ForceReindexation>true</ForceReindexation>
+    <ForceReindexation>false</ForceReindexation>
     <Plugin>SMD_Plugins/Sinequa.Plugin.WebCrawler_Index_URLList</Plugin>
     <WorkerCount>6</WorkerCount>
     <MaxWorkerPerHost></MaxWorkerPerHost>
@@ -20,7 +20,7 @@
     <ExcludedFilenames></ExcludedFilenames>
     <IncludedFolders></IncludedFolders>
     <ExcludedFolders></ExcludedFolders>
-    <EnableNeuralIndexing>false</EnableNeuralIndexing>
+    <EnableNeuralIndexing>true</EnableNeuralIndexing>
     <NeuralSearchSelectionQuery></NeuralSearchSelectionQuery>
     <UrlStayInside>true</UrlStayInside>
     <UrlRefererStayInside>false</UrlRefererStayInside>
@@ -267,9 +267,5 @@
     <Mapping>
         <Name>id</Name>
         <Value>doc.url1</Value>
-    </Mapping>
-    <Mapping>
-        <Name>version</Name>
-        <Value>Md5(doc.url1)</Value>
     </Mapping>
 </Sinequa>

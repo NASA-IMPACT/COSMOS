@@ -97,3 +97,75 @@ class WorkflowStatusChoices(models.IntegerChoices):
     PROD_MAJOR = 16, "Prod: Major Issues"
     MERGE_PENDING = 17, "Code Merge Pending"
     NEEDS_DELETE = 19, "Delete from Prod"
+    INDEXING_FINISHED_ON_DEV = 20, "Indexing Finished on LRM Dev"
+
+
+class ReindexingStatusChoices(models.IntegerChoices):
+    REINDEXING_NOT_NEEDED = 1, "Re-Indexing Not Needed"
+    REINDEXING_NEEDED_ON_DEV = 2, "Re-Indexing Needed"
+    REINDEXING_FINISHED_ON_DEV = 3, "Re-Indexing Finished"
+    REINDEXING_READY_FOR_CURATION = 4, "Ready for Re-Curation"
+    REINDEXING_CURATION_IN_PROGRESS = 5, "Re-Curation in Progress"
+    REINDEXING_CURATED = 6, "Re-Curation Finished"
+    REINDEXING_INDEXED_ON_PROD = 7, "Re-Indexed on Prod"
+
+    # @classmethod
+    # def get_status_string(cls, value):
+    #     for choice in cls.choices:
+    #         if choice[0] == value:
+    #             return choice[1]
+    #     return "N/A"
+
+
+class TDAMMTags(models.TextChoices):
+    """TDAMM (Tagged Data for Multi-Messenger Astronomy) tag choices."""
+
+    NOT_TDAMM = "Not TDAMM", "Not TDAMM"
+    MMA_M_EM = "MMA_M_EM", "Messenger - EM Radiation"
+    MMA_M_EM_G = "MMA_M_EM_G", "Messenger - EM Radiation - Gamma rays"
+    MMA_M_EM_X = "MMA_M_EM_X", "Messenger - EM Radiation - X-rays"
+    MMA_M_EM_U = "MMA_M_EM_U", "Messenger - EM Radiation - Ultraviolet"
+    MMA_M_EM_O = "MMA_M_EM_O", "Messenger - EM Radiation - Optical"
+    MMA_M_EM_I = "MMA_M_EM_I", "Messenger - EM Radiation - Infrared"
+    MMA_M_EM_M = "MMA_M_EM_M", "Messenger - EM Radiation - Microwave"
+    MMA_M_EM_R = "MMA_M_EM_R", "Messenger - EM Radiation - Radio"
+    MMA_M_G = "MMA_M_G", "Messenger - Gravitational Waves"
+    MMA_M_G_CBI = "MMA_M_G_CBI", "Messenger - Gravitational Waves - Compact Binary Inspiral"
+    MMA_M_G_S = "MMA_M_G_S", "Messenger - Gravitational Waves - Stochastic"
+    MMA_M_G_CON = "MMA_M_G_CON", "Messenger - Gravitational Waves - Continuous"
+    MMA_M_G_B = "MMA_M_G_B", "Messenger - Gravitational Waves - Burst"
+    MMA_M_C = "MMA_M_C", "Messenger - Cosmic Rays"
+    MMA_M_N = "MMA_M_N", "Messenger - Neutrinos"
+    MMA_O_BI = "MMA_O_BI", "Objects - Binaries"
+    MMA_O_BI_BBH = "MMA_O_BI_BBH", "Objects - Binaries - Binary Black Holes"
+    MMA_O_BI_BNS = "MMA_O_BI_BNS", "Objects - Binaries - Binary Neutron Stars"
+    MMA_O_BI_C = "MMA_O_BI_C", "Objects - Binaries - Cataclysmic Variables"
+    MMA_O_BI_N = "MMA_O_BI_N", "Objects - Binaries - Neutron Star-Black Hole"
+    MMA_O_BI_B = "MMA_O_BI_B", "Objects - Binaries - Binary Pulsars"
+    MMA_O_BI_W = "MMA_O_BI_W", "Objects - Binaries - White Dwarf Binaries"
+    MMA_O_BH = "MMA_O_BH", "Objects - Black Holes"
+    MMA_O_BH_AGN = "MMA_O_BH_AGN", "Objects - Black Holes - Active Galactic Nuclei"
+    MMA_O_BH_IM = "MMA_O_BH_IM", "Objects - Black Holes - Intermediate mass"
+    MMA_O_BH_STM = "MMA_O_BH_STM", "Objects - Black Holes - Stellar mass"
+    MMA_O_BH_SUM = "MMA_O_BH_SUM", "Objects - Black Holes - Supermassive"
+    MMA_O_E = "MMA_O_E", "Objects - Exoplanets"
+    MMA_O_N = "MMA_O_N", "Objects - Neutron Stars"
+    MMA_O_N_M = "MMA_O_N_M", "Objects - Neutron Stars - Magnetars"
+    MMA_O_N_P = "MMA_O_N_P", "Objects - Neutron Stars - Pulsars"
+    MMA_O_N_PWN = "MMA_O_N_PWN", "Objects - Neutron Stars - Pulsar Wind Nebula"
+    MMA_O_S = "MMA_O_S", "Objects - Supernova Remnants"
+    MMA_S_F = "MMA_S_F", "Signals - Fast Radio Bursts"
+    MMA_S_G = "MMA_S_G", "Signals - Gamma-ray Bursts"
+    MMA_S_K = "MMA_S_K", "Signals - Kilonovae"
+    MMA_S_N = "MMA_S_N", "Signals - Novae"
+    MMA_S_P = "MMA_S_P", "Signals - Pevatrons"
+    MMA_S_ST = "MMA_S_ST", "Signals - Stellar flares"
+    MMA_S_SU = "MMA_S_SU", "Signals - Supernovae"
+
+    @classmethod
+    def lookup_by_text(cls, text: str) -> str | None:
+        """Look up a TDAMM tag by its display text."""
+        for choice in cls.choices:
+            if choice[1].lower() == text.lower():
+                return choice[0]
+        return None

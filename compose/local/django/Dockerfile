@@ -38,6 +38,8 @@ WORKDIR ${APP_HOME}
 
 # Install required system dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
+  wget \
+  gnupg \
   # psycopg2 dependencies
   libpq-dev \
   # Translations dependencies
@@ -45,6 +47,12 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
   # pycurl dependencies
   libcurl4-openssl-dev \
   libssl-dev \
+  # PostgreSQL 15
+  && sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list' \
+  && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+  && apt-get update \
+  && apt-get install -y postgresql-15 postgresql-client-15 \
+  && apt-get install -y chromium chromium-driver \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*

@@ -1,100 +1,132 @@
 """
-inferences are supplied by the classification model. the contact point is Bishwas
-cmr is supplied by running https://github.com/NASA-IMPACT/llm-app-EJ-classifier/blob/develop/scripts/data_processing/download_cmr.py
-move to the serve like this: scp ej_dump_20240814_143036.json  sde:/home/ec2-user/sde_indexing_helper/backups/
+Creates EJ dump files by processing CMR data and classifications.
 """
 
 import json
 from datetime import datetime
 
+from cmr_processing import CmrDataset
+from threshold_processing import ThresholdProcessor
+
+try:
+    from config import (
+        CMR_FILENAME,
+        INFERENCE_FILENAME,
+        OUTPUT_FILENAME_TEMPLATE,
+        TIMESTAMP_FORMAT,
+    )
+except ImportError:
+    from scripts.ej.config import (
+        CMR_FILENAME,
+        INFERENCE_FILENAME,
+        OUTPUT_FILENAME_TEMPLATE,
+        TIMESTAMP_FORMAT,
+    )
+
 
 def load_json_file(file_path: str) -> dict:
+    """Load and parse a JSON file."""
     with open(file_path) as file:
         return json.load(file)
 
 
 def save_to_json(data: dict | list, file_path: str) -> None:
+    """Save data to a JSON file with proper formatting."""
     with open(file_path, "w") as file:
         json.dump(data, file, indent=2)
 
 
-def process_classifications(predictions: list[dict[str, float]], threshold: float = 0.5) -> list[str]:
+def create_cmr_dict(cmr_data: list[dict]) -> dict[str, dict]:
     """
-    Process the predictions and classify as follows:
-    1. If 'Not EJ' is the highest scoring prediction, return 'Not EJ' as the only classification
-    2. Filter classifications based on the threshold, excluding 'Not EJ'
-    3. Default to 'Not EJ' if no classifications meet the threshold
+    Restructure CMR data into a dictionary with concept-id as the key.
+
+    Args:
+        cmr_data: List of CMR dataset dictionaries.
+
+    Returns:
+        Dictionary mapping concept-ids to their respective CMR data.
     """
-    highest_prediction = max(predictions, key=lambda x: x["score"])
-
-    if highest_prediction["label"] == "Not EJ":
-        return ["Not EJ"]
-
-    classifications = [
-        pred["label"] for pred in predictions if pred["score"] >= threshold and pred["label"] != "Not EJ"
-    ]
-
-    return classifications if classifications else ["Not EJ"]
-
-
-def create_cmr_dict(cmr_data: list[dict[str, dict[str, str]]]) -> dict[str, dict[str, dict[str, str]]]:
-    """Restructure CMR data into a dictionary with 'concept-id' as the key."""
     return {dataset["meta"]["concept-id"]: dataset for dataset in cmr_data}
 
 
-def remove_unauthorized_classifications(classifications: list[str]) -> list[str]:
-    """Filter classifications to keep only those in the authorized list."""
+def create_clean_dataset(
+    inferences: list[dict],
+    cmr_dict: dict[str, dict],
+    processor: ThresholdProcessor,
+) -> list[dict]:
+    """
+    Create clean dataset with processed CMR data and classifications.
+    Excludes datasets classified as 'Not EJ'.
 
-    authorized_classifications = [
-        "Climate Change",
-        "Disasters",
-        "Extreme Heat",
-        "Food Availability",
-        "Health & Air Quality",
-        "Human Dimensions",
-        "Urban Flooding",
-        "Water Availability",
-    ]
+    Args:
+        inferences: List of inference dictionaries containing predictions.
+        cmr_dict: Dictionary mapping concept-ids to CMR data.
+        processor: ThresholdProcessor instance for processing classifications.
 
-    return [cls for cls in classifications if cls in authorized_classifications]
-
-
-def update_cmr_with_classifications(
-    inferences: list[dict[str, dict]],
-    cmr_dict: dict[str, dict[str, dict]],
-    threshold: float = 0.5,
-) -> list[dict[str, dict]]:
-    """Update CMR data with valid classifications based on inferences."""
-
-    predicted_cmr = []
+    Returns:
+        List of processed dataset dictionaries, excluding 'Not EJ' classifications.
+    """
+    clean_data = []
 
     for inference in inferences:
-        classifications = process_classifications(predictions=inference["predictions"], threshold=threshold)
-        classifications = remove_unauthorized_classifications(classifications)
+        concept_id = inference["concept-id"]
+        cmr_dataset = cmr_dict.get(concept_id)
 
-        if classifications:
-            cmr_dataset = cmr_dict.get(inference["concept-id"])
+        if cmr_dataset:
+            # Process classifications
+            classifications = processor.process_and_filter(inference["predictions"])
 
-            if cmr_dataset:
-                cmr_dataset["indicators"] = ";".join(classifications)
-                predicted_cmr.append(cmr_dataset)
+            # Only include datasets that have valid classifications and are not marked as 'Not EJ'
+            if classifications and "Not EJ" not in classifications:
+                # Process CMR data
+                processed_cmr = CmrDataset(cmr_dataset).to_dict()
+                processed_cmr["indicators"] = ";".join(classifications)
+                clean_data.append(processed_cmr)
 
-    return predicted_cmr
+    return clean_data
 
 
-def main():
-    inferences = load_json_file("cmr-inference.json")
-    cmr = load_json_file("cmr_collections_umm_20240807_142146.json")
+def main(
+    cmr_file: str = CMR_FILENAME,
+    inference_file: str = INFERENCE_FILENAME,
+) -> None:
+    """
+    Main function to create EJ dump file.
 
+    Args:
+        cmr_file: Path to the CMR data JSON file.
+        inference_file: Path to the inference predictions JSON file.
+    """
+    # Initialize processor
+    processor = ThresholdProcessor()
+
+    # Load input files
+    inferences = load_json_file(inference_file)
+    cmr = load_json_file(cmr_file)
+
+    # Create CMR dictionary
     cmr_dict = create_cmr_dict(cmr)
 
-    predicted_cmr = update_cmr_with_classifications(inferences=inferences, cmr_dict=cmr_dict, threshold=0.8)
+    # Create clean dataset with all required fields, excluding 'Not EJ' classifications
+    clean_data = create_clean_dataset(
+        inferences=inferences,
+        cmr_dict=cmr_dict,
+        processor=processor,
+    )
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_name = f"ej_dump_{timestamp}.json"
+    # Generate output filename with timestamp
+    timestamp = datetime.now().strftime(TIMESTAMP_FORMAT)
+    output_filename = OUTPUT_FILENAME_TEMPLATE.format(timestamp)
 
-    save_to_json(predicted_cmr, file_name)
+    # Save output
+    save_to_json(clean_data, output_filename)
+    print(f"Processed {len(clean_data)} EJ datasets from {cmr_file} and {inference_file}")
+    print()
+    print(f"Saved to {output_filename}")
 
 
 if __name__ == "__main__":
-    main()
+    main(
+        cmr_file=CMR_FILENAME,
+        inference_file=INFERENCE_FILENAME,
+    )

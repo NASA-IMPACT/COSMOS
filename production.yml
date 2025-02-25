@@ -10,7 +10,7 @@ services:
       dockerfile: ./compose/production/django/Dockerfile
     image: sde_indexing_helper_production_django
     volumes:
-      - ./backups:/app/backups
+      - ./backups:/app/backups:z
     depends_on:
       - postgres
     env_file:
@@ -38,6 +38,10 @@ services:
       - django
     volumes:
       - production_traefik:/etc/traefik/acme
+    env_file:
+      # this should contain TRAEFIK_DOMAIN=sde-indexing-helper-staging.nasa-impact.net or
+      # TRAEFIK_DOMAIN=sde-indexing-helper.nasa-impact.net or
+      - ./.envs/.production/.traefik
     ports:
       - "0.0.0.0:80:80"
       - "0.0.0.0:443:443"
