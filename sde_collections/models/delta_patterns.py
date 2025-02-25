@@ -702,6 +702,7 @@ class DeltaTdammTagPattern(BaseMatchPattern):
 
     tag = models.CharField(max_length=255, choices=TDAMMTags.choices)
     operation = models.IntegerField(choices=OperationChoices.choices, default=OperationChoices.ADD)
+    source = models.CharField(max_length=10, default="manual")
 
     def apply(self):
         """
@@ -835,37 +836,39 @@ class DeltaTdammTagPattern(BaseMatchPattern):
         manual_tags = url_obj.tdamm_tag_manual or []
         changed = False
 
-        if self.operation == self.OperationChoices.ADD:
-            # If manual tags don't exist but ML tags do, copy ML tags to manual
-            if not manual_tags and ml_tags:
-                manual_tags = list(ml_tags)
-                changed = True
-            elif manual_tags is None:
-                manual_tags = []
-                changed = True
+        if self.operation == self.OperationChoices.ADD:  # for the add operation
+            if self.source == "ml":
+                # Copy ML tags to manual and add new tag
+                current_tags = ml_tags or []
+                new_tags = list(current_tags)
+                if self.tag not in new_tags:
+                    new_tags.append(self.tag)
+                    url_obj.tdamm_tag_manual = new_tags
+                    changed = True
+            else:  # 'manual'
+                # Add directly to manual tags
+                current_tags = manual_tags or []
+                if self.tag not in current_tags:
+                    current_tags.append(self.tag)
+                    url_obj.tdamm_tag_manual = current_tags
+                    changed = True
+        else:  # for the remove operation
+            if self.source == "ml":
+                # Copy ML tags minus the removed tag
+                if ml_tags:
+                    new_manual_tags = [t for t in ml_tags if t != self.tag]
+                    if not manual_tags or set(manual_tags) != set(new_manual_tags):
+                        url_obj.tdamm_tag_manual = new_manual_tags
+                        changed = True
+            else:  # 'manual'
+                # Remove directly from manual tags
+                if manual_tags and self.tag in manual_tags:
+                    manual_tags.remove(self.tag)
+                    url_obj.tdamm_tag_manual = manual_tags
+                    changed = True
 
-            # Add the tag if not already present
-            if self.tag not in manual_tags:
-                manual_tags.append(self.tag)
-                changed = True
-
-            if changed:
-                url_obj.tdamm_tag_manual = manual_tags
-                url_obj.save()
-
-        elif self.operation == self.OperationChoices.REMOVE:
-            # If manual tags exist and contain the tag, remove it
-            if manual_tags and self.tag in manual_tags:
-                manual_tags.remove(self.tag)
-                changed = True
-            # If no manual tags but ML tags contain the tag, copy ML tags (except the one to remove) to manual
-            elif not manual_tags and ml_tags and self.tag in ml_tags:
-                manual_tags = [tag for tag in ml_tags if tag != self.tag]
-                changed = True
-
-            if changed:
-                url_obj.tdamm_tag_manual = manual_tags
-                url_obj.save()
+        if changed:
+            url_obj.save()
 
     def _revert_tag_operation(self, url_obj):
         """Revert the effects of the tag operation."""
