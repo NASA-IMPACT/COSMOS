@@ -42,3 +42,20 @@ For each PR made, an entry should be added to this changelog. It should contain
     - In `title_patterns_table` definition, corrected the column reference
     - Made `match_pattern_type` searchable
     - Corrected the column references and made code consistent on all the other tables, i.e., `exclude_patterns_table`, `include_patterns_table`, `division_patterns_table` and `document_type_patterns_table`
+
+- 1192-finalize-the-infrastructure-for-frontend-testing
+  - Description: Set up comprehensive frontend testing infrastructure using Selenium WebDriver with Chrome, establishing a foundation for automated UI testing.
+  - Changes:
+    - Added Selenium testing dependency to `requirements/local.txt`
+    - Updated Dockerfile to support Chrome and ChromeDriver
+    - Created BaseTestCase and AuthenticationMixin for reusable test components
+    - Implemented core authentication test suite
+
+- 1195-implement-unit-test-for-forms-on-the-frontend
+  - Description: Implemented comprehensive frontend test suite covering authentication, collection management, search functionality, and pattern application forms.
+  - Changes:
+    - Added tests for authentication flows
+    - Implemented collection display and data table tests
+    - Added universal search functionality tests
+    - Created search pane filter tests
+    - Added pattern application form tests with validation checks
