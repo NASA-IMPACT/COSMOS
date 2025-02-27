@@ -1,4 +1,5 @@
 # inference/models/inference.py
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
@@ -119,11 +120,9 @@ class InferenceJob(models.Model):
         self.completed_at = timezone.now()
         self.save(update_fields=["error_message", "status", "completed_at", "updated_at"])
 
-    def create_external_job(self, batch_data) -> "ExternalJob":
+    def _create_external_job(self, batch_data, api_client) -> "ExternalJob":
         """Create and submit an external job for a batch"""
         try:
-            api_client = InferenceAPIClient()
-
             # Submit batch to API using model version identifier
             job_id = api_client.submit_batch(self.model_version.api_identifier, batch_data)
 
@@ -144,22 +143,22 @@ class InferenceJob(models.Model):
             self.log_error_and_set_status_failed(f"Failed to create external job: {str(e)}")
             return None
 
-    def initiate(self) -> None:
+    def initiate(self, inference_api_url=settings.INFERENCE_API_URL) -> None:
         """Initialize job and create batches"""
         try:
             # Load model using the refactored API client
-            api_client = InferenceAPIClient()
+            api_client = InferenceAPIClient(inference_api_url=inference_api_url)
             if not api_client.load_model(self.model_version.api_identifier):
                 # TODO: should refactor to get an exact error out of the api client
                 self.log_error_and_set_status_failed("Failed to load model")
                 return
 
             batch_processor = BatchProcessor()
-            urls = self.collection.curated_urls.all()
+            urls = self.collection.dump_urls.all()
             created_batch = False
 
             for batch in batch_processor.iter_url_batches(urls):
-                external_job = self.create_external_job(batch)
+                external_job = self._create_external_job(batch, api_client)
                 if external_job:
                     created_batch = True
                 else:
