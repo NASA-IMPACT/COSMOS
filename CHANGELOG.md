@@ -65,3 +65,12 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Added universal search functionality tests
     - Created search pane filter tests
     - Added pattern application form tests with validation checks
+
+- affected-urls-page
+  - Description: Added functionality to view affected URLs (both Delta and Curated URLs) for each pattern type (Include, Exclude, Title, Document Type).
+  - Changes:
+    - Created new URL patterns with dynamic URL type handling (`/<pattern-type>/<id>/<url-type>`)
+    - Added `BaseAffectedURLsListView` and pattern-specific views for handling URL displays
+    - Implemented `BaseAffectedURLsViewSet` and pattern-specific views for API endpoints
+    - Added `affected_urls.html`, `affected_urls.css` and`affected_urls.js`
+    - Enhanced pattern list views with clickable eye icons
