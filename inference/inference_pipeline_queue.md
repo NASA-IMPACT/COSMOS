@@ -1,7 +1,9 @@
 # COSMOS Inference Pipeline
 
 ## Overview
-COSMOS uses an ML inference pipeline to analyze and classify website content. This pipeline processes full-text content from URLs within collections to enhance metadata with classifications such as TDAMM categories (36 types) or science divisions (5 types).
+The server runs both the COSMOS curation app and an ML Inference Pipeline, which can analyze and classify website content. COSMOS is process whole collections and send the full_texts of the individual urls to the Inference Pipeline for classification. Right now it supports Division Classifications and TDAMM Classifications.
+
+The Inference Pipeline can support multiple model versions for a single classification type. When a collection needs to be classified for certain classification and model, say "Division" and "v1", the COSMOS app will create an InferenceJob object. The InferenceJob will then create ExternalJob objects for each batch of urls in the collection. The ExternalJob objects will send the full_texts to the Inference Pipeline API, which will return a job_id. The ExternalJob will then ping the API with the job_id to get the results. Once all ExternalJobs are complete, the InferenceJob will be marked as complete.
 
 ## Infrastructure
 We are running both local and prod in docker compose. On local, we are using celery and redis. On prod, we point to AWS SQS instead.
@@ -11,8 +13,8 @@ We can log into flower locally at http://localhost:5555. The user and password c
 ## Core Components
 
 ### Collections and URLs
-- **Collections**: Store website-level metadata
-- **DeltaUrl/CuratedUrl**: Store individual URL metadata including full text content and paired field descriptors which will hold classification results
+- **Collection**: Stores website-level metadata
+- **DeltaUrl/CuratedUrl**: Stores individual URL metadata including full text content and paired field descriptors which will hold classification results
 
 ### Job Structure
 The inference pipeline uses a two-level job system:
@@ -110,3 +112,6 @@ def unload_model():
 - database saving and job sending should be handled at a batch level, so that we can retry batches which failed, without needing to re-run the entire collection
 - database should not allow the creation of a a second InferenceJob if an existing Job exists where InferenceJob(collection=collection,classification_type=classification_type,completed=False)
 - Long-term:Enable tracking of which model version produced which classifications. this should be stored at the level of the paired field
+
+## Documentation Todo
+- write about ModelVersion, and how we have active versions. Explain the api_identifier, etc
