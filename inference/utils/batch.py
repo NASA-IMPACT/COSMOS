@@ -39,8 +39,8 @@ class BatchProcessor:
         return {**url_data, "text": text[: self.max_batch_text_length]}
 
     def would_exceed_batch_limit(self, current_length: int, new_length: int) -> bool:
-        """Check if adding new text would exceed batch limit"""
-        return current_length + new_length > self.max_batch_text_length
+        """Check if adding new text would exceed or exactly match the batch limit"""
+        return current_length + new_length >= self.max_batch_text_length
 
     def iter_url_batches(self, urls: QuerySet) -> Generator[list[URLData], None, None]:
         """
