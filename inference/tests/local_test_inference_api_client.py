@@ -1,4 +1,10 @@
 # inference/tests/test_inference_api_client.py
+
+"""
+This is a test designed to be run on a local machine which has the inference pipeline running
+It tests the inference the InferenceAPIClient against a live API
+"""
+
 import time
 
 import pytest
