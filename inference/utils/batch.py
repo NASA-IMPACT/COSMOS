@@ -24,17 +24,19 @@ class BatchProcessor:
         """Prepare single URL data for API"""
         return {
             "url_id": url.id,
-            "text": url.scraped_text,
-            "metadata": {"title": url.scraped_title, "url": url.url},
+            "text": url.scraped_text or "",  # Handle None values safely
+            "metadata": {"title": url.scraped_title or "", "url": url.url},
         }
 
     def get_text_length(self, url_data: URLData) -> int:
         """Get the length of text content for a URL"""
-        return len(url_data["text"])
+        text = url_data["text"]
+        return len(text) if text is not None else 0
 
     def truncate_oversized_url(self, url_data: URLData) -> URLData:
         """Handle a URL that exceeds the maximum batch length"""
-        return {**url_data, "text": url_data["text"][: self.max_batch_text_length]}
+        text = url_data["text"] or ""
+        return {**url_data, "text": text[: self.max_batch_text_length]}
 
     def would_exceed_batch_limit(self, current_length: int, new_length: int) -> bool:
         """Check if adding new text would exceed batch limit"""
