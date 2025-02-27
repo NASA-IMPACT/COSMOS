@@ -869,6 +869,8 @@ class DeltaTdammTagPattern(BaseMatchPattern):
 
         if changed:
             url_obj.save()
+            if hasattr(url_obj, "_cleanup_if_needed"):
+                url_obj._cleanup_if_needed()
 
     def _revert_tag_operation(self, url_obj):
         """Revert the effects of the tag operation."""
@@ -903,3 +905,4 @@ class DeltaTdammTagPattern(BaseMatchPattern):
     class Meta(BaseMatchPattern.Meta):
         verbose_name = "Delta TDAMM Tag Pattern"
         verbose_name_plural = "Delta TDAMM Tag Patterns"
+        unique_together = ("collection", "match_pattern", "tag", "operation", "source")

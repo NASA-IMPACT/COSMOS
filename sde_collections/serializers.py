@@ -412,4 +412,5 @@ class TdammTagPatternSerializer(BasePatternSerializer, serializers.ModelSerializ
             "tag_display",
             "operation",
             "operation_display",
+            "source",
         )

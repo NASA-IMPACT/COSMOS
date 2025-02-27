@@ -330,49 +330,105 @@ class DeltaURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "Division is required."})
 
+    # @action(detail=True, methods=["post"], url_path="remove_tag")
+    # def remove_tag(self, request, pk=None):
+    #     delta_url = self.get_object()
+    #     tag = request.data.get("tag")
+    #     source = request.data.get("source")
+
+    #     if not tag:
+    #         return Response({"error": "Tag not specified"}, status=400)
+
+    #     try:
+    #         # delta_url.remove_tag(tag, source)
+    #         pattern = DeltaTdammTagPattern.objects.filter(
+    #             collection=delta_url.collection, match_pattern=delta_url.url, tag=tag, source=source
+    #         ).first()
+
+    #         if pattern:
+    #             pattern.delete()
+    #         return Response({"status": "success"})
+    #     except Exception as e:
+    #         logger.error(f"Error occurred: {str(e)}")
+    #         return Response({"error": "An internal error has occurred."}, status=500)
+
     @action(detail=True, methods=["post"], url_path="remove_tag")
     def remove_tag(self, request, pk=None):
         delta_url = self.get_object()
         tag = request.data.get("tag")
-        source = request.data.get("source")
+        source = request.data.get("source", "manual")
 
         if not tag:
             return Response({"error": "Tag not specified"}, status=400)
 
         try:
-            # delta_url.remove_tag(tag, source)
-            pattern = DeltaTdammTagPattern.objects.filter(
-                collection=delta_url.collection, match_pattern=delta_url.url, tag=tag, source=source
-            ).first()
+            # Create or get a pattern for this specific URL
+            pattern, created = DeltaTdammTagPattern.objects.get_or_create(
+                collection=delta_url.collection,
+                match_pattern=delta_url.url,
+                match_pattern_type=1,  # Individual URL
+                tag=tag,
+                operation=DeltaTdammTagPattern.OperationChoices.REMOVE,
+                source=source,
+            )
 
-            if pattern:
-                pattern.delete()
+            # Apply the pattern
+            pattern._apply_tag_operation(delta_url)
+
             return Response({"status": "success"})
         except Exception as e:
-            logger.error(f"Error occurred: {str(e)}")
+            logger.error(f"An error occurred while adding a tag to DeltaURL: {str(e)}")
             return Response({"error": "An internal error has occurred."}, status=500)
+
+    # @action(detail=True, methods=["post"], url_path="add_tag")
+    # def add_tag(self, request, pk=None):
+    #     delta_url = self.get_object()
+    #     tag = request.data.get("tag")
+    #     source = request.data.get("source")
+
+    #     if not tag:
+    #         return Response({"error": "Tag not specified"}, status=400)
+
+    #     try:
+    #         # delta_url.add_tag(tag, source)
+    #         DeltaTdammTagPattern.objects.create(
+    #             collection=delta_url.collection,
+    #             match_pattern=delta_url.url,
+    #             match_pattern_type=1,
+    #             tag=tag,
+    #             source=source,
+    #         )
+    #         return Response({"status": "success"})
+    #     except Exception as e:
+    #         logger.error("An error occurred while adding a tag to DeltaURL: %s", str(e))
+    #         return Response({"error": "An internal error has occurred."}, status=500)
 
     @action(detail=True, methods=["post"], url_path="add_tag")
     def add_tag(self, request, pk=None):
         delta_url = self.get_object()
         tag = request.data.get("tag")
-        source = request.data.get("source")
+        source = request.data.get("source", "manual")
 
         if not tag:
             return Response({"error": "Tag not specified"}, status=400)
 
         try:
-            # delta_url.add_tag(tag, source)
-            DeltaTdammTagPattern.objects.create(
+            # Create or get a pattern for this specific URL
+            pattern, created = DeltaTdammTagPattern.objects.get_or_create(
                 collection=delta_url.collection,
                 match_pattern=delta_url.url,
-                match_pattern_type=1,
+                match_pattern_type=1,  # Individual URL
                 tag=tag,
+                operation=DeltaTdammTagPattern.OperationChoices.ADD,
                 source=source,
             )
+
+            # Apply the pattern
+            pattern._apply_tag_operation(delta_url)
+
             return Response({"status": "success"})
         except Exception as e:
-            logger.error("An error occurred while adding a tag to DeltaURL: %s", str(e))
+            logger.error(f"An error occurred while adding a tag to DeltaURL: {str(e)}")
             return Response({"error": "An internal error has occurred."}, status=500)
 
 
@@ -405,36 +461,102 @@ class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "Division is required."})
 
+    # @action(detail=True, methods=["post"], url_path="add_tag")
+    # def add_tag(self, request, pk=None):
+    #     curated_url = self.get_object()
+    #     tag = request.data.get("tag")
+    #     source = request.data.get("source")
+
+    #     if not tag:
+    #         return Response({"error": "Tag not specified"}, status=400)
+
+    #     try:
+    #         curated_url.add_tag(tag, source)
+    #         return Response({"status": "success"})
+    #     except Exception as e:
+    #         logger.error("An error occurred while adding a tag to CuratedURL: %s", str(e))
+    #         return Response({"error": "An internal error has occurred."}, status=500)
+
     @action(detail=True, methods=["post"], url_path="add_tag")
     def add_tag(self, request, pk=None):
         curated_url = self.get_object()
         tag = request.data.get("tag")
-        source = request.data.get("source")
+        source = request.data.get("source", "manual")
 
         if not tag:
             return Response({"error": "Tag not specified"}, status=400)
 
         try:
-            curated_url.add_tag(tag, source)
+            # Create delta URL first
+            delta_url = curated_url._create_or_update_delta()
+
+            # Then apply operation to the delta
+            pattern, created = DeltaTdammTagPattern.objects.get_or_create(
+                collection=curated_url.collection,
+                match_pattern=curated_url.url,
+                match_pattern_type=1,
+                tag=tag,
+                operation=DeltaTdammTagPattern.OperationChoices.ADD,
+                source=source,
+            )
+            pattern._apply_tag_operation(delta_url)
+
+            # Clean up if delta becomes identical to curated
+            if not delta_url.to_delete and delta_url._fields_match(curated_url):
+                delta_url.delete()
+
             return Response({"status": "success"})
         except Exception as e:
-            logger.error("An error occurred while adding a tag to CuratedURL: %s", str(e))
+            logger.error(f"Error occurred: {str(e)}")
             return Response({"error": "An internal error has occurred."}, status=500)
+
+    # @action(detail=True, methods=["post"], url_path="remove_tag")
+    # def remove_tag(self, request, pk=None):
+    #     curated_url = self.get_object()
+    #     tag = request.data.get("tag")
+    #     source = request.data.get("source")
+
+    #     if not tag:
+    #         return Response({"error": "Tag not specified"}, status=400)
+
+    #     try:
+    #         curated_url.remove_tag(tag, source)
+    #         return Response({"status": "success"})
+    #     except Exception as e:
+    #         logger.error("An error occurred while removing a tag from CuratedURL: %s", str(e))
+    #         return Response({"error": "An internal error has occurred."}, status=500)
 
     @action(detail=True, methods=["post"], url_path="remove_tag")
     def remove_tag(self, request, pk=None):
         curated_url = self.get_object()
         tag = request.data.get("tag")
-        source = request.data.get("source")
+        source = request.data.get("source", "manual")
 
         if not tag:
             return Response({"error": "Tag not specified"}, status=400)
 
         try:
-            curated_url.remove_tag(tag, source)
+            # Create delta URL first
+            delta_url = curated_url._create_or_update_delta()
+
+            # Then apply operation to the delta
+            pattern, created = DeltaTdammTagPattern.objects.get_or_create(
+                collection=curated_url.collection,
+                match_pattern=curated_url.url,
+                match_pattern_type=1,
+                tag=tag,
+                operation=DeltaTdammTagPattern.OperationChoices.REMOVE,
+                source=source,
+            )
+            pattern._apply_tag_operation(delta_url)
+
+            # Clean up if delta becomes identical to curated
+            if not delta_url.to_delete and delta_url._fields_match(curated_url):
+                delta_url.delete()
+
             return Response({"status": "success"})
         except Exception as e:
-            logger.error("An error occurred while removing a tag from CuratedURL: %s", str(e))
+            logger.error(f"Error occurred: {str(e)}")
             return Response({"error": "An internal error has occurred."}, status=500)
 
 
