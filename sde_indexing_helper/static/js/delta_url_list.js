@@ -103,6 +103,19 @@ function modalContents(tableName) {
   });
 }
 
+function renderCountWithViewButton(count, buttonClass, rowId) {
+  return `
+    <div style="display: flex; align-items: center; justify-content: center;">
+      <span style="min-width: 50px; text-align: right; padding-right: 10px;">
+        ${count}
+      </span>
+      <button type="button" class="btn btn-sm ${buttonClass}" data-row-id="${rowId}">
+        <i class="fa fa-eye"></i>
+      </button>
+    </div>
+  `;
+}
+
 function initializeDataTable() {
   var true_icon = '<i class="material-icons" style="color: green">check</i>';
   var false_icon = '<i class="material-icons" style="color: red">close</i>';
@@ -604,11 +617,17 @@ function initializeDataTable() {
         data: "delta_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'view-exclude-pattern-delta-urls', row.id);
+        },
       },
       {
         data: "curated_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'view-exclude-pattern-curated-urls', row.id);
+        },
       },
       {
         data: null,
@@ -690,11 +709,17 @@ function initializeDataTable() {
         data: "delta_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'view-include-pattern-delta-urls', row.id);
+        },
       },
       {
         data: "curated_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'view-include-pattern-curated-urls', row.id);
+        },
       },
       {
         data: null,
@@ -773,11 +798,17 @@ function initializeDataTable() {
         data: "delta_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'view-title-pattern-delta-urls', row.id);
+        },
       },
       {
         data: "curated_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'view-title-pattern-curated-urls', row.id);
+        },
       },
       {
         data: null,
@@ -856,11 +887,17 @@ function initializeDataTable() {
         data: "delta_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'view-document-type-pattern-delta-urls', row.id);
+        },
       },
       {
         data: "curated_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'view-document-type-pattern-curated-urls', row.id);
+        },
       },
       {
         data: null,
@@ -998,6 +1035,7 @@ function setupClickHandlers() {
   handleDivisionSelect();
   handleExcludeIndividualUrlClick();
   handleNewTitleChange();
+  handleShowAffectedURLsListButtonClick();
 
   handleUrlLinkClick();
   handleTabsClick();
@@ -2243,6 +2281,21 @@ function handleReindexingStatusSelect() {
           $("#reindexingStatusChangeModal").modal("hide");
           break;
       }
+    });
+  });
+}
+
+function handleShowAffectedURLsListButtonClick() {
+  const patterns = ['exclude', 'include', 'title', 'document-type'];
+  const urlTypes = ['delta', 'curated'];
+
+  patterns.forEach(pattern => {
+    urlTypes.forEach(urlType => {
+      const buttonClass = `.view-${pattern}-pattern-${urlType}-urls`;
+      $("body").on("click", buttonClass, function() {
+        const matchPatternId = $(this).data("row-id");
+        window.open(`/${pattern}-pattern/${matchPatternId}/${urlType}-urls`, '_blank');
+      });
     });
   });
 }
