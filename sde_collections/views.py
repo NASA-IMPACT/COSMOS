@@ -701,14 +701,14 @@ class BaseAffectedURLsViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
         )
 
 
-class IncludePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
-    pattern_model = DeltaIncludePattern
-    pattern_type = "Include"
-
-
 class ExcludePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
     pattern_model = DeltaExcludePattern
     pattern_type = "Exclude"
+
+
+class IncludePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
+    pattern_model = DeltaIncludePattern
+    pattern_type = "Include"
 
 
 class TitlePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):

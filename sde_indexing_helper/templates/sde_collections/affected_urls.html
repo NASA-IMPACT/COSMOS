@@ -30,18 +30,18 @@ Affected {{url_type | capfirst}} URLs for {{pattern_type}} Pattern
         <table id="affectedURLsTable" class="table" style="width:100%">
             <thead class="tableHeader">
                 <tr>
-                    <!-- <th scope="col" class="text-center col-2">ID</th> -->
+                    <th scope="col" class="text-center col-2">ID</th>
                     <th scope="col" class="text-center">URL</th>
-                    {% if pattern_type == "Exclude" %}
+                    <!-- {% if pattern_type == "Exclude" %}
                     <th scope="col" class="text-center" style="width: 10%;">Include URL</th>
-                    {% endif %}
+                    {% endif %} -->
                 </tr>
                 <tr class="filter-row">
-                    <!-- <td> </td> -->
+                    <td> </td>
                     <td ><input type="text" class="table_filter_row_input textBoxStyling" id="affectedURLsFilter" placeholder="URL" /></td>
-                    {% if pattern_type == "Exclude" %}
+                    <!-- {% if pattern_type == "Exclude" %}
                     <td></td>
-                    {% endif %}
+                    {% endif %} -->
                 </tr>
             </thead>
         </table>

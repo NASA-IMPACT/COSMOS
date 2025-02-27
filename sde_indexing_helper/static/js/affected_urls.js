@@ -57,9 +57,10 @@ function initializeDataTable() {
     },
 
     columns: [
+      { data: "id", class: "whiteText text-center" },
       getURLColumn(),
       //   ...getConditionalColumns(patternType),
-      { data: "id", visible: false, searchable: false },
+    //   { data: "id", visible: false, searchable: false },
     ],
   });
 
