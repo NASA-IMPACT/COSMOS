@@ -2,7 +2,7 @@
 {% load static i18n %}
 {% load humanize %}
 {% block title %}
-Affected URLs for {{pattern_type}} Pattern
+Affected {{url_type | capfirst}} URLs for {{pattern_type}} Pattern
 {% endblock title %}
 
 {% block stylesheets %}
@@ -16,13 +16,13 @@ Affected URLs for {{pattern_type}} Pattern
 {% block content %}
     {% csrf_token %}
     <div class="headerDiv">
-        <h1 class="pageTitle">{{url_type}} URLs</h1>
+        <h1 class="pageTitle">{{url_type | capfirst}} URLs</h1>
     </div>
 
     <div class="candidateUrlContainer">
 
     <h3 class="whiteText candidateTitle">
-        {{ url_count|intcomma }} affected URLs for {{ pattern_type | lower }} pattern:
+        {{ url_count|intcomma }} affected URL{{ url_count|pluralize }} for {{ pattern_type | lower }} pattern:
         <span style="color: #65B1EF;">{{ pattern.match_pattern }}</span>
     </h3>
 
@@ -86,6 +86,7 @@ Affected URLs for {{pattern_type}} Pattern
     <script>
     var collection_id = "{{ collection.id }}";
     var patternType = "{{ pattern_type }}";
+    var urlType = "{{ url_type }}";
     var pattern_id = "{{ pattern_id }}";
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"></script>

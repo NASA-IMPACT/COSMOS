@@ -683,56 +683,39 @@ class DocumentTypePatternAffectedURLsListView(BaseAffectedURLsListView):
     pattern_type = "Document Type"
 
 
-# class BaseAffectedURLsViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
-#     queryset = CandidateURL.objects.all()
-#     serializer_class = AffectedURLSerializer
-#     pattern_model = None
-#     pattern_type = None
+class BaseAffectedURLsViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 
-#     def get_queryset(self):
-#         pattern_id = self.request.GET.get("pattern_id")
-#         self.pattern = self.pattern_model.objects.get(id=pattern_id)
-#         queryset = self.pattern.matched_urls()
-#         return queryset
+    pattern_model = None
+    pattern_type = None
 
+    def get_serializer_class(self):
+        url_type = self.request.GET.get("url_type")
+        return DeltaURLSerializer if url_type == "delta" else CuratedURLSerializer
 
-# class IncludePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
-#     pattern_model = IncludePattern
-#     pattern_type = "Include"
-
-
-# class ExcludePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
-#     pattern_model = ExcludePattern
-#     pattern_type = "Exclude"
-
-#     def get_queryset(self):
-#         pattern_id = self.request.GET.get("pattern_id")
-#         self.pattern = self.pattern_model.objects.get(id=pattern_id)
-#         queryset = self.pattern.matched_urls()
-
-#         # Subquery to get the match_pattern and id of the IncludePattern
-#         include_pattern_subquery = IncludePattern.objects.filter(candidate_urls=models.OuterRef("pk")).values(
-#             "match_pattern", "id"
-#         )[:1]
-
-#         # Annotate with inclusion status, match_pattern, and id of the IncludePattern
-#         queryset = queryset.annotate(
-#             included=models.Exists(include_pattern_subquery),
-#             included_by_pattern=models.Subquery(
-#                 include_pattern_subquery.values("match_pattern"), output_field=models.CharField()
-#             ),
-#             match_pattern_id=models.Subquery(include_pattern_subquery.values("id"),
-#                                              output_field=models.IntegerField()),
-#         )
-
-#         return queryset
+    def get_queryset(self):
+        pattern_id = self.request.GET.get("pattern_id")
+        url_type = self.request.GET.get("url_type")
+        self.pattern = self.pattern_model.objects.get(id=pattern_id)
+        return (
+            self.pattern.get_matching_delta_urls() if url_type == "delta" else self.pattern.get_matching_curated_urls()
+        )
 
 
-# class TitlePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
-#     pattern_model = TitlePattern
-#     pattern_type = "Title"
+class IncludePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
+    pattern_model = DeltaIncludePattern
+    pattern_type = "Include"
 
 
-# class DocumentTypePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
-#     pattern_model = DocumentTypePattern
-#     pattern_type = "Document Type"
+class ExcludePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
+    pattern_model = DeltaExcludePattern
+    pattern_type = "Exclude"
+
+
+class TitlePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
+    pattern_model = DeltaTitlePattern
+    pattern_type = "Title"
+
+
+class DocumentTypePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
+    pattern_model = DeltaDocumentTypePattern
+    pattern_type = "Document Type"

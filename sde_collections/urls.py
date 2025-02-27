@@ -16,22 +16,20 @@ router.register(r"title-patterns", views.TitlePatternViewSet)
 router.register(r"document-type-patterns", views.DocumentTypePatternViewSet)
 router.register(r"division-patterns", views.DivisionPatternViewSet)
 router.register(r"environmental-justice", EnvironmentalJusticeRowViewSet)
-# router.register(
-#     r"include-pattern-affected-urls", views.IncludePatternAffectedURLsViewSet,
-# basename="include-pattern-affected-urls"
-# )
-# router.register(
-#     r"exclude-pattern-affected-urls", views.ExcludePatternAffectedURLsViewSet,
-# basename="exclude-pattern-affected-urls"
-# )
-# router.register(
-#     r"title-pattern-affected-urls", views.TitlePatternAffectedURLsViewSet, basename="title-pattern-affected-urls"
-# )
-# router.register(
-#     r"documenttype-pattern-affected-urls",
-#     views.DocumentTypePatternAffectedURLsViewSet,
-#     basename="documenttype-pattern-affected-urls",
-# )
+router.register(
+    r"exclude-pattern-affected-urls", views.ExcludePatternAffectedURLsViewSet, basename="exclude-pattern-affected-urls"
+)
+router.register(
+    r"include-pattern-affected-urls", views.IncludePatternAffectedURLsViewSet, basename="include-pattern-affected-urls"
+)
+router.register(
+    r"title-pattern-affected-urls", views.TitlePatternAffectedURLsViewSet, basename="title-pattern-affected-urls"
+)
+router.register(
+    r"documenttype-pattern-affected-urls",
+    views.DocumentTypePatternAffectedURLsViewSet,
+    basename="documenttype-pattern-affected-urls",
+)
 
 
 app_name = "sde_collections"
