@@ -1,4 +1,5 @@
 # inference/utils/inference_api_client.py
+import time
 from enum import Enum
 from typing import TypedDict, Union
 
@@ -59,11 +60,25 @@ class BatchItem(TypedDict):
 
 
 class InferenceAPIClient:
-    """Handles all direct interactions with the Inference API"""
+    """Handles all direct interactions with the Inference API and model management"""
 
-    def __init__(self, base_url: str = settings.INFERENCE_API_URL, timeout: int = 120):
+    def __init__(self, base_url: str = settings.INFERENCE_API_URL, timeout: int = 10):
         self.base_url = base_url
         self.timeout = timeout
+
+    def check_health(self) -> bool:
+        """
+        Check if the API is running and healthy.
+
+        Returns:
+            bool: True if the API is healthy, False otherwise
+        """
+        try:
+            url = f"{self.base_url}/health"
+            response = requests.get(url, timeout=self.timeout)
+            return response.status_code == 200
+        except requests.exceptions.RequestException:
+            return False
 
     def make_api_request(self, method: str, endpoint: str, **kwargs) -> JobResponse | ModelStatusResponse | None:
         """Make a request to the inference API with error handling"""
@@ -75,13 +90,13 @@ class InferenceAPIClient:
         except requests.exceptions.RequestException as e:
             return {"status": JobStatusEnum.FAILED, "message": f"API request failed: {str(e)}"}
 
-    def load_model(self, model_identifier: str) -> bool:
-        """Request model loading from API"""
+    def _request_model_load(self, model_identifier: str) -> bool:
+        """Internal method to request model loading from API"""
         response = self.make_api_request("POST", f"{model_identifier}/load")
         return response is not None and response.get("status") != JobStatusEnum.FAILED
 
-    def unload_model(self, model_identifier: str) -> bool:
-        """Request model unloading from API"""
+    def _request_model_unload(self, model_identifier: str) -> bool:
+        """Internal method to request model unloading from API"""
         response = self.make_api_request("POST", f"{model_identifier}/unload")
         return response is not None and response.get("status") != JobStatusEnum.FAILED
 
@@ -127,52 +142,69 @@ class InferenceAPIClient:
         response = self.make_api_request("GET", "")
         return response if response else {}
 
+    def unload_all_models(self) -> bool:
+        """Unload all models
 
-class ModelManager:
-    """Handles model loading/unloading and ensures only the specified model is loaded"""
-
-    def __init__(self, api_client: InferenceAPIClient, model_identifier: str):
-        """Initialize with API client and the model to manage
-
-        Args:
-            api_client: InferenceAPIClient instance
-            model_identifier: The model this manager will handle
+        Returns:
+            bool: True if all models were successfully unloaded
         """
-        self.api_client = api_client
-        self.model_identifier = model_identifier
-
-    def _unload_all_other_models(self) -> bool:
-        """Unload all models except the one managed by this instance"""
         try:
             # Get all available models
-            available_models = self.api_client.get_available_inferencers()
+            available_models = self.get_available_inferencers()
 
-            # Unload all models except our target model
+            # Unload all models
             for model_id in available_models:
-                if model_id != self.model_identifier:
-                    status = self.api_client.check_model_status(model_id)
-                    if status == ModelStatusEnum.LOADED:
-                        if not self.api_client.unload_model(model_id):
-                            return False
+                status = self.check_model_status(model_id)
+                if status == ModelStatusEnum.LOADED:
+                    if not self._request_model_unload(model_id):
+                        return False
             return True
         except Exception:
             return False
 
-    @retry(stop=stop_after_attempt(5), wait=wait_fixed(30), retry=retry_if_result(lambda x: not x))
-    def ensure_model_loaded(self) -> bool:
-        """Ensure only this model is loaded and ready
+    def wait_for_model_loading(self, model_identifier: str, max_attempts: int = 10, wait_time: int = 5) -> bool:
+        """
+        Wait for a model to finish loading.
+
+        Args:
+            model_identifier: The model to check
+            max_attempts: Maximum number of status checks
+            wait_time: Seconds to wait between checks
 
         Returns:
-            bool: True if the model is successfully loaded and all others unloaded
+            bool: True if model is loaded, False otherwise
         """
-        # First unload all other models
-        if not self._unload_all_other_models():
-            # TODO: it might be possible to get stuck in an error state here until we hit the retry limit
-            # and then not have logged any errors within the application
+        for _ in range(max_attempts):
+            status = self.check_model_status(model_identifier)
+            if status == ModelStatusEnum.LOADED:
+                return True
+            elif status == ModelStatusEnum.FAILED:
+                return False
+            elif status in [ModelStatusEnum.LOADING, ModelStatusEnum.TO_LOAD]:
+                # Model is still loading, wait and try again
+                time.sleep(wait_time)
+            else:
+                # Unexpected status
+                return False
+        return False  # Timed out without reaching LOADED state
+
+    @retry(stop=stop_after_attempt(5), wait=wait_fixed(30), retry=retry_if_result(lambda x: not x))
+    def load_model(self, model_identifier: str) -> bool:
+        """
+        Load a specific model, first unloading all models, and wait for loading to complete.
+
+        Args:
+            model_identifier: The model to load
+
+        Returns:
+            bool: True if the model is successfully loaded
+        """
+        # First unload all models
+        if not self.unload_all_models():
             return False
 
         # Check current status of our model
-        status = self.api_client.check_model_status(self.model_identifier)
+        status = self.check_model_status(model_identifier)
 
         # If already loaded, we're done
         if status == ModelStatusEnum.LOADED:
@@ -180,6 +212,11 @@ class ModelManager:
 
         # Try loading if in a state where we can load
         if status in [ModelStatusEnum.UNLOADED, ModelStatusEnum.FAILED, ModelStatusEnum.UNKNOWN]:
-            return self.api_client.load_model(self.model_identifier)
+            load_request_success = self._request_model_load(model_identifier)
+            if not load_request_success:
+                return False
+
+            # Now wait for loading to complete
+            return self.wait_for_model_loading(model_identifier)
 
         return False

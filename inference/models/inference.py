@@ -2,9 +2,13 @@
 from django.db import models
 from django.utils import timezone
 
-from inference.models import ClassificationType, ExternalJobStatus, InferenceJobStatus
+from inference.models.inference_choice_fields import (
+    ClassificationType,
+    ExternalJobStatus,
+    InferenceJobStatus,
+)
 from inference.utils.batch import BatchProcessor
-from inference.utils.inference_api_client import InferenceAPIClient, ModelManager
+from inference.utils.inference_api_client import InferenceAPIClient
 
 
 class ModelVersion(models.Model):
@@ -143,10 +147,10 @@ class InferenceJob(models.Model):
     def initiate(self) -> None:
         """Initialize job and create batches"""
         try:
-            # Load model
-            model_manager = ModelManager(InferenceAPIClient(), self.model_version.api_identifier)
-            if not model_manager.ensure_model_loaded():
-                # TODO: can't we get an exact error out of the model manager?
+            # Load model using the refactored API client
+            api_client = InferenceAPIClient()
+            if not api_client.load_model(self.model_version.api_identifier):
+                # TODO: should refactor to get an exact error out of the api client
                 self.log_error_and_set_status_failed("Failed to load model")
                 return
 
@@ -197,12 +201,11 @@ class InferenceJob(models.Model):
         Check that no other jobs are using the loaded model
         Unload the model
         """
-
         if not InferenceJob.objects.filter(
             model_version=self.model_version, status=InferenceJobStatus.PENDING
         ).exists():
-            model_manager = ModelManager(InferenceAPIClient(), self.model_version.api_identifier)
-            model_manager.api_client.unload_model(self.model_version.api_identifier)
+            api_client = InferenceAPIClient()
+            api_client.unload_all_models()
 
 
 class ExternalJob(models.Model):
