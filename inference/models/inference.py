@@ -147,7 +147,7 @@ class InferenceJob(models.Model):
         """Initialize job and create batches"""
         try:
             # Load model using the refactored API client
-            api_client = InferenceAPIClient(inference_api_url=inference_api_url)
+            api_client = InferenceAPIClient(base_url=inference_api_url)
             if not api_client.load_model(self.model_version.api_identifier):
                 # TODO: should refactor to get an exact error out of the api client
                 self.log_error_and_set_status_failed("Failed to load model")
@@ -219,8 +219,8 @@ class ExternalJob(models.Model):
     url_ids = models.JSONField(help_text="List of URL IDs included in this batch")
 
     status = models.IntegerField(choices=ExternalJobStatus.choices, default=ExternalJobStatus.QUEUED)
-    results = models.JSONField(blank=True)
-    error_message = models.TextField(blank=True)
+    results = models.JSONField(blank=True, null=True)
+    error_message = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
