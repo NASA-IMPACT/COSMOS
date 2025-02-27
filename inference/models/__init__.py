@@ -1,6 +1,6 @@
 # inference/models/__init__.py
-from .inference import ExternalJob, InferenceJob, ModelVersion  # noqa
-from .inference_choice_fields import (  # noqa
+from .inference import ExternalJob, InferenceJob, ModelVersion
+from .inference_choice_fields import (
     ClassificationType,
     ExternalJobStatus,
     InferenceJobStatus,
@@ -8,9 +8,9 @@ from .inference_choice_fields import (  # noqa
 
 __all__ = [
     "ClassificationType",
-    "InferenceJobStatus",
     "ExternalJobStatus",
-    "ModelVersion",
-    "InferenceJob",
+    "InferenceJobStatus",
     "ExternalJob",
+    "InferenceJob",
+    "ModelVersion",
 ]
