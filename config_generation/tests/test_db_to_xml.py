@@ -1,4 +1,7 @@
-import xml.etree.ElementTree as ET
+# docker-compose -f local.yml run --rm django pytest config_generation/tests/test_db_to_xml.py
+from xml.etree.ElementTree import ElementTree, ParseError, fromstring
+
+import pytest
 
 from ..db_to_xml import XmlEditor
 
@@ -28,39 +31,112 @@ def xmls_equal(xml1, xml2):
             return False
         return all(elements_equal(c1, c2) for c1, c2 in zip(e1, e2))
 
-    tree1 = ET.fromstring(xml1)
-    tree2 = ET.fromstring(xml2)
-    return elements_equal(tree1, tree2)
+    tree1 = ElementTree(fromstring(xml1))
+    tree2 = ElementTree(fromstring(xml2))
+
+    return elements_equal(tree1.getroot(), tree2.getroot())
 
 
-def test_update_or_add_element_value():
-    xml_string = """<root>
-    <child>
-        <grandchild>old_value</grandchild>
-    </child>
-    </root>"""
-
+# Tests for valid and invalid XML initializations
+def test_valid_xml_initialization():
+    xml_string = "<root><child>Test</child></root>"
     editor = XmlEditor(xml_string)
+    assert editor.get_tag_value("child") == ["Test"]
 
-    # To update an existing element's value
-    updated_xml = editor.update_or_add_element_value("child/grandchild", "new_value")
-    expected_output = """<root>
-        <child>
-            <grandchild>new_value</grandchild>
-        </child>
-    </root>
-    """
-    assert xmls_equal(updated_xml, expected_output)
 
-    # To create a new element and set its value
-    new_xml = editor.update_or_add_element_value("newchild", "some_value")
-    expected_output = """<root>
-        <child>
-            <grandchild>new_value</grandchild>
-        </child>
-        <newchild>
-            some_value
-        </newchild>
-    </root>
-    """
-    assert xmls_equal(new_xml, expected_output)
+def test_invalid_xml_initialization():
+    with pytest.raises(ParseError):
+        XmlEditor("<root><child></root>")
+
+
+# Test retrieval of single and multiple tag values
+def test_get_single_tag_value():
+    xml_string = "<root><child>Test</child></root>"
+    editor = XmlEditor(xml_string)
+    assert editor.get_tag_value("child", strict=True) == "Test"
+
+
+def test_get_nonexistent_tag_value():
+    xml_string = "<root><child>Test</child></root>"
+    editor = XmlEditor(xml_string)
+    assert editor.get_tag_value("nonexistent", strict=False) == []
+
+
+def test_get_tag_value_strict_multiple_elements():
+    xml_string = "<root><child>One</child><child>Two</child></root>"
+    editor = XmlEditor(xml_string)
+    with pytest.raises(ValueError):
+        editor.get_tag_value("child", strict=True)
+
+
+# Test updating and adding XML elements
+def test_update_existing_element():
+    xml_string = "<root><child>Old</child></root>"
+    editor = XmlEditor(xml_string)
+    editor.update_or_add_element_value("child", "New")
+    updated_xml = editor.update_config_xml()
+    assert "New" in updated_xml and "Old" not in updated_xml
+
+
+def test_add_new_element():
+    xml_string = "<root></root>"
+    editor = XmlEditor(xml_string)
+    editor.update_or_add_element_value("newchild", "Value")
+    updated_xml = editor.update_config_xml()
+    assert "Value" in updated_xml and "<newchild>Value</newchild>" in updated_xml
+
+
+def test_add_third_level_hierarchy():
+    xml_string = "<root></root>"
+    editor = XmlEditor(xml_string)
+    editor.update_or_add_element_value("parent/child/grandchild", "DeeplyNested")
+    updated_xml = editor.update_config_xml()
+    root = fromstring(updated_xml)
+    grandchild = root.find(".//grandchild")
+    assert grandchild is not None, "Grandchild element not found"
+    assert grandchild.text == "DeeplyNested", "Grandchild does not contain the correct text"
+
+    # Check complete path
+    parent = root.find(".//parent/child/grandchild")
+    assert parent is not None, "Complete path to grandchild not found"
+    assert parent.text == "DeeplyNested", "Complete path to grandchild does not contain correct text"
+
+
+# Test transformations and generic mapping
+def test_convert_indexer_to_scraper_transformation():
+    xml_string = """<root><Plugin>Indexer</Plugin></root>"""
+    editor = XmlEditor(xml_string)
+    editor.convert_indexer_to_scraper()
+    updated_xml = editor.update_config_xml()
+    assert "<Plugin>SMD_Plugins/Sinequa.Plugin.ListCandidateUrls</Plugin>" in updated_xml
+    assert "<Plugin>Indexer</Plugin>" not in updated_xml
+
+
+def test_generic_mapping_addition():
+    xml_string = "<root></root>"
+    editor = XmlEditor(xml_string)
+    editor._generic_mapping(name="id", value="doc.url1", selection="url1")
+    updated_xml = editor.update_config_xml()
+    assert "<Mapping>" in updated_xml
+    assert "<Name>id</Name>" in updated_xml
+    assert "<Value>doc.url1</Value>" in updated_xml
+
+
+# Test XML serialization with headers
+def test_xml_serialization_with_header():
+    xml_string = "<root><child>Value</child></root>"
+    editor = XmlEditor(xml_string)
+    xml_output = editor.update_config_xml()
+    assert '<?xml version="1.0" encoding="utf-8"?>' in xml_output
+    assert "<root>" in xml_output and "<child>Value</child>" in xml_output
+
+
+# Test handling multiple changes accumulation
+def test_multiple_changes_accumulation():
+    xml_string = "<root><child>Initial</child></root>"
+    editor = XmlEditor(xml_string)
+    editor.update_or_add_element_value("child", "Modified")
+    editor.update_or_add_element_value("newchild", "Added")
+    updated_xml = editor.update_config_xml()
+    assert "Modified" in updated_xml and "Added" in updated_xml
+    assert "Initial" not in updated_xml
