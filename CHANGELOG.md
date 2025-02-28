@@ -46,7 +46,10 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Used regex to catch any HTML content comming in as an input to form fields
     - Called this class within the serializer for necessary fields
 
-
+- 1030-resolve-0-value-document-type-in-nasa_science
+  - Description: Around 2000 of the docs coming out of the COSMOS api for nasa_science have a doc type value of 0.
+  - Changes:
+    - Added `obj.document_type != 0` as a condition in the `get_document_type` method within the `CuratedURLAPISerializer`
 
 - 1014-add-logs-when-importing-urls-so-we-know-how-many-were-expected-how-many-succeeded-and-how-many-failed
   - Description: When URLs of a given collection are imported into COSMOS, a Slack notification is sent. This notification includes the name of the collection imported,count of the existing curated URLs, total URLs count as per the server, URLs successfully imported from the server, delta URLs identified and delta URLs marked for deletion.
@@ -61,7 +64,6 @@ For each PR made, an entry should be added to this changelog. It should contain
   - Changes:
     - Added a constant `scrollPosition` within `postDocumentTypePatterns` to store the y coordinate postion on the page
     - Modified the ajax relaod to navigate to this position upon posting/saving the document type changes.
-
 
 - 3227-bugfix-title-patterns-selecting-multi-url-pattern-does-nothing
   - Description: When selecting options from the match pattern type filter, the system does not filter the results as expected. Instead of displaying only the chosen variety of patterns, it continues to show all patterns.
