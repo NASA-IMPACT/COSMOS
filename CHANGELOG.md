@@ -47,10 +47,9 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Called this class within the serializer for necessary fields
 
 - 1030-resolve-0-value-document-type-in-nasa_science
-  - Description: Around 2000 of the docs coming out of the COSMOS api for nasa_scince have a doc type vaule of 0.
+  - Description: Around 2000 of the docs coming out of the COSMOS api for nasa_science have a doc type value of 0.
   - Changes:
     - Added `obj.document_type != 0` as a condition in the `get_document_type` method within the `CuratedURLAPISerializer`
-    - Added a changelog.md file
 
 - 3228-bugfix-preserve-scroll-position--document-type-selection-behavior-on-individual-urls
   - Description: Upon selecting a document type on any individual URL, the page refreshes and returns to the top. This is not necessarily a bug but an inconvenience, especially when working at the bottom of the page. Fix the JS code.
