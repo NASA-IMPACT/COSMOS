@@ -46,11 +46,22 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Used regex to catch any HTML content comming in as an input to form fields
     - Called this class within the serializer for necessary fields
 
+
+
+- 1014-add-logs-when-importing-urls-so-we-know-how-many-were-expected-how-many-succeeded-and-how-many-failed
+  - Description: When URLs of a given collection are imported into COSMOS, a Slack notification is sent. This notification includes the name of the collection imported,count of the existing curated URLs, total URLs count as per the server, URLs successfully imported from the server, delta URLs identified and delta URLs marked for deletion.
+  - Changes:
+    - The get_full_texts() function in sde_collections/sinequa_api.py is updated to yeild total_count along with rows.
+    - fetch_and_replace_full_text() function in sde_collections/tasks.py captures the total_server_count and triggers send_detailed_import_notification().
+    - Added a function send_detailed_import_notification() in sde_collections/utils/slack_utils.py to structure the notification to be sent.
+    - Updated the associated tests effected due to inclusion of this functionality.
+
 - 3228-bugfix-preserve-scroll-position--document-type-selection-behavior-on-individual-urls
   - Description: Upon selecting a document type on any individual URL, the page refreshes and returns to the top. This is not necessarily a bug but an inconvenience, especially when working at the bottom of the page. Fix the JS code.
   - Changes:
     - Added a constant `scrollPosition` within `postDocumentTypePatterns` to store the y coordinate postion on the page
     - Modified the ajax relaod to navigate to this position upon posting/saving the document type changes.
+
 
 - 3227-bugfix-title-patterns-selecting-multi-url-pattern-does-nothing
   - Description: When selecting options from the match pattern type filter, the system does not filter the results as expected. Instead of displaying only the chosen variety of patterns, it continues to show all patterns.
