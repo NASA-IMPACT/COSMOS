@@ -578,12 +578,10 @@ function initializeDataTable() {
             $("#exclude-patterns-dropdown-1").prop("disabled", true);
           } else if (index === 1) {
             $("#exclude-patterns-dropdown-1").on("change", function () {
-              if ($(this).val() === "") table.columns(6).search("").draw();
+              if ($(this).val() === "") table.columns(7).search("").draw();
               else {
-                table
-                  .column(6)
-                  .search(matchPatternTypeMap[$(this).val()])
-                  .draw();
+                const patternType = matchPatternTypeMap[$(this).val()];
+                table.column(7).search(patternType).draw();
               }
             });
           }
@@ -621,7 +619,7 @@ function initializeDataTable() {
         },
       },
       { data: "id", visible: false, searchable: false },
-      { data: "match_pattern_type", visible: false },
+      { data: "match_pattern_type", visible: false, searchable: true },
     ],
   });
 
@@ -671,11 +669,11 @@ function initializeDataTable() {
           } else {
             if (index === 1) {
               $("#include-patterns-dropdown-1").on("change", function () {
-                if ($(this).val() === "") table.columns(5).search("").draw();
-                table
-                  .column(5)
-                  .search(matchPatternTypeMap[$(this).val()])
-                  .draw();
+                if ($(this).val() === "") table.columns(6).search("").draw();
+                else {
+                  const patternType = matchPatternTypeMap[$(this).val()];
+                  table.column(6).search(patternType).draw();
+                }
               });
             }
           }
@@ -707,7 +705,7 @@ function initializeDataTable() {
         },
       },
       { data: "id", visible: false, searchable: false },
-      { data: "match_pattern_type", visible: false },
+      { data: "match_pattern_type", visible: false, searchable: true },
     ],
   });
 
@@ -754,12 +752,10 @@ function initializeDataTable() {
             $("#title-patterns-dropdown-1").prop("disabled", true);
           } else if (index === 1) {
             $("#title-patterns-dropdown-1").on("change", function () {
-              if ($(this).val() === "") table.columns(6).search("").draw();
+              if ($(this).val() === "") table.columns(7).search("").draw();
               else {
-                table
-                  .column(6)
-                  .search(matchPatternTypeMap[$(this).val()])
-                  .draw();
+                const patternType = matchPatternTypeMap[$(this).val()];
+                table.column(7).search(patternType).draw();
               }
             });
           }
@@ -792,7 +788,7 @@ function initializeDataTable() {
         },
       },
       { data: "id", visible: false, searchable: false },
-      { data: "match_pattern_type", visible: false },
+      { data: "match_pattern_type", visible: false, searchable: true },
     ],
   });
 
@@ -833,53 +829,19 @@ function initializeDataTable() {
     pageLength: 100,
     ajax: `/api/document-type-patterns/?format=datatables&collection_id=${collection_id}`,
     initComplete: function (data) {
-      this.api()
-        .columns()
-        .every(function (index) {
-          var table = $("#document_type_patterns_table").DataTable();
-
-          let addDropdownSelect = {
-            1: {
-              columnToSearch: 6,
-              matchPattern: {
-                "Individual URL Pattern": 1,
-                "Multi-URL Pattern": 2,
-              },
-            },
-            2: {
-              columnToSearch: 7,
-              matchPattern: {
-                Images: 1,
-                Data: 2,
-                Documentation: 3,
-                "Software and Tools": 4,
-                "Missions and Instruments": 5,
-              },
-            },
-          };
-
-          let column = this;
-          if (column.data().length === 0) {
-            $(`#document-type-patterns-dropdown-${index}`).prop(
-              "disabled",
-              true
-            );
-          } else if (index in addDropdownSelect) {
-            $("#document-type-patterns-dropdown-" + index).on(
-              "change",
-              function () {
-                let col = addDropdownSelect[index].columnToSearch;
-                let searchInput =
-                  addDropdownSelect[index].matchPattern[$(this).val()];
-                if ($(this).val() === "" || $(this).val() === undefined)
-                  table.columns(col).search("").draw();
-                else {
-                  table.columns(col).search(searchInput).draw();
-                }
-              }
-            );
-          }
-        });
+      var table = $("#document_type_patterns_table").DataTable();
+      this.api().columns().every(function (index) {
+        if (index === 1) {
+          $("#document-type-patterns-dropdown-1").on("change", function () {
+            if ($(this).val() === "") {
+              table.column(7).search("").draw();
+            } else {
+              const patternType = matchPatternTypeMap[$(this).val()];
+              table.column(7).search(patternType).draw();
+            }
+          });
+        }
+      });
     },
 
     columns: [
@@ -909,7 +871,7 @@ function initializeDataTable() {
         },
       },
       { data: "id", visible: false, searchable: false },
-      { data: "match_pattern_type", visible: false },
+      { data: "match_pattern_type", visible: false, searchable: true },
       { data: "document_type", visible: false },
     ],
   });
@@ -945,47 +907,20 @@ var division_patterns_table = $("#division_patterns_table").DataTable({
   pageLength: 100,
   ajax: `/api/division-patterns/?format=datatables&collection_id=${collection_id}`,
   initComplete: function (data) {
-    this.api()
-      .columns()
-      .every(function (index) {
-        var table = $("#division_patterns_table").DataTable();
-
-        let addDropdownSelect = {
-          1: {
-            columnToSearch: 6,
-            matchPattern: {
-              "Individual URL Pattern": 1,
-              "Multi-URL Pattern": 2,
-            },
-          },
-          2: {
-            columnToSearch: 7,
-            matchPattern: {
-              "Astrophysics": 1,
-              "Biological and Physical Sciences": 2,
-              "Earth Science": 3,
-              "Heliophysics": 4,
-              "Planetary Science": 5,
-            },
-          },
-        };
-
-        let column = this;
-        if (column.data().length === 0) {
-          $(`#division-patterns-dropdown-${index}`).prop("disabled", true);
-        } else if (index in addDropdownSelect) {
-          $("#division-patterns-dropdown-" + index).on("change", function () {
-            let col = addDropdownSelect[index].columnToSearch;
-            let searchInput =
-              addDropdownSelect[index].matchPattern[$(this).val()];
-            if ($(this).val() === "" || $(this).val() === undefined)
-              table.columns(col).search("").draw();
-            else {
-              table.columns(col).search(searchInput).draw();
-            }
-          });
-        }
-      });
+    var table = $("#division_patterns_table").DataTable();
+    this.api().columns().every(function (index) {
+      if (index === 1) {
+        // Updated pattern type dropdown handler
+        $("#division-patterns-dropdown-1").on("change", function () {
+          if ($(this).val() === "") {
+            table.column(7).search("").draw();
+          } else {
+            const patternType = matchPatternTypeMap[$(this).val()];
+            table.column(7).search(patternType).draw();
+          }
+        });
+      }
+    });
   },
 
   columns: [
@@ -1015,7 +950,7 @@ var division_patterns_table = $("#division_patterns_table").DataTable({
       },
     },
     { data: "id", visible: false, searchable: false },
-    { data: "match_pattern_type", visible: false },
+    { data: "match_pattern_type", visible: false, searchable: true },
     { data: "division", visible: false },
   ],
 });
@@ -1465,7 +1400,8 @@ function handleHideorShowSubmitButton() {
 }
 
 function handleDocumentTypeSelect() {
-  $("body").on("click", ".document_type_select", function () {
+  $("body").on("click", ".document_type_select", function (e) {
+    e.preventDefault();
     $match_pattern = $(this)
       .parents(".document_type_dropdown")
       .data("match-pattern");
@@ -1646,6 +1582,8 @@ function postDocumentTypePatterns(
     return;
   }
 
+  const scrollPosition = window.scrollY;
+
   $.ajax({
     url: "/api/document-type-patterns/",
     type: "POST",
@@ -1657,7 +1595,9 @@ function postDocumentTypePatterns(
       csrfmiddlewaretoken: csrftoken,
     },
     success: function (data) {
-      $("#delta_urls_table").DataTable().ajax.reload(null, false);
+      $("#delta_urls_table").DataTable().ajax.reload(function() {
+        window.scrollTo(0, scrollPosition);
+      }, false);
       $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
       if (currentTab === "") { //Only add a notification if we are on the first tab
         newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
@@ -1934,16 +1874,6 @@ function deletePattern(
 
 function getCollectionId() {
   return collection_id;
-}
-
-function getParameterByName(name, url) {
-  if (!url) url = window.location.href;
-  name = name.replace(/[\[\]]/g, "\\$&");
-  var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-    results = regex.exec(url);
-  if (!results) return null;
-  if (!results[2]) return "";
-  return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
 function remove_protocol(url) {
