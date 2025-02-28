@@ -46,6 +46,12 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Used regex to catch any HTML content comming in as an input to form fields
     - Called this class within the serializer for necessary fields
 
+- 3228-bugfix-preserve-scroll-position--document-type-selection-behavior-on-individual-urls
+  - Description: Upon selecting a document type on any individual URL, the page refreshes and returns to the top. This is not necessarily a bug but an inconvenience, especially when working at the bottom of the page. Fix the JS code.
+  - Changes:
+    - Added a constant `scrollPosition` within `postDocumentTypePatterns` to store the y coordinate postion on the page
+    - Modified the ajax relaod to navigate to this position upon posting/saving the document type changes.
+
 - 3227-bugfix-title-patterns-selecting-multi-url-pattern-does-nothing
   - Description: When selecting options from the match pattern type filter, the system does not filter the results as expected. Instead of displaying only the chosen variety of patterns, it continues to show all patterns.
   - Changes:
