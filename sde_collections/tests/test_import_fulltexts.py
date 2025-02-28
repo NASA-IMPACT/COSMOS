@@ -34,9 +34,7 @@ def test_fetch_and_replace_full_text(disconnect_signals):
 
     with patch("sde_collections.sinequa_api.Api.get_full_texts") as mock_get_full_texts, patch(
         "sde_collections.sinequa_api.Api.get_total_count", return_value=2
-    ), patch(
-        "sde_collections.utils.slack_utils.send_detailed_import_notification"
-    ):
+    ), patch("sde_collections.utils.slack_utils.send_detailed_import_notification"):
         mock_get_full_texts.return_value = mock_generator()
 
         fetch_and_replace_full_text(collection.id, "lrm_dev")
@@ -67,9 +65,7 @@ def test_fetch_and_replace_full_text_large_dataset(disconnect_signals):
 
     with patch("sde_collections.sinequa_api.Api.get_full_texts") as mock_get_full_texts, patch(
         "sde_collections.sinequa_api.Api.get_total_count", return_value=20000
-    ), patch(
-        "sde_collections.utils.slack_utils.send_detailed_import_notification"
-    ):
+    ), patch("sde_collections.utils.slack_utils.send_detailed_import_notification"):
         mock_get_full_texts.return_value = mock_batch_generator()
 
         # Execute the task
