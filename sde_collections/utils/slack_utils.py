@@ -65,8 +65,7 @@ def send_detailed_import_notification(
     message = (
         f"'{collection_name}' brought into COSMOS.\n"
         f"Prior Curated: {curated_count}\n"
-        f"URL Counts:\n"
-        f"Server: {total_server_count}\n"
+        f"Server Count: {total_server_count}\n"
         f"URLs Imported: {dump_count}\n"
         f"New Deltas: {delta_count}\n"
         f"Marked For Deletion: {marked_for_deletion_count}\n"
