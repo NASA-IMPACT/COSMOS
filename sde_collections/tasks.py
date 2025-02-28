@@ -174,13 +174,13 @@ def fetch_and_replace_full_text(collection_id, server_name):
     # Step 1: Delete existing DumpUrl entries
     deleted_count, _ = DumpUrl.objects.filter(collection=collection).delete()
     print(f"Deleted {deleted_count} old records.")
-    total_server_count = 0
     try:
+        total_server_count = api.get_total_count(collection.config_folder)
+        print(f"Total records on the server: {total_server_count}")
+
         # Step 2: Process data in batches
         total_processed = 0
-        for batch, total_count in api.get_full_texts(collection.config_folder):
-            if total_server_count == 0:
-                total_server_count = total_count
+        for batch in api.get_full_texts(collection.config_folder):
             with transaction.atomic():
                 DumpUrl.objects.bulk_create(
                     [

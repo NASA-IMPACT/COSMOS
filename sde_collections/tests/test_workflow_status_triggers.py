@@ -149,8 +149,7 @@ class TestFullTextImport(TestCase):
 
         # Setup mock API
         mock_api = Mock()
-        total_count = len(self.api_response)
-        mock_api.get_full_texts.return_value = iter([(self.api_response, total_count)])
+        mock_api.get_full_texts.return_value = iter([self.api_response])
         MockApi.return_value = mock_api
 
         # Setup initial workflow state

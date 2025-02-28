@@ -257,7 +257,7 @@ class Api:
                 if total_count is None:
                     total_count = response.get("TotalRowCount", 0)
 
-                yield (self._process_rows_to_records(rows), total_count)
+                yield (self._process_rows_to_records(rows))
 
                 current_offset += len(rows)
 
@@ -274,6 +274,35 @@ class Api:
                 current_batch_size = max(current_batch_size // 2, min_batch_size)
                 print(f"Reducing batch size to {current_batch_size} and retrying...")
                 continue
+
+    def get_total_count(self, collection_config_folder: str, source: str = None) -> int:
+        """
+        Retrieves the total count of records for a given collection using Sinequa's TotalRowCount metadata.
+
+        Args:
+            collection_config_folder (str): The collection folder to query (e.g., "EARTHDATA", "CASEI").
+            source (str, optional): The source to query. If None, defaults to "scrapers" for dev servers
+                or "SDE" for other servers.
+
+        Returns:
+            int: The total number of records in the collection.
+        """
+        if not source:
+            source = self._get_source_name()
+
+        if (index := self.config.get("index")) is None:
+            raise ValueError(
+                f"Configuration error: Index not defined for server '{self.server_name}'. "
+                "Please update server configuration with the required index."
+            )
+
+        # Minimal query to get only metadata, no data retrieval
+        sql = f"SELECT * FROM {index} WHERE collection = '/{source}/{collection_config_folder}/' SKIP 0 COUNT 0"
+
+        response = self._execute_sql_query(sql)
+
+        # Extract TotalRowCount from metadata
+        return response.get("TotalRowCount", 0)
 
     @staticmethod
     def _process_full_text_response(batch_data: dict):
