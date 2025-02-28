@@ -14,8 +14,9 @@ from sde_collections.models.collection_choice_fields import (
     ReindexingStatusChoices,
     WorkflowStatusChoices,
 )
+from sde_collections.utils import slack_utils
 
-from .models.delta_url import DumpUrl
+from .models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
 from .sinequa_api import Api
 from .utils.github_helper import GitHubHandler
 
@@ -173,8 +174,10 @@ def fetch_and_replace_full_text(collection_id, server_name):
     # Step 1: Delete existing DumpUrl entries
     deleted_count, _ = DumpUrl.objects.filter(collection=collection).delete()
     print(f"Deleted {deleted_count} old records.")
-
     try:
+        total_server_count = api.get_total_count(collection.config_folder)
+        print(f"Total records on the server: {total_server_count}")
+
         # Step 2: Process data in batches
         total_processed = 0
         for batch in api.get_full_texts(collection.config_folder):
@@ -193,8 +196,14 @@ def fetch_and_replace_full_text(collection_id, server_name):
             total_processed += len(batch)
             print(f"Processed batch of {len(batch)} records. Total: {total_processed}")
 
+        dump_count = DumpUrl.objects.filter(collection=collection).count()
+
         # Step 3: Migrate dump URLs to delta URLs
         collection.migrate_dump_to_delta()
+
+        curated_count = CuratedUrl.objects.filter(collection=collection).count()
+        delta_count = DeltaUrl.objects.filter(collection=collection).count()
+        marked_for_deletion_count = DeltaUrl.objects.filter(collection=collection, to_delete=True).count()
 
         # Step 4: Update statuses if needed
         collection.refresh_from_db()
@@ -215,6 +224,9 @@ def fetch_and_replace_full_text(collection_id, server_name):
             collection.reindexing_status = ReindexingStatusChoices.REINDEXING_READY_FOR_CURATION
             collection.save()
 
+        slack_utils.send_detailed_import_notification(
+            collection.name, total_server_count, curated_count, dump_count, delta_count, marked_for_deletion_count
+        )
         return f"Successfully processed {total_processed} records and updated the database."
 
     except Exception as e:
