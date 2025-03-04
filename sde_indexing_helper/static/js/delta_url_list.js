@@ -103,13 +103,17 @@ function modalContents(tableName) {
   });
 }
 
-function renderCountWithViewButton(count, buttonClass, rowId) {
+function renderCountWithViewButton(count, patternType, urlType, rowId) {
   return `
     <div style="display: flex; align-items: center; justify-content: center;">
       <span style="min-width: 50px; text-align: right; padding-right: 10px;">
         ${count}
       </span>
-      <button type="button" class="btn btn-sm ${buttonClass}" data-row-id="${rowId}">
+      <button type="button"
+              class="btn btn-sm view-pattern-urls"
+              data-row-id="${rowId}"
+              data-pattern-type="${patternType}"
+              data-url-type="${urlType}">
         <i class="fa fa-eye"></i>
       </button>
     </div>
@@ -618,7 +622,7 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
         render: function (data, type, row) {
-          return renderCountWithViewButton(data, 'view-exclude-pattern-delta-urls', row.id);
+          return renderCountWithViewButton(data, 'exclude', 'delta', row.id);
         },
       },
       {
@@ -626,7 +630,7 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
         render: function (data, type, row) {
-          return renderCountWithViewButton(data, 'view-exclude-pattern-curated-urls', row.id);
+          return renderCountWithViewButton(data, 'exclude', 'curated', row.id);
         },
       },
       {
@@ -710,7 +714,7 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
         render: function (data, type, row) {
-          return renderCountWithViewButton(data, 'view-include-pattern-delta-urls', row.id);
+          return renderCountWithViewButton(data, 'include', 'delta', row.id);
         },
       },
       {
@@ -718,7 +722,7 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
         render: function (data, type, row) {
-          return renderCountWithViewButton(data, 'view-include-pattern-curated-urls', row.id);
+          return renderCountWithViewButton(data, 'include', 'curated', row.id);
         },
       },
       {
@@ -799,7 +803,7 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
         render: function (data, type, row) {
-          return renderCountWithViewButton(data, 'view-title-pattern-delta-urls', row.id);
+          return renderCountWithViewButton(data, 'title', 'delta', row.id);
         },
       },
       {
@@ -807,7 +811,7 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
         render: function (data, type, row) {
-          return renderCountWithViewButton(data, 'view-title-pattern-curated-urls', row.id);
+          return renderCountWithViewButton(data, 'title', 'curated', row.id);
         },
       },
       {
@@ -888,7 +892,7 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
         render: function (data, type, row) {
-          return renderCountWithViewButton(data, 'view-document-type-pattern-delta-urls', row.id);
+          return renderCountWithViewButton(data, 'document-type', 'delta', row.id);
         },
       },
       {
@@ -896,7 +900,7 @@ function initializeDataTable() {
         class: "text-center whiteText",
         sortable: true,
         render: function (data, type, row) {
-          return renderCountWithViewButton(data, 'view-document-type-pattern-curated-urls', row.id);
+          return renderCountWithViewButton(data, 'document-type', 'curated', row.id);
         },
       },
       {
@@ -2285,17 +2289,109 @@ function handleReindexingStatusSelect() {
   });
 }
 
-function handleShowAffectedURLsListButtonClick() {
-  const patterns = ['exclude', 'include', 'title', 'document-type'];
-  const urlTypes = ['delta', 'curated'];
+// function handleShowAffectedURLsListButtonClick() {
+//   const patterns = ['exclude', 'include', 'title', 'document-type'];
+//   const urlTypes = ['delta', 'curated'];
 
-  patterns.forEach(pattern => {
-    urlTypes.forEach(urlType => {
-      const buttonClass = `.view-${pattern}-pattern-${urlType}-urls`;
-      $("body").on("click", buttonClass, function() {
-        const matchPatternId = $(this).data("row-id");
-        window.open(`/${pattern}-pattern/${matchPatternId}/${urlType}-urls`, '_blank');
-      });
-    });
+//   patterns.forEach(pattern => {
+//     urlTypes.forEach(urlType => {
+//       const buttonClass = `.view-${pattern}-pattern-${urlType}-urls`;
+//       $("body").on("click", buttonClass, function() {
+//         const matchPatternId = $(this).data("row-id");
+//         window.open(`/${pattern}-pattern/${matchPatternId}/${urlType}-urls`, '_blank');
+//       });
+//     });
+//   });
+// }
+
+function handleShowAffectedURLsListButtonClick() {
+  const PATTERN_ENDPOINTS = {
+    'exclude': 'exclude-pattern-affected-urls',
+    'include': 'include-pattern-affected-urls',
+    'title': 'title-pattern-affected-urls',
+    'document-type': 'documenttype-pattern-affected-urls'
+  };
+
+  $("body").on("click", ".view-pattern-urls", function() {
+    const matchPatternId = $(this).data("row-id");
+    const patternType = $(this).data("pattern-type");
+    const urlType = $(this).data("url-type");
+
+    // Update modal title and pattern info
+    $("#affectedURLsModalTitle").text(`Affected ${urlType} URLs`);
+    $("#patternInfo").text(`${urlType} URLs for ${patternType} pattern:`); // ${pattern.match_pattern}`);
+
+    // Always destroy existing table and create new one
+    if ($.fn.DataTable.isDataTable('#affectedURLsModalTable')) {
+      $('#affectedURLsModalTable').DataTable().destroy();
+    }
+
+    initializeModalDataTable(PATTERN_ENDPOINTS[patternType], matchPatternId, urlType);
+    $("#affectedURLsModal").modal('show');
+
   });
+}
+
+function initializeModalDataTable(endpoint, patternId, urlType) {
+
+  affected_urls_table = $("#affectedURLsModalTable").DataTable({
+    processing: true,
+    pageLength: 100,
+    colReorder: true,
+    stateSave: true,
+    serverSide: true,
+    orderCellsTop: true,
+    pagingType: "input",
+    paging: true,
+    rowId: "url",
+    layout: {
+      bottomEnd: "inputPaging",
+      topEnd: null,
+      topStart: {
+        info: true,
+        pageLength: {
+          menu: [
+            [25, 50, 100, 500],
+            ["Show 25", "Show 50", "Show 100", "Show 500"],
+          ],
+        },
+        buttons: [],
+      },
+    },
+    columnDefs: [
+      { orderable: true, targets: "_all" },
+      { orderable: false, targets: "filter-row" },
+    ],
+    orderCellsTop: true,
+    ajax: {
+      url: `/api/${endpoint}/?format=datatables&url_type=${urlType}&pattern_id=${patternId}`,
+      data: function (d) {},
+      complete: function (xhr, status) {},
+    },
+
+    columns: [
+      { data: "id", class: "whiteText text-center" },
+      getURLColumn(),
+    ],
+  });
+
+  $("#affectedURLsFilter").on(
+    "beforeinput",
+    DataTable.util.debounce(function (val) {
+      affected_urls_table.columns(0).search(this.value).draw();
+    }, 1000)
+  );
+}
+
+function getURLColumn() {
+  return {
+    data: "url",
+    width: "30%",
+    render: function (data, type, row) {
+      return `<div class="url-cell"><span class="candidate_url nameStyling">${data}</span>
+              <a target="_blank" href=${data} class="url-link">
+              <i class="material-icons url-icon">open_in_new</i></a>
+              </div>`;
+    },
+  };
 }

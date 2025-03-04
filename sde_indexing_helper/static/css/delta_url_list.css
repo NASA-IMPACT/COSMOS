@@ -451,3 +451,23 @@ div.dt-container div.dt-paging ul.pagination {
     max-width: 100%;
     min-width: 100%;
 }
+
+/* Specific styling for affected URLs modal only */
+#affectedURLsModal .modal-dialog {
+    max-width: 90%;
+    margin: 1.75rem auto;
+}
+
+#affectedURLsModal .modal-content {
+    background-color: #15232E;
+    color: white;
+    width: 100%;
+}
+
+#affectedURLsModal .modal-header {
+    border-bottom: 1px solid #3F4A58;
+}
+
+#affectedURLsModal .close {
+    color: white;
+}
