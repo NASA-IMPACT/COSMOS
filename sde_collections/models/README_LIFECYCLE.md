@@ -1,9 +1,10 @@
-# URL Migration and Promotion Guide
+# URL Migration, Classification, and Promotion Guide
 
 ## Overview
-This document explains the lifecycle of URLs in the system, focusing on two critical processes:
+This document explains the lifecycle of URLs in the system, focusing on these critical processes:
 1. Migration from DumpUrls to DeltaUrls
-2. Promotion from DeltaUrls to CuratedUrls
+2. Classification of URLs for metadata enrichment
+3. Promotion from DeltaUrls to CuratedUrls
 
 ## Core Concepts
 
@@ -21,13 +22,39 @@ All fields transfer between states, including:
 - Division
 - Excluded Status
 - Scraped Text
+- TDAMM Tags
 - Any additional metadata
+
+## Classification Process
+
+### Overview
+The classification process analyzes content to automatically add metadata, including:
+- TDAMM tags for Astrophysics content
+- Division classification for General content
+
+### When Classification Happens
+Classification occurs after DumpUrls are created but before they are migrated to DeltaUrls:
+1. DumpUrls are created from scraped content
+2. Classification models analyze DumpUrl content
+3. Classification results are applied to DumpUrls
+4. DumpUrls (with enhanced metadata) are migrated to DeltaUrls
+
+### Classification Types
+- **TDAMM Classification**: Applied to Astrophysics collections to tag content related to multi-messenger astronomy
+- **Division Classification**: Applied to General collections to suggest appropriate divisions
+
+### Classification Flow
+1. Check if collection needs classification based on division type
+2. Queue appropriate classification jobs
+3. Process classifications asynchronously
+4. Apply classification results to DumpUrls
+5. Initiate migration to DeltaUrls once all classifications complete
 
 ## Pattern Application
 
 ### When Patterns Are Applied
 Patterns are applied in two scenarios:
-1. During migration from Dump to Delta
+1. During migration from Dump to Delta (after classifications are complete)
 2. When a new pattern is created/updated
 
 Patterns are NOT applied during promotion. The effects of patterns (modified titles, document types, etc.) are carried through to CuratedUrls during promotion, but the patterns themselves don't reapply.
@@ -42,27 +69,10 @@ Patterns are NOT applied during promotion. The effects of patterns (modified tit
 
 ### Overview
 Migration converts DumpUrls to DeltaUrls, preserving all fields and applying patterns. This process happens when:
-- New content is scraped
+- New content is scraped and classified
 - Content is reindexed
 - Collection is being prepared for curation
 
-### Steps
-1. Clear existing DeltaUrls
-2. Process each DumpUrl:
-   - If matching CuratedUrl exists: Create Delta with all fields
-   - If no matching CuratedUrl: Create Delta as new URL
-3. Process missing CuratedUrls:
-   - Create deletion Deltas for any not in Dump
-4. Apply all patterns to new Deltas
-5. Clear DumpUrls
-
-## Migration Process (Dump → Delta)
-
-### Overview
-Migration converts DumpUrls to DeltaUrls, preserving all fields and applying patterns. This process happens when:
-- New content is scraped
-- Content is reindexed
-- Collection is being prepared for curation
 ### Steps
 1. Clear existing DeltaUrls
 2. Process each DumpUrl:
@@ -75,14 +85,23 @@ Migration converts DumpUrls to DeltaUrls, preserving all fields and applying pat
 
 ### Examples
 
-#### Example 1: Basic Migration
-If there are no patterns or existing CuratedUrls, the DeltaUrl will be created from the DumpUrl.
+#### Example 1: Basic Migration with Classification
+A DumpUrl is created, classified, and then migrated to a DeltaUrl.
 ```python
 # Starting State
 dump_url = DumpUrl(
     url="example.com/doc",
     scraped_title="Original Title",
-    document_type=DocumentTypes.DOCUMENTATION
+    document_type=DocumentTypes.DOCUMENTATION,
+    tdamm_tag=None
+)
+
+# After Classification
+dump_url = DumpUrl(
+    url="example.com/doc",
+    scraped_title="Original Title",
+    document_type=DocumentTypes.DOCUMENTATION,
+    tdamm_tag=["MMA_O_BH", "MMA_O_BH_AGN"]  # Applied by classification
 )
 
 # After Migration
@@ -90,38 +109,51 @@ delta_url = DeltaUrl(
     url="example.com/doc",
     scraped_title="Original Title",
     document_type=DocumentTypes.DOCUMENTATION,
+    tdamm_tag=["MMA_O_BH", "MMA_O_BH_AGN"],  # Preserved from classification
     to_delete=False
 )
 ```
 
 #### Example 2: Migration with Existing Curated
-If a CuratedUrl exists for the URL, and the DumpUrl has changes, a DeltaUrl will be created.
+If a CuratedUrl exists and the classified DumpUrl has changes, a DeltaUrl will be created.
 ```python
 # Starting State
 dump_url = DumpUrl(
     url="example.com/doc",
     scraped_title="New Title",
-    document_type=DocumentTypes.DOCUMENTATION
+    document_type=DocumentTypes.ASTROPHYSICS,
+    tdamm_tag=None
+)
+
+# After Classification
+dump_url = DumpUrl(
+    url="example.com/doc",
+    scraped_title="New Title",
+    document_type=DocumentTypes.ASTROPHYSICS,
+    tdamm_tag=["MMA_O_BH"]  # Applied by classification
 )
 
 curated_url = CuratedUrl(
     url="example.com/doc",
     scraped_title="Old Title",
-    document_type=DocumentTypes.DOCUMENTATION
+    document_type=DocumentTypes.ASTROPHYSICS,
+    tdamm_tag=None
 )
 
 # After Migration
 delta_url = DeltaUrl(
     url="example.com/doc",
     scraped_title="New Title",  # Different from curated
-    document_type=DocumentTypes.DOCUMENTATION,
+    document_type=DocumentTypes.ASTROPHYSICS,
+    tdamm_tag=["MMA_O_BH"],  # Different from curated (null)
     to_delete=False
 )
 
 curated_url = CuratedUrl(
     url="example.com/doc",
     scraped_title="Old Title",
-    document_type=DocumentTypes.DOCUMENTATION
+    document_type=DocumentTypes.ASTROPHYSICS,
+    tdamm_tag=None
 )
 ```
 
@@ -151,7 +183,7 @@ delta_url = DeltaUrl(
 ## Promotion Process (Delta → Curated)
 
 ### Overview
-Promotion moves DeltaUrls to CuratedUrls, carrying forward all changes including pattern-applied modifications. This occurs when:
+Promotion moves DeltaUrls to CuratedUrls, carrying forward all changes including pattern-applied modifications and classification results. This occurs when:
 - A curator marks a collection as Curated
 
 ### Steps
@@ -232,7 +264,13 @@ curated_url = CuratedUrl(
 ### Field Handling
 - ALL fields are copied during migration and promotion
 - NULL values in DeltaUrls are treated as explicit values
+- Classification-set values are preserved through the entire lifecycle
 - Pattern-set values take precedence over original values
+
+### Classification Behavior
+- Classifications only run on DumpUrls before migration to DeltaUrls
+- Classification results become regular field values and persist through promotion
+- Migration to DeltaUrls waits for all classifications to complete
 
 ### Pattern Behavior
 - Patterns only apply during migration or when patterns themselves are created/updated
