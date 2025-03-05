@@ -18,7 +18,7 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Set the default value for `match_pattern_type` in `BaseMatchPattern` class is set to `2`
     - Changed `test_create_simple_exclude_pattern` test within `TestDeltaExcludePatternBasics`
     - Changed `test_create_division_pattern` and `test_create_document_type_pattern_single` within `TestFieldModifierPatternBasics`
-   
+
 - 1052-update-cosmos-to-create-jobs-for-scrapers-and-indexers
   - Description: The original automation set up to generate the scrapers and indexers automatically based on a collection workflow status change needed to be updated to more accurately reflect the curation workflow. It would also be good to generate the jobs during this process to streamline the same.
   - Changes:
