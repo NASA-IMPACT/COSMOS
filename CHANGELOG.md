@@ -104,4 +104,3 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Added universal search functionality tests
     - Created search pane filter tests
     - Added pattern application form tests with validation checks
-
