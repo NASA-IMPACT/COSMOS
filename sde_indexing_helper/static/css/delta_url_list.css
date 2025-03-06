@@ -451,3 +451,50 @@ div.dt-container div.dt-paging ul.pagination {
     max-width: 100%;
     min-width: 100%;
 }
+
+/* Specific styling for affected URLs modal only */
+#affectedURLsModal {
+    padding: 0 !important;
+}
+
+#affectedURLsModal .modal-dialog {
+    max-width: 90%;
+    height: auto;
+    margin: 1.75rem auto;
+}
+
+#affectedURLsModal .modal-content {
+    background-color: #15232E;
+    color: white;
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#affectedURLsModal .modal-header {
+    border-bottom: 1px solid #3F4A58;
+    margin-bottom: 0px;
+}
+
+#affectedURLsModal .modal-body {
+    flex: 0 1 auto;
+    overflow: auto;
+    padding: 1rem;
+}
+
+#affectedURLsModal .close {
+    color: white;
+}
+
+#affectedURLsModal .dataTables_wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+#affectedURLsModal .col-md-auto {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}

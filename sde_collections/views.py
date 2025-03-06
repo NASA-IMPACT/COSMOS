@@ -632,3 +632,41 @@ class TitlesAndErrorsView(View):
             "resolved_title_errors": resolved_title_errors,
         }
         return render(request, "sde_collections/titles_and_errors_list.html", context)
+
+
+class BaseAffectedURLsViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
+
+    pattern_model = None
+    pattern_type = None
+
+    def get_serializer_class(self):
+        url_type = self.request.GET.get("url_type")
+        return DeltaURLSerializer if url_type == "delta" else CuratedURLSerializer
+
+    def get_queryset(self):
+        pattern_id = self.request.GET.get("pattern_id")
+        url_type = self.request.GET.get("url_type")
+        self.pattern = self.pattern_model.objects.get(id=pattern_id)
+        return (
+            self.pattern.get_matching_delta_urls() if url_type == "delta" else self.pattern.get_matching_curated_urls()
+        )
+
+
+class ExcludePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
+    pattern_model = DeltaExcludePattern
+    pattern_type = "Exclude"
+
+
+class IncludePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
+    pattern_model = DeltaIncludePattern
+    pattern_type = "Include"
+
+
+class TitlePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
+    pattern_model = DeltaTitlePattern
+    pattern_type = "Title"
+
+
+class DocumentTypePatternAffectedURLsViewSet(BaseAffectedURLsViewSet):
+    pattern_model = DeltaDocumentTypePattern
+    pattern_type = "Document Type"

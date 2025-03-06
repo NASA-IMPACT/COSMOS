@@ -103,6 +103,23 @@ function modalContents(tableName) {
   });
 }
 
+function renderCountWithViewButton(count, patternType, urlType, rowId) {
+  return `
+    <div style="display: flex; align-items: center; justify-content: center;">
+      <span class="urlCount" style="min-width: 50px; text-align: right; padding-right: 10px;">
+        ${count}
+      </span>
+      <button type="button"
+              class="btn btn-sm view-pattern-urls"
+              data-row-id="${rowId}"
+              data-pattern-type="${patternType}"
+              data-url-type="${urlType}">
+        <i class="fa fa-eye"></i>
+      </button>
+    </div>
+  `;
+}
+
 function initializeDataTable() {
   var true_icon = '<i class="material-icons" style="color: green">check</i>';
   var false_icon = '<i class="material-icons" style="color: red">close</i>';
@@ -604,11 +621,17 @@ function initializeDataTable() {
         data: "delta_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'exclude', 'delta', row.id);
+        },
       },
       {
         data: "curated_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'exclude', 'curated', row.id);
+        },
       },
       {
         data: null,
@@ -690,11 +713,17 @@ function initializeDataTable() {
         data: "delta_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'include', 'delta', row.id);
+        },
       },
       {
         data: "curated_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'include', 'curated', row.id);
+        },
       },
       {
         data: null,
@@ -773,11 +802,17 @@ function initializeDataTable() {
         data: "delta_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'title', 'delta', row.id);
+        },
       },
       {
         data: "curated_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'title', 'curated', row.id);
+        },
       },
       {
         data: null,
@@ -856,11 +891,17 @@ function initializeDataTable() {
         data: "delta_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'document-type', 'delta', row.id);
+        },
       },
       {
         data: "curated_urls_count",
         class: "text-center whiteText",
         sortable: true,
+        render: function (data, type, row) {
+          return renderCountWithViewButton(data, 'document-type', 'curated', row.id);
+        },
       },
       {
         data: null,
@@ -998,6 +1039,7 @@ function setupClickHandlers() {
   handleDivisionSelect();
   handleExcludeIndividualUrlClick();
   handleNewTitleChange();
+  handleShowAffectedURLsListButtonClick();
 
   handleUrlLinkClick();
   handleTabsClick();
@@ -2250,4 +2292,99 @@ function handleReindexingStatusSelect() {
       }
     });
   });
+}
+
+function handleShowAffectedURLsListButtonClick() {
+  const PATTERN_ENDPOINTS = {
+    'exclude': 'exclude-pattern-affected-urls',
+    'include': 'include-pattern-affected-urls',
+    'title': 'title-pattern-affected-urls',
+    'document-type': 'documenttype-pattern-affected-urls'
+  };
+
+  $("body").on("click", ".view-pattern-urls", function() {
+    const matchPatternId = $(this).data("row-id");
+    const patternType = $(this).data("pattern-type");
+    const urlType = $(this).data("url-type");
+    const patternName = $(this).closest('tr').find('td:first').text();
+    const urlCount = $(this).prev('.urlCount').text().trim();
+
+    // Update modal title and pattern info
+    const capitalize = str => str[0].toUpperCase() + str.slice(1);
+    $("#affectedURLsModalTitle").text(`Affected ${capitalize(urlType)} URLs`);
+    $("#patternInfo").text(`
+      ${urlCount} affected URL${urlCount === '1' ? '' : 's'} for ${patternType} pattern:
+    `).append($('<span>').css('color', '#65B1EF').text(patternName));
+
+    if ($.fn.DataTable.isDataTable('#affectedURLsModalTable')) {
+      $('#affectedURLsModalTable').DataTable().destroy();
+    }
+
+    initializeModalDataTable(PATTERN_ENDPOINTS[patternType], matchPatternId, urlType);
+    $("#affectedURLsModal").modal('show');
+
+  });
+}
+
+function initializeModalDataTable(endpoint, patternId, urlType) {
+
+  affected_urls_table = $("#affectedURLsModalTable").DataTable({
+    processing: true,
+    pageLength: 100,
+    colReorder: true,
+    stateSave: true,
+    serverSide: true,
+    orderCellsTop: true,
+    pagingType: "input",
+    paging: true,
+    stateSave: false,
+    rowId: "url",
+    layout: {
+      bottomEnd: "inputPaging",
+      topEnd: null,
+      topStart: {
+        info: true,
+        pageLength: {
+          menu: [
+            [25, 50, 100, 500],
+            ["Show 25", "Show 50", "Show 100", "Show 500"],
+          ],
+        },
+      },
+    },
+    columnDefs: [
+      { orderable: true, targets: "_all" },
+      { orderable: false, targets: "filter-row" },
+    ],
+    orderCellsTop: true,
+    ajax: {
+      url: `/api/${endpoint}/?format=datatables&url_type=${urlType}&pattern_id=${patternId}`,
+      data: function (d) {},
+      complete: function (xhr, status) {},
+    },
+
+    columns: [
+      getURLColumn(),
+    ],
+  });
+
+  $("#affectedURLsFilter").on(
+    "beforeinput",
+    DataTable.util.debounce(function (val) {
+      affected_urls_table.columns(0).search(this.value).draw();
+    }, 200)
+  );
+}
+
+function getURLColumn() {
+  return {
+    data: "url",
+    width: "30%",
+    render: function (data, type, row) {
+      return `<div class="url-cell"><span class="candidate_url nameStyling">${data}</span>
+              <a target="_blank" href=${data} class="url-link">
+              <i class="material-icons url-icon">open_in_new</i></a>
+              </div>`;
+    },
+  };
 }
