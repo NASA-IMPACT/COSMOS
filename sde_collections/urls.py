@@ -82,24 +82,4 @@ urlpatterns = [
         name="candidate-url-api",
     ),
     path("titles-and-errors/", views.TitlesAndErrorsView.as_view(), name="titles-and-errors-list"),
-    path(
-        "exclude-pattern/<int:id>/<str:url_type>-urls",
-        view=views.ExcludePatternAffectedURLsListView.as_view(),
-        name="exclude_pattern_urls",
-    ),
-    path(
-        "include-pattern/<int:id>/<str:url_type>-urls",
-        view=views.IncludePatternAffectedURLsListView.as_view(),
-        name="include_pattern_urls",
-    ),
-    path(
-        "title-pattern/<int:id>/<str:url_type>-urls",
-        view=views.TitlePatternAffectedURLsListView.as_view(),
-        name="title_pattern_urls",
-    ),
-    path(
-        "document-type-pattern/<int:id>/<str:url_type>-urls",
-        view=views.DocumentTypePatternAffectedURLsListView.as_view(),
-        name="document_type_pattern_urls",
-    ),
 ]
