@@ -1208,12 +1208,22 @@ function getCuratedScrapedTitleColumn() {
   };
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function getGeneratedTitleColumn() {
   return {
     data: "generated_title",
     width: "20%",
     render: function (data, type, row) {
-      return `<input type="text" class="form-control individual_title_input whiteText" value='${data}' data-generated-title-id=${row["generated_title_id"]
+      return `<input type="text" class="form-control individual_title_input whiteText" value="${escapeHtml(data)}" data-generated-title-id=${row["generated_title_id"]
         } data-match-pattern-type=${row["match_pattern_type"]
         } data-delta-urls-count=${row["delta_urls_count"]
         } data-url=${remove_protocol(row["url"])} />`;
@@ -1226,7 +1236,7 @@ function getCuratedGeneratedTitleColumn() {
     data: "generated_title",
     width: "20%",
     render: function (data, type, row) {
-      return `<input type="text" class="form-control individual_title_input whiteText" value='${data}' data-generated-title-id=${row["generated_title_id"]
+      return `<input type="text" class="form-control individual_title_input whiteText" value="${escapeHtml(data)}" data-generated-title-id=${row["generated_title_id"]
         } data-match-pattern-type=${row["match_pattern_type"]
         } data-curated-urls-count=${row["curated_urls_count"]
         } data-url=${remove_protocol(row["url"])} />`;

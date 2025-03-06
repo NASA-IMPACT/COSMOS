@@ -100,3 +100,9 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Added universal search functionality tests
     - Created search pane filter tests
     - Added pattern application form tests with validation checks
+
+- 1101-bug-fix-quotes-not-escaped-in-titles
+  - Description: Title rules that include single quotes show up correctly in the sinequa frontend (and the COSMOS api) but not in the delta urls page.
+  - Changes:
+    - Added `escapeHtml` function in the `delta_url_list.js` file to handle special character escaping correctly.
+    - Called this function while retrieving the titles in `getGeneratedTitleColumn()` and `getCuratedGeneratedTitleColumn()` functions.
