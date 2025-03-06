@@ -59,6 +59,25 @@ def format_slack_message(name, details, collection_id):
     return message_template.format(name=linked_name)
 
 
+def send_detailed_import_notification(
+    collection_name, total_server_count, curated_count, dump_count, delta_count, marked_for_deletion_count
+):
+    message = (
+        f"'{collection_name}' brought into COSMOS.\n"
+        f"Prior Curated: {curated_count}\n"
+        f"Server Count: {total_server_count}\n"
+        f"URLs Imported: {dump_count}\n"
+        f"New Deltas: {delta_count}\n"
+        f"Marked For Deletion: {marked_for_deletion_count}\n"
+    )
+
+    webhook_url = settings.SLACK_WEBHOOK_URL
+    payload = {"text": message}
+    response = requests.post(webhook_url, json=payload)
+    if response.status_code != 200:
+        print(f"Error sending Slack message: {response.text}")
+
+
 def send_slack_message(message):
     webhook_url = settings.SLACK_WEBHOOK_URL
     payload = {"text": message}

@@ -12,6 +12,16 @@ For each PR made, an entry should be added to this changelog. It should contain
   - etc.
 
 ## Changelog
+- 1052-update-cosmos-to-create-jobs-for-scrapers-and-indexers
+  - Description: The original automation set up to generate the scrapers and indexers automatically based on a collection workflow status change needed to be updated to more accurately reflect the curation workflow. It would also be good to generate the jobs during this process to streamline the same.
+  - Changes:
+    - Updated function nomenclature. Scrapers are Sinequa connector configurations that are used to scrape all the URLs prior to curation. Indexers are Sienqua connector configurations that are used to scrape the URLs post to curation, which would be used to index content on production. Jobs are used to trigger the connectors which are included as parts of joblists.
+    - Parameterized the convert_template_to_job method to include the job_source to streamline the value added to the `<Collection>` tag in the job XML.
+    - Updated the fields that are pertinenet to transfer from a scraper to an indexer. Also added a third level of XML processing to facilitate the same.
+    - scraper_template.xml and indexer_template.xml now contains the templates used for the respective configuration generation.
+    - Deleted the redundant webcrawler_initial_crawl.xml file.
+    - Added and updated tests on workflow status triggers.
+
 - 2889-serialize-the-tdamm-tags
   - Description: Have TDAMM serialzed in a specific way and exposed via the Curated URLs API to be consumed into SDE Test/Prod
   - Changes:
@@ -36,12 +46,37 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Used regex to catch any HTML content comming in as an input to form fields
     - Called this class within the serializer for necessary fields
 
+- 1030-resolve-0-value-document-type-in-nasa_science
+  - Description: Around 2000 of the docs coming out of the COSMOS api for nasa_science have a doc type value of 0.
+  - Changes:
+    - Added `obj.document_type != 0` as a condition in the `get_document_type` method within the `CuratedURLAPISerializer`
+
+- 1014-add-logs-when-importing-urls-so-we-know-how-many-were-expected-how-many-succeeded-and-how-many-failed
+  - Description: When URLs of a given collection are imported into COSMOS, a Slack notification is sent. This notification includes the name of the collection imported,count of the existing curated URLs, total URLs count as per the server, URLs successfully imported from the server, delta URLs identified and delta URLs marked for deletion.
+  - Changes:
+    - The get_full_texts() function in sde_collections/sinequa_api.py is updated to yeild total_count along with rows.
+    - fetch_and_replace_full_text() function in sde_collections/tasks.py captures the total_server_count and triggers send_detailed_import_notification().
+    - Added a function send_detailed_import_notification() in sde_collections/utils/slack_utils.py to structure the notification to be sent.
+    - Updated the associated tests effected due to inclusion of this functionality.
+
+- 3228-bugfix-preserve-scroll-position--document-type-selection-behavior-on-individual-urls
+  - Description: Upon selecting a document type on any individual URL, the page refreshes and returns to the top. This is not necessarily a bug but an inconvenience, especially when working at the bottom of the page. Fix the JS code.
+  - Changes:
+    - Added a constant `scrollPosition` within `postDocumentTypePatterns` to store the y coordinate postion on the page
+    - Modified the ajax relaod to navigate to this position upon posting/saving the document type changes.
+
 - 3227-bugfix-title-patterns-selecting-multi-url-pattern-does-nothing
   - Description: When selecting options from the match pattern type filter, the system does not filter the results as expected. Instead of displaying only the chosen variety of patterns, it continues to show all patterns.
   - Changes:
     - In `title_patterns_table` definition, corrected the column reference
     - Made `match_pattern_type` searchable
     - Corrected the column references and made code consistent on all the other tables, i.e., `exclude_patterns_table`, `include_patterns_table`, `division_patterns_table` and `document_type_patterns_table`
+
+- 1190-add-tests-for-job-generation-pipeline
+  - Description: Tests have been added to enhance coverage for the config and job creation pipeline, alongside comprehensive tests for XML processing.
+  - Changes:
+    - Added config_generation/tests/test_config_generation_pipeline.py which tests the config and job generation pipeline, ensuring all components interact correctly
+    - config_generation/tests/test_db_to_xml.py is updated to include comprehensive tests for XML Processing
 
 - 1001-tests-for-critical-functionalities
   - Description: Critical functionalities have been identified and listed, and critical areas lacking tests listed
