@@ -634,55 +634,6 @@ class TitlesAndErrorsView(View):
         return render(request, "sde_collections/titles_and_errors_list.html", context)
 
 
-class BaseAffectedURLsListView(LoginRequiredMixin, ListView):
-    """
-    Base view for displaying a list of URLs affected by a match pattern
-    """
-
-    template_name = "sde_collections/affected_urls.html"
-    context_object_name = "affected_urls"
-    pattern_model = None
-    pattern_type = None
-
-    def get_queryset(self):
-        self.pattern = self.pattern_model.objects.get(id=self.kwargs["id"])
-        if self.kwargs["url_type"] == "delta":
-            queryset = self.pattern.get_matching_delta_urls()
-        elif self.kwargs["url_type"] == "curated":
-            queryset = self.pattern.get_matching_curated_urls()
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["pattern"] = self.pattern
-        context["pattern_id"] = self.kwargs["id"]
-        context["url_count"] = self.get_queryset().count()
-        context["collection"] = self.pattern.collection
-        context["pattern_type"] = self.pattern_type
-        context["url_type"] = self.kwargs["url_type"]
-        return context
-
-
-class ExcludePatternAffectedURLsListView(BaseAffectedURLsListView):
-    pattern_model = DeltaExcludePattern
-    pattern_type = "Exclude"
-
-
-class IncludePatternAffectedURLsListView(BaseAffectedURLsListView):
-    pattern_model = DeltaIncludePattern
-    pattern_type = "Include"
-
-
-class TitlePatternAffectedURLsListView(BaseAffectedURLsListView):
-    pattern_model = DeltaTitlePattern
-    pattern_type = "Title"
-
-
-class DocumentTypePatternAffectedURLsListView(BaseAffectedURLsListView):
-    pattern_model = DeltaDocumentTypePattern
-    pattern_type = "Document Type"
-
-
 class BaseAffectedURLsViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 
     pattern_model = None

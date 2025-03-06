@@ -106,7 +106,7 @@ function modalContents(tableName) {
 function renderCountWithViewButton(count, patternType, urlType, rowId) {
   return `
     <div style="display: flex; align-items: center; justify-content: center;">
-      <span style="min-width: 50px; text-align: right; padding-right: 10px;">
+      <span class="urlCount" style="min-width: 50px; text-align: right; padding-right: 10px;">
         ${count}
       </span>
       <button type="button"
@@ -2289,21 +2289,6 @@ function handleReindexingStatusSelect() {
   });
 }
 
-// function handleShowAffectedURLsListButtonClick() {
-//   const patterns = ['exclude', 'include', 'title', 'document-type'];
-//   const urlTypes = ['delta', 'curated'];
-
-//   patterns.forEach(pattern => {
-//     urlTypes.forEach(urlType => {
-//       const buttonClass = `.view-${pattern}-pattern-${urlType}-urls`;
-//       $("body").on("click", buttonClass, function() {
-//         const matchPatternId = $(this).data("row-id");
-//         window.open(`/${pattern}-pattern/${matchPatternId}/${urlType}-urls`, '_blank');
-//       });
-//     });
-//   });
-// }
-
 function handleShowAffectedURLsListButtonClick() {
   const PATTERN_ENDPOINTS = {
     'exclude': 'exclude-pattern-affected-urls',
@@ -2316,12 +2301,16 @@ function handleShowAffectedURLsListButtonClick() {
     const matchPatternId = $(this).data("row-id");
     const patternType = $(this).data("pattern-type");
     const urlType = $(this).data("url-type");
+    const patternName = $(this).closest('tr').find('td:first').text();
+    const urlCount = $(this).prev('.urlCount').text().trim();
 
     // Update modal title and pattern info
     $("#affectedURLsModalTitle").text(`Affected ${urlType} URLs`);
-    $("#patternInfo").text(`${urlType} URLs for ${patternType} pattern:`); // ${pattern.match_pattern}`);
+    $("#patternInfo").html(`
+      ${urlCount} affected URL${urlCount === '1' ? '' : 's'} for ${patternType} pattern:
+      <span style="color: #65B1EF;">${patternName}</span>
+  `);
 
-    // Always destroy existing table and create new one
     if ($.fn.DataTable.isDataTable('#affectedURLsModalTable')) {
       $('#affectedURLsModalTable').DataTable().destroy();
     }
@@ -2343,6 +2332,7 @@ function initializeModalDataTable(endpoint, patternId, urlType) {
     orderCellsTop: true,
     pagingType: "input",
     paging: true,
+    stateSave: false,
     rowId: "url",
     layout: {
       bottomEnd: "inputPaging",
@@ -2355,7 +2345,6 @@ function initializeModalDataTable(endpoint, patternId, urlType) {
             ["Show 25", "Show 50", "Show 100", "Show 500"],
           ],
         },
-        buttons: [],
       },
     },
     columnDefs: [
@@ -2370,7 +2359,6 @@ function initializeModalDataTable(endpoint, patternId, urlType) {
     },
 
     columns: [
-      { data: "id", class: "whiteText text-center" },
       getURLColumn(),
     ],
   });
@@ -2379,7 +2367,7 @@ function initializeModalDataTable(endpoint, patternId, urlType) {
     "beforeinput",
     DataTable.util.debounce(function (val) {
       affected_urls_table.columns(0).search(this.value).draw();
-    }, 1000)
+    }, 200)
   );
 }
 
