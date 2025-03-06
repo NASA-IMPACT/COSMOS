@@ -2310,7 +2310,8 @@ function handleShowAffectedURLsListButtonClick() {
     const urlCount = $(this).prev('.urlCount').text().trim();
 
     // Update modal title and pattern info
-    $("#affectedURLsModalTitle").text(`Affected ${urlType} URLs`);
+    const capitalize = str => str[0].toUpperCase() + str.slice(1);
+    $("#affectedURLsModalTitle").text(`Affected ${capitalize(urlType)} URLs`);
     $("#patternInfo").text(`
       ${urlCount} affected URL${urlCount === '1' ? '' : 's'} for ${patternType} pattern:
     `).append($('<span>').css('color', '#65B1EF').text(patternName));
