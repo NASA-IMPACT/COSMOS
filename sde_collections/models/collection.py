@@ -652,6 +652,12 @@ class Collection(models.Model):
         for pattern in self.deltadivisionpatterns.all():
             pattern.apply()
 
+        for pattern in self.deltatdammtagpatterns.filter(operation=1).order_by("id"):
+            pattern.apply()
+
+        for pattern in self.deltatdammtagpatterns.filter(operation=2).order_by("id"):
+            pattern.apply()
+
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
         if not self.config_folder:

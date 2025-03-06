@@ -98,6 +98,9 @@
             <a class="tab-nav tabStyle" id="divisionPatternsTab" data-toggle="tab" href="#Division-Patterns">Division Patterns</a>
         </li>
         {% endif %}
+        <li class="nav-item">
+            <a class="tab-nav tabStyle" id="tdammTagPatternsTab" data-toggle="tab" href="#TDAMM-Tag-Patterns">TDAMM Tag Patterns</a>
+        </li>
     </ul>
 
     <!-- Tab panes -->
@@ -426,6 +429,50 @@
                 </thead>
             </table>
         </div>
+        <div class="tab-pane fade" id="TDAMM-Tag-Patterns">
+            <table class="table" id="tdamm_tag_patterns_table" style="width:100%">
+                <thead class="tableHeader">
+                    <tr>
+                        <th scope="col" class="text-center col-1"><strong>Match Pattern</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Match Pattern Type</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Tag</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Operation</strong></th>
+                        <!-- <th scope="col" class="text-center col-1"><strong>Source</strong></th> -->
+                        <th scope="col" class="text-center col-1"><strong>Affected Delta URLs</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Affected Curated URLs</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>Actions</strong></th>
+                        <th scope="col" class="text-center col-1"><strong>ID</strong></th>
+                    </tr>
+                    <tr>
+                        <td><input type="text" class="table_filter_row_input textBoxStyling" id="tdammTagMatchPatternFilter" placeholder="Match Pattern" /></td>
+                        <td><select id="tdamm-patterns-dropdown-1" class="select-dropdown selectStyling">
+                            <option value="">SELECT</option>
+                            <option value="Individual URL Pattern">Individual URL Pattern</option>
+                            <option value="Multi-URL Pattern">Multi-URL Pattern</option>
+                        </select></td>
+                        <td><select id="tdamm-patterns-dropdown-2" class="select-dropdown selectStyling">
+                            <option value="">SELECT</option>
+                            {% for choice in tdamm_choices %}
+                            <option value="{{ choice.code }}">{{ choice.display }}</option>
+                            {% endfor %}
+                        </select></td>
+                        <td><select id="tdamm-patterns-dropdown-3" class="select-dropdown selectStyling">
+                            <option value="">SELECT</option>
+                            <option value="Add Tag">Add Tag</option>
+                            <option value="Remove Tag">Remove Tag</option>
+                        </select></td>
+                        <!-- <td><select id="tdamm-patterns-dropdown-4" class="select-dropdown selectStyling">
+                            <option value="">SELECT</option>
+                            <option value="manual">Manual</option>
+                            <option value="ml">ML</option>
+                        </select></td> -->
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </thead>
+            </table>
+        </div>
 
     </div>
 </div>
@@ -440,6 +487,7 @@
     <li data-action="title-pattern" class="list-group-item">Create Title Pattern</li>
     <li data-action="document-type-pattern" class="list-group-item">Create Document Type Pattern</li>
     <li data-action="division-pattern" class="list-group-item">Create Division Pattern</li>
+    <li data-action="tdamm-tag-pattern" class="list-group-item">Create TDAMM Tag Pattern</li>
 </ul>
 <div class="modal fade" id="excludePatternModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
     aria-labelledby="excludePatternModalLabel" aria-hidden="true">
@@ -684,7 +732,90 @@
         </div>
     </div>
 </div>
-
+<div class="modal fade" id="tdammTagPatternModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="tdammTagPatternModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tdammTagPatternModalLabel">TDAMM Tag Pattern Form</h5>
+                <button type="button" class="close modal-close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="tdamm_tag_pattern_form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="tdamm_match_pattern_input" class="form-label">Match Pattern <div class="asterik">*</div></label>
+                        <input type="text" class="form-control" id="tdamm_match_pattern_input" required name="match_pattern">
+                    </div>
+                    <div class="form-group">
+                        <label for="tdamm_tag_select" class="form-label">TDAMM Tag <div class="asterik">*</div></label>
+                        <div class="input-group">
+                            <input type="hidden" name="tdamm_tag" class="form-control" id="tdamm_tag_input_field" required>
+                            <div class="input-group-append tdamm-tag-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle tdamm-tag-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select TDAMM Tag</button>
+                                <div class="tdamm-tag-form dropdown-menu">
+                                    {% for choice in tdamm_choices %}
+                                    <a class="dropdown-item tdamm_tag_form_select" value="{{ choice.code }}">{{ choice.display }}</a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="tdamm_operation_select" class="form-label">Operation <div class="asterik">*</div></label>
+                        <div class="input-group">
+                            <input type="hidden" name="tdamm_operation" class="form-control" id="tdamm_operation_input_field" required>
+                            <div class="input-group-append tdamm-operation-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle operation-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Operation</button>
+                                <div class="tdamm-operation-form dropdown-menu">
+                                    <a class="dropdown-item tdamm_operation_form_select" value="1">Add Tag</a>
+                                    <a class="dropdown-item tdamm_operation_form_select" value="2">Remove Tag</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <div class="form-group">
+                        <label for="tdamm_source_select" class="form-label">Source <div class="asterik">*</div></label>
+                        <div class="input-group">
+                            <input type="hidden" name="tdamm_source" class="form-control" id="tdamm_source_input_field" required>
+                            <div class="input-group-append tdamm-source-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle source-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Source</button>
+                                <div class="tdamm-source-form dropdown-menu">
+                                    <a class="dropdown-item tdamm_source_form_select" value="manual">Manual</a>
+                                    <a class="dropdown-item tdamm_source_form_select" value="ml">ML</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                    <div class="form-group pattern-form-group">
+                        <label for="pattern_type_input" class="form-label">Pattern Type<div class="asterik">*</div></label>
+                        <div class="input-group">
+                            <input type="hidden" name="match_pattern_type" class="form-control" id="pattern_type_input" required>
+                            <div class="input-group-append pattern-dropdown-input">
+                                <button class="btn btn-secondary btn-block dropdown-toggle pattern-dropdown" type="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Select Pattern Type</button>
+                                <div class="pattern-type-form dropdown-menu">
+                                    <a class="dropdown-item pattern_type_form_select" value="1">Individual URL Pattern</a>
+                                    <a class="dropdown-item pattern_type_form_select" value="2">Multi-URL Pattern</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="button-wrapper">
+                        <button type="button" class="btn btn-secondary modal-button-1" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary modal-button-2">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <div id="hideShowColumnsModal" class="modal pr-4 pl-4 pt-4 customizeColumnContainer">
     <div class="modalDialog">

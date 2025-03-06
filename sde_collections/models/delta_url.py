@@ -156,10 +156,23 @@ class BaseUrl(models.Model):
             "visited",
             "document_type",
             "division",
-            "tdamm_tag_manual",
-            "tdamm_tag_ml",
         ]
-        return all(getattr(self, field) == getattr(other, field) for field in fields_to_compare)
+
+        # Regular field comparison
+        basic_match = all(getattr(self, field) == getattr(other, field) for field in fields_to_compare)
+
+        # Special handling for tag fields - treat [] and None as equivalent
+        def tags_equivalent(a, b):
+            if not a and not b:  # Both are empty (None or [])
+                return True
+            return a == b
+
+        # Compare tag fields with special handling
+        tags_match = tags_equivalent(self.tdamm_tag_manual, other.tdamm_tag_manual) and tags_equivalent(
+            self.tdamm_tag_ml, other.tdamm_tag_ml
+        )
+
+        return basic_match and tags_match
 
     def add_tag(self, tag: str, source: str) -> None:
         """Add a tag and handle cleanup if needed."""

@@ -9,6 +9,7 @@ var newExcludePatternsCount = 0;
 var newTitlePatternsCount = 0;
 var newDocumentTypePatternsCount = 0;
 var newDivisionPatternsCount = 0;
+var newTdammTagPatternsCount = 0;
 var currentTab = ""; //blank for the first tab
 var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
@@ -967,6 +968,244 @@ $("#deltaDivisionMatchPatternFilter").on("beforeinput", function (val) {
   division_patterns_table.columns(0).search(this.value).draw();
 });
 
+var tdamm_tag_patterns_table = $("#tdamm_tag_patterns_table").DataTable({
+  dom: "lBrtip",
+  buttons: [
+      {
+          text: "Add Pattern",
+          className: "addPattern",
+          action: function () {
+              $modal = $("#tdammTagPatternModal").modal();
+          }
+      },
+      {
+          text: "Customize Columns",
+          className: "customizeColumns",
+          action: function () {
+              modalContents("#tdamm_tag_patterns_table");
+          }
+      },
+  ],
+  lengthMenu: [
+      [25, 50, 100, 500],
+      ["Show 25", "Show 50", "Show 100", "Show 500"],
+  ],
+  orderCellsTop: true,
+  pageLength: 100,
+  ajax: `/api/tdamm-tag-patterns/?format=datatables&collection_id=${collection_id}`,
+  initComplete: function (data) {
+      this.api()
+          .columns()
+          .every(function (index) {
+              var table = $("#tdamm_tag_patterns_table").DataTable();
+
+              let addDropdownSelect = {
+                  1: {
+                      columnToSearch: 9,
+                      matchPattern: {
+                          "Individual URL Pattern": 1,
+                          "Multi-URL Pattern": 2,
+                      }
+                  },
+                  2: {
+                      columnToSearch: 10,
+                      matchPattern: {}
+                  },
+                  3: {
+                      columnToSearch: 11,
+                      matchPattern: {
+                          "Add Tag": 1,
+                          "Remove Tag": 2
+                      }
+                  },
+                  // 4: {
+                  //     columnToSearch: 12,
+                  //     matchPattern: {
+                  //         "manual": "manual",
+                  //         "ml": "ml"
+                  //     }
+                  // }
+              };
+
+              // Populate TDAMM tag mappings
+              tdamm_choices.forEach(choice => {
+                  addDropdownSelect[2].matchPattern[choice.display] = choice.code;
+              });
+
+              let column = this;
+              if (column.data().length === 0) {
+                  $(`#tdamm-patterns-dropdown-${index}`).prop("disabled", true);
+              } else if (index in addDropdownSelect) {
+                  $("#tdamm-patterns-dropdown-" + index).on("change", function () {
+                      let col = addDropdownSelect[index].columnToSearch;
+                      let searchInput = addDropdownSelect[index].matchPattern[$(this).val()];
+                      if ($(this).val() === "" || $(this).val() === undefined)
+                          table.columns(col).search("").draw();
+                      else {
+                          table.columns(col).search(searchInput).draw();
+                      }
+                  });
+              }
+          });
+  },
+
+  columns: [
+      { data: "match_pattern", class: "whiteText" },
+      {
+          data: "match_pattern_type_display",
+          class: "text-center whiteText",
+          sortable: false,
+      },
+      {
+          data: "tag_display",
+          class: "whiteText"
+      },
+      {
+          data: "operation_display",
+          class: "whiteText"
+      },
+      // {
+      //     data: "source",
+      //     class: "whiteText"
+      // },
+      {
+          data: "delta_urls_count",
+          class: "text-center whiteText",
+          sortable: true,
+      },
+      {
+          data: "curated_urls_count",
+          class: "text-center whiteText",
+          sortable: true,
+      },
+      {
+          data: null,
+          sortable: false,
+          class: "text-center",
+          render: function (data, type, row) {
+              return `<button class="btn btn-danger btn-sm delete-tdamm-tag-pattern-button" data-row-id="${row["id"]}"><i class="material-icons">delete</i></button >`;
+          },
+      },
+      { data: "id", visible: false, searchable: false },
+      { data: "match_pattern_type", visible: false },
+      { data: "tag", visible: false },
+      { data: "operation", visible: false },
+      // { data: "source", visible: false },
+  ],
+});
+
+$("#tdammTagMatchPatternFilter").on("beforeinput", function (val) {
+  tdamm_tag_patterns_table.columns(0).search(this.value).draw();
+});
+
+// Handle form submission for TDAMM tag pattern
+$("#tdamm_tag_pattern_form").on("submit", function (e) {
+  e.preventDefault();
+  inputs = {};
+  input_serialized = $(this).serializeArray();
+  input_serialized.forEach((field) => {
+      inputs[field.name] = field.value;
+  });
+
+  postTdammTagPattern(
+      inputs.match_pattern,
+      inputs.match_pattern_type,
+      inputs.tdamm_tag,
+      inputs.tdamm_operation,
+      // inputs.tdamm_source
+      "manual"
+  );
+
+  // Close the modal
+  $("#tdammTagPatternModal").modal("hide");
+});
+
+// Handle TDAMM tag form dropdown selections
+$(".tdamm_tag_form_select").on("click", function (e) {
+  e.preventDefault();
+  $('input[name="tdamm_tag"]').val($(this).attr("value"));
+  $(".tdamm-tag-dropdown").text($(this).text());
+});
+
+$(".tdamm_operation_form_select").on("click", function (e) {
+  e.preventDefault();
+  $('input[name="tdamm_operation"]').val($(this).attr("value"));
+  $(".operation-dropdown").text($(this).text());
+});
+
+// $(".tdamm_source_form_select").on("click", function (e) {
+//   e.preventDefault();
+//   $('input[name="tdamm_source"]').val($(this).attr("value"));
+//   $(".source-dropdown").text($(this).text());
+// });
+
+// Handle delete button click for TDAMM tag patterns
+function handleDeleteTdammTagPatternButtonClick() {
+  $("body").on("click", ".delete-tdamm-tag-pattern-button", function () {
+      var patternRowId = $(this).data("row-id");
+      currentURLtoDelete = `/api/tdamm-tag-patterns/${patternRowId}/`;
+      deletePattern(
+          `/api/tdamm-tag-patterns/${patternRowId}/`,
+          "TDAMM Tag Pattern"
+      );
+  });
+}
+
+function postTdammTagPattern(match_pattern, match_pattern_type, tag, operation, source="manual") {
+  if (!match_pattern) {
+      toastr.error("Please provide a match pattern.");
+      return;
+  }
+
+  if (!tag) {
+      toastr.error("Please select a TDAMM tag.");
+      return;
+  }
+
+  if (!operation) {
+      toastr.error("Please select an operation (Add or Remove).");
+      return;
+  }
+
+  if (!source) {
+      toastr.error("Please select a source (Manual or ML).");
+      return;
+  }
+
+  $.ajax({
+      url: "/api/tdamm-tag-patterns/",
+      type: "POST",
+      data: {
+          collection: collection_id,
+          match_pattern: match_pattern,
+          match_pattern_type: match_pattern_type,
+          tag: tag,
+          operation: operation,
+          source: source,
+          csrfmiddlewaretoken: csrftoken,
+      },
+      success: function (data) {
+          $("#delta_urls_table").DataTable().ajax.reload(null, false);
+          $("#tdamm_tag_patterns_table").DataTable().ajax.reload(null, false);
+          if (currentTab === "") { // Only add a notification if we are on the first tab
+              newTdammTagPatternsCount = newTdammTagPatternsCount + 1;
+              $("#tdammTagPatternsTab").html(
+                  `TDAMM Tag Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+                  newTdammTagPatternsCount + " new" +
+                  `</span>`
+              );
+          }
+      },
+      error: function (xhr, status, error) {
+          var errorMessage = xhr.responseText;
+          if (errorMessage.includes("unique")) {
+              toastr.success("Pattern already exists");
+              return;
+          }
+          toastr.error(errorMessage);
+      },
+  });
+}
 
 function handleTabsClick() {
   $("#includePatternsTab").on("click", function () {
@@ -989,6 +1228,10 @@ function handleTabsClick() {
     newDivisionPatternsCount = 0;
     $("#divisionPatternsTab").html(`Division Patterns`);
   });
+  $("#tdammTagPatternsTab").on("click", function () {
+    newTdammTagPatternsCount = 0;
+    $("#tdammTagPatternsTab").html(`TDAMM Tag Patterns`);
+  });
 }
 
 function setupClickHandlers() {
@@ -1001,6 +1244,7 @@ function setupClickHandlers() {
   handleDeleteIncludePatternButtonClick();
   handleDeleteTitlePatternButtonClick();
   handleDeleteDivisionButtonClick();
+  handleDeleteTdammTagPatternButtonClick();
 
   handleDocumentTypeSelect();
   handleDivisionSelect();
@@ -1440,6 +1684,7 @@ function handleHideorShowKeypress() {
   addEnterEscapeKeypress("#titlePatternModal", "#title_pattern_form");
   addEnterEscapeKeypress("#documentTypePatternModal", "#document_type_pattern_form");
   addEnterEscapeKeypress("#divisionPatternModal", "#division_pattern_form");
+  addEnterEscapeKeypress("#tdammTagPatternModal", "#tdamm_tag_pattern_form");
 
 }
 
@@ -2016,6 +2261,11 @@ function division_pattern_form(selected_text) {
   $modal.find("#division_match_pattern_input").val(selected_text); // Updated to match the HTML ID
 }
 
+function tdamm_tag_pattern_form(selected_text) {
+  $modal = $("#tdammTagPatternModal").modal();
+  $modal.find("#tdamm_match_pattern_input").val(selected_text);
+}
+
 // If the menu element is clicked
 $(".custom-menu li").click(function () {
   // This is the triggered action name
@@ -2034,6 +2284,9 @@ $(".custom-menu li").click(function () {
       break;
     case "division-pattern":
       division_pattern_form(selected_text.trim());
+      break;
+    case "tdamm-tag-pattern":
+      tdamm_tag_pattern_form(selected_text.trim());
       break;
   }
 
