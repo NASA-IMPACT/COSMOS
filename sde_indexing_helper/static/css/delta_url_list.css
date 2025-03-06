@@ -492,3 +492,9 @@ div.dt-container div.dt-paging ul.pagination {
     display: flex;
     flex-direction: column;
 }
+
+#affectedURLsModal .col-md-auto {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}

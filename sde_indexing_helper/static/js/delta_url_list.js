@@ -2306,10 +2306,9 @@ function handleShowAffectedURLsListButtonClick() {
 
     // Update modal title and pattern info
     $("#affectedURLsModalTitle").text(`Affected ${urlType} URLs`);
-    $("#patternInfo").html(`
+    $("#patternInfo").text(`
       ${urlCount} affected URL${urlCount === '1' ? '' : 's'} for ${patternType} pattern:
-      <span style="color: #65B1EF;">${patternName}</span>
-  `);
+    `).append($('<span>').css('color', '#65B1EF').text(patternName));
 
     if ($.fn.DataTable.isDataTable('#affectedURLsModalTable')) {
       $('#affectedURLsModalTable').DataTable().destroy();
