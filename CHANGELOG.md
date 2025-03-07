@@ -113,7 +113,7 @@ For each PR made, an entry should be added to this changelog. It should contain
   - Changes:
     - Added `escapeHtml` function in the `delta_url_list.js` file to handle special character escaping correctly.
     - Called this function while retrieving the titles in `getGeneratedTitleColumn()` and `getCuratedGeneratedTitleColumn()` functions.
-  
+
 - 1240-fix-code-scanning-alert-inclusion-of-functionality-from-an-untrusted-source
   - Description: Ensured all external resources load securely by switching to HTTPS and adding Subresource Integrity (SRI) checks.
   - Changes:
