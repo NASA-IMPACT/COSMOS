@@ -113,3 +113,9 @@ For each PR made, an entry should be added to this changelog. It should contain
   - Changes:
     - Added `escapeHtml` function in the `delta_url_list.js` file to handle special character escaping correctly.
     - Called this function while retrieving the titles in `getGeneratedTitleColumn()` and `getCuratedGeneratedTitleColumn()` functions.
+
+- 1246-minor-enhancement-document-type-pattern-form-require-document-type-or-show-appropriate-error
+  - Description: In the Document Type Pattern Form, if the user does not select a Document Type while filling out the form, an appropriate error message is displayed.
+  - Changes:
+    - Added a JavaScript validation check on form submission to ensure the document type (stored in a hidden input) is not empty.
+    - Display an error message and prevent form submission if the field is empty.
