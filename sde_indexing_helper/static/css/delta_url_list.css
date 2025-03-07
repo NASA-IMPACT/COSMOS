@@ -253,20 +253,6 @@
     font-weight: 500;
 }
 
-
-
-.custom-select,
-.buttons-csv,
-.customizeColumns,
-.addPattern {
-    border-style: solid !important;
-    border-color: #A7BACD !important;
-    border-width: 1px !important;
-    color: #A7BACD !important;
-    border-radius: 5px !important;
-    padding: 11px 15px;
-}
-
 .addPattern {
     background-color: #0066CA !important;
     border-color: #0066CA !important;
@@ -463,6 +449,7 @@ div.dt-container div.dt-paging ul.pagination {
     top: 0;
 }
 
+.custom-select,
 .buttons-csv,
 .customizeColumns,
 .addPattern {
