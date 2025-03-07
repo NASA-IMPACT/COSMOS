@@ -119,3 +119,9 @@ For each PR made, an entry should be added to this changelog. It should contain
   - Changes:
     - Replaced protocol‑relative URLs with HTTPS.
     - Added SRI (integrity) and crossorigin attributes to external script tags.
+
+- 1246-minor-enhancement-document-type-pattern-form-require-document-type-or-show-appropriate-error
+  - Description: In the Document Type Pattern Form, if the user does not select a Document Type while filling out the form, an appropriate error message is displayed.
+  - Changes:
+    - Added a JavaScript validation check on form submission to ensure the document type (stored in a hidden input) is not empty.
+    - Display an error message and prevent form submission if the field is empty.
