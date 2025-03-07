@@ -2075,6 +2075,12 @@ $("#document_type_pattern_form").on("submit", function (e) {
     inputs[field.name] = field.value;
   });
 
+  // Validate that the document_type_pattern field is not empty
+  if (!inputs.document_type_pattern) {
+    toastr.error("Please select a Document Type");
+    return; // Prevent form submission
+  }
+
   postDocumentTypePatterns(
     inputs.match_pattern,
     inputs.match_pattern_type,
