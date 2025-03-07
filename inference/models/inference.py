@@ -195,6 +195,10 @@ class InferenceJob(models.Model):
             self.unload_model()
         self.save()
 
+        # If job is completed or failed, check if all classifications are done
+        if self.status in [InferenceJobStatus.COMPLETED, InferenceJobStatus.FAILED]:
+            self.collection.check_classifications_complete_and_finish_migration()
+
     def unload_model(self) -> None:
         """
         Check that no other jobs are using the loaded model

@@ -5,13 +5,6 @@ from inference.models import InferenceJob, InferenceJobStatus
 from inference.utils.advisory_lock import AdvisoryLock
 
 
-def generate_inference_job(collection, classification_type):
-    """Creates a new inference job for a collection."""
-    return InferenceJob.objects.create(
-        collection=collection, classification_type=classification_type, status=InferenceJobStatus.QUEUED
-    )
-
-
 @shared_task
 def process_inference_job_queue():
     """
