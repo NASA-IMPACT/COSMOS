@@ -118,4 +118,4 @@ For each PR made, an entry should be added to this changelog. It should contain
   changelog-update-Issue-1001
   - Description: Formatting the buttons - 'Show 100','CSV' and 'Customize Columns' to be on a single line for an optimal use of space.
   - Changes:
-    - Updated delta_url_list.css with necessary modifications
+    - Updated delta_url_list.css and delta_url_list.js files with necessary modifications

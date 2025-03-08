@@ -253,6 +253,18 @@
     font-weight: 500;
 }
 
+.custom-select,
+.buttons-csv,
+.customizeColumns,
+.addPattern {
+    border-style: solid !important;
+    border-color: #A7BACD !important;
+    border-width: 1px !important;
+    color: #A7BACD !important;
+    border-radius: 5px !important;
+    padding: 11px 15px;
+}
+
 .addPattern {
     background-color: #0066CA !important;
     border-color: #0066CA !important;
@@ -435,62 +447,30 @@ div.dt-container div.dt-paging ul.pagination {
     min-width: 100%;
 }
 
-.dt-container {
+#delta_urls_table_wrapper .col-md {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    grid-auto-flow: row;
     position: relative;
+
+    .dt-info {
+        position:absolute;
+        left: 130px;
+        top: 5px;
+    }
 }
 
-.dt-container div.dt-buttons {
-    display: flex !important;
-    gap: 10px !important;
-    align-items: center !important;
-    justify-content: flex-end;
-    position: absolute;
-    right: 0;
-    top: 0;
-}
+#curated_urls_table_wrapper .col-md {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    grid-auto-flow: row;
+    position: relative;
 
-.custom-select,
-.buttons-csv,
-.customizeColumns,
-.addPattern {
-    border-style: solid !important;
-    border-color: #A7BACD !important;
-    border-width: 1px !important;
-    color: #A7BACD !important;
-    border-radius: 5px !important;
-    padding: 11px 15px !important;
-    margin: 0 !important;
-    height: 43px !important;
-    display: flex !important;
-    align-items: center !important;
-}
-
-#exclude_patterns_table_wrapper,
-#include_patterns_table_wrapper,
-#document_type_patterns_table_wrapper,
-#title_patterns_table_wrapper {
-    margin-top: 15px !important;
-}
-
-#exclude_patterns_table_wrapper table,
-#include_patterns_table_wrapper table,
-#document_type_patterns_table_wrapper table,
-#title_patterns_table_wrapper table {
-    margin-top: 15px !important;
-}
-
-#exclude_patterns_table_wrapper .addPattern,
-#include_patterns_table_wrapper .addPattern,
-#document_type_patterns_table_wrapper .addPattern,
-#title_patterns_table_wrapper .addPattern,
-#exclude_patterns_table_wrapper .customizeColumns,
-#include_patterns_table_wrapper .customizeColumns,
-#document_type_patterns_table_wrapper .customizeColumns,
-#title_patterns_table_wrapper .customizeColumns {
-    margin-top: -10px !important;
-}
-
-#delta_urls_table_wrapper .dt-buttons,
-#curated_urls_table_wrapper .dt-buttons {
-    gap: 3px !important;
+    .dt-info {
+        position:absolute;
+        left: 130px;
+        top: 5px;
+    }
 }

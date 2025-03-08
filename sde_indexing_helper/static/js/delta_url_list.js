@@ -114,14 +114,15 @@ function initializeDataTable() {
     layout: {
       bottomEnd: "inputPaging",
       topEnd: null,
-      topStart: {
-        info: true,
+      topStart: null,
+      top: {
         pageLength: {
           menu: [
             [25, 50, 100, 500],
             ["Show 25", "Show 50", "Show 100", "Show 500"],
           ],
         },
+        info:true,
         buttons: [
           {
             extend: "csv",
@@ -332,14 +333,15 @@ function initializeDataTable() {
     layout: {
       bottomEnd: "inputPaging",
       topEnd: null,
-      topStart: {
-        info: true,
+      topStart: null,
+      top: {
         pageLength: {
           menu: [
             [25, 50, 100, 500],
             ["Show 25", "Show 50", "Show 100", "Show 500"],
           ],
         },
+        info:true,
         buttons: [
           {
             extend: "csv",
