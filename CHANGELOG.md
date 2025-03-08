@@ -125,4 +125,3 @@ For each PR made, an entry should be added to this changelog. It should contain
   - Changes:
     - Added a JavaScript validation check on form submission to ensure the document type (stored in a hidden input) is not empty.
     - Display an error message and prevent form submission if the field is empty.
-
