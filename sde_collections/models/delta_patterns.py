@@ -2,6 +2,7 @@ import re
 from typing import Any
 
 from django.apps import apps
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -11,7 +12,12 @@ from ..utils.title_resolver import (
     resolve_title,
     validate_fstring,
 )
-from .collection_choice_fields import Divisions, DocumentTypes, TDAMMTags
+from .collection_choice_fields import (
+    Divisions,
+    DocumentTypes,
+    OperationChoices,
+    TDAMMTags,
+)
 
 
 class BaseMatchPattern(models.Model):
@@ -696,11 +702,13 @@ class DeltaResolvedTitleError(DeltaResolvedTitleBase):
 class DeltaTdammTagPattern(BaseMatchPattern):
     """Pattern for adding or removing TDAMM tags."""
 
-    class OperationChoices(models.IntegerChoices):
-        ADD = 1, "Add Tag"
-        REMOVE = 2, "Remove Tag"
-
-    tag = models.CharField(max_length=255, choices=TDAMMTags.choices)
+    # tag = models.CharField(max_length=255, choices=TDAMMTags.choices)
+    tags = ArrayField(
+        models.CharField(max_length=255, choices=TDAMMTags.choices),
+        blank=True,
+        null=True,
+        help_text="List of tags to add or remove",
+    )
     operation = models.IntegerField(choices=OperationChoices.choices, default=OperationChoices.ADD)
     source = models.CharField(max_length=10, default="manual")
 
@@ -999,4 +1007,4 @@ class DeltaTdammTagPattern(BaseMatchPattern):
     class Meta(BaseMatchPattern.Meta):
         verbose_name = "Delta TDAMM Tag Pattern"
         verbose_name_plural = "Delta TDAMM Tag Patterns"
-        unique_together = ("collection", "match_pattern", "tag", "operation", "source")
+        unique_together = ("collection", "match_pattern", "operation", "source")
