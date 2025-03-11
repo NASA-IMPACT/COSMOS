@@ -1057,8 +1057,12 @@ var tdamm_tag_patterns_table = $("#tdamm_tag_patterns_table").DataTable({
           sortable: false,
       },
       {
-          data: "tag_display",
-          class: "whiteText"
+          data: "tags_display",
+          class: "whiteText",
+          render: function(data, type, row) {
+            if (!data || !data.length) return "None";
+            return Array.isArray(data) ? data.join(", ") : data;
+        }
       },
       {
           data: "operation_display",
@@ -1088,7 +1092,7 @@ var tdamm_tag_patterns_table = $("#tdamm_tag_patterns_table").DataTable({
       },
       { data: "id", visible: false, searchable: false },
       { data: "match_pattern_type", visible: false },
-      { data: "tag", visible: false },
+      { data: "tags", visible: false },
       { data: "operation", visible: false },
       // { data: "source", visible: false },
   ],
@@ -1151,59 +1155,102 @@ function handleDeleteTdammTagPatternButtonClick() {
   });
 }
 
+// function postTdammTagPattern(match_pattern, match_pattern_type, tag, operation, source="manual") {
+//   console.log("Posting tag pattern:", {
+//     match_pattern,
+//     match_pattern_type,
+//     tag,
+//     operation,
+//     source
+//   });
+
+//   if (!match_pattern) {
+//       toastr.error("Please provide a match pattern.");
+//       return;
+//   }
+
+//   if (!tag) {
+//       toastr.error("Please select a TDAMM tag.");
+//       return;
+//   }
+
+//   if (!operation) {
+//       toastr.error("Please select an operation (Add or Remove).");
+//       return;
+//   }
+
+//   if (!source) {
+//       toastr.error("Please select a source (Manual or ML).");
+//       return;
+//   }
+
+//   $.ajax({
+//       url: "/api/tdamm-tag-patterns/",
+//       type: "POST",
+//       data: {
+//           collection: collection_id,
+//           match_pattern: match_pattern,
+//           match_pattern_type: match_pattern_type,
+//           tags: [tag],
+//           operation: operation,
+//           source: source,
+//           csrfmiddlewaretoken: csrftoken,
+//       },
+//       success: function (data) {
+//           console.log("Success:", data);
+//           $("#delta_urls_table").DataTable().ajax.reload(null, false);
+//           $("#tdamm_tag_patterns_table").DataTable().ajax.reload(null, false);
+//           if (currentTab === "") { // Only add a notification if we are on the first tab
+//               newTdammTagPatternsCount = newTdammTagPatternsCount + 1;
+//               $("#tdammTagPatternsTab").html(
+//                   `TDAMM Tag Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+//                   newTdammTagPatternsCount + " new" +
+//                   `</span>`
+//               );
+//           }
+//       },
+//       error: function (xhr, status, error) {
+//           console.error("Error:", xhr.responseText);
+//           var errorMessage = xhr.responseText;
+//           if (errorMessage.includes("unique")) {
+//               toastr.success("Pattern already exists");
+//               return;
+//           }
+//           toastr.error(errorMessage);
+//       },
+//   });
+// }
+
 function postTdammTagPattern(match_pattern, match_pattern_type, tag, operation, source="manual") {
-  if (!match_pattern) {
-      toastr.error("Please provide a match pattern.");
-      return;
-  }
+  // Log to see what's being sent
+  console.log("Sending tag:", tag);
 
-  if (!tag) {
-      toastr.error("Please select a TDAMM tag.");
-      return;
-  }
+  // Create FormData to properly handle the array
+  var formData = new FormData();
+  formData.append('collection', collection_id);
+  formData.append('match_pattern', match_pattern);
+  formData.append('match_pattern_type', match_pattern_type);
+  formData.append('operation', operation);
+  formData.append('source', source);
+  formData.append('csrfmiddlewaretoken', csrftoken);
 
-  if (!operation) {
-      toastr.error("Please select an operation (Add or Remove).");
-      return;
-  }
-
-  if (!source) {
-      toastr.error("Please select a source (Manual or ML).");
-      return;
-  }
+  // Add tag as individual value (server will convert to array)
+  formData.append('tag', tag);
 
   $.ajax({
       url: "/api/tdamm-tag-patterns/",
       type: "POST",
-      data: {
-          collection: collection_id,
-          match_pattern: match_pattern,
-          match_pattern_type: match_pattern_type,
-          tag: tag,
-          operation: operation,
-          source: source,
-          csrfmiddlewaretoken: csrftoken,
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(data) {
+          console.log("Success:", data);
+          // Rest of success handler
       },
-      success: function (data) {
-          $("#delta_urls_table").DataTable().ajax.reload(null, false);
-          $("#tdamm_tag_patterns_table").DataTable().ajax.reload(null, false);
-          if (currentTab === "") { // Only add a notification if we are on the first tab
-              newTdammTagPatternsCount = newTdammTagPatternsCount + 1;
-              $("#tdammTagPatternsTab").html(
-                  `TDAMM Tag Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
-                  newTdammTagPatternsCount + " new" +
-                  `</span>`
-              );
-          }
-      },
-      error: function (xhr, status, error) {
-          var errorMessage = xhr.responseText;
-          if (errorMessage.includes("unique")) {
-              toastr.success("Pattern already exists");
-              return;
-          }
-          toastr.error(errorMessage);
-      },
+      error: function(xhr) {
+          console.error("Error:", xhr.responseText);
+          // Rest of error handler
+      }
   });
 }
 

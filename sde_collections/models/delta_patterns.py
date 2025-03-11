@@ -707,10 +707,17 @@ class DeltaTdammTagPattern(BaseMatchPattern):
         models.CharField(max_length=255, choices=TDAMMTags.choices),
         blank=True,
         null=True,
+        default=list,
         help_text="List of tags to add or remove",
     )
     operation = models.IntegerField(choices=OperationChoices.choices, default=OperationChoices.ADD)
     source = models.CharField(max_length=10, default="manual")
+
+    def save(self, *args, **kwargs):
+        # Ensure tags are never None
+        if self.tags is None:
+            self.tags = []
+        super().save(*args, **kwargs)
 
     def apply(self):
         """
@@ -774,98 +781,56 @@ class DeltaTdammTagPattern(BaseMatchPattern):
         #                 pattern.apply_to_url(url)
 
     # def unapply(self):
-    #     """
-    #     Remove tag operation effects.
-    #     Similar to FieldModifyingPattern.unapply() but with custom tag handling.
-    #     """
+    #     """Remove tag operation effects with comprehensive checks."""
     #     DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
     #     CuratedUrl = apps.get_model("sde_collections", "CuratedUrl")
 
-    #     # Get affected URLs
-    #     affected_deltas = list(self.delta_urls.all())
-    #     affected_curated = list(self.curated_urls.all())
-
-    #     # Get other matching patterns
-    #     other_patterns = DeltaTdammTagPattern.objects.filter(
-    #         collection=self.collection, tag=self.tag, operation=self.operation
-    #     ).exclude(id=self.id)
-
-    #     # Process each affected delta URL
-    #     for delta in affected_deltas:
-    #         curated = CuratedUrl.objects.filter(collection=self.collection, url=delta.url).first()
-
-    #         # Find next most specific pattern
-    #         matching_patterns = [p for p in other_patterns if re.search(p.get_regex_pattern(), delta.url)]
-
-    #         next_pattern = None
-    #         if matching_patterns:
-    #             next_pattern = min(matching_patterns, key=lambda p: p.get_url_match_count())
-
-    #         if next_pattern:
-    #             # Another pattern applies, no change needed
-    #             pass
-    #         else:
-    #             # Revert our changes
-    #             self._revert_tag_operation(delta)
-
-    #             delta.refresh_from_db()
-
-    #             if curated:
-    #                 print(f"Comparing - Delta: {delta.tdamm_tag_manual} vs Curated: {curated.tdamm_tag_manual}")
-    #                 print(f"Fields match: {delta._fields_match(curated)}")
-    #                 print(curated)
-    #             # Check if delta is now redundant
-    #             if curated and delta._fields_match(curated):
-    #                 print(f"DELETING delta {delta.id}")
-    #                 DeltaUrl.objects.filter(pk=delta.id).delete()
-    #                 # delta.save()
-    #             # if curated and delta._fields_match(curated):
-    #             #     print(f"ATTEMPTING TO DELETE: {delta.url}")
-    #             #     try:
-    #             #         # Check for other patterns affecting this URL
-    #             #         other_affecting_patterns = DeltaTdammTagPattern.objects.filter(
-    #             #             delta_urls__url=delta.url
-    #             #         ).exclude(id=self.id).count()
-
-    #             #         print(f"Other patterns affecting this URL: {other_affecting_patterns}")
-
-    #             #         if other_affecting_patterns == 0:
-    #             #             delta.delete()
-    #             #             print(f"DELETED: {delta.url}")
-    #             #         else:
-    #             #             print(f"NOT DELETING: URL affected by {other_affecting_patterns} other patterns")
-    #             #     except Exception as e:
-    #             #         print(f"ERROR: {str(e)}")
-
-    #     # Process curated URLs without deltas
-    #     for curated in affected_curated:
-    #         if not DeltaUrl.objects.filter(url=curated.url, collection=self.collection).exists():
-    #             # Find next most specific pattern
-    #             matching_patterns = [p for p in other_patterns if re.search(p.get_regex_pattern(), curated.url)]
-
-    #             next_pattern = None
-    #             if matching_patterns:
-    #                 next_pattern = min(matching_patterns, key=lambda p: p.get_url_match_count())
-
-    #             if not next_pattern and self._would_operation_change_tags(curated):
-    #                 # Create delta with reverted tags
-    #                 fields = {
-    #                     field.name: getattr(curated, field.name)
-    #                     for field in curated._meta.fields
-    #                     if field.name not in ["id", "collection"]
-    #                 }
-    #                 fields["to_delete"] = False
-    #                 fields["collection"] = self.collection
-
-    #                 delta = DeltaUrl.objects.create(**fields)
-    #                 self._revert_tag_operation(delta)
+    #     # Store affected URLs
+    #     affected_urls = [(delta.id, delta.url) for delta in self.delta_urls.all()]
 
     #     # Clear relationships
     #     self.delta_urls.clear()
     #     self.curated_urls.clear()
 
+    #     # Process each affected URL
+    #     for delta_id, url in affected_urls:
+    #         try:
+    #             delta = DeltaUrl.objects.get(id=delta_id)
+    #             curated = CuratedUrl.objects.get(collection=delta.collection, url=url)
+
+    #             # Revert tags
+    #             if delta.tdamm_tag_manual:
+    #                 if self.operation == 1:  # ADD
+    #                     if self.tag in delta.tdamm_tag_manual:
+    #                         delta.tdamm_tag_manual.remove(self.tag)
+    #                 elif self.operation == 2:  # REMOVE
+    #                     if self.tag not in delta.tdamm_tag_manual and self.tag in (delta.tdamm_tag_ml or []):
+    #                         delta.tdamm_tag_manual = [t for t in (delta.tdamm_tag_ml or []) if t != self.tag]
+
+    #                 if not delta.tdamm_tag_manual:
+    #                     delta.tdamm_tag_manual = None
+
+    #                 delta.save()
+
+    #             # Check ALL pattern types that might affect this URL
+    #             other_patterns_exist = (
+    #                 DeltaExcludePattern.objects.filter(delta_urls=delta).exists()
+    #                 or DeltaIncludePattern.objects.filter(delta_urls=delta).exists()
+    #                 or DeltaTitlePattern.objects.filter(delta_urls=delta).exists()
+    #                 or DeltaDocumentTypePattern.objects.filter(delta_urls=delta).exists()
+    #                 or DeltaDivisionPattern.objects.filter(delta_urls=delta).exists()
+    #                 or DeltaTdammTagPattern.objects.filter(delta_urls=delta).exists()
+    #             )
+
+    #             # Only delete if no other patterns affect it AND it matches curated
+    #             if not other_patterns_exist and delta._fields_match(curated) and not delta.to_delete:
+    #                 DeltaUrl.objects.filter(id=delta_id).delete()
+
+    #         except (DeltaUrl.DoesNotExist, CuratedUrl.DoesNotExist):
+    #             continue
+
     def unapply(self):
-        """Remove tag operation effects with comprehensive checks."""
+        """Remove tag operation effects with comprehensive handling for multiple tags."""
         DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
         CuratedUrl = apps.get_model("sde_collections", "CuratedUrl")
 
@@ -882,14 +847,19 @@ class DeltaTdammTagPattern(BaseMatchPattern):
                 delta = DeltaUrl.objects.get(id=delta_id)
                 curated = CuratedUrl.objects.get(collection=delta.collection, url=url)
 
-                # Revert tags
+                # Revert tags based on operation
                 if delta.tdamm_tag_manual:
-                    if self.operation == 1:  # ADD
-                        if self.tag in delta.tdamm_tag_manual:
-                            delta.tdamm_tag_manual.remove(self.tag)
-                    elif self.operation == 2:  # REMOVE
-                        if self.tag not in delta.tdamm_tag_manual and self.tag in (delta.tdamm_tag_ml or []):
-                            delta.tdamm_tag_manual = [t for t in (delta.tdamm_tag_ml or []) if t != self.tag]
+                    if self.operation == self.OperationChoices.ADD:
+                        # Remove the tags we added
+                        delta.tdamm_tag_manual = [t for t in delta.tdamm_tag_manual if t not in self.tags]
+                    elif self.operation == self.OperationChoices.REMOVE:
+                        # Add back tags that were in ML but we removed
+                        ml_tags = delta.tdamm_tag_ml or []
+                        for tag in self.tags:
+                            if tag in ml_tags and tag not in (delta.tdamm_tag_manual or []):
+                                if not delta.tdamm_tag_manual:
+                                    delta.tdamm_tag_manual = []
+                                delta.tdamm_tag_manual.append(tag)
 
                     if not delta.tdamm_tag_manual:
                         delta.tdamm_tag_manual = None
@@ -918,55 +888,96 @@ class DeltaTdammTagPattern(BaseMatchPattern):
         ml_tags = url_obj.tdamm_tag_ml or []
         manual_tags = url_obj.tdamm_tag_manual or []
 
-        if self.operation == self.OperationChoices.ADD:
-            # Would only change if tag not in manual tags
-            return self.tag not in (manual_tags or [])
+        if self.tags is None:
+            return False
 
-        elif self.operation == self.OperationChoices.REMOVE:
+        if self.operation == OperationChoices.ADD:
+            # Would only change if at least one tag is not in manual tags
+            # return self.tag not in (manual_tags or [])
+            return any(tag not in manual_tags for tag in self.tags)
+
+        elif self.operation == OperationChoices.REMOVE:
             # Would only change if 1) tag in manual OR 2) no manual tags and tag in ML
-            return (manual_tags and self.tag in manual_tags) or (not manual_tags and ml_tags and self.tag in ml_tags)
+            # return (manual_tags and self.tag in manual_tags) or (not manual_tags and ml_tags and self.tag in ml_tags)
+            # Would only change if any tag is present in manual OR no manual tags and any tag is in ML
+            return (manual_tags and any(tag in manual_tags for tag in self.tags)) or (
+                not manual_tags and ml_tags and any(tag in ml_tags for tag in self.tags)
+            )
+
+    # def _apply_tag_operation(self, url_obj):
+    #     """Apply the tag operation with proper ML copying logic."""
+    #     ml_tags = url_obj.tdamm_tag_ml or []
+    #     manual_tags = url_obj.tdamm_tag_manual or []
+    #     changed = False
+
+    #     if self.operation == self.OperationChoices.ADD:  # for the add operation
+    #         if self.source == "ml":
+    #             # Copy ML tags to manual and add new tag
+    #             current_tags = ml_tags or []
+    #             new_tags = list(current_tags)
+    #             if self.tag not in new_tags:
+    #                 new_tags.append(self.tag)
+    #                 url_obj.tdamm_tag_manual = new_tags
+    #                 changed = True
+    #         else:  # 'manual'
+    #             # Add directly to manual tags
+    #             current_tags = manual_tags or []
+    #             if self.tag not in current_tags:
+    #                 current_tags.append(self.tag)
+    #                 url_obj.tdamm_tag_manual = current_tags
+    #                 changed = True
+    #     else:  # for the remove operation
+    #         if self.source == "ml":
+    #             # Copy ML tags minus the removed tag
+    #             if ml_tags:
+    #                 new_manual_tags = [t for t in ml_tags if t != self.tag]
+    #                 if not manual_tags or set(manual_tags) != set(new_manual_tags):
+    #                     url_obj.tdamm_tag_manual = new_manual_tags
+    #                     changed = True
+    #         else:  # 'manual'
+    #             # Remove directly from manual tags
+    #             if manual_tags and self.tag in manual_tags:
+    #                 manual_tags.remove(self.tag)
+    #                 url_obj.tdamm_tag_manual = manual_tags
+    #                 changed = True
+
+    #     if changed:
+    #         url_obj.save()
+    #         if hasattr(url_obj, "_cleanup_if_needed"):
+    #             url_obj._cleanup_if_needed()
 
     def _apply_tag_operation(self, url_obj):
-        """Apply the tag operation with proper ML copying logic."""
-        ml_tags = url_obj.tdamm_tag_ml or []
         manual_tags = url_obj.tdamm_tag_manual or []
         changed = False
 
-        if self.operation == self.OperationChoices.ADD:  # for the add operation
-            if self.source == "ml":
-                # Copy ML tags to manual and add new tag
-                current_tags = ml_tags or []
-                new_tags = list(current_tags)
-                if self.tag not in new_tags:
-                    new_tags.append(self.tag)
+        print(f"Applying operation {self.operation} to URL: {url_obj.url}")
+        print(f"Pattern tags: {self.tags}")
+        print(f"Current manual tags: {manual_tags}")
+
+        if self.operation == OperationChoices.ADD:
+            # Add all tags in the list
+            current_tags = manual_tags or []
+            for tag in self.tags:
+                if tag not in current_tags:
+                    current_tags.append(tag)
+                    changed = True
+            if changed:
+                print(f"New tags after ADD: {current_tags}")
+                url_obj.tdamm_tag_manual = current_tags
+        else:  # REMOVE
+            # Remove all tags in the list
+            if manual_tags:
+                new_tags = [t for t in manual_tags if t not in self.tags]
+                if new_tags != manual_tags:
+                    print(f"New tags after REMOVE: {new_tags}")
                     url_obj.tdamm_tag_manual = new_tags
-                    changed = True
-            else:  # 'manual'
-                # Add directly to manual tags
-                current_tags = manual_tags or []
-                if self.tag not in current_tags:
-                    current_tags.append(self.tag)
-                    url_obj.tdamm_tag_manual = current_tags
-                    changed = True
-        else:  # for the remove operation
-            if self.source == "ml":
-                # Copy ML tags minus the removed tag
-                if ml_tags:
-                    new_manual_tags = [t for t in ml_tags if t != self.tag]
-                    if not manual_tags or set(manual_tags) != set(new_manual_tags):
-                        url_obj.tdamm_tag_manual = new_manual_tags
-                        changed = True
-            else:  # 'manual'
-                # Remove directly from manual tags
-                if manual_tags and self.tag in manual_tags:
-                    manual_tags.remove(self.tag)
-                    url_obj.tdamm_tag_manual = manual_tags
                     changed = True
 
         if changed:
             url_obj.save()
             if hasattr(url_obj, "_cleanup_if_needed"):
                 url_obj._cleanup_if_needed()
+            print(f"URL saved with new tags: {url_obj.tdamm_tag_manual}")
 
     def _revert_tag_operation(self, url_obj):
         """Revert the effects of the tag operation."""
@@ -974,7 +985,7 @@ class DeltaTdammTagPattern(BaseMatchPattern):
         manual_tags = url_obj.tdamm_tag_manual or []
         changed = False
 
-        if self.operation == self.OperationChoices.ADD:
+        if self.operation == OperationChoices.ADD:
             # If we added the tag, remove it
             if manual_tags and self.tag in manual_tags:
                 manual_tags.remove(self.tag)
@@ -984,7 +995,7 @@ class DeltaTdammTagPattern(BaseMatchPattern):
                 url_obj.tdamm_tag_manual = manual_tags
                 url_obj.save()
 
-        elif self.operation == self.OperationChoices.REMOVE:
+        elif self.operation == OperationChoices.REMOVE:
             # If we removed a tag, add it back if it was in ML tags
             if ml_tags and self.tag in ml_tags:
                 if not manual_tags:

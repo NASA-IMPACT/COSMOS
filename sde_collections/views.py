@@ -26,6 +26,7 @@ from .models.collection_choice_fields import (
     CurationStatusChoices,
     Divisions,
     DocumentTypes,
+    OperationChoices,
     ReindexingStatusChoices,
     TDAMMTags,
     WorkflowStatusChoices,
@@ -366,18 +367,42 @@ class DeltaURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             pattern, created = DeltaTdammTagPattern.objects.get_or_create(
                 collection=delta_url.collection,
                 match_pattern=delta_url.url,
-                match_pattern_type=1,  # Individual URL
-                tag=tag,
-                operation=DeltaTdammTagPattern.OperationChoices.REMOVE,
+                match_pattern_type=1,
+                # tag=tag,
+                operation=OperationChoices.REMOVE,
                 source=source,
+                defaults={"tags": [tag]},
             )
+
+            if not created:
+                # Add tag to remove list if not already present
+                current_tags = pattern.tags or []
+                if tag not in current_tags:
+                    pattern.tags = current_tags + [tag]
+                    pattern.save()
+
+            # Remove from ADD pattern if it exists
+            add_pattern = DeltaTdammTagPattern.objects.filter(
+                collection=delta_url.collection,
+                match_pattern=delta_url.url,
+                operation=OperationChoices.ADD,
+                source=source,
+            ).first()
+
+            if add_pattern and add_pattern.tags and tag in add_pattern.tags:
+                # Remove this tag from the add pattern
+                add_pattern.tags = [t for t in add_pattern.tags if t != tag]
+                if not add_pattern.tags:
+                    add_pattern.delete()
+                else:
+                    add_pattern.save()
 
             # Apply the pattern
             pattern._apply_tag_operation(delta_url)
 
             return Response({"status": "success"})
         except Exception as e:
-            logger.error(f"An error occurred while adding a tag to DeltaURL: {str(e)}")
+            logger.error(f"Error occurred: {str(e)}")
             return Response({"error": "An internal error has occurred."}, status=500)
 
     # @action(detail=True, methods=["post"], url_path="add_tag")
@@ -417,18 +442,42 @@ class DeltaURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             pattern, created = DeltaTdammTagPattern.objects.get_or_create(
                 collection=delta_url.collection,
                 match_pattern=delta_url.url,
-                match_pattern_type=1,  # Individual URL
-                tag=tag,
-                operation=DeltaTdammTagPattern.OperationChoices.ADD,
+                match_pattern_type=1,
+                # tag=tag,
+                operation=OperationChoices.ADD,
                 source=source,
+                defaults={"tags": [tag]},
             )
+
+            if not created:
+                # Add tag if not already present
+                current_tags = pattern.tags or []
+                if tag not in current_tags:
+                    pattern.tags = current_tags + [tag]
+                    pattern.save()
+
+            # Remove from REMOVE pattern if it exists
+            remove_pattern = DeltaTdammTagPattern.objects.filter(
+                collection=delta_url.collection,
+                match_pattern=delta_url.url,
+                operation=OperationChoices.REMOVE,
+                source=source,
+            ).first()
+
+            if remove_pattern and remove_pattern.tags and tag in remove_pattern.tags:
+                # Remove this tag from the remove pattern
+                remove_pattern.tags = [t for t in remove_pattern.tags if t != tag]
+                if not remove_pattern.tags:
+                    remove_pattern.delete()
+                else:
+                    remove_pattern.save()
 
             # Apply the pattern
             pattern._apply_tag_operation(delta_url)
 
             return Response({"status": "success"})
         except Exception as e:
-            logger.error(f"An error occurred while adding a tag to DeltaURL: {str(e)}")
+            logger.error(f"Error occurred: {str(e)}")
             return Response({"error": "An internal error has occurred."}, status=500)
 
 
@@ -465,16 +514,33 @@ class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     # def add_tag(self, request, pk=None):
     #     curated_url = self.get_object()
     #     tag = request.data.get("tag")
-    #     source = request.data.get("source")
+    #     source = request.data.get("source", "manual")
 
     #     if not tag:
     #         return Response({"error": "Tag not specified"}, status=400)
 
     #     try:
-    #         curated_url.add_tag(tag, source)
+    #         # Create delta URL first
+    #         delta_url = curated_url._create_or_update_delta()
+
+    #         # Then apply operation to the delta
+    #         pattern, created = DeltaTdammTagPattern.objects.get_or_create(
+    #             collection=curated_url.collection,
+    #             match_pattern=curated_url.url,
+    #             match_pattern_type=1,
+    #             tag=tag,
+    #             operation=OperationChoices.ADD,
+    #             source=source,
+    #         )
+    #         pattern._apply_tag_operation(delta_url)
+
+    #         # Clean up if delta becomes identical to curated
+    #         if not delta_url.to_delete and delta_url._fields_match(curated_url):
+    #             delta_url.delete()
+
     #         return Response({"status": "success"})
     #     except Exception as e:
-    #         logger.error("An error occurred while adding a tag to CuratedURL: %s", str(e))
+    #         logger.error(f"Error occurred: {str(e)}")
     #         return Response({"error": "An internal error has occurred."}, status=500)
 
     @action(detail=True, methods=["post"], url_path="add_tag")
@@ -490,15 +556,46 @@ class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             # Create delta URL first
             delta_url = curated_url._create_or_update_delta()
 
-            # Then apply operation to the delta
+            # Then apply tag operations to the delta
             pattern, created = DeltaTdammTagPattern.objects.get_or_create(
                 collection=curated_url.collection,
                 match_pattern=curated_url.url,
                 match_pattern_type=1,
-                tag=tag,
-                operation=DeltaTdammTagPattern.OperationChoices.ADD,
+                operation=OperationChoices.ADD,
                 source=source,
+                defaults={"tags": [tag]},
             )
+
+            if not created:
+                # Add tag if not already present
+                current_tags = pattern.tags or []
+                if tag not in current_tags:
+                    pattern.tags = current_tags + [tag]
+                    pattern.save()
+
+            if not created:
+                # Add tag if not already present
+                current_tags = pattern.tags or []
+                if tag not in current_tags:
+                    pattern.tags = current_tags + [tag]
+                    pattern.save()
+
+            # Remove from REMOVE pattern if it exists
+            remove_pattern = DeltaTdammTagPattern.objects.filter(
+                collection=delta_url.collection,
+                match_pattern=delta_url.url,
+                operation=OperationChoices.REMOVE,
+                source=source,
+            ).first()
+
+            if remove_pattern and remove_pattern.tags and tag in remove_pattern.tags:
+                # Remove this tag from the remove pattern
+                remove_pattern.tags = [t for t in remove_pattern.tags if t != tag]
+                if not remove_pattern.tags:
+                    remove_pattern.delete()
+                else:
+                    remove_pattern.save()
+
             pattern._apply_tag_operation(delta_url)
 
             # Clean up if delta becomes identical to curated
@@ -514,16 +611,33 @@ class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     # def remove_tag(self, request, pk=None):
     #     curated_url = self.get_object()
     #     tag = request.data.get("tag")
-    #     source = request.data.get("source")
+    #     source = request.data.get("source", "manual")
 
     #     if not tag:
     #         return Response({"error": "Tag not specified"}, status=400)
 
     #     try:
-    #         curated_url.remove_tag(tag, source)
+    #         # Create delta URL first
+    #         delta_url = curated_url._create_or_update_delta()
+
+    #         # Then apply operation to the delta
+    #         pattern, created = DeltaTdammTagPattern.objects.get_or_create(
+    #             collection=curated_url.collection,
+    #             match_pattern=curated_url.url,
+    #             match_pattern_type=1,
+    #             tag=tag,
+    #             operation=OperationChoices.REMOVE,
+    #             source=source,
+    #         )
+    #         pattern._apply_tag_operation(delta_url)
+
+    #         # Clean up if delta becomes identical to curated
+    #         if not delta_url.to_delete and delta_url._fields_match(curated_url):
+    #             delta_url.delete()
+
     #         return Response({"status": "success"})
     #     except Exception as e:
-    #         logger.error("An error occurred while removing a tag from CuratedURL: %s", str(e))
+    #         logger.error(f"Error occurred: {str(e)}")
     #         return Response({"error": "An internal error has occurred."}, status=500)
 
     @action(detail=True, methods=["post"], url_path="remove_tag")
@@ -539,15 +653,40 @@ class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             # Create delta URL first
             delta_url = curated_url._create_or_update_delta()
 
-            # Then apply operation to the delta
+            # Create or get a pattern for tag removal
             pattern, created = DeltaTdammTagPattern.objects.get_or_create(
                 collection=curated_url.collection,
                 match_pattern=curated_url.url,
                 match_pattern_type=1,
-                tag=tag,
                 operation=DeltaTdammTagPattern.OperationChoices.REMOVE,
                 source=source,
+                defaults={"tags": [tag]},
             )
+
+            if not created:
+                # Add tag to removal list if not already present
+                current_tags = pattern.tags or []
+                if tag not in current_tags:
+                    pattern.tags = current_tags + [tag]
+                    pattern.save()
+
+            # Check for and update ADD pattern if it exists
+            add_pattern = DeltaTdammTagPattern.objects.filter(
+                collection=curated_url.collection,
+                match_pattern=curated_url.url,
+                operation=DeltaTdammTagPattern.OperationChoices.ADD,
+                source=source,
+            ).first()
+
+            if add_pattern and add_pattern.tags and tag in add_pattern.tags:
+                # Remove tag from add pattern
+                add_pattern.tags = [t for t in add_pattern.tags if t != tag]
+                if not add_pattern.tags:
+                    add_pattern.delete()
+                else:
+                    add_pattern.save()
+
+            # Apply the pattern
             pattern._apply_tag_operation(delta_url)
 
             # Clean up if delta becomes identical to curated
@@ -705,12 +844,53 @@ class DivisionPatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "Division is required."})
 
 
+# class TdammTagPatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
+#     queryset = DeltaTdammTagPattern.objects.all()
+#     serializer_class = TdammTagPatternSerializer
+
+#     def get_queryset(self):
+#         return super().get_queryset().order_by("match_pattern")
+
+
 class TdammTagPatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     queryset = DeltaTdammTagPattern.objects.all()
     serializer_class = TdammTagPatternSerializer
 
-    def get_queryset(self):
-        return super().get_queryset().order_by("match_pattern")
+    # def create(self, request, *args, **kwargs):
+    #     # Handle single tag parameter from frontend
+    #     tag = request.data.get('tag')
+    #     if tag:
+    #         # Make a mutable copy of the data
+    #         data = request.data.copy()
+    #         # Convert single tag to tags array
+    #         data['tags'] = [tag]
+    #         # Use this modified data for serialization
+    #         serializer = self.get_serializer(data=data)
+    #         serializer.is_valid(raise_exception=True)
+    #         self.perform_create(serializer)
+    #         headers = self.get_success_headers(serializer.data)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    #     return super().create(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+
+        if "tag" in data:
+            tag = data.pop("tag")
+            data["tags"] = [tag]
+
+        # Create serializer with cleaned data
+        serializer = self.get_serializer(data=data)
+
+        # Print data for debugging
+        print(f"Data going to serializer: {data}")
+
+        # Continue with validation and creation
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class CollectionViewSet(viewsets.ModelViewSet):

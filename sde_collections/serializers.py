@@ -402,15 +402,27 @@ class DivisionPatternSerializer(BasePatternSerializer, serializers.ModelSerializ
 
 
 class TdammTagPatternSerializer(BasePatternSerializer, serializers.ModelSerializer):
-    tag_display = serializers.CharField(source="get_tag_display", read_only=True)
+    tags_display = serializers.SerializerMethodField(read_only=True)
     operation_display = serializers.CharField(source="get_operation_display", read_only=True)
 
     class Meta:
         model = DeltaTdammTagPattern
         fields = BasePatternSerializer.Meta.fields + (
-            "tag",
-            "tag_display",
+            "tags",
+            "tags_display",
             "operation",
             "operation_display",
             "source",
         )
+
+    def create(self, validated_data):
+        # Ensure tags field exists and is not None
+        if "tags" not in validated_data or validated_data["tags"] is None:
+            validated_data["tags"] = []
+        return super().create(validated_data)
+
+    def get_tags_display(self, obj):
+        """Return display names for all tags"""
+        if not obj.tags:
+            return []
+        return [dict(TDAMMTags.choices).get(tag, tag) for tag in obj.tags]
