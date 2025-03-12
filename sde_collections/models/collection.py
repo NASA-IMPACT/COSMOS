@@ -18,7 +18,7 @@ from inference.models.inference_choice_fields import (
     InferenceJobStatus,
 )
 from sde_collections.tasks import (
-    fetch_and_replace_full_text,
+    fetch_full_text,
     migrate_dump_to_delta_and_handle_status_transistions,
 )
 
@@ -848,7 +848,7 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
                 instance.create_scraper_config(overwrite=False)
                 instance.create_indexer_config(overwrite=False)
             elif instance.workflow_status == WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV:
-                fetch_and_replace_full_text.delay(instance.id, "lrm_dev")
+                fetch_full_text.delay(instance.id, "lrm_dev")
             elif instance.workflow_status in [
                 WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
                 WorkflowStatusChoices.QUALITY_CHECK_MINOR,
@@ -857,7 +857,7 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
 
         if "reindexing_status" in instance.tracker.changed():
             if instance.reindexing_status == ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV:
-                fetch_and_replace_full_text.delay(instance.id, "lrm_dev")
+                fetch_full_text.delay(instance.id, "lrm_dev")
             elif instance.reindexing_status == ReindexingStatusChoices.REINDEXING_CURATED:
                 instance.promote_to_curated()
 
