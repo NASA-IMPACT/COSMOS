@@ -260,7 +260,8 @@ class ExternalJob(models.Model):
         """Process this external job and update status/results"""
         try:
             api_client = InferenceAPIClient()
-            model_version = ModelVersion.objects.get(classification_type=self.inference_job.classification_type)
+            # model_version = ModelVersion.objects.get(classification_type=self.inference_job.classification_type)
+            model_version = self.inference_job.model_version
 
             response = api_client.get_job_status(model_version.api_identifier, self.external_job_id)
 
