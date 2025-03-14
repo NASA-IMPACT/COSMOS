@@ -9,6 +9,7 @@ from inference.models.inference_choice_fields import (
     InferenceJobStatus,
 )
 from inference.utils.batch import BatchProcessor
+from inference.utils.classification_utils import update_url_with_classification_results
 from inference.utils.inference_api_client import InferenceAPIClient
 
 
@@ -251,6 +252,18 @@ class ExternalJob(models.Model):
         """Store results and mark as completed"""
         try:
             self.results = results
+            if results:
+                collection = self.inference_job.collection
+
+                for idx, url_id in enumerate(self.url_ids):
+                    if idx < len(results):
+                        try:
+                            dump_url = collection.dump_urls.get(id=url_id)
+                            tdamm_tags = update_url_with_classification_results(dump_url, results[idx])
+                            print(f"tdamm_tags added: {tdamm_tags}")
+                        except collection.dump_urls.DoesNotExist:
+                            continue
+
             self.mark_completed()
 
         except Exception as e:
