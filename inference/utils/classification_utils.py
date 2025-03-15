@@ -16,7 +16,7 @@ def map_classification_to_tdamm_tags(classification_results, threshold=None):
         list: List of TDAMM tag values that exceed the threshold
     """
     if threshold is None:
-        threshold = getattr(settings, "TDAMM_CLASSIFICATION_THRESHOLD", 0.5)
+        threshold = float(getattr(settings, "TDAMM_CLASSIFICATION_THRESHOLD", 0.5))
 
     selected_tags = []
 
@@ -28,17 +28,20 @@ def map_classification_to_tdamm_tags(classification_results, threshold=None):
         simplified_name = parts[-1].lower()
         tag_mapping[simplified_name] = tag_value
 
-        # Add special case for "Not TDAMM"
+        # Handling naming inconsistencies
         if display_name == "Not TDAMM":
             tag_mapping["non-tdamm"] = tag_value
-
-        # Handling naming inconsistencies
         if simplified_name == "supernovae":
             tag_mapping["supernovae"] = tag_value
 
-    print(f"tag_mapping: {tag_mapping}")
     # Process classification results
     for classification_key, confidence in classification_results.items():
+        if isinstance(confidence, str):
+            try:
+                confidence = float(confidence)
+            except (ValueError, TypeError):
+                continue
+
         if confidence < threshold:
             continue
 
