@@ -185,6 +185,16 @@ class InferenceJob(models.Model):
     def reevaluate_progress_and_update_status(self) -> None:
         """Evaluate overall job status and handle completion"""
 
+        if self.status == InferenceJobStatus.QUEUED:
+            return
+
+        if not self.external_jobs.exists() and self.status == InferenceJobStatus.PENDING:
+            self.status = InferenceJobStatus.FAILED
+            self.error_message = "No external jobs created for pending job"
+            self.completed_at = timezone.now()
+            self.save()
+            return
+
         if self.get_ongoing_external_jobs().exists():
             self.status = InferenceJobStatus.PENDING
         else:
@@ -259,9 +269,16 @@ class ExternalJob(models.Model):
                     if idx < len(results):
                         try:
                             dump_url = collection.dump_urls.get(id=url_id)
-                            tdamm_tags = update_url_with_classification_results(dump_url, results[idx])
-                            print(f"tdamm_tags added: {tdamm_tags}")
-                        except collection.dump_urls.DoesNotExist:
+                            result = results[idx]
+                            # print(f"Processing result {idx}: {result}")
+                            if isinstance(result, dict) and "confidence" in result:
+                                # Ensure confidence is float
+                                result["confidence"] = float(result["confidence"])
+
+                            update_url_with_classification_results(dump_url, results[idx])
+                            # tdamm_tags = update_url_with_classification_results(dump_url, results[idx])
+                            # print(f"tdamm_tags added: {tdamm_tags}")
+                        except collection.dump_urls.model.DoesNotExist:
                             continue
 
             self.mark_completed()
