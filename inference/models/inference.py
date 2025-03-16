@@ -168,6 +168,10 @@ class InferenceJob(models.Model):
 
             if not created_batch:
                 self.log_error_and_set_status_failed("No external jobs created")
+                self.status = InferenceJobStatus.FAILED
+                self.updated_at = timezone.now()
+                self.save()
+                return
 
             self.status = InferenceJobStatus.PENDING
             self.save()
@@ -197,17 +201,23 @@ class InferenceJob(models.Model):
 
         if self.get_ongoing_external_jobs().exists():
             self.status = InferenceJobStatus.PENDING
+            self.updated_at = timezone.now()
         else:
             if self.get_failed_external_jobs().exists():
                 self.status = InferenceJobStatus.FAILED
+                self.updated_at = timezone.now()
             else:
                 self.status = InferenceJobStatus.COMPLETED
+                self.updated_at = timezone.now()
             self.completed_at = timezone.now()
             self.unload_model()
         self.save()
 
         # If job is completed or failed, check if all classifications are done
-        if self.status in [InferenceJobStatus.COMPLETED, InferenceJobStatus.FAILED]:
+        # if self.status in [InferenceJobStatus.COMPLETED, InferenceJobStatus.FAILED]:
+        #     self.collection.check_classifications_complete_and_finish_migration()
+
+        if self.status in [InferenceJobStatus.COMPLETED]:
             self.collection.check_classifications_complete_and_finish_migration()
 
     def unload_model(self) -> None:
@@ -303,7 +313,7 @@ class ExternalJob(models.Model):
             # Handle completion or failure
             if new_status == ExternalJobStatus.COMPLETED:
                 self.store_results(response.get("results"))
-                self.completed_at = timezone.now()
+                # self.completed_at = timezone.now() # completed in mark_completed called in store_results
             self.save()
 
         except Exception as e:
