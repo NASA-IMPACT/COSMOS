@@ -188,7 +188,7 @@ class InferenceAPIClient:
                 return False
         return False  # Timed out without reaching LOADED state
 
-    @retry(stop=stop_after_attempt(5), wait=wait_fixed(30), retry=retry_if_result(lambda x: not x))
+    @retry(stop=stop_after_attempt(5), wait=wait_fixed(60), retry=retry_if_result(lambda x: not x))
     def load_model(self, model_identifier: str) -> bool:
         """
         Load a specific model, first unloading all models, and wait for loading to complete.
