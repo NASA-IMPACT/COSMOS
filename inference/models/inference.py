@@ -170,6 +170,7 @@ class InferenceJob(models.Model):
                 self.log_error_and_set_status_failed("No external jobs created")
                 self.status = InferenceJobStatus.FAILED
                 self.updated_at = timezone.now()
+                self.completed_at = timezone.now()
                 self.save()
                 return
 

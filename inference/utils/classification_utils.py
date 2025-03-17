@@ -16,7 +16,7 @@ def map_classification_to_tdamm_tags(classification_results, threshold=None):
         list: List of TDAMM tag values that exceed the threshold
     """
     if threshold is None:
-        threshold = float(getattr(settings, "TDAMM_CLASSIFICATION_THRESHOLD", 0.5))
+        threshold = float(getattr(settings, "TDAMM_CLASSIFICATION_THRESHOLD"))
 
     selected_tags = []
 
