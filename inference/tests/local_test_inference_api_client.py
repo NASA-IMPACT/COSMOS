@@ -1,4 +1,5 @@
-# inference/tests/test_inference_api_client.py
+# inference/tests/local_test_inference_api_client.py
+# docker-compose -f local.yml run --rm django pytest inference/tests/local_test_inference_api_client.py
 
 """
 This is a test designed to be run on a local machine which has the inference pipeline running

@@ -1,4 +1,5 @@
 # inference/tests/test_batch.py
+# docker-compose -f local.yml run --rm django pytest inference/tests/test_batch.py
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest

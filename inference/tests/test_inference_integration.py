@@ -1,5 +1,7 @@
 # inference/tests/test_inference_integration.py
 # docker-compose -f local.yml run --rm django pytest inference/tests/test_inference_integration.py
+import time
+
 import pytest
 
 from inference.models.inference import ExternalJob, InferenceJob, ModelVersion
@@ -152,6 +154,17 @@ def test_create_external_job(loaded_model, inference_job, api_client):
     external_job.refresh_from_db()
 
     # The job should eventually complete (this might take time)
+    max_retries = 10
+    retry_count = 0
+    while retry_count < max_retries:
+        external_job.refresh_status_and_store_results()
+        external_job.refresh_from_db()
+
+        if external_job.status in [ExternalJobStatus.COMPLETED, ExternalJobStatus.FAILED, ExternalJobStatus.CANCELLED]:
+            break
+
+        retry_count += 1
+        time.sleep(1)
     assert external_job.status in [ExternalJobStatus.COMPLETED, ExternalJobStatus.FAILED, ExternalJobStatus.CANCELLED]
 
     # If job completed, check for results
