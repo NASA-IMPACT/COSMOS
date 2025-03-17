@@ -120,7 +120,7 @@ class ReindexingStatusChoices(models.IntegerChoices):
 class TDAMMTags(models.TextChoices):
     """TDAMM (Tagged Data for Multi-Messenger Astronomy) tag choices."""
 
-    NOT_TDAMM = "Not TDAMM", "Not TDAMM"
+    NOT_TDAMM = "NOT_TDAMM", "Not TDAMM"
     MMA_M_EM_G = "MMA_M_EM_G", "Messenger - EM Radiation - Gamma rays"
     MMA_M_EM_X = "MMA_M_EM_X", "Messenger - EM Radiation - X-rays"
     MMA_M_EM_U = "MMA_M_EM_U", "Messenger - EM Radiation - Ultraviolet"
