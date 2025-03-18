@@ -30,9 +30,11 @@ def test_fetch_and_replace_full_text(disconnect_signals):
     ]
 
     def mock_generator():
-        yield mock_batch
+        yield (mock_batch)
 
-    with patch("sde_collections.sinequa_api.Api.get_full_texts") as mock_get_full_texts:
+    with patch("sde_collections.sinequa_api.Api.get_full_texts") as mock_get_full_texts, patch(
+        "sde_collections.sinequa_api.Api.get_total_count", return_value=2
+    ), patch("sde_collections.utils.slack_utils.send_detailed_import_notification"):
         mock_get_full_texts.return_value = mock_generator()
 
         fetch_and_replace_full_text(collection.id, "lrm_dev")
@@ -59,9 +61,11 @@ def test_fetch_and_replace_full_text_large_dataset(disconnect_signals):
         total_records = 20000
 
         for start in range(0, total_records, batch_size):
-            yield create_batch(start, min(batch_size, total_records - start))
+            yield (create_batch(start, min(batch_size, total_records - start)))
 
-    with patch("sde_collections.sinequa_api.Api.get_full_texts") as mock_get_full_texts:
+    with patch("sde_collections.sinequa_api.Api.get_full_texts") as mock_get_full_texts, patch(
+        "sde_collections.sinequa_api.Api.get_total_count", return_value=20000
+    ), patch("sde_collections.utils.slack_utils.send_detailed_import_notification"):
         mock_get_full_texts.return_value = mock_batch_generator()
 
         # Execute the task

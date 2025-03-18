@@ -15,8 +15,9 @@ from sde_collections.models.collection_choice_fields import (
     ReindexingStatusChoices,
     WorkflowStatusChoices,
 )
+from sde_collections.utils import slack_utils
 
-from .models.delta_url import DumpUrl
+from .models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
 from .sinequa_api import Api
 from .utils.github_helper import GitHubHandler
 
@@ -166,8 +167,10 @@ def fetch_full_text(collection_id, server_name):
     # Step 1: Delete existing DumpUrl entries
     deleted_count, _ = DumpUrl.objects.filter(collection=collection).delete()
     print(f"Deleted {deleted_count} old records.")
-
     try:
+        total_server_count = api.get_total_count(collection.config_folder)
+        print(f"Total records on the server: {total_server_count}")
+
         # Step 2: Process data in batches
         total_processed = 0
         for batch in api.get_full_texts(collection.config_folder):
