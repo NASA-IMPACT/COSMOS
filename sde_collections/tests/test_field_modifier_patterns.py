@@ -47,6 +47,7 @@ class TestFieldModifierPatternBasics(TestCase):
             collection=self.collection,
             match_pattern="https://example.com/docs/guide.pdf",
             document_type=DocumentTypes.DOCUMENTATION,
+            match_pattern_type=DeltaDocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
         )
         assert pattern.match_pattern_type == DeltaDocumentTypePattern.MatchPatternTypeChoices.INDIVIDUAL_URL
         assert pattern.document_type == DocumentTypes.DOCUMENTATION
@@ -68,6 +69,7 @@ class TestFieldModifierPatternBasics(TestCase):
             collection=self.collection,
             match_pattern="https://example.com/helio/data.html",
             division=Divisions.HELIOPHYSICS,
+            match_pattern_type=DeltaDivisionPattern.MatchPatternTypeChoices.INDIVIDUAL_URL,
         )
         assert pattern.match_pattern_type == DeltaDivisionPattern.MatchPatternTypeChoices.INDIVIDUAL_URL
         assert pattern.division == Divisions.HELIOPHYSICS
