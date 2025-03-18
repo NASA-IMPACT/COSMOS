@@ -125,3 +125,8 @@ For each PR made, an entry should be added to this changelog. It should contain
   - Changes:
     - Added a JavaScript validation check on form submission to ensure the document type (stored in a hidden input) is not empty.
     - Display an error message and prevent form submission if the field is empty.
+
+- 1249-add-https-link-to-cors_allowed_origins-for-sde-lrm
+  - Description: The feedback form API was throwing CORS errors and to rectify that, we need to add the apt https link for sde-lrm.
+  - Changes:
+    - Added `https://sde-lrm.nasa-impact.net` to `CORS_ALLOWED_ORIGINS` in the base settings.
