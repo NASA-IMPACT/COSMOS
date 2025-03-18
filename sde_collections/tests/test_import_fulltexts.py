@@ -1,3 +1,5 @@
+# docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_import_fulltexts.py
+
 from unittest.mock import patch
 
 import pytest
