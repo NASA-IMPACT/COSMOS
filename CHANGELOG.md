@@ -114,6 +114,12 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Added `escapeHtml` function in the `delta_url_list.js` file to handle special character escaping correctly.
     - Called this function while retrieving the titles in `getGeneratedTitleColumn()` and `getCuratedGeneratedTitleColumn()` functions.
 
+- 1240-fix-code-scanning-alert-inclusion-of-functionality-from-an-untrusted-source
+  - Description: Ensured all external resources load securely by switching to HTTPS and adding Subresource Integrity (SRI) checks.
+  - Changes:
+    - Replaced protocol‑relative URLs with HTTPS.
+    - Added SRI (integrity) and crossorigin attributes to external script tags.
+
 - 1196-arrange-the-show-100-csv-customize-columns-boxes-to-be-in-one-line-on-the-delta-urls-page
   changelog-update-Issue-1001
   - Description: Formatting the buttons - 'Show 100','CSV' and 'Customize Columns' to be on a single line for an optimal use of space.
