@@ -188,22 +188,26 @@ class InferenceAPIClient:
                 return False
         return False  # Timed out without reaching LOADED state
 
-    @retry(stop=stop_after_attempt(5), wait=wait_fixed(30), retry=retry_if_result(lambda x: not x))
     def load_model(self, model_identifier: str) -> bool:
         """
-        Load a specific model, first unloading all models, and wait for loading to complete.
-
-        Args:
-            model_identifier: The model to load
-
-        Returns:
-            bool: True if the model is successfully loaded
+        Load a specific model and avoid unnecessary unloading during retries.
         """
-        # First unload all models
+        # First try to check if model is already loaded
+        status = self.check_model_status(model_identifier)
+        if status == ModelStatusEnum.LOADED:
+            return True
+
+        # Only unload all models once, then use retries for loading
         if not self.unload_all_models():
             return False
 
-        # Check current status of our model
+        # Now use retries only for the loading portion
+        return self._load_model_with_retries(model_identifier)
+
+    @retry(stop=stop_after_attempt(5), wait=wait_fixed(30), retry=retry_if_result(lambda x: not x))
+    def _load_model_with_retries(self, model_identifier: str) -> bool:
+        """Internal method that handles retries for loading a model without unloading first."""
+        # Check current status
         status = self.check_model_status(model_identifier)
 
         # If already loaded, we're done
@@ -216,7 +220,7 @@ class InferenceAPIClient:
             if not load_request_success:
                 return False
 
-            # Now wait for loading to complete
+            # Wait for loading to complete
             return self.wait_for_model_loading(model_identifier)
 
         return False

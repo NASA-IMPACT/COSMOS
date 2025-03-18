@@ -5,13 +5,6 @@ from inference.models import InferenceJob, InferenceJobStatus
 from inference.utils.advisory_lock import AdvisoryLock
 
 
-def generate_inference_job(collection, classification_type):
-    """Creates a new inference job for a collection."""
-    return InferenceJob.objects.create(
-        collection=collection, classification_type=classification_type, status=InferenceJobStatus.QUEUED
-    )
-
-
 @shared_task
 def process_inference_job_queue():
     """
@@ -25,13 +18,18 @@ def process_inference_job_queue():
             return "Queue processing already in progress"
 
         try:
+            # Reevaluate progress and update status of all inference jobs that are not currently queued
+            # for job in InferenceJob.objects.exclude(status=InferenceJobStatus.QUEUED):
+            #     job.reevaluate_progress_and_update_status()
+
             # Look for pending jobs first
             pending_jobs = InferenceJob.objects.filter(status=InferenceJobStatus.PENDING)
 
             if pending_jobs.exists():
-                # Process pending jobs
+                # Refresh and process pending jobs
                 for job in pending_jobs:
                     job.refresh_external_jobs_status_and_store_results()
+                    job.reevaluate_progress_and_update_status()
             else:
                 # If no pending jobs, try to initiate a queued job
                 queued_job = (

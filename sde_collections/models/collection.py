@@ -1,7 +1,9 @@
+# sde_collections/models/collection.py
 import json
 import urllib.parse
 
 import requests
+from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -11,7 +13,14 @@ from model_utils import FieldTracker
 from slugify import slugify
 
 from config_generation.db_to_xml import XmlEditor
-from sde_collections.tasks import fetch_and_replace_full_text
+from inference.models.inference_choice_fields import (
+    ClassificationType,
+    InferenceJobStatus,
+)
+from sde_collections.tasks import (
+    fetch_full_text,
+    migrate_dump_to_delta_and_handle_status_transistions,
+)
 
 from ..utils.github_helper import GitHubHandler
 from ..utils.slack_utils import (
@@ -32,7 +41,9 @@ from .collection_choice_fields import (
 from .delta_url import CuratedUrl, DeltaUrl, DumpUrl
 
 User = get_user_model()
-DELTA_COMPARISON_FIELDS = ["scraped_title"]  # Add more fields as needed
+DELTA_COMPARISON_FIELDS = ["scraped_title", "tdamm_tag", "division"]  # Add more fields as needed
+# TODO: may need to double check how the ml fields are evaluated. we need to ensure that it looks
+# specifically at the ml value, not the default or the manual value.
 
 
 class Collection(models.Model):
@@ -650,6 +661,47 @@ class Collection(models.Model):
         for pattern in self.deltadivisionpatterns.all():
             pattern.apply()
 
+    def generate_inference_job(self, classification_type):
+        """Creates a new inference job for a collection."""
+
+        InferenceJob = apps.get_model("inference", "InferenceJob")
+        ModelVersion = apps.get_model("inference", "ModelVersion")
+        return InferenceJob.objects.create(
+            collection=self,
+            model_version=ModelVersion.get_active_version(classification_type),
+        )
+
+    def queue_necessary_classifications(self):
+        """Check if collection needs classification and queue jobs if needed"""
+
+        # Determine which classifications are needed
+        if self.division == Divisions.ASTROPHYSICS:
+            self.generate_inference_job(ClassificationType.TDAMM)
+        elif self.division == Divisions.GENERAL:
+            self.generate_inference_job(ClassificationType.DIVISION)
+        else:
+            # No classification needed, proceed directly to migration
+            migrate_dump_to_delta_and_handle_status_transistions.delay(self.id)
+
+    def check_classifications_complete_and_finish_migration(self):
+        """
+        Check if all classification jobs for a collection are complete.
+        If so, trigger migration from DumpUrls to DeltaUrls.
+        """
+
+        InferenceJob = apps.get_model("inference", "InferenceJob")
+        # Check if any jobs are still pending or queued
+        ongoing_jobs = InferenceJob.objects.filter(
+            collection=self, status__in=[InferenceJobStatus.QUEUED, InferenceJobStatus.PENDING]
+        ).exists()
+
+        if not ongoing_jobs:
+            # All classifications are done, trigger migration
+            migrate_dump_to_delta_and_handle_status_transistions.delay(self.id)
+            return True
+
+        return False
+
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
         if not self.config_folder:
@@ -813,7 +865,7 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
                 instance.create_scraper_config(overwrite=False)
                 instance.create_scraper_job(overwrite=False)
             elif instance.workflow_status == WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV:
-                fetch_and_replace_full_text.delay(instance.id, "lrm_dev")
+                fetch_full_text.delay(instance.id, "lrm_dev")
             elif instance.workflow_status in [
                 WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
                 WorkflowStatusChoices.QUALITY_CHECK_MINOR,
@@ -822,7 +874,7 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
 
         if "reindexing_status" in instance.tracker.changed():
             if instance.reindexing_status == ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV:
-                fetch_and_replace_full_text.delay(instance.id, "lrm_dev")
+                fetch_full_text.delay(instance.id, "lrm_dev")
             elif instance.reindexing_status == ReindexingStatusChoices.REINDEXING_CURATED:
                 instance.promote_to_curated()
 

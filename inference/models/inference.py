@@ -9,6 +9,7 @@ from inference.models.inference_choice_fields import (
     InferenceJobStatus,
 )
 from inference.utils.batch import BatchProcessor
+from inference.utils.classification_utils import update_url_with_classification_results
 from inference.utils.inference_api_client import InferenceAPIClient
 
 
@@ -167,6 +168,11 @@ class InferenceJob(models.Model):
 
             if not created_batch:
                 self.log_error_and_set_status_failed("No external jobs created")
+                self.status = InferenceJobStatus.FAILED
+                self.updated_at = timezone.now()
+                self.completed_at = timezone.now()
+                self.save()
+                return
 
             self.status = InferenceJobStatus.PENDING
             self.save()
@@ -184,16 +190,36 @@ class InferenceJob(models.Model):
     def reevaluate_progress_and_update_status(self) -> None:
         """Evaluate overall job status and handle completion"""
 
+        if self.status == InferenceJobStatus.QUEUED:
+            return
+
+        if not self.external_jobs.exists() and self.status == InferenceJobStatus.PENDING:
+            self.status = InferenceJobStatus.FAILED
+            self.error_message = "No external jobs created for pending job"
+            self.completed_at = timezone.now()
+            self.save()
+            return
+
         if self.get_ongoing_external_jobs().exists():
             self.status = InferenceJobStatus.PENDING
+            self.updated_at = timezone.now()
         else:
             if self.get_failed_external_jobs().exists():
                 self.status = InferenceJobStatus.FAILED
+                self.updated_at = timezone.now()
             else:
                 self.status = InferenceJobStatus.COMPLETED
+                self.updated_at = timezone.now()
             self.completed_at = timezone.now()
             self.unload_model()
         self.save()
+
+        # If job is completed or failed, check if all classifications are done
+        # if self.status in [InferenceJobStatus.COMPLETED, InferenceJobStatus.FAILED]:
+        #     self.collection.check_classifications_complete_and_finish_migration()
+
+        if self.status in [InferenceJobStatus.COMPLETED]:
+            self.collection.check_classifications_complete_and_finish_migration()
 
     def unload_model(self) -> None:
         """
@@ -247,6 +273,25 @@ class ExternalJob(models.Model):
         """Store results and mark as completed"""
         try:
             self.results = results
+            if results:
+                collection = self.inference_job.collection
+
+                for idx, url_id in enumerate(self.url_ids):
+                    if idx < len(results):
+                        try:
+                            dump_url = collection.dump_urls.get(id=url_id)
+                            result = results[idx]
+                            # print(f"Processing result {idx}: {result}")
+                            if isinstance(result, dict) and "confidence" in result:
+                                # Ensure confidence is float
+                                result["confidence"] = float(result["confidence"])
+
+                            update_url_with_classification_results(dump_url, results[idx])
+                            # tdamm_tags = update_url_with_classification_results(dump_url, results[idx])
+                            # print(f"tdamm_tags added: {tdamm_tags}")
+                        except collection.dump_urls.model.DoesNotExist:
+                            continue
+
             self.mark_completed()
 
         except Exception as e:
@@ -256,7 +301,8 @@ class ExternalJob(models.Model):
         """Process this external job and update status/results"""
         try:
             api_client = InferenceAPIClient()
-            model_version = ModelVersion.objects.get(classification_type=self.inference_job.classification_type)
+            # model_version = ModelVersion.objects.get(classification_type=self.inference_job.classification_type)
+            model_version = self.inference_job.model_version
 
             response = api_client.get_job_status(model_version.api_identifier, self.external_job_id)
 
@@ -268,7 +314,7 @@ class ExternalJob(models.Model):
             # Handle completion or failure
             if new_status == ExternalJobStatus.COMPLETED:
                 self.store_results(response.get("results"))
-                self.completed_at = timezone.now()
+                # self.completed_at = timezone.now() # completed in mark_completed called in store_results
             self.save()
 
         except Exception as e:
