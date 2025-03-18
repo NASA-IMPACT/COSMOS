@@ -15,9 +15,8 @@ from sde_collections.models.collection_choice_fields import (
     ReindexingStatusChoices,
     WorkflowStatusChoices,
 )
-from sde_collections.utils import slack_utils
 
-from .models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
+from .models.delta_url import DumpUrl
 from .sinequa_api import Api
 from .utils.github_helper import GitHubHandler
 
