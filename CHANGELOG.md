@@ -114,6 +114,12 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Added `escapeHtml` function in the `delta_url_list.js` file to handle special character escaping correctly.
     - Called this function while retrieving the titles in `getGeneratedTitleColumn()` and `getCuratedGeneratedTitleColumn()` functions.
 
+- 1196-arrange-the-show-100-csv-customize-columns-boxes-to-be-in-one-line-on-the-delta-urls-page
+  changelog-update-Issue-1001
+  - Description: Formatting the buttons - 'Show 100','CSV' and 'Customize Columns' to be on a single line for an optimal use of space.
+  - Changes:
+    - Updated delta_url_list.css and delta_url_list.js files with necessary modifications
+
 - 1246-minor-enhancement-document-type-pattern-form-require-document-type-or-show-appropriate-error
   - Description: In the Document Type Pattern Form, if the user does not select a Document Type while filling out the form, an appropriate error message is displayed.
   - Changes:

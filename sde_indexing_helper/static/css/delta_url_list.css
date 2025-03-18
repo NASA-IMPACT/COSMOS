@@ -213,8 +213,6 @@
 .modalFooter {
     position: sticky;
     bottom: 0;
-    position: sticky;
-    bottom: 0;
     padding: 10px 0;
     background: #FFFFFF;
 }
@@ -254,8 +252,6 @@
     font-size: 24px;
     font-weight: 500;
 }
-
-
 
 .custom-select,
 .buttons-csv,
@@ -440,7 +436,6 @@ div.dt-buttons .btn.processing:after {
 }
 
 
-/* pagination position */
 div.dt-container div.dt-paging ul.pagination {
     position: absolute;
     right: 60px;
@@ -450,4 +445,32 @@ div.dt-container div.dt-paging ul.pagination {
     width: 100%;
     max-width: 100%;
     min-width: 100%;
+}
+
+#delta_urls_table_wrapper .col-md {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    grid-auto-flow: row;
+    position: relative;
+
+    .dt-info {
+        position:absolute;
+        left: 130px;
+        top: 5px;
+    }
+}
+
+#curated_urls_table_wrapper .col-md {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    grid-auto-flow: row;
+    position: relative;
+
+    .dt-info {
+        position:absolute;
+        left: 130px;
+        top: 5px;
+    }
 }
