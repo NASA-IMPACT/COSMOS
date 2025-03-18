@@ -1,13 +1,16 @@
-# docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_import_fulltexts.py
-
 from unittest.mock import patch
 
 import pytest
 from django.db.models.signals import post_save
 
+from inference.models.inference import ModelVersion
+from inference.models.inference_choice_fields import ClassificationType
 from sde_collections.models.collection import create_configs_on_status_change
 from sde_collections.models.delta_url import DeltaUrl, DumpUrl
-from sde_collections.tasks import fetch_and_replace_full_text
+from sde_collections.tasks import (
+    fetch_full_text,
+    migrate_dump_to_delta_and_handle_status_transistions,
+)
 from sde_collections.tests.factories import CollectionFactory
 
 
@@ -20,8 +23,19 @@ def disconnect_signals():
     post_save.connect(create_configs_on_status_change, sender="sde_collections.Collection")
 
 
+@pytest.fixture
+def model_version():
+    """Create a model version for testing"""
+    return ModelVersion.objects.create(
+        api_identifier="test_model",
+        description="Test model version",
+        classification_type=ClassificationType.TDAMM,
+        is_active=True,
+    )
+
+
 @pytest.mark.django_db
-def test_fetch_and_replace_full_text(disconnect_signals):
+def test_fetch_and_replace_full_text(disconnect_signals, model_version):
     collection = CollectionFactory(config_folder="test_folder")
 
     mock_batch = [
@@ -37,14 +51,21 @@ def test_fetch_and_replace_full_text(disconnect_signals):
     ), patch("sde_collections.utils.slack_utils.send_detailed_import_notification"):
         mock_get_full_texts.return_value = mock_generator()
 
-        fetch_and_replace_full_text(collection.id, "lrm_dev")
+        # First fetch the full text
+        fetch_full_text(collection.id, "lrm_dev")
 
-        assert DumpUrl.objects.filter(collection=collection).count() == 0
+        # Verify DumpUrls were created
+        assert DumpUrl.objects.filter(collection=collection).count() == 2
+
+        # Then migrate the data
+        migrate_dump_to_delta_and_handle_status_transistions(collection.id)
+
+        # Verify DeltaUrls were created
         assert DeltaUrl.objects.filter(collection=collection).count() == 2
 
 
 @pytest.mark.django_db
-def test_fetch_and_replace_full_text_large_dataset(disconnect_signals):
+def test_fetch_and_replace_full_text_large_dataset(disconnect_signals, model_version):
     """Test processing a large number of records with proper pagination and batching."""
     collection = CollectionFactory(config_folder="test_folder")
 
@@ -68,8 +89,14 @@ def test_fetch_and_replace_full_text_large_dataset(disconnect_signals):
     ), patch("sde_collections.utils.slack_utils.send_detailed_import_notification"):
         mock_get_full_texts.return_value = mock_batch_generator()
 
-        # Execute the task
-        result = fetch_and_replace_full_text(collection.id, "lrm_dev")
+        # Execute the fetch task
+        result = fetch_full_text(collection.id, "lrm_dev")
+
+        # Verify DumpUrls were created
+        assert DumpUrl.objects.filter(collection=collection).count() == 20000
+
+        # Execute the migration task
+        migrate_result = migrate_dump_to_delta_and_handle_status_transistions(collection.id)
 
         # Verify total number of records
         assert DeltaUrl.objects.filter(collection=collection).count() == 20000
@@ -82,6 +109,4 @@ def test_fetch_and_replace_full_text_large_dataset(disconnect_signals):
 
         # Verify batch processing worked by checking the success message
         assert "Successfully processed 20000 records" in result
-
-        # Verify no DumpUrls remain (should all be migrated to DeltaUrls)
-        assert DumpUrl.objects.filter(collection=collection).count() == 0
+        assert "Successfully migrated DumpUrls to DeltaUrls" in migrate_result
