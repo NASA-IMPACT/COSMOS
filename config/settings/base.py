@@ -93,6 +93,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://sde-lrm.nasa-impact.net",
+    "https://sde-lrm.nasa-impact.net",
     "https://sde-qa.nasa-impact.net",
     "https://sciencediscoveryengine.test.nasa.gov",
     "https://sciencediscoveryengine.nasa.gov",

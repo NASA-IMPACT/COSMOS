@@ -12,9 +12,13 @@ For each PR made, an entry should be added to this changelog. It should contain
   - etc.
 
 ## Changelog
-- 1182-ml-classification-queue
+
+- 1209-bug-fix-document-type-creator-form
+  - Description: The dropdown on the pattern creation form needs to be set as multi as the default option since this is why the doc type creator form is used for the majority of multi-URL pattern creations. This should be applied to doc types, division types, and titles as well.
   - Changes:
-    - a new env value has been created called `INFERENCE_API_URL`
+    - Set the default value for `match_pattern_type` in `BaseMatchPattern` class is set to `2`
+    - Changed `test_create_simple_exclude_pattern` test within `TestDeltaExcludePatternBasics`
+    - Changed `test_create_division_pattern` and `test_create_document_type_pattern_single` within `TestFieldModifierPatternBasics`
 
 - 1052-update-cosmos-to-create-jobs-for-scrapers-and-indexers
   - Description: The original automation set up to generate the scrapers and indexers automatically based on a collection workflow status change needed to be updated to more accurately reflect the curation workflow. It would also be good to generate the jobs during this process to streamline the same.
@@ -104,3 +108,32 @@ For each PR made, an entry should be added to this changelog. It should contain
     - Added universal search functionality tests
     - Created search pane filter tests
     - Added pattern application form tests with validation checks
+
+- 1101-bug-fix-quotes-not-escaped-in-titles
+  - Description: Title rules that include single quotes show up correctly in the sinequa frontend (and the COSMOS api) but not in the delta urls page.
+  - Changes:
+    - Added `escapeHtml` function in the `delta_url_list.js` file to handle special character escaping correctly.
+    - Called this function while retrieving the titles in `getGeneratedTitleColumn()` and `getCuratedGeneratedTitleColumn()` functions.
+
+- 1240-fix-code-scanning-alert-inclusion-of-functionality-from-an-untrusted-source
+  - Description: Ensured all external resources load securely by switching to HTTPS and adding Subresource Integrity (SRI) checks.
+  - Changes:
+    - Replaced protocol‑relative URLs with HTTPS.
+    - Added SRI (integrity) and crossorigin attributes to external script tags.
+
+- 1196-arrange-the-show-100-csv-customize-columns-boxes-to-be-in-one-line-on-the-delta-urls-page
+  changelog-update-Issue-1001
+  - Description: Formatting the buttons - 'Show 100','CSV' and 'Customize Columns' to be on a single line for an optimal use of space.
+  - Changes:
+    - Updated delta_url_list.css and delta_url_list.js files with necessary modifications
+
+- 1246-minor-enhancement-document-type-pattern-form-require-document-type-or-show-appropriate-error
+  - Description: In the Document Type Pattern Form, if the user does not select a Document Type while filling out the form, an appropriate error message is displayed.
+  - Changes:
+    - Added a JavaScript validation check on form submission to ensure the document type (stored in a hidden input) is not empty.
+    - Display an error message and prevent form submission if the field is empty.
+
+- 1249-add-https-link-to-cors_allowed_origins-for-sde-lrm
+  - Description: The feedback form API was throwing CORS errors and to rectify that, we need to add the apt https link for sde-lrm.
+  - Changes:
+    - Added `https://sde-lrm.nasa-impact.net` to `CORS_ALLOWED_ORIGINS` in the base settings.
