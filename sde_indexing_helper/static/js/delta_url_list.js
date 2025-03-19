@@ -114,14 +114,15 @@ function initializeDataTable() {
     layout: {
       bottomEnd: "inputPaging",
       topEnd: null,
-      topStart: {
-        info: true,
+      topStart: null,
+      top: {
         pageLength: {
           menu: [
             [25, 50, 100, 500],
             ["Show 25", "Show 50", "Show 100", "Show 500"],
           ],
         },
+        info:true,
         buttons: [
           {
             extend: "csv",
@@ -332,14 +333,15 @@ function initializeDataTable() {
     layout: {
       bottomEnd: "inputPaging",
       topEnd: null,
-      topStart: {
-        info: true,
+      topStart: null,
+      top: {
         pageLength: {
           menu: [
             [25, 50, 100, 500],
             ["Show 25", "Show 50", "Show 100", "Show 500"],
           ],
         },
+        info:true,
         buttons: [
           {
             extend: "csv",
@@ -1208,12 +1210,22 @@ function getCuratedScrapedTitleColumn() {
   };
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function getGeneratedTitleColumn() {
   return {
     data: "generated_title",
     width: "20%",
     render: function (data, type, row) {
-      return `<input type="text" class="form-control individual_title_input whiteText" value='${data}' data-generated-title-id=${row["generated_title_id"]
+      return `<input type="text" class="form-control individual_title_input whiteText" value="${escapeHtml(data)}" data-generated-title-id=${row["generated_title_id"]
         } data-match-pattern-type=${row["match_pattern_type"]
         } data-delta-urls-count=${row["delta_urls_count"]
         } data-url=${remove_protocol(row["url"])} />`;
@@ -1226,7 +1238,7 @@ function getCuratedGeneratedTitleColumn() {
     data: "generated_title",
     width: "20%",
     render: function (data, type, row) {
-      return `<input type="text" class="form-control individual_title_input whiteText" value='${data}' data-generated-title-id=${row["generated_title_id"]
+      return `<input type="text" class="form-control individual_title_input whiteText" value="${escapeHtml(data)}" data-generated-title-id=${row["generated_title_id"]
         } data-match-pattern-type=${row["match_pattern_type"]
         } data-curated-urls-count=${row["curated_urls_count"]
         } data-url=${remove_protocol(row["url"])} />`;
@@ -1400,7 +1412,8 @@ function handleHideorShowSubmitButton() {
 }
 
 function handleDocumentTypeSelect() {
-  $("body").on("click", ".document_type_select", function () {
+  $("body").on("click", ".document_type_select", function (e) {
+    e.preventDefault();
     $match_pattern = $(this)
       .parents(".document_type_dropdown")
       .data("match-pattern");
@@ -1581,6 +1594,8 @@ function postDocumentTypePatterns(
     return;
   }
 
+  const scrollPosition = window.scrollY;
+
   $.ajax({
     url: "/api/document-type-patterns/",
     type: "POST",
@@ -1592,7 +1607,9 @@ function postDocumentTypePatterns(
       csrfmiddlewaretoken: csrftoken,
     },
     success: function (data) {
-      $("#delta_urls_table").DataTable().ajax.reload(null, false);
+      $("#delta_urls_table").DataTable().ajax.reload(function() {
+        window.scrollTo(0, scrollPosition);
+      }, false);
       $("#document_type_patterns_table").DataTable().ajax.reload(null, false);
       if (currentTab === "") { //Only add a notification if we are on the first tab
         newDocumentTypePatternsCount = newDocumentTypePatternsCount + 1;
@@ -2059,6 +2076,12 @@ $("#document_type_pattern_form").on("submit", function (e) {
   input_serialized.forEach((field) => {
     inputs[field.name] = field.value;
   });
+
+  // Validate that the document_type_pattern field is not empty
+  if (!inputs.document_type_pattern) {
+    toastr.error("Please select a Document Type");
+    return; // Prevent form submission
+  }
 
   postDocumentTypePatterns(
     inputs.match_pattern,

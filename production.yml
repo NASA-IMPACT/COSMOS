@@ -1,3 +1,4 @@
+# production.yml
 volumes:
   production_postgres_data: {}
   production_postgres_data_backups: {}
@@ -55,6 +56,11 @@ services:
   celerybeat:
     <<: *django
     image: sde_indexing_helper_production_celerybeat
+    container_name: sde_indexing_helper_production_celerybeat
+    depends_on:
+      - awscli
+      - postgres
+    ports: []
     command: /start-celerybeat
 
   flower:

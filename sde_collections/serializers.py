@@ -258,12 +258,14 @@ class CuratedURLAPISerializer(serializers.ModelSerializer):
         return categories
 
     def get_document_type(self, obj):
-        if obj.document_type is not None:
+        if obj.document_type and obj.document_type not in DocumentTypes.values:
+            raise ValueError(f"Invalid document type: {obj.document_type}")
+        elif obj.document_type is not None:
             return obj.get_document_type_display()
         elif obj.collection.document_type is not None:
             return obj.collection.get_document_type_display()
         else:
-            return "Unknown"
+            raise ValueError("No document type found")
 
     def get_title(self, obj):
         return obj.generated_title if obj.generated_title else obj.scraped_title
