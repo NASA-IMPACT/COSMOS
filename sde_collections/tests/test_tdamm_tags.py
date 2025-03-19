@@ -22,7 +22,7 @@ class TestTDAMMFields:
         # Setting tdamm_tag affects only manual field
         url.tdamm_tag = ["MMA_M_EM", "MMA_M_G"]
         assert url.tdamm_tag_manual == ["MMA_M_EM", "MMA_M_G"]
-        assert url.tdamm_tag_ml is None
+        assert url.tdamm_tag_ml == []
 
         # ML field must be set explicitly
         url.tdamm_tag_ml = ["MMA_M_N"]

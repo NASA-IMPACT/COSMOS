@@ -1,4 +1,4 @@
-# docker-compose -f local.yml run --rm django pytest sde_collections/tests/api_tests.py
+# docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_sinequa_api.py
 import json
 from unittest.mock import MagicMock, patch
 

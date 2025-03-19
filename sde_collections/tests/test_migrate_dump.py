@@ -3,7 +3,7 @@
 
 import pytest
 
-from sde_collections.models.collection_choice_fields import DocumentTypes
+from sde_collections.models.collection_choice_fields import Divisions, DocumentTypes
 from sde_collections.models.delta_patterns import (
     DeltaDocumentTypePattern,
     DeltaExcludePattern,
@@ -16,7 +16,7 @@ from sde_collections.tests.factories import (
     DumpUrlFactory,
 )
 
-DELTA_COMPARISON_FIELDS = ["scraped_title"]  # Assuming a central definition
+DELTA_COMPARISON_FIELDS = ["scraped_title", "tdamm_tag", "division"]  # Assuming a central definition
 
 
 @pytest.mark.django_db
@@ -80,9 +80,36 @@ class TestMigrateDumpToDelta:
         assert delta.scraped_title == curated_url.scraped_title
 
     def test_identical_url_in_both(self):
+        """When DumpUrl and CuratedUrl have identical values, no DeltaUrl should be created."""
         collection = CollectionFactory()
-        dump_url = DumpUrlFactory(collection=collection, scraped_title="Same Title")
-        CuratedUrlFactory(collection=collection, url=dump_url.url, scraped_title="Same Title")
+
+        # Create DumpUrl with specific values
+        dump_url = DumpUrlFactory(collection=collection, scraped_title="Same Title", division=Divisions.ASTROPHYSICS)
+
+        # Ensure tdamm_tag is explicitly set to match
+        dump_url.tdamm_tag_manual = []
+        dump_url.tdamm_tag_ml = []
+        dump_url.save()
+
+        # Create CuratedUrl with identical values
+        curated_url = CuratedUrlFactory(
+            collection=collection,
+            url=dump_url.url,  # Use the same URL
+            scraped_title="Same Title",
+            division=Divisions.ASTROPHYSICS,
+        )
+
+        # Set identical tdamm_tag values
+        curated_url.tdamm_tag_manual = []
+        curated_url.tdamm_tag_ml = []
+        curated_url.save()
+
+        # Verify fields are identical before migration
+        assert dump_url.scraped_title == curated_url.scraped_title
+        assert dump_url.division == curated_url.division
+        assert dump_url.tdamm_tag == curated_url.tdamm_tag
+
+        # Migrate and assert
         collection.migrate_dump_to_delta()
         assert not DeltaUrl.objects.filter(url=dump_url.url).exists()
 

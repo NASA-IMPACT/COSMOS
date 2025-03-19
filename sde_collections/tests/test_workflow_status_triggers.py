@@ -1,4 +1,5 @@
 # docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_workflow_status_triggers.py
+
 from unittest.mock import Mock, patch
 
 import pytest
@@ -9,8 +10,11 @@ from sde_collections.models.collection_choice_fields import (
     ReindexingStatusChoices,
     WorkflowStatusChoices,
 )
-from sde_collections.models.delta_url import DeltaUrl, DumpUrl
-from sde_collections.tasks import fetch_and_replace_full_text
+from sde_collections.models.delta_url import DumpUrl
+from sde_collections.tasks import (
+    fetch_full_text,
+    migrate_dump_to_delta_and_handle_status_transistions,
+)
 from sde_collections.tests.factories import CollectionFactory, DumpUrlFactory
 
 
@@ -27,7 +31,7 @@ class TestWorkflowStatusTransitions(TestCase):
 
         mock_scraper.assert_called_once_with(overwrite=False)
 
-    @patch("sde_collections.tasks.fetch_and_replace_full_text.delay")
+    @patch("sde_collections.tasks.fetch_full_text.delay")
     def test_indexing_finished_triggers_full_text_fetch(self, mock_fetch):
         """When status changes to INDEXING_FINISHED_ON_DEV, it should trigger full text fetch"""
         self.collection.workflow_status = WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV
@@ -82,7 +86,7 @@ class TestReindexingStatusTransitions(TestCase):
             reindexing_status=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
         )
 
-    @patch("sde_collections.tasks.fetch_and_replace_full_text.delay")
+    @patch("sde_collections.tasks.fetch_full_text.delay")
     def test_reindexing_finished_triggers_full_text_fetch(self, mock_fetch):
         """When reindexing status changes to FINISHED, it should trigger full text fetch"""
         self.collection.reindexing_status = ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV
@@ -420,16 +424,21 @@ class TestFullTextImport(TestCase):
         self.collection.workflow_status = WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV
         self.collection.save()
 
-        # Run the import
-        fetch_and_replace_full_text(self.collection.id, "lrm_dev")
+        # Step 1: Run fetch_full_text
+        with patch("sde_collections.models.collection.Collection.queue_necessary_classifications") as mock_queue:
+            fetch_full_text(self.collection.id, "lrm_dev")
+            mock_queue.assert_called_once()
 
-        # Verify old DumpUrls were cleared
+        # Verify old DumpUrls were cleared and new ones were also created
         assert not DumpUrl.objects.filter(id=self.existing_dump.id).exists()
+        new_dumps = DumpUrl.objects.filter(collection=self.collection)
+        assert new_dumps.count() == 2
+        assert {dump.url for dump in new_dumps} == {"http://example.com/1", "http://example.com/2"}
 
-        # Verify new Delta urls were created
-        new_deltas = DeltaUrl.objects.filter(collection=self.collection)
-        assert new_deltas.count() == 2
-        assert {dump.url for dump in new_deltas} == {"http://example.com/1", "http://example.com/2"}
+        # Step 2: Run migrate_dump_to_delta
+        with patch("sde_collections.models.collection.Collection.migrate_dump_to_delta") as mock_migrate:
+            migrate_dump_to_delta_and_handle_status_transistions(self.collection.id)
+            mock_migrate.assert_called_once()
 
         # Verify status updates
         self.collection.refresh_from_db()
@@ -467,7 +476,7 @@ class TestErrorHandling(TransactionTestCase):
         initial_status = self.collection.workflow_status
 
         with pytest.raises(Exception):
-            fetch_and_replace_full_text(self.collection.id, "lrm_dev")
+            fetch_full_text(self.collection.id, "lrm_dev")
 
         # Verify status wasn't changed on error
         self.collection.refresh_from_db()
