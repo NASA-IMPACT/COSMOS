@@ -1,3 +1,5 @@
+# docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_fileext.py
+
 from django.test import TestCase
 
 from ..models.candidate_url import CandidateURL
