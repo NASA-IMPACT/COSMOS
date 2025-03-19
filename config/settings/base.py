@@ -102,10 +102,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://sciencediscoveryengine.nasa.gov",
     "https://localhost:4200",
     "http://localhost:4200",
-    "https://sde-lrm.nasa-impact.net/app/nasa-sba-tdamm/",
-    "https://sde-lrm.nasa-impact.net/app/nasa-sba-smd/",
-    "http://sde-lrm.nasa-impact.net/app/nasa-sba-tdamm/",
-    "http://sde-lrm.nasa-impact.net/app/nasa-sba-smd/",
 ]
 
 # MIGRATIONS
