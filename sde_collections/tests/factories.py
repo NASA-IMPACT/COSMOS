@@ -61,10 +61,19 @@ class DumpUrlFactory(factory.django.DjangoModelFactory):
     url = factory.Faker("url")
     scraped_title = factory.Faker("sentence")
     scraped_text = factory.Faker("paragraph")
+    division = Divisions.ASTROPHYSICS
     # generated_title = factory.Faker("sentence")
     # visited = factory.Faker("boolean")
     # document_type = 1
     # division = 1
+
+    @factory.post_generation
+    def set_default_tdamm_tag(self, create, extracted, **kwargs):
+        if not create:
+            return
+        # Initialize tdamm_tag fields to empty lists by default
+        self.tdamm_tag_manual = []
+        self.tdamm_tag_ml = []
 
 
 class DeltaUrlFactory(factory.django.DjangoModelFactory):
@@ -75,6 +84,15 @@ class DeltaUrlFactory(factory.django.DjangoModelFactory):
     url = factory.Faker("url")
     scraped_title = factory.Faker("sentence")
     to_delete = False
+    division = Divisions.ASTROPHYSICS
+
+    @factory.post_generation
+    def set_default_tdamm_tag(self, create, extracted, **kwargs):
+        if not create:
+            return
+        # Initialize tdamm_tag fields to empty lists by default
+        self.tdamm_tag_manual = []
+        self.tdamm_tag_ml = []
 
 
 class CuratedUrlFactory(factory.django.DjangoModelFactory):
@@ -88,4 +106,12 @@ class CuratedUrlFactory(factory.django.DjangoModelFactory):
     generated_title = factory.Faker("sentence")
     visited = factory.Faker("boolean")
     document_type = 1
-    division = 1
+    division = Divisions.ASTROPHYSICS
+
+    @factory.post_generation
+    def set_default_tdamm_tag(self, create, extracted, **kwargs):
+        if not create:
+            return
+        # Initialize tdamm_tag fields to empty lists by default
+        self.tdamm_tag_manual = []
+        self.tdamm_tag_ml = []
