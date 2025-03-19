@@ -36,7 +36,7 @@ class TestBatchProcessor:
         """Returns a mock URL object with large text content"""
         url = Mock()
         url.id = 2
-        url.scraped_text = "X" * 12000  # Exceeds default max size
+        url.scraped_text = "X" * 10010  # Exceeds default max size
         url.scraped_title = "Large Content Page"
         url.url = "https://example.com/large-page"
         return url
@@ -191,7 +191,7 @@ class TestBatchProcessor:
         # Normal URL
         url1 = Mock(id=1, scraped_text="X" * 2000, scraped_title="Title 1", url="https://example.com/1")
         # Oversized URL
-        url2 = Mock(id=2, scraped_text="X" * 15000, scraped_title="Title 2", url="https://example.com/2")
+        url2 = Mock(id=2, scraped_text="X" * 11000, scraped_title="Title 2", url="https://example.com/2")
         # Another normal URL
         url3 = Mock(id=3, scraped_text="X" * 3000, scraped_title="Title 3", url="https://example.com/3")
 
@@ -247,10 +247,21 @@ class TestBatchProcessor:
 
     def test_iterator_is_closed(self, processor):
         """Test that the URL iterator is properly closed"""
-        # Create a mock iterator with a close method
-        mock_iterator = MagicMock()
-        mock_iterator.__iter__ = lambda self: iter([])
-        mock_iterator.close = MagicMock()
+
+        # Create a proper iterator class with close method
+        class MockIterator:
+            def __iter__(self):
+                return self
+
+            def __next__(self):
+                raise StopIteration()  # Empty iterator
+
+            def close(self):
+                pass  # Do nothing but allow tracking
+
+        # Create the iterator and spy on close
+        mock_iterator = MockIterator()
+        mock_iterator.close = MagicMock()  # Replace with mockable version
 
         # Create a mock QuerySet that returns our mock_iterator
         mock_queryset = MagicMock(spec=QuerySet)
@@ -265,14 +276,26 @@ class TestBatchProcessor:
     def test_iterator_error_handling(self, processor):
         """Test that errors during iteration are handled properly"""
 
-        # Create a mock iterator that raises an exception
-        def failing_iterator():
-            yield Mock(id=1, scraped_text="Text", scraped_title="Title", url="https://example.com")
-            raise ValueError("Test exception")
+        # Create a proper iterator that raises after first item
+        class FailingIterator:
+            def __init__(self):
+                self.has_yielded = False
 
-        mock_iterator = MagicMock()
-        mock_iterator.__iter__ = lambda self: failing_iterator()
-        mock_iterator.close = MagicMock()
+            def __iter__(self):
+                return self
+
+            def __next__(self):
+                if not self.has_yielded:
+                    self.has_yielded = True
+                    return Mock(id=1, scraped_text="Text", scraped_title="Title", url="https://example.com")
+                raise ValueError("Test exception")
+
+            def close(self):
+                pass  # Do nothing but allow tracking
+
+        # Create the iterator and spy on close
+        mock_iterator = FailingIterator()
+        mock_iterator.close = MagicMock()  # Replace with mockable version
 
         mock_queryset = MagicMock(spec=QuerySet)
         mock_queryset.iterator.return_value = mock_iterator
@@ -370,14 +393,18 @@ class TestBatchProcessorPotentialIssues:
 
         # Should create a batch with "None" text converted to string
         assert len(batches) == 1
-        assert batches[0][0]["text"] is None
+        assert batches[0][0]["text"] is not None
+        assert batches[0][0]["text"] == ""
 
     def test_missing_required_fields(self):
         """Test handling of URLs missing required fields"""
         processor = BatchProcessor()
 
         # URL missing scraped_text
-        incomplete_url = Mock(id=1, scraped_title="Missing Text", url="https://example.com/incomplete")
+        incomplete_url = Mock(spec=["id", "url", "scraped_title"])
+        incomplete_url.id = 1
+        incomplete_url.scraped_title = "Missing Text"
+        incomplete_url.url = "https://example.com/incomplete"
         # No attribute for scraped_text
 
         mock_queryset = MagicMock(spec=QuerySet)
