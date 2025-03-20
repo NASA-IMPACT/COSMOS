@@ -36,7 +36,7 @@ class TestBatchProcessor:
         """Returns a mock URL object with large text content"""
         url = Mock()
         url.id = 2
-        url.scraped_text = "X" * 10010  # Exceeds default max size
+        url.scraped_text = "X" * 12000  # Exceeds default max size
         url.scraped_title = "Large Content Page"
         url.url = "https://example.com/large-page"
         return url
@@ -191,7 +191,7 @@ class TestBatchProcessor:
         # Normal URL
         url1 = Mock(id=1, scraped_text="X" * 2000, scraped_title="Title 1", url="https://example.com/1")
         # Oversized URL
-        url2 = Mock(id=2, scraped_text="X" * 11000, scraped_title="Title 2", url="https://example.com/2")
+        url2 = Mock(id=2, scraped_text="X" * 15000, scraped_title="Title 2", url="https://example.com/2")
         # Another normal URL
         url3 = Mock(id=3, scraped_text="X" * 3000, scraped_title="Title 3", url="https://example.com/3")
 
