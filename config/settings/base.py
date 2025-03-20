@@ -102,10 +102,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://sciencediscoveryengine.nasa.gov",
     "https://localhost:4200",
     "http://localhost:4200",
-    "https://sde-lrm.nasa-impact.net/app/nasa-sba-tdamm/",
-    "https://sde-lrm.nasa-impact.net/app/nasa-sba-smd/",
-    "http://sde-lrm.nasa-impact.net/app/nasa-sba-tdamm/",
-    "http://sde-lrm.nasa-impact.net/app/nasa-sba-smd/",
 ]
 
 # MIGRATIONS
@@ -353,5 +349,4 @@ LRM_QA_USER = env("LRM_QA_USER")
 LRM_QA_PASSWORD = env("LRM_QA_PASSWORD")
 LRM_DEV_TOKEN = env("LRM_DEV_TOKEN")
 XLI_TOKEN = env("XLI_TOKEN")
-INFERENCE_API_URL = env("INFERENCE_API_URL", default="http://host.docker.internal:8000")
 TDAMM_CLASSIFICATION_THRESHOLD = env("TDAMM_CLASSIFICATION_THRESHOLD", default="0.5")
