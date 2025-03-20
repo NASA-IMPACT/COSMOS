@@ -52,6 +52,11 @@ if env("USE_DOCKER") == "yes":
 
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#task-eager-propagates
 CELERY_TASK_EAGER_PROPAGATES = True
+
+# Inference API
+# ------------------------------------------------------------------------------
+INFERENCE_API_URL = env("INFERENCE_API_URL", default="http://host.docker.internal:8000")
+
 # Your stuff...
 # ------------------------------------------------------------------------------
 
