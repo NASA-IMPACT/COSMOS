@@ -137,3 +137,14 @@ For each PR made, an entry should be added to this changelog. It should contain
   - Description: The feedback form API was throwing CORS errors and to rectify that, we need to add the apt https link for sde-lrm.
   - Changes:
     - Added `https://sde-lrm.nasa-impact.net` to `CORS_ALLOWED_ORIGINS` in the base settings.
+
+- 1252-document-type-filter-not-working-in-delta-urls-page
+  - Description: Fixed document type filtering functionality in the "Document Type Patterns" tab in Delta URLs page.
+  - Changes:
+    - Added a new event listener to the Document Type Patterns dropdown to trigger the filtering of the table results based on the selected value.
+
+- 1251-column-sorting-issue-curated-urls-count-sorts-by-delta-urls-count
+  - Description: Fixed incorrect sorting behavior in Collections table where sorting by Curated URLs column was not working as expected.
+  - Changes:
+    - Added `data-order` attribute to URL count columns for proper numeric sorting
+    - Updated SearchPane comparisons to use `@data-order` values instead of string-based loose equality checks to ensure correct numeric filtering

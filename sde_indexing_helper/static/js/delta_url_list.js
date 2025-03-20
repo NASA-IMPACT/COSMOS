@@ -881,6 +881,11 @@ function initializeDataTable() {
   $("#deltaDocTypeMatchPatternFilter").on("beforeinput", function (val) {
     document_type_patterns_table.columns(0).search(this.value).draw();
   });
+
+  $("#document-type-patterns-dropdown-2").on("change", function () {
+    document_type_patterns_table.columns(2).search(this.value).draw();
+  });
+
 }
 
 var division_patterns_table = $("#division_patterns_table").DataTable({
