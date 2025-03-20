@@ -137,3 +137,9 @@ For each PR made, an entry should be added to this changelog. It should contain
   - Description: The feedback form API was throwing CORS errors and to rectify that, we need to add the apt https link for sde-lrm.
   - Changes:
     - Added `https://sde-lrm.nasa-impact.net` to `CORS_ALLOWED_ORIGINS` in the base settings.
+
+- 1251-column-sorting-issue-curated-urls-count-sorts-by-delta-urls-count
+  - Description: Fixed incorrect sorting behavior in Collections table where sorting by Curated URLs column was not working as expected.
+  - Changes:
+    - Added `data-order` attribute to Delta URLs and Curated URLs table cells to enable proper numeric sorting
+    - Ensured raw numeric values are used for sorting while maintaining formatted display with anchor tags
