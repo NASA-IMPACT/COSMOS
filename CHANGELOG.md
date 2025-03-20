@@ -141,5 +141,5 @@ For each PR made, an entry should be added to this changelog. It should contain
 - 1251-column-sorting-issue-curated-urls-count-sorts-by-delta-urls-count
   - Description: Fixed incorrect sorting behavior in Collections table where sorting by Curated URLs column was not working as expected.
   - Changes:
-    - Added `data-order` attribute to Delta URLs and Curated URLs table cells to enable proper numeric sorting
-    - Ensured raw numeric values are used for sorting while maintaining formatted display with anchor tags
+    - Added `data-order` attribute to URL count columns for proper numeric sorting
+    - Updated SearchPane comparisons to use `@data-order` values instead of string-based loose equality checks to ensure correct numeric filtering
