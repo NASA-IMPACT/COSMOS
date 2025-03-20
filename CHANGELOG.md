@@ -142,3 +142,9 @@ For each PR made, an entry should be added to this changelog. It should contain
   - Description: Fixed document type filtering functionality in the "Document Type Patterns" tab in Delta URLs page.
   - Changes:
     - Added a new event listener to the Document Type Patterns dropdown to trigger the filtering of the table results based on the selected value.
+
+- 1251-column-sorting-issue-curated-urls-count-sorts-by-delta-urls-count
+  - Description: Fixed incorrect sorting behavior in Collections table where sorting by Curated URLs column was not working as expected.
+  - Changes:
+    - Added `data-order` attribute to URL count columns for proper numeric sorting
+    - Updated SearchPane comparisons to use `@data-order` values instead of string-based loose equality checks to ensure correct numeric filtering
