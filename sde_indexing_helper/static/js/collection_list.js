@@ -138,43 +138,47 @@ let table = $("#collection_table").DataTable({
           {
             label: "0 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[COLUMNS.DELTA_URLS]).text() == 0;
+              return parseInt(rowData[COLUMNS.DELTA_URLS]['@data-order']) === 0;
             },
           },
           {
             label: "1 solo URL",
             value: function (rowData, rowIdx) {
-              return $(rowData[COLUMNS.DELTA_URLS]).text() == 1;
+              return parseInt(rowData[COLUMNS.DELTA_URLS]['@data-order']) === 1;
             },
           },
           {
             label: "1 to 100 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[COLUMNS.DELTA_URLS]).text() <= 100 && $(rowData[COLUMNS.DELTA_URLS]).text() > 1;
+              const value = parseInt(rowData[COLUMNS.DELTA_URLS]['@data-order']);
+              return value > 1 && value <= 100;
             },
           },
           {
             label: "100 to 1,000 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[COLUMNS.DELTA_URLS]).text() <= 1000 && $(rowData[COLUMNS.DELTA_URLS]).text() > 100;
+              const value = parseInt(rowData[COLUMNS.DELTA_URLS]['@data-order']);
+              return value > 100 && value <= 1000;
             },
           },
           {
             label: "1,000 to 10,000 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[COLUMNS.DELTA_URLS]).text() <= 10000 && $(rowData[COLUMNS.DELTA_URLS]).text() > 1000;
+              const value = parseInt(rowData[COLUMNS.DELTA_URLS]['@data-order']);
+              return value > 1000 && value <= 10000;
             },
           },
           {
             label: "10,000 to 100,000 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[COLUMNS.DELTA_URLS]).text() <= 100000 && $(rowData[COLUMNS.DELTA_URLS]).text() > 10000;
+              const value = parseInt(rowData[COLUMNS.DELTA_URLS]['@data-order']);
+              return value > 10000 && value <= 100000;
             },
           },
           {
             label: "Over 100,000 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[COLUMNS.DELTA_URLS]).text() > 100000;
+              return parseInt(rowData[COLUMNS.DELTA_URLS]['@data-order']) > 100000;
             },
           },
         ],
@@ -189,43 +193,47 @@ let table = $("#collection_table").DataTable({
           {
             label: "0 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[COLUMNS.CURATED_URLS]).text() == 0;
+              return parseInt(rowData[COLUMNS.CURATED_URLS]['@data-order']) === 0;
             },
           },
           {
             label: "1 solo URL",
             value: function (rowData, rowIdx) {
-              return $(rowData[COLUMNS.CURATED_URLS]).text() == 1;
+              return parseInt(rowData[COLUMNS.CURATED_URLS]['@data-order']) === 1;
             },
           },
           {
             label: "1 to 100 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[COLUMNS.CURATED_URLS]).text() <= 100 && $(rowData[COLUMNS.CURATED_URLS]).text() > 1;
+              const value = parseInt(rowData[COLUMNS.CURATED_URLS]['@data-order']);
+              return value > 1 && value <= 100;
             },
           },
           {
             label: "100 to 1,000 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[COLUMNS.CURATED_URLS]).text() <= 1000 && $(rowData[COLUMNS.CURATED_URLS]).text() > 100;
+              const value = parseInt(rowData[COLUMNS.CURATED_URLS]['@data-order']);
+              return value > 100 && value <= 1000;
             },
           },
           {
             label: "1,000 to 10,000 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[COLUMNS.CURATED_URLS]).text() <= 10000 && $(rowData[COLUMNS.CURATED_URLS]).text() > 1000;
+              const value = parseInt(rowData[COLUMNS.CURATED_URLS]['@data-order']);
+              return value > 1000 && value <= 10000;
             },
           },
           {
             label: "10,000 to 100,000 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[COLUMNS.CURATED_URLS]).text() <= 100000 && $(rowData[COLUMNS.CURATED_URLS]).text() > 10000;
+              const value = parseInt(rowData[COLUMNS.CURATED_URLS]['@data-order']);
+              return value > 10000 && value <= 100000;
             },
           },
           {
             label: "Over 100,000 URLs",
             value: function (rowData, rowIdx) {
-              return $(rowData[COLUMNS.CURATED_URLS]).text() > 100000;
+              return parseInt(rowData[COLUMNS.CURATED_URLS]['@data-order']) > 100000;
             },
           },
         ],
