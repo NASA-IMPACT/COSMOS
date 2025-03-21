@@ -301,7 +301,6 @@ class ExternalJob(models.Model):
         """Process this external job and update status/results"""
         try:
             api_client = InferenceAPIClient()
-            # model_version = ModelVersion.objects.get(classification_type=self.inference_job.classification_type)
             model_version = self.inference_job.model_version
 
             response = api_client.get_job_status(model_version.api_identifier, self.external_job_id)
@@ -314,7 +313,6 @@ class ExternalJob(models.Model):
             # Handle completion or failure
             if new_status == ExternalJobStatus.COMPLETED:
                 self.store_results(response.get("results"))
-                # self.completed_at = timezone.now() # completed in mark_completed called in store_results
             self.save()
 
         except Exception as e:
