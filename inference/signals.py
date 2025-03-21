@@ -22,3 +22,19 @@ def create_periodic_tasks(sender, **kwargs):
             name="Process inference queue (6pm-7am)",
             task="inference.tasks.process_inference_job_queue",
         )
+
+        # Create schedule the weekend
+        weekend_crontab, _ = CrontabSchedule.objects.get_or_create(
+            minute="*/5",
+            hour="*",
+            day_of_week="0,6",
+            day_of_month="*",
+            month_of_year="*",
+        )
+
+        # Create the periodic task if it doesn't exist
+        PeriodicTask.objects.get_or_create(
+            crontab=weekend_crontab,
+            name="Process inference queue (Weekends)",
+            task="inference.tasks.process_inference_job_queue",
+        )

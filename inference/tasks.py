@@ -18,10 +18,6 @@ def process_inference_job_queue():
             return "Queue processing already in progress"
 
         try:
-            # Reevaluate progress and update status of all inference jobs that are not currently queued
-            # for job in InferenceJob.objects.exclude(status=InferenceJobStatus.QUEUED):
-            #     job.reevaluate_progress_and_update_status()
-
             # Look for pending jobs first
             pending_jobs = InferenceJob.objects.filter(status=InferenceJobStatus.PENDING)
 
