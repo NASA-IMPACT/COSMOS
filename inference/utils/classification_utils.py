@@ -1,5 +1,6 @@
 from django.conf import settings
 
+from inference.utils.threshold_processor import ClassificationThresholdProcessor
 from sde_collections.models.collection_choice_fields import TDAMMTags
 
 
@@ -18,6 +19,9 @@ def map_classification_to_tdamm_tags(classification_results, threshold=None):
     if threshold is None:
         threshold = float(getattr(settings, "TDAMM_CLASSIFICATION_THRESHOLD"))
 
+    # Initialize the threshold processor
+    threshold_processor = ClassificationThresholdProcessor.for_tdamm()
+
     selected_tags = []
 
     # Build a mapping from simplified tag names to actual TDAMMTags values
@@ -35,6 +39,7 @@ def map_classification_to_tdamm_tags(classification_results, threshold=None):
             tag_mapping["supernovae"] = tag_value
 
     # Process classification results
+    tdamm_confidences = {}
     for classification_key, confidence in classification_results.items():
         if isinstance(confidence, str):
             try:
@@ -42,23 +47,28 @@ def map_classification_to_tdamm_tags(classification_results, threshold=None):
             except (ValueError, TypeError):
                 continue
 
-        if confidence < threshold:
-            continue
-
         # Normalize the classification key
         normalized_key = classification_key.lower()
+        tag_value = None
 
         # Try to find a match in our mapping
         if normalized_key in tag_mapping:
-            selected_tags.append(tag_mapping[normalized_key])
+            tag_value = tag_mapping[normalized_key]
         else:
-            # Try partial matching for more complex cases
-            for tag_key, tag_value in tag_mapping.items():
-                if tag_key in normalized_key or normalized_key in tag_key:
-                    selected_tags.append(tag_value)
+            # Try partial matching
+            for key, value in tag_mapping.items():
+                if key in normalized_key or normalized_key in key:
+                    tag_value = value
                     break
 
-    return selected_tags
+        # Skip if no matching tag found
+        if not tag_value:
+            continue
+
+        tdamm_confidences[tag_value] = confidence
+
+    selected_tags = threshold_processor.filter_classifications(tdamm_confidences)
+    return list(selected_tags.keys())
 
 
 def update_url_with_classification_results(url_object, classification_results, threshold=None):

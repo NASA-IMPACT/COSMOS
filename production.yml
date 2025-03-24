@@ -58,7 +58,6 @@ services:
     image: sde_indexing_helper_production_celerybeat
     container_name: sde_indexing_helper_production_celerybeat
     depends_on:
-      - awscli
       - postgres
     ports: []
     command: /start-celerybeat

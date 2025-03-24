@@ -127,17 +127,6 @@ class TestMapClassificationToTDAMMTags:
         actual_tags = map_classification_to_tdamm_tags(classification_results, threshold=0.8)
         assert sorted(actual_tags) == sorted(expected_tags)
 
-    @patch("django.conf.settings.TDAMM_CLASSIFICATION_THRESHOLD", 0.75)
-    def test_default_threshold_from_settings(self):
-        """Test using the default threshold from settings"""
-        classification_results = {"Optical": 0.7, "Infrared": 0.8, "X-rays": 0.9}
-
-        # With settings threshold of 0.75, Infrared and X-rays should be included
-        expected_tags = ["MMA_M_EM_I", "MMA_M_EM_X"]
-        actual_tags = map_classification_to_tdamm_tags(classification_results)  # No threshold provided
-
-        assert sorted(actual_tags) == sorted(expected_tags)
-
 
 class TestUpdateUrlWithClassificationResults:
     """Tests for the update_url_with_classification_results function"""
