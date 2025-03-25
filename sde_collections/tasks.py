@@ -2,6 +2,7 @@
 import json
 import os
 import shutil
+from datetime import timedelta
 
 import boto3
 from django.apps import apps
@@ -9,6 +10,7 @@ from django.conf import settings
 from django.core import management
 from django.core.management.commands import loaddata
 from django.db import transaction
+from django.utils import timezone
 
 from config import celery_app
 from sde_collections.models.collection_choice_fields import (
@@ -229,3 +231,67 @@ def migrate_dump_to_delta_and_handle_status_transistions(collection_id):
         collection.save()
 
     return f"Successfully migrated DumpUrls to DeltaUrls for collection {collection.name}."
+
+
+@celery_app.task()
+def check_collections_reindexing_needed():
+    """
+    Task to identify collections that need reindexing based on two criteria:
+    1. Collections previously reindexed on prod (REINDEXING_INDEXED_ON_PROD) over 2 months ago
+    2. Collections that reached PROD_PERFECT over 2 months ago and haven't been reindexed yet
+    """
+
+    from sde_collections.models.collection import (
+        Collection,
+        ReindexingHistory,
+        WorkflowHistory,
+    )
+    from sde_collections.models.collection_choice_fields import (
+        ReindexingStatusChoices,
+        WorkflowStatusChoices,
+    )
+
+    threshold = timezone.now() - timedelta(days=settings.COLLECTION_REINDEX_INTERVAL_DAYS)
+    collections_to_update = []
+
+    # Case 1: Collections that were previously reindexed on prod
+    prod_reindexed_collections = Collection.objects.filter(
+        reindexing_status=ReindexingStatusChoices.REINDEXING_INDEXED_ON_PROD
+    )
+    print(
+        f"\nChecking {prod_reindexed_collections.count()} collections that were "
+        f"reindexed on prod (REINDEXING_INDEXED_ON_PROD)..."
+    )
+
+    for collection in prod_reindexed_collections:
+        latest_history = ReindexingHistory.objects.filter(collection=collection).order_by("-created_at").first()
+
+        if not latest_history or latest_history.created_at <= threshold:
+            collections_to_update.append(collection)
+
+    # Case 2: Collections that completed first-time indexing (PROD_PERFECT)
+    first_time_collections = Collection.objects.filter(
+        workflow_status=WorkflowStatusChoices.PROD_PERFECT,
+        reindexing_status=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
+    )
+    print(f"\nChecking {first_time_collections.count()} collections that are in PROD_PERFECT workflow status...")
+
+    for collection in first_time_collections:
+        prod_perfect_history = (
+            WorkflowHistory.objects.filter(collection=collection, workflow_status=WorkflowStatusChoices.PROD_PERFECT)
+            .order_by("-created_at")
+            .first()
+        )
+
+        if not prod_perfect_history or prod_perfect_history.created_at <= threshold:
+            collections_to_update.append(collection)
+
+    # Update all collections
+    print(f"\nFound {len(collections_to_update)} collections that need reindexing")
+
+    for collection in collections_to_update:
+        collection.reindexing_status = ReindexingStatusChoices.REINDEXING_NEEDED_ON_DEV
+        collection.save()
+
+    print(f"\nSuccessfully marked {len(collections_to_update)} collections for reindexing")
+    return f"Marked {len(collections_to_update)} collections for reindexing"

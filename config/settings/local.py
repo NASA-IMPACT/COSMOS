@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from .base import *  # noqa
 from .base import env
 
@@ -71,3 +73,10 @@ CORS_ALLOW_ALL_ORIGINS = True  # For development
 
 # Define how often to reindex collections in days
 COLLECTION_REINDEX_INTERVAL_DAYS = 60
+
+CELERY_BEAT_SCHEDULE = {
+    "check-collections-reindexing": {
+        "task": "sde_collections.tasks.check_collections_reindexing_needed",
+        "schedule": timedelta(days=1),  # Run daily
+    },
+}
