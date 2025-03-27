@@ -72,8 +72,8 @@ class CollectionListView(LoginRequiredMixin, ListView):
             .get_queryset()
             .filter(delete=False)
             .annotate(
-                num_delta_urls=models.Count("delta_urls", distinct=True),
-                num_curated_urls=models.Count("curated_urls", distinct=True),
+                num_delta_urls=models.Value(100, output_field=models.IntegerField()),
+                num_curated_urls=models.Value(50, output_field=models.IntegerField()),
             )
             .order_by("-num_delta_urls")
         )
