@@ -566,3 +566,52 @@ function clearSearchValues() {
   let table = $("#collection_table").DataTable();
   table.columns().search("").draw();
 }
+
+$('body').on('click', '.workflow_status_dropdown .dropdown-toggle', function() {
+  const $menu = $(this).siblings('.dropdown-menu');
+
+  // Only populate if empty
+  if ($menu.children().length === 0) {
+    workflowStatuses.forEach(status => {
+      $menu.append(
+        `<a class="dropdown-item workflow_status_select"
+          value="${status.value}"
+          data-collection-id="${$(this).closest('.workflow_status_dropdown').data('collection-id')}">
+          ${status.label}
+        </a>`
+      );
+    });
+  }
+});
+
+$('body').on('click', '.reindexing_status_dropdown .dropdown-toggle', function() {
+  const $menu = $(this).siblings('.dropdown-menu');
+
+  if ($menu.children().length === 0) {
+    reindexingStatuses.forEach(status => {
+      $menu.append(
+        `<a class="dropdown-item reindexing_status_select"
+          value="${status.value}"
+          data-collection-id="${$(this).closest('.reindexing_status_dropdown').data('collection-id')}">
+          ${status.label}
+        </a>`
+      );
+    });
+  }
+});
+
+$('body').on('click', '.curator_dropdown .dropdown-toggle', function() {
+  const $menu = $(this).siblings('.dropdown-menu');
+
+  if ($menu.children().length === 0) {
+    curators.forEach(curator => {
+      $menu.append(
+        `<a class="dropdown-item curator_select"
+          value="${curator.id}"
+          data-collection-id="${$(this).closest('.curator_dropdown').data('collection-id')}">
+          ${curator.username}
+        </a>`
+      );
+    });
+  }
+});
