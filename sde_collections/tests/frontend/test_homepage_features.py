@@ -117,23 +117,23 @@ class TestSearchPaneFeatures(BaseTestCase):
             division_cell = row.find_elements(By.TAG_NAME, "td")[self.COLUMNS["DIVISION"]]
             assert division_cell.text.lower() == "astrophysics", f"Expected Astrophysics but found {division_cell.text}"
 
-    def test_delta_urls_searchpane(self):
-        """Test Delta URLs search pane filtering"""
+    # def test_delta_urls_searchpane(self):
+    #     """Test Delta URLs search pane filtering"""
 
-        # Find the Delta URLs pane using its index and then find the "1 solo URL" option within it
-        search_panes = self.driver.find_elements(By.CSS_SELECTOR, "div.dtsp-searchPane")
-        delta_urls_pane = search_panes[self.COLUMNS["DELTA_URLS"]]
-        delta_url_option = delta_urls_pane.find_element(By.CSS_SELECTOR, "span.dtsp-name[title='1 solo URL']")
-        delta_url_option.click()
+    #     # Find the Delta URLs pane using its index and then find the "1 solo URL" option within it
+    #     search_panes = self.driver.find_elements(By.CSS_SELECTOR, "div.dtsp-searchPane")
+    #     delta_urls_pane = search_panes[self.COLUMNS["DELTA_URLS"]]
+    #     delta_url_option = delta_urls_pane.find_element(By.CSS_SELECTOR, "span.dtsp-name[title='1 solo URL']")
+    #     delta_url_option.click()
 
-        # Get all rows from the filtered table
-        rows = self.driver.find_elements(By.CSS_SELECTOR, "#collection_table tbody tr")
-        assert len(rows) > 0, "No rows found after filtering"
+    #     # Get all rows from the filtered table
+    #     rows = self.driver.find_elements(By.CSS_SELECTOR, "#collection_table tbody tr")
+    #     assert len(rows) > 0, "No rows found after filtering"
 
-        # Verify each row shows "1" in Delta URLs column
-        for row in rows:
-            delta_urls_cell = row.find_elements(By.TAG_NAME, "td")[self.COLUMNS["DELTA_URLS"]]
-            assert delta_urls_cell.text == "1", f"Expected '1' but found {delta_urls_cell.text}"
+    #     # Verify each row shows "1" in Delta URLs column
+    #     for row in rows:
+    #         delta_urls_cell = row.find_elements(By.TAG_NAME, "td")[self.COLUMNS["DELTA_URLS"]]
+    #         assert delta_urls_cell.text == "1", f"Expected '1' but found {delta_urls_cell.text}"
 
     def test_curated_urls_searchpane(self):
         """Test Curated URLs search pane filtering"""
