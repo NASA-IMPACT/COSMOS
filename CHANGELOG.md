@@ -148,3 +148,38 @@ For each PR made, an entry should be added to this changelog. It should contain
   - Changes:
     - Added `data-order` attribute to URL count columns for proper numeric sorting
     - Updated SearchPane comparisons to use `@data-order` values instead of string-based loose equality checks to ensure correct numeric filtering
+
+- 1182-ml-classification-queue
+  - Description: The inference API will be providing confidence levels to the classification results to COSMOS. We require a robust job processing mechanism to batch URLs based on the load the API can handle, and track every individual job sent to the API and ultimately evaluate the status of jobs tied to each collection based on the results retrieved. This also needs to take the translation of the classification labels from the API to the tags used internally within COSMOS.
+  - Changes:
+    - New environment values have been created called `INFERENCE_API_URL` and `TDAMM_CLASSIFICATION_THRESHOLD` set in base settings.
+    - New models added:
+      - ModelVersion: Tracking system for multiple versions of classification models with API identifiers
+      - InferenceJob: Manages inference jobs for collections of URLs with a specific model version
+      - ExternalJob: Represents a batched job sent to the inference API, with multiple ExternalJobs per InferenceJob
+      - Status Tracking: Enum classes for job status tracking (queued, pending, completed, failed, cancelled, etc.)
+      - BatchProcessor: Handles batching of URLs for efficient API processing
+        - Text Length Management: Smart batching based on total text length with configurable maximum (default 10,000 chars)
+        - Oversized Text Handling: Automatic truncation of URLs that exceed maximum batch size
+        - Iterator Management: Safe handling of QuerySet iterators including proper cleanup
+      - InferenceAPIClient: Handles direct interaction with the Inference API
+        - Model Management: Loading, unloading, and status checking for models
+        - Job Submission: Support for batch submission with proper error handling
+        - Retry Logic: Robust retry mechanisms for model loading operations
+        - Health Checking: API health verification before operations
+      - ClassificationThresholdProcessor: A class to handle the class-based thresholding of classification results
+        - Separte classmethods for tdamm and division classifiers
+        - Config file to handle the thresholds for each class
+    - Celery Integration: Scheduled processing of inference job queue with configurable interval, executes `process_inference_job_queue`
+      - Time-Based Execution: Configured to run during off-hours on weekdays (6pm-7am) and all the time on weekends
+    - Concurrency and Safety:
+      - AdvisoryLock: Utility class for managing Postgres advisory locks
+      - Transaction Management: Context managers for safe lock acquisition and release
+      - ID Generation: Hash-based lock ID generation from string names
+    - Updated TDAMMTags to remove redundant tags (MMA_M_EM, MMA_O_BI, MMA_O_BH, MMA_O_N) and add a missing one (MMA_S_FBOT). Also updated the enum value for the NOT_TDAMM tag.
+    - Classification results coming in from the inference API will need to be translated to the TDAMMTags model we have, and that is handled by the `map_classification_to_tdamm_tags` in the `classification_utils` that will contain any relevant utilities for subsequent classifiers
+    - The collections that will be run through the pipeline are limited to the following right now:
+      - imagine_the_universe
+      - physics_of_the_cosmos
+      - stsci_space_telescope_science_institute
+    - Once the front end has been updated to allow for tag edits, all astrophysics collections will be marked to be run through the pipeline
