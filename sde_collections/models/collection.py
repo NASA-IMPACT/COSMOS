@@ -691,12 +691,17 @@ class Collection(models.Model):
 
     def queue_necessary_classifications(self):
         """Check if collection needs classification and queue jobs if needed"""
-
-        # Determine which classifications are needed
-        if self.division == Divisions.ASTROPHYSICS:
+        tdamm_collections = [
+            "imagine_the_universe",
+            "physics_of_the_cosmos",
+            "stsci_space_telescope_science_institute",
+        ]
+        if self.config_folder in tdamm_collections:
             self.generate_inference_job(ClassificationType.TDAMM)
-        elif self.division == Divisions.GENERAL:
-            self.generate_inference_job(ClassificationType.DIVISION)
+        # if self.division == Divisions.ASTROPHYSICS:
+        #     self.generate_inference_job(ClassificationType.TDAMM)
+        # elif self.division == Divisions.GENERAL:
+        #     self.generate_inference_job(ClassificationType.DIVISION)
         else:
             # No classification needed, proceed directly to migration
             migrate_dump_to_delta_and_handle_status_transistions.delay(self.id)
