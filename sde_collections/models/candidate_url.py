@@ -2,10 +2,12 @@ import hashlib
 import os
 from urllib.parse import urlparse
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
+from ..utils.paired_field_descriptor import PairedFieldDescriptor
 from .collection import Collection
-from .collection_choice_fields import Divisions, DocumentTypes
+from .collection_choice_fields import Divisions, DocumentTypes, TDAMMTags
 from .pattern import ExcludePattern, TitlePattern
 
 
@@ -34,6 +36,13 @@ class CandidateURL(models.Model):
         default="",
         blank=True,
         help_text="This is the original title scraped by Sinequa",
+    )
+    scraped_text = models.TextField(
+        "Scraped Text",
+        default="",
+        null=True,
+        blank=True,
+        help_text="This is the text scraped by Sinequa",
     )
     generated_title = models.CharField(
         "Generated Title",
@@ -78,6 +87,12 @@ class CandidateURL(models.Model):
         "URL Present In Production?",
         default=False,
         help_text="Helps keep track if the Current URL is present in production or not",
+    )
+    # is_tdamm = models.BooleanField("Is TDAMM?", default=False, help_text="Enable TDAMM tagging for this URL")
+    tdamm_tag = PairedFieldDescriptor(
+        field_name="tdamm_tag",
+        field_type=ArrayField(models.CharField(max_length=255, choices=TDAMMTags.choices), blank=True, null=True),
+        verbose_name="TDAMM Tags",
     )
 
     class Meta:

@@ -1,3 +1,4 @@
+#compose/local/django/start
 #!/bin/bash
 
 set -o errexit

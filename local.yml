@@ -1,3 +1,4 @@
+# local.yml
 volumes:
   sde_indexing_helper_local_postgres_data: {}
   sde_indexing_helper_local_postgres_data_backups: {}
@@ -18,7 +19,7 @@ services:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
     ports:
-      - "8000:8000"
+      - "8001:8000" # this prevents conflicts with inference pipeline
     command: /start
 
   postgres:
@@ -63,15 +64,15 @@ services:
     ports: []
     command: /start-celeryworker
 
-  # celerybeat:
-  #   <<: *django
-  #   image: sde_indexing_helper_local_celerybeat
-  #   container_name: sde_indexing_helper_local_celerybeat
-  #   depends_on:
-  #     - redis
-  #     - postgres
-  #   ports: []
-  #   command: /start-celerybeat
+  celerybeat:
+    <<: *django
+    image: sde_indexing_helper_local_celerybeat
+    container_name: sde_indexing_helper_local_celerybeat
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-celerybeat
 
   flower:
     <<: *django

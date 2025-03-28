@@ -1,3 +1,4 @@
+# /sde_collections/tasks.py
 import json
 import os
 import shutil
@@ -7,10 +8,15 @@ from django.apps import apps
 from django.conf import settings
 from django.core import management
 from django.core.management.commands import loaddata
+from django.db import transaction
 
 from config import celery_app
+from sde_collections.models.collection_choice_fields import (
+    ReindexingStatusChoices,
+    WorkflowStatusChoices,
+)
 
-from .models.collection import Collection, WorkflowStatusChoices
+from .models.delta_url import DumpUrl
 from .sinequa_api import Api
 from .utils.github_helper import GitHubHandler
 
@@ -49,7 +55,7 @@ def _get_data_to_import(collection, server_name):
                 continue
 
             augmented_data = {
-                "model": "sde_collections.candidateurl",
+                "model": "sde_collections.url",
                 "fields": {
                     "collection": collection_pk,
                     "url": url,
@@ -66,6 +72,7 @@ def _get_data_to_import(collection, server_name):
 def import_candidate_urls_from_api(server_name="test", collection_ids=[]):
     TEMP_FOLDER_NAME = "temp"
     os.makedirs(TEMP_FOLDER_NAME, exist_ok=True)
+    Collection = apps.get_model("sde_collections", "Collection")
 
     collections = Collection.objects.filter(id__in=collection_ids)
 
@@ -104,6 +111,8 @@ def import_candidate_urls_from_api(server_name="test", collection_ids=[]):
 
 @celery_app.task()
 def push_to_github_task(collection_ids):
+    Collection = apps.get_model("sde_collections", "Collection")
+
     collections = Collection.objects.filter(id__in=collection_ids)
     github_handler = GitHubHandler(collections)
     github_handler.push_to_github()
@@ -111,12 +120,16 @@ def push_to_github_task(collection_ids):
 
 @celery_app.task()
 def sync_with_production_webapp():
+    Collection = apps.get_model("sde_collections", "Collection")
+
     for collection in Collection.objects.all():
         collection.sync_with_production_webapp()
 
 
 @celery_app.task()
 def pull_latest_collection_metadata_from_github():
+    Collection = apps.get_model("sde_collections", "Collection")
+
     FILENAME = "github_collections.json"
 
     gh = GitHubHandler(collections=Collection.objects.none())
@@ -141,3 +154,78 @@ def resolve_title_pattern(title_pattern_id):
     TitlePattern = apps.get_model("sde_collections", "TitlePattern")
     title_pattern = TitlePattern.objects.get(id=title_pattern_id)
     title_pattern.apply()
+
+
+@celery_app.task(soft_time_limit=600)
+def fetch_full_text(collection_id, server_name):
+    """Task to fetch full text and create DumpUrls only (no migration)"""
+    Collection = apps.get_model("sde_collections", "Collection")
+    collection = Collection.objects.get(id=collection_id)
+    api = Api(server_name)
+
+    # Step 1: Delete existing DumpUrl entries
+    deleted_count, _ = DumpUrl.objects.filter(collection=collection).delete()
+    print(f"Deleted {deleted_count} old records.")
+    try:
+        total_server_count = api.get_total_count(collection.config_folder)
+        print(f"Total records on the server: {total_server_count}")
+
+        # Step 2: Process data in batches
+        total_processed = 0
+        for batch in api.get_full_texts(collection.config_folder):
+            with transaction.atomic():
+                DumpUrl.objects.bulk_create(
+                    [
+                        DumpUrl(
+                            url=record["url"],
+                            collection=collection,
+                            scraped_text=record["full_text"],
+                            scraped_title=record["title"],
+                        )
+                        for record in batch
+                    ]
+                )
+            total_processed += len(batch)
+            print(f"Processed batch of {len(batch)} records. Total: {total_processed}")
+
+        # Step 3: Check if classification is needed and queue if necessary
+        collection.queue_necessary_classifications()
+
+        return f"Successfully processed {total_processed} records."
+    except Exception as e:
+        print(f"Error processing records: {str(e)}")
+        raise
+
+
+@celery_app.task()
+def migrate_dump_to_delta_and_handle_status_transistions(collection_id):
+    """Task to migrate DumpUrls to DeltaUrls after classification is complete"""
+    Collection = apps.get_model("sde_collections", "Collection")
+    collection = Collection.objects.get(id=collection_id)
+
+    initial_workflow_status = collection.workflow_status
+    initial_reindexing_status = collection.reindexing_status
+
+    # Migrate dump URLs to delta URLs
+    collection.migrate_dump_to_delta()
+
+    # Update statuses if needed
+    collection.refresh_from_db()
+
+    # Check workflow status transition
+    pre_workflow_statuses = [
+        WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
+        WorkflowStatusChoices.READY_FOR_ENGINEERING,
+        WorkflowStatusChoices.ENGINEERING_IN_PROGRESS,
+        WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV,
+    ]
+    if initial_workflow_status in pre_workflow_statuses:
+        collection.workflow_status = WorkflowStatusChoices.READY_FOR_CURATION
+        collection.save()
+
+    # Check reindexing status transition
+    if initial_reindexing_status == ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV:
+        collection.reindexing_status = ReindexingStatusChoices.REINDEXING_READY_FOR_CURATION
+        collection.save()
+
+    return f"Successfully migrated DumpUrls to DeltaUrls for collection {collection.name}."

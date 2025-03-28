@@ -84,6 +84,7 @@ LOCAL_APPS = [
     "feedback",
     "sde_collections",
     "sde_indexing_helper.users",
+    "inference",
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -92,6 +93,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://sde-lrm.nasa-impact.net",
+    "https://sde-lrm.nasa-impact.net",
     "https://sde-qa.nasa-impact.net",
     "https://sciencediscoveryengine.test.nasa.gov",
     "https://sciencediscoveryengine.nasa.gov",
@@ -288,11 +290,9 @@ CELERY_TASK_SERIALIZER = "json"
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#std:setting-result_serializer
 CELERY_RESULT_SERIALIZER = "json"
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#task-time-limit
-# TODO: set to whatever value is adequate in your circumstances
-CELERY_TASK_TIME_LIMIT = 5 * 60
+CELERY_TASK_TIME_LIMIT = 30 * 60
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#task-soft-time-limit
-# TODO: set to whatever value is adequate in your circumstances
-CELERY_TASK_SOFT_TIME_LIMIT = 60
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#beat-scheduler
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#worker-send-task-events
@@ -343,7 +343,11 @@ SINEQUA_CONFIGS_REPO_WEBAPP_PR_BRANCH = env("SINEQUA_CONFIGS_REPO_WEBAPP_PR_BRAN
 SLACK_WEBHOOK_URL = env("SLACK_WEBHOOK_URL")
 XLI_USER = env("XLI_USER")
 XLI_PASSWORD = env("XLI_PASSWORD")
-LRM_USER = env("LRM_USER")
-LRM_PASSWORD = env("LRM_PASSWORD")
+LRM_DEV_USER = env("LRM_DEV_USER")
+LRM_DEV_PASSWORD = env("LRM_DEV_PASSWORD")
 LRM_QA_USER = env("LRM_QA_USER")
 LRM_QA_PASSWORD = env("LRM_QA_PASSWORD")
+LRM_DEV_TOKEN = env("LRM_DEV_TOKEN")
+XLI_TOKEN = env("XLI_TOKEN")
+INFERENCE_API_URL = env("INFERENCE_API_URL", default="http://host.docker.internal:8000")
+TDAMM_CLASSIFICATION_THRESHOLD = env("TDAMM_CLASSIFICATION_THRESHOLD", default="0.5")

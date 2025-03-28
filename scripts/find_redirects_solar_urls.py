@@ -43,9 +43,9 @@ for index, url_data in enumerate(urls):
             scraped_title = soup.find("title").text.strip() if soup.find("title") else ""
         except (AssertionError, Exception) as parse_error:
             scraped_title = ""
-            print(f"Error parsing URL {url_info['url']}: {parse_error}")
+            print(f"Error parsing URL {url_info['url']}: {parse_error}")  # noqa: F821
     except requests.RequestException as e:
-        print(f"Error fetching URL {url_info['url']}: {e}")
+        print(f"Error fetching URL {url_info['url']}: {e}")  # noqa: F821
         response_url = ""
         scraped_title = ""
 

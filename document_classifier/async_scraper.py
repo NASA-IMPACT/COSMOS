@@ -1,4 +1,5 @@
 """Asynchronously scrapes the HTML content of a given URL using a headless browser."""
+
 import asyncio
 import re
 

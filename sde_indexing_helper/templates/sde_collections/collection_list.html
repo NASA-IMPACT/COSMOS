@@ -5,131 +5,269 @@
 {% block stylesheets %}
 {% load humanize %}
     {{ block.super }}
-    <link href="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/collections_list.css' %}">
 {% endblock stylesheets %}
 {% block content %}
     {% csrf_token %}
     <br>
-    <h2 class="title">Welcome back!</h2>
-    <table id="collection_table" class="table table-striped" style="width:100%" >
-        <thead class="tableHeader">
-            <tr>
-                <th class="text-center noBorder" style="padding-right:25px !important">Name</th>
-                <th class="text-center noBorder url-th" style="padding-right:25px !important">URL</th>
-                <th class="text-center noBorder" style="padding-right:25px !important">Division</th>
-                <th class="text-center noBorder" style="padding-right:25px !important">Candidate URLs</th>
-                <th class="text-center noBorder" style="padding-right:25px !important">Workflow Status</th>
-                <th class="text-center noBorder" style="padding-right:25px !important">Curator</th>
-                <th class="text-center noBorder" style="padding-right:25px !important">Connector Type</th>
+<!-- Page Title -->
+<h2 class="title">Welcome back!</h2>
 
-                <th class="hideDisplay"></th>
-                <th class="hideDisplay"></th>
-            </tr>
-            <tr>
-                <td class="filterRowBottom" ><input class="table_filter_row_input textBoxStyling" type="text" id="nameFilter" placeholder="Name" /></td>
-                <td class="filterRowBottom url-td"><input class="table_filter_row_input textBoxStyling" type="text" id="urlFilter" placeholder="URL" /></td>
-                <td class="filterRowBottom"><input class="table_filter_row_input textBoxStyling" type="text" id="divisionFilter" placeholder="Division" /></td>
-                <td class="filterRowBottom"></td>
-                <td class="filterRowBottom"><select id="collection-dropdown-4" class="select-dropdown selectStyling">
+<!-- Main Collections Table -->
+<table id="collection_table" class="table table-striped" style="width:100%">
+    <thead class="tableHeader">
+        <!-- Column Headers Row -->
+        <tr>
+            <!-- Visible Columns -->
+            <th class="text-center noBorder" style="padding-right:25px !important">Name</th>
+            <th class="text-center noBorder url-th" style="padding-right:25px !important">Url</th>
+            <th class="text-center noBorder" style="padding-right:25px !important">Division</th>
+            <th class="text-center noBorder" style="padding-right:25px !important">Delta Urls</th>
+            <th class="text-center noBorder" style="padding-right:25px !important">Curated Urls</th>
+            <th class="text-center noBorder" style="padding-right:25px !important">Workflow Status</th>
+            <th class="text-center noBorder" style="padding-right:25px !important">Curator</th>
+            <th class="text-center noBorder" style="padding-right:25px !important">Connector Type</th>
+            <th class="text-center noBorder" style="padding-right:25px !important">Reindexing Status</th>
+
+            <!-- Hidden Columns - Used for internal data storage -->
+            <th class="hideDisplay"></th>
+            <th class="hideDisplay"></th>
+            <th class="hideDisplay"></th>
+        </tr>
+
+        <!-- Filter Row - Contains inputs and dropdowns for filtering table data -->
+        <tr>
+            <!-- Text input filter for Name -->
+            <td class="filterRowBottom">
+                <input class="table_filter_row_input textBoxStyling"
+                       type="text"
+                       id="nameFilter"
+                       placeholder="Name" />
+            </td>
+
+            <!-- Text input filter for URL -->
+            <td class="filterRowBottom url-td">
+                <input class="table_filter_row_input textBoxStyling"
+                       type="text"
+                       id="urlFilter"
+                       placeholder="URL" />
+            </td>
+
+            <!-- Text input filter for Division -->
+            <td class="filterRowBottom">
+                <input class="table_filter_row_input textBoxStyling"
+                       type="text"
+                       id="divisionFilter"
+                       placeholder="Division" />
+            </td>
+
+            <!-- Empty cell for Delta Urls (no filter) -->
+            <td class="filterRowBottom"></td>
+
+            <!-- Empty cell for Curated Urls (no filter) -->
+            <td class="filterRowBottom"></td>
+
+            <!-- Dropdown filter for Workflow Status -->
+            <td class="filterRowBottom">
+                <select id="collection-dropdown-4" class="select-dropdown selectStyling">
                     <option value="">SELECT</option>
-                   {% for choice in workflow_status_choices %}
-                       <option value="{{ choice }}" data-collection-id={{ collection.id }}>{{ choice.label }}</option>
-                   {% endfor %}
-                </select></td>
-                <td class="filterRowBottom"><select id="collection-dropdown-5" class="select-dropdown selectStyling">
+                    {% for choice in workflow_status_choices %}
+                        <option value="{{ choice }}"
+                                data-collection-id={{ collection.id }}>{{ choice.label }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+
+            <!-- Dropdown filter for Curator -->
+            <td class="filterRowBottom">
+                <select id="collection-dropdown-5" class="select-dropdown selectStyling">
                     <option value="">SELECT</option>
                     {% for curator in curators %}
-                    <option  value="{{ curator.pk }}" data-collection-id={{ collection.id }}>{{ curator.username }}</option>
-                {% endfor %}
-                </select></td>
-                <td class="filterRowBottom"><input class="table_filter_row_input textBoxStyling" type="text" id="connectorTypeFilter" placeholder="Connector Type" /></td>
-                <td class="hideDisplay"></td>
-                <td class="hideDisplay"></td>
-            </tr>
-        </thead>
+                        <option value="{{ curator.pk }}"
+                                data-collection-id={{ collection.id }}>{{ curator.username }}</option>
+                    {% endfor %}
+                </select>
+            </td>
 
+            <!-- Text input filter for Connector Type -->
+            <td class="filterRowBottom">
+                <input class="table_filter_row_input textBoxStyling"
+                       type="text"
+                       id="connectorTypeFilter"
+                       placeholder="Connector Type" />
+            </td>
+
+            <!-- Dropdown filter for Reindexing Status -->
+            <td class="filterRowBottom">
+                <select id="collection-dropdown-6" class="select-dropdown selectStyling">
+                    <option value="">SELECT</option>
+                    {% for choice in reindexing_status_choices %}
+                        <option value="{{ choice }}"
+                                data-collection-id={{ collection.id }}>{{ choice.label }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+
+            <!-- Hidden cells corresponding to hidden columns -->
+            <td class="hideDisplay"></td>  <!-- Stores raw workflow_status value (number) -->
+            <td class="hideDisplay"></td>  <!-- Stores raw curated_by_id value -->
+            <td class="hideDisplay"></td>  <!-- Stores raw reindexing_status value (number) -->
+        </tr>
+    </thead>
         <tbody>
+            <!-- Universal search bar above the table -->
             <div class="search-container">
                 <label for="collectionSearch">Universal Search</label>
                 <input type="text" id="collectionSearch" placeholder="Type to search..." class="table_filter_row_input textBoxStyling">
             </div>
+
+            <!-- Iterate through each collection to create table rows -->
             {% for collection in collections %}
                 <tr id="{{ collection.id }}" data-config-folder="{{ collection.config_folder }}">
+                    <!-- Name Column with Link -->
                     <td class="noBorder">
-                        <a class="nameStyling" href="{% url 'sde_collections:detail' collection.pk %}">{{ collection.name }} <i class="material-icons">chevron_right</i></a>
+                        <a class="nameStyling" href="{% url 'sde_collections:detail' collection.pk %}">
+                            {{ collection.name }}
+                            <i class="material-icons">chevron_right</i>
+                        </a>
                     </td>
+
+                    <!-- URL Column with External Link -->
                     <td class="url-td whiteText noBorder">
                         {% if collection.url %}
                             <div class="url-cell">
+                                <!-- URL text with tooltip -->
                                 <span class="url" title="{{collection.url}}">{{ collection.url }}</span>
-                                <a class="url-link" target="_blank" href=" {{ collection.url }} "> <i class="material-icons urlIcon">open_in_new</i></a></div>
+                                <!-- External link icon -->
+                                <a class="url-link" target="_blank" href=" {{ collection.url }} ">
+                                    <i class="material-icons urlIcon">open_in_new</i>
+                                </a>
+                            </div>
                         {% endif %}
                     </td>
+
+                    <!-- Division Column -->
                     <td class="whiteText noBorder">{{ collection.get_division_display }}</td>
-                    <td class="noBorder centerAlign">
-                        <a href=" {% if collection.num_candidate_urls > 0 %} {% url 'sde_collections:candidate_urls' collection.pk %} {% endif %} "
-                           class="btn btn-sm {% if collection.num_candidate_urls > 0 %}btn-primary {% else %}disabled{% endif %}candidateCount"
-                           role="button">{{ collection.num_candidate_urls|intcomma }}</a>
+
+                    <!-- Delta URLs Column - Shows count and links if >= 0 -->
+                    <td class="noBorder centerAlign" data-order="{{ collection.num_delta_urls }}">
+                        <a href=" {% if collection.num_delta_urls >= 0 %} {% url 'sde_collections:delta_urls' collection.pk %} {% endif %} "
+                           class="btn btn-sm {% if collection.num_delta_urls >= 0 %}btn-primary {% else %}disabled{% endif %}candidateCount"
+                           role="button">{{ collection.num_delta_urls|intcomma }}</a>
                     </td>
+
+                    <!-- Curated URLs Column - Shows count and links if >= 0 -->
+                    <td class="noBorder centerAlign" data-order="{{ collection.num_curated_urls }}">
+                        <a href=" {% if collection.num_curated_urls >= 0 %} {% url 'sde_collections:delta_urls' collection.pk %} {% endif %} "
+                           class="btn btn-sm {% if collection.num_curated_urls >= 0 %}btn-primary {% else %}disabled{% endif %}candidateCount"
+                           role="button">{{ collection.num_curated_urls|intcomma }}</a>
+                    </td>
+
+                    <!-- Workflow Status Dropdown -->
                     <td class="noBorder">
                         <div class="dropdown workflow_status_dropdown"
                              data-match-pattern
                              remove_protocol
                              row
                              url>
+                            <!-- Workflow status button with dynamic color -->
                             <button class="btn {{ collection.workflow_status_button_color }} btn-sm dropdown-toggle"
                                     type="button"
                                     id="workflow-status-button-{{ collection.id }}"
                                     data-toggle="dropdown"
                                     aria-haspopup="true"
                                     aria-expanded="false">{{ collection.get_workflow_status_display }}</button>
+                            <!-- Dropdown menu with all possible workflow statuses -->
                             <div class="dropdown-menu"
                                  aria-labelledby="workflow-status-button-{{ collection.id }}">
                                 {% for choice in workflow_status_choices %}
-                                    <a class="dropdown-item workflow_status_select" value="{{ choice }}" data-collection-id={{ collection.id }} >{{ choice.label }}</a>
+                                    <a class="dropdown-item workflow_status_select"
+                                       value="{{ choice }}"
+                                       data-collection-id={{ collection.id }}>{{ choice.label }}</a>
                                 {% endfor %}
                             </div>
                         </div>
                     </td>
+
+                    <!-- Curator Dropdown -->
                     <td class="noBorder">
                         <div class="dropdown curator_dropdown"
                              data-match-pattern
                              remove_protocol
                              row
                              url>
+                            <!-- Curator button - green if assigned, dark if not -->
                             <button class="btn {% if collection.curated_by %} btn-success {% else %} btn-dark {% endif %} btn-sm dropdown-toggle"
                                     type="button"
                                     id="curator-button-{{ collection.id }}"
                                     data-toggle="dropdown"
                                     aria-haspopup="true"
                                     aria-expanded="false">{{ collection.curated_by }}</button>
+                            <!-- Dropdown menu with all possible curators -->
                             <div class="dropdown-menu"
                                  aria-labelledby="curator-button-{{ collection.id }}">
                                 {% for curator in curators %}
-                                    <a  key="{{ curator.pk }}" class="dropdown-item curator_select" value="{{ curator.pk }}"  data-collection-id={{ collection.id }}
-                                     >{{ curator.username }}</a>
+                                    <a key="{{ curator.pk }}"
+                                       class="dropdown-item curator_select"
+                                       value="{{ curator.pk }}"
+                                       data-collection-id={{ collection.id }}>{{ curator.username }}</a>
                                 {% endfor %}
                             </div>
                         </div>
                     </td>
+
+                    <!-- Connector Type Column -->
                     <td class="whiteText noBorder">{{ collection.get_connector_display }}</td>
+
+                    <!-- Reindexing Status Dropdown -->
+                    <td class="noBorder">
+                        <div class="dropdown reindexing_status_dropdown"
+                             data-match-pattern
+                             remove_protocol
+                             row
+                             url>
+                            <!-- Reindexing status button with dynamic color -->
+                            <button class="btn {{ collection.reindexing_status_button_color }} btn-sm dropdown-toggle"
+                                    type="button"
+                                    id="reindexing-status-button-{{ collection.id }}"
+                                    data-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">{{ collection.get_reindexing_status_display }}</button>
+                            <!-- Dropdown menu with all possible reindexing statuses -->
+                            <div class="dropdown-menu"
+                                 aria-labelledby="reindexing-status-button-{{ collection.id }}">
+                                {% for choice in reindexing_status_choices %}
+                                    <a class="dropdown-item reindexing_status_select"
+                                       value="{{ choice }}"
+                                       data-collection-id={{ collection.id }}>{{ choice.label }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- Hidden columns for internal use -->
                     <td class="hideDisplay">{{ collection.workflow_status }}</td>
                     <td class="hideDisplay">{{ collection.curated_by_id }}</td>
+                    <td class="hideDisplay">{{ collection.reindexing_status }}</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
 
+    <!-- Column Customization Modal -->
     <div id="hideShowColumnsModal" class="modal pr-4 pl-4 pt-4 customizeColumnContainer">
         <div class="modalDialog">
             <div class="modalContent">
+                <!-- Modal Header -->
                 <div class="modalHeader ">
                     <h5 class="modalTitle whiteText" id="hideShowColumnsModalTitle">Customize Columns</h5>
                     <p id="subTitle" class="whiteText">Attributes marked with a checkbox will be displayed in the table.</p>
                 </div>
+                <!-- Modal Form -->
                 <form id="hide_show_columns_form">
                     <div class="modalBody whiteText" id="modalBody">
+                        <!-- Checkboxes are dynamically inserted here by JavaScript -->
                     </div>
                     <div class="modalFooter customizeColumnContainer">
                         <div type="submit" class="btn-prime hideShowSubmitButton" id="hideShowSubmitButton">Confirm</div>
@@ -140,9 +278,9 @@
     </div>
 {% endblock content %}
 {% block javascripts %}
-    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <script src="//cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.0.5/af-2.7.0/b-3.0.2/b-colvis-3.0.2/b-html5-3.0.2/b-print-3.0.2/cr-2.0.1/fc-5.0.0/fh-4.0.1/kt-2.12.0/r-3.0.2/rg-1.5.0/rr-1.5.0/sc-2.4.1/sp-2.3.1/sl-2.0.1/datatables.min.js" integrity="sha384-hYG8UYaiy9eSRy58/jaXhT3suoM1QfgYThNxzYEE1y+ijcFXuwMaNt1zr1ERbrIM" crossorigin="anonymous"></script>
     <script src="{% static 'js/collection_list.js' %}"></script>
     <script src="{% static 'js/project.js' %}"></script>
 {% endblock javascripts %}

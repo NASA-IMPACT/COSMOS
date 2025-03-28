@@ -1,16 +1,26 @@
+# sde_collections/models/collection.py
 import json
 import urllib.parse
 
 import requests
+from django.apps import apps
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from model_utils import FieldTracker
 from slugify import slugify
 
 from config_generation.db_to_xml import XmlEditor
+from inference.models.inference_choice_fields import (
+    ClassificationType,
+    InferenceJobStatus,
+)
+from sde_collections.tasks import (
+    fetch_full_text,
+    migrate_dump_to_delta_and_handle_status_transistions,
+)
 
 from ..utils.github_helper import GitHubHandler
 from ..utils.slack_utils import (
@@ -23,12 +33,17 @@ from .collection_choice_fields import (
     CurationStatusChoices,
     Divisions,
     DocumentTypes,
+    ReindexingStatusChoices,
     SourceChoices,
     UpdateFrequencies,
     WorkflowStatusChoices,
 )
+from .delta_url import CuratedUrl, DeltaUrl, DumpUrl
 
 User = get_user_model()
+DELTA_COMPARISON_FIELDS = ["scraped_title", "tdamm_tag", "division"]  # Add more fields as needed
+# TODO: may need to double check how the ml fields are evaluated. we need to ensure that it looks
+# specifically at the ml value, not the default or the manual value.
 
 
 class Collection(models.Model):
@@ -73,7 +88,12 @@ class Collection(models.Model):
         choices=WorkflowStatusChoices.choices,
         default=WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
     )
-    tracker = FieldTracker(fields=["workflow_status"])
+    reindexing_status = models.IntegerField(
+        choices=ReindexingStatusChoices.choices,
+        default=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
+        verbose_name="Reindexing Status",
+    )
+    tracker = FieldTracker(fields=["workflow_status", "reindexing_status"])
 
     curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
     curation_started = models.DateTimeField("Curation Started", null=True, blank=True)
@@ -83,6 +103,145 @@ class Collection(models.Model):
 
         verbose_name = "Collection"
         verbose_name_plural = "Collections"
+
+    def clear_delta_urls(self):
+        """Clears all DeltaUrls for this collection."""
+        DeltaUrl.objects.filter(collection=self).delete()
+
+    def clear_dump_urls(self):
+        """Clears all DumpUrls for this collection."""
+        DumpUrl.objects.filter(collection=self).delete()
+
+    def refresh_url_lists_for_all_patterns(self):
+        """
+        Updates pattern relations for all patterns associated with this collection.
+        """
+        # List of pattern models to update
+        pattern_models = [
+            "DeltaExcludePattern",
+            "DeltaIncludePattern",
+            "DeltaTitlePattern",
+            "DeltaDocumentTypePattern",
+            "DeltaDivisionPattern",
+        ]
+
+        # Loop through each model and update its relations
+        for model_name in pattern_models:
+            # Get the model dynamically
+            model = ContentType.objects.get(app_label="sde_collections", model=model_name.lower()).model_class()
+
+            # Filter patterns for the current collection and update relations
+            for pattern in model.objects.filter(collection=self):
+                pattern.update_affected_delta_urls_list()
+                pattern.update_affected_curated_urls_list()
+
+    def migrate_dump_to_delta(self):
+        """
+        Migrates data from DumpUrls to DeltaUrls, preserving all fields.
+        Creates DeltaUrls that reflect:
+        1. Changes from DumpUrls vs CuratedUrls
+        2. Missing URLs in DumpUrls that exist in CuratedUrls (marked for deletion)
+        """
+        # Step 1: Clear existing DeltaUrls for this collection
+        self.clear_delta_urls()
+
+        # Step 2: Fetch all current DumpUrls and CuratedUrls for this collection
+        dump_urls = {url.url: url for url in DumpUrl.objects.filter(collection=self)}
+        curated_urls = {url.url: url for url in CuratedUrl.objects.filter(collection=self)}
+
+        # Step 3: Process each URL in DumpUrls to migrate as needed
+        for url, dump in dump_urls.items():
+            curated = curated_urls.get(url)
+
+            if curated:
+                # Check if any of the comparison fields differ
+                if any(getattr(curated, field) != getattr(dump, field) for field in DELTA_COMPARISON_FIELDS):
+                    self.create_or_update_delta_url(dump, to_delete=False)
+            else:
+                # New URL, not in CuratedUrls; move it entirely to DeltaUrls
+                self.create_or_update_delta_url(dump, to_delete=False)
+
+        # Step 4: Identify CuratedUrls missing in DumpUrls and flag them for deletion in DeltaUrls
+        for curated in curated_urls.values():
+            if curated.url not in dump_urls:
+                self.create_or_update_delta_url(curated, to_delete=True)
+
+        # Step 5: Clear DumpUrls after migration is complete
+        self.clear_dump_urls()
+
+        # Step 6: Apply all patterns to DeltaUrls
+        # self.refresh_url_lists_for_all_patterns() # TODO: I'm pretty confident we shouldn't be running this
+        self.apply_all_patterns()
+
+    def create_or_update_delta_url(self, url_instance, to_delete=False):
+        """
+        Creates or updates a DeltaUrl entry based on the given DumpUrl or CuratedUrl object.
+        Always copies all fields, even for deletion cases.
+
+        Args:
+            url_instance: DumpUrl or CuratedUrl instance to copy from
+            to_delete: Whether to mark the resulting DeltaUrl for deletion
+        """
+        # Get all copyable fields from the source instance
+        fields_to_copy = {
+            field.name: getattr(url_instance, field.name)
+            for field in url_instance._meta.fields
+            if field.name not in ["id", "collection"]
+        }
+
+        # Set deletion status
+        fields_to_copy["to_delete"] = to_delete
+
+        # Update or create the DeltaUrl
+        DeltaUrl.objects.update_or_create(collection=self, url=url_instance.url, defaults=fields_to_copy)
+
+    def promote_to_curated(self):
+        """
+        Promotes all DeltaUrls in this collection to CuratedUrls.
+        Updates, adds, or removes CuratedUrls as necessary to match the latest DeltaUrls.
+        """
+        # Step 1: Fetch all current DeltaUrls and CuratedUrls for this collection
+        delta_urls = {url.url: url for url in DeltaUrl.objects.filter(collection=self)}
+        curated_urls = {url.url: url for url in CuratedUrl.objects.filter(collection=self)}
+
+        # Step 2: Process each DeltaUrl to update or create the corresponding CuratedUrl
+        for url, delta in delta_urls.items():
+            curated = curated_urls.get(url)
+
+            # Delete the CuratedUrl if the DeltaUrl is marked for deletion
+            if delta.to_delete:
+                if curated:
+                    curated.delete()
+                continue
+
+            if curated:
+                updated_fields = {}
+                for field in delta._meta.fields:
+                    field_name = field.name
+                    if field_name in ["to_delete", "id"]:
+                        continue
+
+                    delta_value = getattr(delta, field_name)
+                    if getattr(curated, field_name) != delta_value:
+                        updated_fields[field_name] = delta_value
+
+                if updated_fields:
+                    CuratedUrl.objects.filter(pk=curated.pk).update(**updated_fields)
+            else:
+                # Previously, we excluded fields with values of None and ""
+                # however, such null values are considered meaningful and should be copied over
+                new_data = {
+                    field.name: getattr(delta, field.name)
+                    for field in delta._meta.fields
+                    if field.name not in ["to_delete", "collection", "id"] and getattr(delta, field.name)
+                }
+                CuratedUrl.objects.create(collection=self, **new_data)
+
+        # Step 3: Clear all DeltaUrls for this collection since they've been promoted
+        DeltaUrl.objects.filter(collection=self).delete()
+
+        # Step 4: Reapply patterns to DeltaUrls
+        self.refresh_url_lists_for_all_patterns()
 
     def add_to_public_query(self):
         """Add the collection to the public query."""
@@ -109,20 +268,20 @@ class Collection(models.Model):
         gh.create_or_update_file(query_path, scraper_content)
 
     @property
-    def included_urls_count(self):
-        return self.candidate_urls.filter(excluded=False).count()
-
-    @property
     def _scraper_config_path(self) -> str:
         return f"sources/scrapers/{self.config_folder}/default.xml"
 
     @property
-    def _plugin_config_path(self) -> str:
+    def _indexer_config_path(self) -> str:
         return f"sources/SDE/{self.config_folder}/default.xml"
 
     @property
-    def _indexer_config_path(self) -> str:
+    def _indexer_job_path(self) -> str:
         return f"jobs/collection.indexer.{self.config_folder}.xml"
+
+    @property
+    def _scraper_job_path(self) -> str:
+        return f"jobs/collection.indexer.scrapers.{self.config_folder}.xml"
 
     @property
     def tree_root(self) -> str:
@@ -130,7 +289,7 @@ class Collection(models.Model):
 
     @property
     def server_url_secret_prod(self) -> str:
-        base_url = "https://sciencediscoveryengine.nasa.gov"
+        base_url = "https://sciencediscoveryengine.nasa.gov"  # noqa: E231
         payload = {
             "name": "secret-prod",
             "scope": "All",
@@ -144,7 +303,7 @@ class Collection(models.Model):
 
     @property
     def server_url_prod(self) -> str:
-        base_url = "https://sciencediscoveryengine.nasa.gov"
+        base_url = "https://sciencediscoveryengine.nasa.gov"  # noqa: E231
         payload = {
             "name": "query-smd-primary",
             "scope": "All",
@@ -199,6 +358,19 @@ class Collection(models.Model):
         }
         return color_choices[self.workflow_status]
 
+    @property
+    def reindexing_status_button_color(self) -> str:
+        color_choices = {
+            1: "btn-light",  # REINDEXING_NOT_NEEDED
+            2: "btn-danger",  # REINDEXING_NEEDED_ON_DEV (matching Ready For Engineering)
+            3: "btn-info",  # REINDEXING_FINISHED_ON_DEV (matching Indexing Finished on LRM Dev)
+            4: "btn-info",  # REINDEXING_READY_FOR_CURATION (matching Ready for Curation)
+            5: "btn-success",  # REINDEXING_CURATION_IN_PROGRESS (matching Curation in Progress)
+            6: "btn-primary",  # REINDEXING_CURATED (matching Curated)
+            7: "btn-primary",  # REINDEXING_INDEXED_ON_PROD (matching Prod: Perfect)
+        }
+        return color_choices[self.reindexing_status]
+
     def _process_exclude_list(self):
         """Process the exclude list."""
         return [pattern._process_match_pattern() for pattern in self.excludepattern.all()]
@@ -243,12 +415,12 @@ class Collection(models.Model):
         if overwrite is True, it will overwrite the existing file
         """
 
-        scraper_template = open("config_generation/xmls/webcrawler_initial_crawl.xml").read()
+        scraper_template = open("config_generation/xmls/scraper_template.xml").read()
         editor = XmlEditor(scraper_template)
         scraper_config = editor.convert_template_to_scraper(self)
         self._write_to_github(self._scraper_config_path, scraper_config, overwrite)
 
-    def create_plugin_config(self, overwrite: bool = False):
+    def create_indexer_config(self, overwrite: bool = False):
         """
         Reads from the model data and creates the plugin config xml file that calls the api
 
@@ -265,12 +437,24 @@ class Collection(models.Model):
             scraper_content = scraper_content.decoded_content.decode("utf-8")
             scraper_editor = XmlEditor(scraper_content)
 
-        plugin_template = open("config_generation/xmls/plugin_indexing_template.xml").read()
-        plugin_editor = XmlEditor(plugin_template)
-        plugin_config = plugin_editor.convert_template_to_plugin_indexer(scraper_editor)
-        self._write_to_github(self._plugin_config_path, plugin_config, overwrite)
+        indexer_template = open("config_generation/xmls/indexer_template.xml").read()
+        indexer_editor = XmlEditor(indexer_template)
+        indexer_config = indexer_editor.convert_template_to_indexer(scraper_editor)
+        self._write_to_github(self._indexer_config_path, indexer_config, overwrite)
 
-    def create_indexer_config(self, overwrite: bool = False):
+    def create_scraper_job(self, overwrite: bool = False):
+        """
+        Reads from the model data and creates the initial scraper job xml file
+
+        if overwrite is True, it will overwrite the existing file
+        """
+
+        scraper_job_template = open("config_generation/xmls/job_template.xml").read()
+        editor = XmlEditor(scraper_job_template)
+        scraper_job = editor.convert_template_to_job(self, "scrapers")
+        self._write_to_github(self._scraper_job_path, scraper_job, overwrite)
+
+    def create_indexer_job(self, overwrite: bool = False):
         """
         Reads from the model data and creates indexer job that calls the plugin config
 
@@ -278,8 +462,8 @@ class Collection(models.Model):
         """
         indexer_template = open("config_generation/xmls/job_template.xml").read()
         editor = XmlEditor(indexer_template)
-        indexer_config = editor.convert_template_to_indexer(self)
-        self._write_to_github(self._indexer_config_path, indexer_config, overwrite)
+        indexer_job = editor.convert_template_to_job(self, "SDE")
+        self._write_to_github(self._indexer_job_path, indexer_job, overwrite)
 
     def update_config_xml(self, original_config_string):
         """
@@ -371,13 +555,12 @@ class Collection(models.Model):
 
     @property
     def sinequa_configuration(self) -> str:
-        return (
-            f"https://github.com/NASA-IMPACT/sde-backend/blob/production/sources/SDE/{self.config_folder}/default.xml"
-        )
+        URL = f"https://github.com/NASA-IMPACT/sde-backend/blob/production/sources/SDE/{self.config_folder}/default.xml"  # noqa: E231, E501
+        return URL
 
     @property
     def github_issue_link(self) -> str:
-        return f"https://github.com/NASA-IMPACT/sde-project/issues/{self.github_issue_number}"
+        return f"https://github.com/NASA-IMPACT/sde-project/issues/{self.github_issue_number}"  # noqa: E231
 
     @classmethod
     def _fetch_json_results(cls, url):
@@ -460,16 +643,87 @@ class Collection(models.Model):
 
         self.save()
 
-    def apply_all_patterns(self) -> None:
-        """Apply all the patterns."""
-        for pattern in self.excludepattern.all():
+    def apply_all_patterns(self):
+        """Apply all the patterns with debug information."""
+
+        for pattern in self.deltaexcludepatterns.all():
             pattern.apply()
-        for pattern in self.includepattern.all():
+
+        for pattern in self.deltaincludepatterns.all():
             pattern.apply()
-        for pattern in self.titlepattern.all():
+
+        for pattern in self.deltatitlepatterns.all():
             pattern.apply()
-        for pattern in self.documenttypepattern.all():
+
+        for pattern in self.deltadocumenttypepatterns.all():
             pattern.apply()
+
+        for pattern in self.deltadivisionpatterns.all():
+            pattern.apply()
+
+    def generate_inference_job(self, classification_type):
+        """Creates a new inference job for a collection."""
+
+        InferenceJob = apps.get_model("inference", "InferenceJob")
+        ModelVersion = apps.get_model("inference", "ModelVersion")
+
+        try:
+            model_version = ModelVersion.get_active_version(classification_type)
+        except ModelVersion.DoesNotExist:
+            if classification_type == 1:  # TDAMM
+                model_name = "TDAMM"
+            elif classification_type == 2:  # DIVISION
+                model_name = "DC"
+            else:
+                raise ValueError(f"Unsupported classification type: {classification_type}")
+
+            model_version = ModelVersion.objects.create(
+                api_identifier=model_name,
+                description=f"{model_name.upper()} classification model",
+                classification_type=classification_type,
+                is_active=True,
+            )
+
+        return InferenceJob.objects.create(
+            collection=self,
+            model_version=model_version,
+        )
+
+    def queue_necessary_classifications(self):
+        """Check if collection needs classification and queue jobs if needed"""
+        tdamm_collections = [
+            "imagine_the_universe",
+            "physics_of_the_cosmos",
+            "stsci_space_telescope_science_institute",
+        ]
+        if self.config_folder in tdamm_collections:
+            self.generate_inference_job(ClassificationType.TDAMM)
+        # if self.division == Divisions.ASTROPHYSICS:
+        #     self.generate_inference_job(ClassificationType.TDAMM)
+        # elif self.division == Divisions.GENERAL:
+        #     self.generate_inference_job(ClassificationType.DIVISION)
+        else:
+            # No classification needed, proceed directly to migration
+            migrate_dump_to_delta_and_handle_status_transistions.delay(self.id)
+
+    def check_classifications_complete_and_finish_migration(self):
+        """
+        Check if all classification jobs for a collection are complete.
+        If so, trigger migration from DumpUrls to DeltaUrls.
+        """
+
+        InferenceJob = apps.get_model("inference", "InferenceJob")
+        # Check if any jobs are still pending or queued
+        ongoing_jobs = InferenceJob.objects.filter(
+            collection=self, status__in=[InferenceJobStatus.QUEUED, InferenceJobStatus.PENDING]
+        ).exists()
+
+        if not ongoing_jobs:
+            # All classifications are done, trigger migration
+            migrate_dump_to_delta_and_handle_status_transistions.delay(self.id)
+            return True
+
+        return False
 
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
@@ -484,7 +738,13 @@ class Collection(models.Model):
                 if transition in STATUS_CHANGE_NOTIFICATIONS:
                     details = STATUS_CHANGE_NOTIFICATIONS[transition]
                     message = format_slack_message(self.name, details, self.id)
-                    send_slack_message(message)
+                    try:
+                        # TODO: find a better way to allow this to work on dev environments with
+                        # no slack integration
+                        send_slack_message(message)
+                    except Exception as e:
+                        print(f"Error sending Slack message: {e}")
+
         # Call the parent class's save method
         super().save(*args, **kwargs)
 
@@ -492,6 +752,7 @@ class Collection(models.Model):
         # Create a cached version of the last workflow_status to compare against
         super().__init__(*args, **kwargs)
         self.old_workflow_status = self.workflow_status
+        self.old_reindexing_status = self.reindexing_status
 
 
 class RequiredUrls(models.Model):
@@ -572,21 +833,73 @@ def log_workflow_history(sender, instance, created, **kwargs):
             old_status=instance.old_workflow_status,
         )
 
+    if instance.reindexing_status != instance.old_reindexing_status:
+        ReindexingHistory.objects.create(
+            collection=instance,
+            reindexing_status=instance.reindexing_status,
+            curated_by=instance.curated_by,
+            old_status=instance.old_reindexing_status,
+        )
+
+
+class ReindexingHistory(models.Model):
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE, related_name="reindexing_history", null=True)
+    reindexing_status = models.IntegerField(
+        choices=ReindexingStatusChoices.choices,
+        default=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
+    )
+    old_status = models.IntegerField(choices=ReindexingStatusChoices.choices, null=True)
+    curated_by = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.collection) + str(self.reindexing_status)
+
+    @property
+    def reindexing_status_button_color(self) -> str:
+        color_choices = {
+            1: "btn-light",  # REINDEXING_NOT_NEEDED
+            2: "btn-warning",  # REINDEXING_NEEDED_ON_DEV
+            3: "btn-secondary",  # REINDEXING_FINISHED_ON_DEV
+            4: "btn-info",  # REINDEXING_READY_FOR_CURATION
+            5: "btn-primary",  # REINDEXING_CURATED
+            6: "btn-success",  # REINDEXING_INDEXED_ON_PROD
+        }
+        return color_choices[self.reindexing_status]
+
 
 @receiver(post_save, sender=Collection)
 def create_configs_on_status_change(sender, instance, created, **kwargs):
-    """
-    Creates various config files on certain workflow status changes
-    """
+    """Creates various config files on certain workflow status changes"""
 
-    if "workflow_status" in instance.tracker.changed():
-        if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
-            instance.create_plugin_config(overwrite=True)
-        elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
-            instance.create_scraper_config(overwrite=False)
-            instance.create_indexer_config(overwrite=False)
-        elif instance.workflow_status in [
-            WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
-            WorkflowStatusChoices.QUALITY_CHECK_MINOR,
-        ]:
-            instance.add_to_public_query()
+    if getattr(instance, "_handling_status_change", False):
+        return
+
+    try:
+        instance._handling_status_change = True
+
+        if "workflow_status" in instance.tracker.changed():
+            if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
+                instance.create_indexer_config(overwrite=True)
+                instance.create_indexer_job(overwrite=False)
+            elif instance.workflow_status == WorkflowStatusChoices.CURATED:
+                instance.promote_to_curated()
+            elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
+                instance.create_scraper_config(overwrite=False)
+                instance.create_scraper_job(overwrite=False)
+            elif instance.workflow_status == WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV:
+                fetch_full_text.delay(instance.id, "lrm_dev")
+            elif instance.workflow_status in [
+                WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
+                WorkflowStatusChoices.QUALITY_CHECK_MINOR,
+            ]:
+                instance.add_to_public_query()
+
+        if "reindexing_status" in instance.tracker.changed():
+            if instance.reindexing_status == ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV:
+                fetch_full_text.delay(instance.id, "lrm_dev")
+            elif instance.reindexing_status == ReindexingStatusChoices.REINDEXING_CURATED:
+                instance.promote_to_curated()
+
+    finally:
+        instance._handling_status_change = False
