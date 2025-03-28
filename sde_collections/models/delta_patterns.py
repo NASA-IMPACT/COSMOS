@@ -36,7 +36,7 @@ class BaseMatchPattern(models.Model):
     match_pattern = models.CharField(
         "Pattern", help_text="This pattern is compared against the URL of all documents in the collection"
     )
-    match_pattern_type = models.IntegerField(choices=MatchPatternTypeChoices.choices, default=1)
+    match_pattern_type = models.IntegerField(choices=MatchPatternTypeChoices.choices, default=2)
     delta_urls = models.ManyToManyField(
         "DeltaUrl",
         related_name="%(class)ss",  # Makes delta_url.deltaincludepatterns.all()

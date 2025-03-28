@@ -141,6 +141,12 @@ class TestPatternApplication(BaseTestCase):
         assert "3" in row_text
 
         self.driver.get(f"{self.live_server_url}/{self.collection.id}/delta-urls")
+
+        # Wait for at least one row to be present in the table
+        self.wait.until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#delta_urls_table tbody tr td:not(.dt-empty)"))
+        )
+
         table_html = self.driver.find_element(By.ID, "delta_urls_table").get_attribute("outerHTML")
 
         # Verify that previous curated_url now appear in delta_urls page after pattern application

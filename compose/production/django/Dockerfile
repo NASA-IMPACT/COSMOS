@@ -1,3 +1,4 @@
+# compose/production/django/Dockerfile
 # define an alias for the specfic python version used in this file.
 FROM python:3.10.14-slim-bullseye AS python
 

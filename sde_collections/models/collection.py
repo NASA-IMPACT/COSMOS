@@ -1,7 +1,9 @@
+# sde_collections/models/collection.py
 import json
 import urllib.parse
 
 import requests
+from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -11,7 +13,14 @@ from model_utils import FieldTracker
 from slugify import slugify
 
 from config_generation.db_to_xml import XmlEditor
-from sde_collections.tasks import fetch_and_replace_full_text
+from inference.models.inference_choice_fields import (
+    ClassificationType,
+    InferenceJobStatus,
+)
+from sde_collections.tasks import (
+    fetch_full_text,
+    migrate_dump_to_delta_and_handle_status_transistions,
+)
 
 from ..utils.github_helper import GitHubHandler
 from ..utils.slack_utils import (
@@ -32,7 +41,9 @@ from .collection_choice_fields import (
 from .delta_url import CuratedUrl, DeltaUrl, DumpUrl
 
 User = get_user_model()
-DELTA_COMPARISON_FIELDS = ["scraped_title"]  # Add more fields as needed
+DELTA_COMPARISON_FIELDS = ["scraped_title", "tdamm_tag", "division"]  # Add more fields as needed
+# TODO: may need to double check how the ml fields are evaluated. we need to ensure that it looks
+# specifically at the ml value, not the default or the manual value.
 
 
 class Collection(models.Model):
@@ -279,12 +290,16 @@ class Collection(models.Model):
         return f"sources/scrapers/{self.config_folder}/default.xml"
 
     @property
-    def _plugin_config_path(self) -> str:
+    def _indexer_config_path(self) -> str:
         return f"sources/SDE/{self.config_folder}/default.xml"
 
     @property
-    def _indexer_config_path(self) -> str:
+    def _indexer_job_path(self) -> str:
         return f"jobs/collection.indexer.{self.config_folder}.xml"
+
+    @property
+    def _scraper_job_path(self) -> str:
+        return f"jobs/collection.indexer.scrapers.{self.config_folder}.xml"
 
     @property
     def tree_root(self) -> str:
@@ -418,12 +433,12 @@ class Collection(models.Model):
         if overwrite is True, it will overwrite the existing file
         """
 
-        scraper_template = open("config_generation/xmls/webcrawler_initial_crawl.xml").read()
+        scraper_template = open("config_generation/xmls/scraper_template.xml").read()
         editor = XmlEditor(scraper_template)
         scraper_config = editor.convert_template_to_scraper(self)
         self._write_to_github(self._scraper_config_path, scraper_config, overwrite)
 
-    def create_plugin_config(self, overwrite: bool = False):
+    def create_indexer_config(self, overwrite: bool = False):
         """
         Reads from the model data and creates the plugin config xml file that calls the api
 
@@ -440,12 +455,24 @@ class Collection(models.Model):
             scraper_content = scraper_content.decoded_content.decode("utf-8")
             scraper_editor = XmlEditor(scraper_content)
 
-        plugin_template = open("config_generation/xmls/plugin_indexing_template.xml").read()
-        plugin_editor = XmlEditor(plugin_template)
-        plugin_config = plugin_editor.convert_template_to_plugin_indexer(scraper_editor)
-        self._write_to_github(self._plugin_config_path, plugin_config, overwrite)
+        indexer_template = open("config_generation/xmls/indexer_template.xml").read()
+        indexer_editor = XmlEditor(indexer_template)
+        indexer_config = indexer_editor.convert_template_to_indexer(scraper_editor)
+        self._write_to_github(self._indexer_config_path, indexer_config, overwrite)
 
-    def create_indexer_config(self, overwrite: bool = False):
+    def create_scraper_job(self, overwrite: bool = False):
+        """
+        Reads from the model data and creates the initial scraper job xml file
+
+        if overwrite is True, it will overwrite the existing file
+        """
+
+        scraper_job_template = open("config_generation/xmls/job_template.xml").read()
+        editor = XmlEditor(scraper_job_template)
+        scraper_job = editor.convert_template_to_job(self, "scrapers")
+        self._write_to_github(self._scraper_job_path, scraper_job, overwrite)
+
+    def create_indexer_job(self, overwrite: bool = False):
         """
         Reads from the model data and creates indexer job that calls the plugin config
 
@@ -453,8 +480,8 @@ class Collection(models.Model):
         """
         indexer_template = open("config_generation/xmls/job_template.xml").read()
         editor = XmlEditor(indexer_template)
-        indexer_config = editor.convert_template_to_indexer(self)
-        self._write_to_github(self._indexer_config_path, indexer_config, overwrite)
+        indexer_job = editor.convert_template_to_job(self, "SDE")
+        self._write_to_github(self._indexer_job_path, indexer_job, overwrite)
 
     def update_config_xml(self, original_config_string):
         """
@@ -658,6 +685,70 @@ class Collection(models.Model):
         for pattern in self.deltatdammtagpatterns.filter(operation=2).order_by("id"):
             pattern.apply()
 
+    def generate_inference_job(self, classification_type):
+        """Creates a new inference job for a collection."""
+
+        InferenceJob = apps.get_model("inference", "InferenceJob")
+        ModelVersion = apps.get_model("inference", "ModelVersion")
+
+        try:
+            model_version = ModelVersion.get_active_version(classification_type)
+        except ModelVersion.DoesNotExist:
+            if classification_type == 1:  # TDAMM
+                model_name = "TDAMM"
+            elif classification_type == 2:  # DIVISION
+                model_name = "DC"
+            else:
+                raise ValueError(f"Unsupported classification type: {classification_type}")
+
+            model_version = ModelVersion.objects.create(
+                api_identifier=model_name,
+                description=f"{model_name.upper()} classification model",
+                classification_type=classification_type,
+                is_active=True,
+            )
+
+        return InferenceJob.objects.create(
+            collection=self,
+            model_version=model_version,
+        )
+
+    def queue_necessary_classifications(self):
+        """Check if collection needs classification and queue jobs if needed"""
+        tdamm_collections = [
+            "imagine_the_universe",
+            "physics_of_the_cosmos",
+            "stsci_space_telescope_science_institute",
+        ]
+        if self.config_folder in tdamm_collections:
+            self.generate_inference_job(ClassificationType.TDAMM)
+        # if self.division == Divisions.ASTROPHYSICS:
+        #     self.generate_inference_job(ClassificationType.TDAMM)
+        # elif self.division == Divisions.GENERAL:
+        #     self.generate_inference_job(ClassificationType.DIVISION)
+        else:
+            # No classification needed, proceed directly to migration
+            migrate_dump_to_delta_and_handle_status_transistions.delay(self.id)
+
+    def check_classifications_complete_and_finish_migration(self):
+        """
+        Check if all classification jobs for a collection are complete.
+        If so, trigger migration from DumpUrls to DeltaUrls.
+        """
+
+        InferenceJob = apps.get_model("inference", "InferenceJob")
+        # Check if any jobs are still pending or queued
+        ongoing_jobs = InferenceJob.objects.filter(
+            collection=self, status__in=[InferenceJobStatus.QUEUED, InferenceJobStatus.PENDING]
+        ).exists()
+
+        if not ongoing_jobs:
+            # All classifications are done, trigger migration
+            migrate_dump_to_delta_and_handle_status_transistions.delay(self.id)
+            return True
+
+        return False
+
     def save(self, *args, **kwargs):
         # Call the function to generate the value for the generated_field based on the original_field
         if not self.config_folder:
@@ -813,14 +904,15 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
 
         if "workflow_status" in instance.tracker.changed():
             if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
-                instance.create_plugin_config(overwrite=True)
+                instance.create_indexer_config(overwrite=True)
+                instance.create_indexer_job(overwrite=False)
             elif instance.workflow_status == WorkflowStatusChoices.CURATED:
                 instance.promote_to_curated()
             elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
                 instance.create_scraper_config(overwrite=False)
-                instance.create_indexer_config(overwrite=False)
+                instance.create_scraper_job(overwrite=False)
             elif instance.workflow_status == WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV:
-                fetch_and_replace_full_text.delay(instance.id, "lrm_dev")
+                fetch_full_text.delay(instance.id, "lrm_dev")
             elif instance.workflow_status in [
                 WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
                 WorkflowStatusChoices.QUALITY_CHECK_MINOR,
@@ -829,7 +921,7 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
 
         if "reindexing_status" in instance.tracker.changed():
             if instance.reindexing_status == ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV:
-                fetch_and_replace_full_text.delay(instance.id, "lrm_dev")
+                fetch_full_text.delay(instance.id, "lrm_dev")
             elif instance.reindexing_status == ReindexingStatusChoices.REINDEXING_CURATED:
                 instance.promote_to_curated()
 
