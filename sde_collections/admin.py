@@ -331,16 +331,16 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         """Custom view that starts metrics generation and returns to collection list"""
         task_id = str(uuid.uuid4())
         generate_metrics.delay(task_id)
-        
-        download_url = request.path.rsplit('metrics/', 1)[0] + f'metrics/{task_id}/'
-        
+
+        download_url = request.path.rsplit("metrics/", 1)[0] + f"metrics/{task_id}/"
+
         messages.add_message(
             request,
             messages.INFO,
             mark_safe(
                 f"Metrics generation started. Please wait a moment and then "
                 f"<a href='{download_url}'>click here to download</a> when ready."
-            )
+            ),
         )
         return HttpResponse(status=303, headers={"Location": request.path.replace("/metrics/", "")})
 
@@ -367,16 +367,15 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
                     mark_safe(
                         f"The metrics file is still being generated. "
                         f"<a href='{current_url}'>Click here to try again</a>."
-                    )
+                    ),
                 )
             else:
                 messages.add_message(
                     request,
                     messages.WARNING,
                     mark_safe(
-                        f"The metrics file is not ready yet. "
-                        f"<a href='{current_url}'>Click here to try again</a>."
-                    )
+                        f"The metrics file is not ready yet. " f"<a href='{current_url}'>Click here to try again</a>."
+                    ),
                 )
             return HttpResponse(status=303, headers={"Location": request.path.replace(f"/metrics/{task_id}/", "")})
 
