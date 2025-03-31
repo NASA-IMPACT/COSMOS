@@ -1,13 +1,13 @@
 import csv
+import os
+import uuid
 
 from django import forms
-from django.contrib import admin, messages
-from django.http import HttpResponse, FileResponse
-from django.utils.safestring import mark_safe
-from django.urls import path
-import uuid
-import os
 from django.conf import settings
+from django.contrib import admin, messages
+from django.http import FileResponse, HttpResponse
+from django.urls import path
+from django.utils.safestring import mark_safe
 
 from sde_collections.models.delta_patterns import (
     DeltaDivisionPattern,
@@ -20,7 +20,7 @@ from .models.collection import Collection, ReindexingHistory, WorkflowHistory
 from .models.collection_choice_fields import TDAMMTags
 from .models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
-from .tasks import fetch_full_text, import_candidate_urls_from_api, generate_metrics
+from .tasks import fetch_full_text, generate_metrics, import_candidate_urls_from_api
 
 
 def fetch_and_replace_text_for_server(modeladmin, request, queryset, server_name):
@@ -300,70 +300,82 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
         fetch_full_text_xli_action,
     ]
     ordering = ("cleaning_order",)
-    
+
     def changelist_view(self, request, extra_context=None):
         """
         To add a button for metrics download
         """
         extra_context = extra_context or {}
-        extra_context['show_metrics_button'] = True
-        extra_context['metrics_url'] = request.path + 'metrics/'
+        extra_context["show_metrics_button"] = True
+        extra_context["metrics_url"] = request.path + "metrics/"
         return super().changelist_view(request, extra_context=extra_context)
-    
+
     def get_urls(self):
         """
         To add custom endpoints for metrics functionality
         """
         urls = super().get_urls()
         custom_urls = [
-            path('metrics/', self.admin_site.admin_view(self.download_metrics), name='sde_collections_collection_metrics'),
-            path('metrics/<str:task_id>/', self.admin_site.admin_view(self.get_metrics_file), name='sde_collections_get_metrics'),
+            path(
+                "metrics/", self.admin_site.admin_view(self.download_metrics), name="sde_collections_collection_metrics"
+            ),
+            path(
+                "metrics/<str:task_id>/",
+                self.admin_site.admin_view(self.get_metrics_file),
+                name="sde_collections_get_metrics",
+            ),
         ]
         return custom_urls + urls
-    
+
     def download_metrics(self, request):
         """Custom view that starts metrics generation and returns to collection list"""
         task_id = str(uuid.uuid4())
         task = generate_metrics.delay(task_id)
-        
-        download_url = request.path.rsplit('metrics/', 1)[0] + f'metrics/{task_id}/'
-        
+
+        download_url = request.path.rsplit("metrics/", 1)[0] + f"metrics/{task_id}/"
+
         messages.add_message(
             request,
             messages.INFO,
-            mark_safe(f"Metrics generation started. Please wait a moment and then <a href='{download_url}'>click here to download</a> when ready.")
+            mark_safe(
+                f"Metrics generation started. Please wait a moment and then <a href='{download_url}'>click here to download</a> when ready."
+            ),
         )
-        return HttpResponse(status=303, headers={"Location": request.path.replace('/metrics/', '')})
-    
+        return HttpResponse(status=303, headers={"Location": request.path.replace("/metrics/", "")})
+
     def get_metrics_file(self, request, task_id):
         """Serve the generated metrics file if it exists and is valid"""
-        
-        file_path = os.path.join(settings.MEDIA_ROOT, 'metrics', f'metrics_{task_id}.csv')
-        
+
+        file_path = os.path.join(settings.MEDIA_ROOT, "metrics", f"metrics_{task_id}.csv")
+
         # Create the retry URL
         current_url = request.build_absolute_uri()
-        
+
         # Check if file exists and is not empty (minimum size 100 bytes)
         if os.path.exists(file_path) and os.path.getsize(file_path) > 100:
-            response = FileResponse(open(file_path, 'rb'), content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="metrics.csv"'
+            response = FileResponse(open(file_path, "rb"), content_type="text/csv")
+            response["Content-Disposition"] = 'attachment; filename="metrics.csv"'
             return response
         else:
             # Also check if there's a temporary file indicating task is still running
-            temp_file_path = os.path.join(settings.MEDIA_ROOT, 'metrics', f'metrics_{task_id}.tmp')
+            temp_file_path = os.path.join(settings.MEDIA_ROOT, "metrics", f"metrics_{task_id}.tmp")
             if os.path.exists(temp_file_path):
                 messages.add_message(
                     request,
                     messages.INFO,
-                    mark_safe(f"The metrics file is still being generated. <a href='{current_url}'>Click here to try again</a>.")
+                    mark_safe(
+                        f"The metrics file is still being generated. <a href='{current_url}'>Click here to try again</a>."
+                    ),
                 )
             else:
                 messages.add_message(
                     request,
                     messages.WARNING,
-                    mark_safe(f"The metrics file is not ready yet. <a href='{current_url}'>Click here to try again</a>.")
+                    mark_safe(
+                        f"The metrics file is not ready yet. <a href='{current_url}'>Click here to try again</a>."
+                    ),
                 )
-            return HttpResponse(status=303, headers={"Location": request.path.replace(f'/metrics/{task_id}/', '')})
+            return HttpResponse(status=303, headers={"Location": request.path.replace(f"/metrics/{task_id}/", "")})
 
 
 @admin.action(description="Exclude URL and all children")
