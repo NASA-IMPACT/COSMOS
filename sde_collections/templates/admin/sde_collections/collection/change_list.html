@@ -1,0 +1,15 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block object-tools %}
+    <ul class="object-tools">
+        {% if show_metrics_button %}
+        <li>
+            <a href="{{ metrics_url }}">Download Metrics</a>
+        </li>
+        {% endif %}
+        {% block object-tools-items %}
+            {{ block.super }}
+        {% endblock %}
+    </ul>
+{% endblock %} 

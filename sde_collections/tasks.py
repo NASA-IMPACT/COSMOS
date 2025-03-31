@@ -2,6 +2,9 @@
 import json
 import os
 import shutil
+import csv
+import requests
+import numpy as np
 
 import boto3
 from django.apps import apps
@@ -229,3 +232,268 @@ def migrate_dump_to_delta_and_handle_status_transistions(collection_id):
         collection.save()
 
     return f"Successfully migrated DumpUrls to DeltaUrls for collection {collection.name}."
+
+
+@celery_app.task(name="generate_metrics")
+def generate_metrics(task_id):
+    """
+    To asynchronously generate metrics
+    """
+    try:
+        # Generate a file path in the media directory
+        metrics_dir = os.path.join(settings.MEDIA_ROOT, 'metrics')
+        os.makedirs(metrics_dir, exist_ok=True)
+        
+        # Use a temporary file during generation
+        temp_file_path = os.path.join(metrics_dir, f'metrics_{task_id}.tmp')
+        final_file_path = os.path.join(metrics_dir, f'metrics_{task_id}.csv')
+        
+        # Initialize common variables
+        divArr = ['/Astrophysics/','/Biological and Physical Sciences/','/Earth Science/','/Heliophysics/','/Planetary Science/']
+        docArr = ['Data','Images','Documentation','Software and Tools','Missions and Instruments']
+        
+        url = "https://sciencediscoveryengine.nasa.gov/api/v1/search.query"
+        
+        # Create a temporary buffer for CSV data
+        with open(temp_file_path, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            
+            # SECTION 1: DOCUMENT COUNT METRICS
+            writer.writerow(['SECTION 1: DOCUMENT COUNT BY DIVISION AND DOCUMENT TYPE'])
+            writer.writerow([])
+            
+            # Initialize document count array
+            recCounter = np.zeros((6,5))
+            
+            # Process documents through API
+            pageCount = 1
+            pageSize = 1000
+            
+            print("Fetching document count metrics...")
+            
+            while True:
+                payload = {
+                    "app": 'nasa-sba-smd',
+                    "query": {
+                        "name": 'query-smd-primary',
+                        "page": pageCount,
+                        "pageSize": pageSize,
+                        "scope": 'All',
+                        "advanced": {},
+                    },
+                }
+                
+                print(f"Processing page {pageCount} for document count")
+                response_data = requests.post(url, headers={}, json=payload, verify=False).json()
+                
+                num_records = len(response_data.get('records', []))
+                if num_records == 0:
+                    break
+                    
+                for record in response_data['records']:
+                    if 'sourcestr56' in record:
+                        # Extract division and document type
+                        division = record.get('treepath', [''])[0]
+                        doctype = record['sourcestr56']
+                        
+                        # Update counters
+                        for j in range(0, len(docArr)):
+                            for k in range(0, len(divArr)):
+                                if doctype == docArr[j]:
+                                    if divArr[k] in division:
+                                        recCounter[k, j] += 1
+                                        recCounter[5, j] += 1
+                
+                pageCount += 1
+            
+            # Write document count metrics
+            writer.writerow(['Division', 'Document Type', 'Count'])
+            
+            # Add All Divisions data
+            writer.writerow(['All Divisions', 'Data', str(int(recCounter[5, 0]))])
+            writer.writerow(['All Divisions', 'Images', str(int(recCounter[5, 1]))])
+            writer.writerow(['All Divisions', 'Documentation', str(int(recCounter[5, 2]))])
+            writer.writerow(['All Divisions', 'Software and Tools', str(int(recCounter[5, 3]))])
+            writer.writerow(['All Divisions', 'Missions and Instruments', str(int(recCounter[5, 4]))])
+            writer.writerow(['All Divisions', 'Total', str(int(np.sum(recCounter[5, :])))])
+            
+            # Add data for each division
+            division_names = ['Astrophysics', 'Biological and Physical Sciences', 'Earth Science', 'Heliophysics', 'Planetary Science']
+            for i, div_name in enumerate(division_names):
+                writer.writerow([div_name, 'Data', str(int(recCounter[i, 0]))])
+                writer.writerow([div_name, 'Images', str(int(recCounter[i, 1]))])
+                writer.writerow([div_name, 'Documentation', str(int(recCounter[i, 2]))])
+                writer.writerow([div_name, 'Software and Tools', str(int(recCounter[i, 3]))])
+                writer.writerow([div_name, 'Missions and Instruments', str(int(recCounter[i, 4]))])
+                writer.writerow([div_name, 'Total', str(int(np.sum(recCounter[i, :])))])
+            
+            # SECTION 2: SOURCES COUNT
+            writer.writerow([])
+            writer.writerow(['SECTION 2: SOURCES COUNT BY DIVISION'])
+            writer.writerow([])
+            
+            # Initialize sources and divisions lists
+            sources = []
+            divs = []
+            
+            # Reset page counter for new query
+            pageCount = 1
+            
+            print("Fetching sources count metrics...")
+            
+            while True:
+                payload = {
+                    "app": 'nasa-sba-smd',
+                    "query": {
+                        "name": 'query-smd-primary',
+                        "page": pageCount,
+                        "pageSize": pageSize,
+                        "scope": 'All',
+                        "advanced": {},
+                    },
+                }
+                
+                print(f"Processing page {pageCount} for sources count")
+                response_data = requests.post(url, headers={}, json=payload, verify=False).json()
+                
+                num_records = len(response_data.get('records', []))
+                if num_records == 0:
+                    break
+                    
+                for record in response_data['records']:
+                    if 'sourcestr56' in record:
+                        source_name = record.get('collection', [''])[0]
+                        division = record.get('treepath', [''])[0]
+                        
+                        if source_name not in sources:
+                            sources.append(source_name)
+                            divs.append(division)
+                
+                pageCount += 1
+            
+            # Count sources by division
+            division_counts = {div: 0 for div in divArr}
+            total_count = len(sources)
+            
+            for i, div_path in enumerate(divs):
+                for div in divArr:
+                    if div in div_path:
+                        division_counts[div] += 1
+            
+            # Write sources count metrics
+            writer.writerow(['Division', 'Count'])
+            
+            for div in divArr:
+                writer.writerow([div.strip('/'), str(division_counts[div])])
+            
+            writer.writerow(['Total', str(total_count)])
+            
+            # SECTION 3: DOCUMENTS BY SOURCE
+            writer.writerow([])
+            writer.writerow(['SECTION 3: DOCUMENTS BY SOURCE'])
+            writer.writerow([])
+            
+            # List of new sources to track
+            new_sources = [
+                "AIM: Aeronomy of Ice in the Mesosphere",
+                "ASDC: Atmospheric Science Data Center",
+                "G-LiHT",
+                "GENESIS: Global Environmental & Earth Science Information System",
+                "HyTES: Hyperspectral Thermal Emission Spectrometer",
+                "IBM-NASA Prithvi Models Family",
+                "COMET ASTEROID TELESCOPIC CATALOG HUNTER",
+                "Escape and Plasma Acceleration and Dynamics Explorers (ESCAPADE)",
+                "Extreme Ultraviolet Variability Experiment (EVE)",
+                "Crustal Dynamics Data Information System",
+                "Aura Atmospheric Chemistry",
+                "LDOPE: Land Data Operational Products Evaluation",
+                "CPL: Cloud Physics Lidar",
+                "Direct Readout Laboratory",
+                "Center for Near Earth Object Studies (CNEOS)"
+            ]
+            
+            # Initialize counter array for source documents
+            nsCounter = np.zeros((len(new_sources), 5, 5))
+            
+            # Reset page counter for new query
+            pageCount = 1
+            
+            print("Fetching source documents metrics...")
+            
+            while True:
+                payload = {
+                    "app": 'nasa-sba-smd',
+                    "query": {
+                        "name": 'query-smd-primary',
+                        "page": pageCount,
+                        "pageSize": pageSize,
+                        "scope": 'All',
+                        "advanced": {},
+                    },
+                }
+                
+                print(f"Processing page {pageCount} for source documents")
+                response_data = requests.post(url, headers={}, json=payload, verify=False).json()
+                
+                num_records = len(response_data.get('records', []))
+                if num_records == 0:
+                    break
+                    
+                for record in response_data['records']:
+                    if 'sourcestr56' in record:
+                        source_name = record.get('treepath', [''])[0]
+                        division = record.get('treepath', [''])[0]
+                        doc_type = record.get('sourcestr56', '')
+                        
+                        for n, new_source in enumerate(new_sources):
+                            if new_source in source_name:
+                                for j, doc in enumerate(docArr):
+                                    if doc_type == doc:
+                                        for k, div in enumerate(divArr):
+                                            if div in division:
+                                                nsCounter[n, k, j] += 1
+                
+                pageCount += 1
+            
+            # Write source documents metrics
+            for n, source in enumerate(new_sources):
+                total_source_docs = np.sum(nsCounter[n, :, :])
+                writer.writerow([f'Source: {source}'])
+                writer.writerow(['The total number of new documents:', str(int(total_source_docs))])
+                
+                for j, doc_type in enumerate(docArr):
+                    doc_count = np.sum(nsCounter[n, :, j])
+                    writer.writerow([f'The total number of new {doc_type.lower()} documents:', str(int(doc_count))])
+                writer.writerow([])
+            
+            writer.writerow(['DIVISION BREAKDOWN'])
+            writer.writerow([])
+            
+            for d, division in enumerate(divArr):
+                div_name = division.strip('/')
+                total_docs = np.sum(nsCounter[:, d, :])
+                writer.writerow([f'Division: {div_name}'])
+                writer.writerow(['The total number of new documents:', str(int(total_docs))])
+                
+                for t, doc_type in enumerate(docArr):
+                    doc_count = np.sum(nsCounter[:, d, t])
+                    writer.writerow([f'The total number of new {docArr[t].lower()} documents:', str(int(doc_count))])
+                writer.writerow([])
+            
+            total_overall = np.sum(nsCounter[:, :, :])
+            writer.writerow(['All Divisions'])
+            writer.writerow(['The total number of new documents:', str(int(total_overall))])
+            
+            for t, doc_type in enumerate(docArr):
+                total_doc_type = np.sum(nsCounter[:, :, t])
+                writer.writerow([f'The total number of new {docArr[t].lower()} documents:', str(int(total_doc_type))])
+        
+        # Move the file to its final location when completed
+        shutil.move(temp_file_path, final_file_path)
+        
+        print(f"Metrics generation complete. File saved to {final_file_path}")
+        return True
+        
+    except Exception as e:
+        print(f"Error in generate_metrics: {str(e)}")
+        return False
