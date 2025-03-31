@@ -237,12 +237,24 @@ def migrate_dump_to_delta_and_handle_status_transistions(collection_id):
 @celery_app.task(name="generate_metrics")
 def generate_metrics(task_id):
     """
-    To asynchronously generate metrics
+    Asynchronously generate metrics and save to a downloadable file
     """
     try:
         # Generate a file path in the media directory
         metrics_dir = os.path.join(settings.MEDIA_ROOT, 'metrics')
         os.makedirs(metrics_dir, exist_ok=True)
+        
+        # Clean up old metrics files
+        for filename in os.listdir(metrics_dir):
+            if filename.startswith('metrics_') and (filename.endswith('.csv') or filename.endswith('.tmp')):
+                # Skip the current task's files
+                if not filename.startswith(f'metrics_{task_id}'):
+                    file_path = os.path.join(metrics_dir, filename)
+                    try:
+                        os.remove(file_path)
+                        print(f"Deleted old metrics file: {filename}")
+                    except Exception as e:
+                        print(f"Failed to delete {filename}: {str(e)}")
         
         # Use a temporary file during generation
         temp_file_path = os.path.join(metrics_dir, f'metrics_{task_id}.tmp')
