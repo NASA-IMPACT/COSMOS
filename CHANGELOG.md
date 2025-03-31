@@ -183,3 +183,12 @@ For each PR made, an entry should be added to this changelog. It should contain
       - physics_of_the_cosmos
       - stsci_space_telescope_science_institute
     - Once the front end has been updated to allow for tag edits, all astrophysics collections will be marked to be run through the pipeline
+
+- 1295-asynchronous-metrics-download-in-admin-panel
+  - Description:  Implemented asynchronous metrics download in Django admin
+  - Changes:
+    - Button Addition:Integrated a 'metrics' button
+    - Task Generation: download_metrics handles button clicks to initiate a Celery task, display a download link and manage redirection.
+    - Cleanup Mechanism: Cleans up old metrics files in the directory, keeping only current task related files.
+    - Background Processing: Runs generate_metrics task asynchronously to gather data and generate a CSV in MEDIA_ROOT/metrics/
+    - File Retrieval: get_metrics_file checks file availability and size, providing a download if ready or status messages for in progress files.

@@ -324,14 +324,17 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
     def download_metrics(self, request):
         """Custom view that starts metrics generation and returns to collection list"""
         task_id = str(uuid.uuid4())
-        task = generate_metrics.delay(task_id)
+        generate_metrics.delay(task_id)
         
         download_url = request.path.rsplit('metrics/', 1)[0] + f'metrics/{task_id}/'
         
         messages.add_message(
             request,
             messages.INFO,
-            mark_safe(f"Metrics generation started. Please wait a moment and then <a href='{download_url}'>click here to download</a> when ready.")
+            mark_safe(
+                f"Metrics generation started. Please wait a moment and then "
+                f"<a href='{download_url}'>click here to download</a> when ready."
+            )
         )
         return HttpResponse(status=303, headers={"Location": request.path.replace('/metrics/', '')})
     
@@ -355,13 +358,19 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
                 messages.add_message(
                     request,
                     messages.INFO,
-                    mark_safe(f"The metrics file is still being generated. <a href='{current_url}'>Click here to try again</a>.")
+                    mark_safe(
+                        f"The metrics file is still being generated. "
+                        f"<a href='{current_url}'>Click here to try again</a>."
+                    )
                 )
             else:
                 messages.add_message(
                     request,
                     messages.WARNING,
-                    mark_safe(f"The metrics file is not ready yet. <a href='{current_url}'>Click here to try again</a>.")
+                    mark_safe(
+                        f"The metrics file is not ready yet. "
+                        f"<a href='{current_url}'>Click here to try again</a>."
+                    )
                 )
             return HttpResponse(status=303, headers={"Location": request.path.replace(f'/metrics/{task_id}/', '')})
 
