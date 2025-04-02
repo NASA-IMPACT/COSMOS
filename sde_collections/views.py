@@ -331,23 +331,159 @@ class DeltaURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST, data={"error": "Division is required."})
 
-    # @action(detail=True, methods=["post"], url_path="remove_tag")
-    # def remove_tag(self, request, pk=None):
+    # @action(detail=True, methods=["post"], url_path="add_tag")
+    # def add_tag(self, request, pk=None):
     #     delta_url = self.get_object()
     #     tag = request.data.get("tag")
-    #     source = request.data.get("source")
+    #     source = request.data.get("source", "manual")
 
     #     if not tag:
     #         return Response({"error": "Tag not specified"}, status=400)
 
     #     try:
-    #         # delta_url.remove_tag(tag, source)
-    #         pattern = DeltaTdammTagPattern.objects.filter(
-    #             collection=delta_url.collection, match_pattern=delta_url.url, tag=tag, source=source
+    #         # Create or get a pattern for this specific URL
+    #         pattern, created = DeltaTdammTagPattern.objects.get_or_create(
+    #             collection=delta_url.collection,
+    #             match_pattern=delta_url.url,
+    #             match_pattern_type=1,
+    #             # tag=tag,
+    #             operation=OperationChoices.ADD,
+    #             source=source,
+    #             defaults={"tags": [tag]},
+    #         )
+
+    #         if not created:
+    #             # Add tag if not already present
+    #             current_tags = pattern.tags or []
+    #             if tag not in current_tags:
+    #                 pattern.tags = current_tags + [tag]
+    #                 pattern.save()
+
+    #         # Remove from REMOVE pattern if it exists
+    #         remove_pattern = DeltaTdammTagPattern.objects.filter(
+    #             collection=delta_url.collection,
+    #             match_pattern=delta_url.url,
+    #             operation=OperationChoices.REMOVE,
+    #             source=source,
     #         ).first()
 
-    #         if pattern:
-    #             pattern.delete()
+    #         if remove_pattern and remove_pattern.tags and tag in remove_pattern.tags:
+    #             # Remove this tag from the remove pattern
+    #             remove_pattern.tags = [t for t in remove_pattern.tags if t != tag]
+    #             if not remove_pattern.tags:
+    #                 remove_pattern.delete()
+    #             else:
+    #                 remove_pattern.save()
+
+    #         # Apply the pattern
+    #         pattern._apply_tag_operation(delta_url)
+
+    #         return Response({"status": "success"})
+    #     except Exception as e:
+    #         logger.error(f"Error occurred: {str(e)}")
+    #         return Response({"error": "An internal error has occurred."}, status=500)
+
+    @action(detail=True, methods=["post"], url_path="add_tag")
+    def add_tag(self, request, pk=None):
+        delta_url = self.get_object()
+        tag = request.data.get("tag")
+        source = request.data.get("source", "manual")
+
+        if not tag:
+            return Response({"error": "Tag not specified"}, status=400)
+
+        try:
+            # Check for existing remove pattern with this tag
+            remove_pattern = DeltaTdammTagPattern.objects.filter(
+                collection=delta_url.collection,
+                match_pattern=delta_url.url,
+                match_pattern_type=1,
+                operation=OperationChoices.REMOVE,
+                source=source,
+            ).first()
+
+            if remove_pattern and remove_pattern.tags and tag in remove_pattern.tags:
+                # Remove the tag from the remove pattern
+                remove_pattern.tags = [t for t in remove_pattern.tags if t != tag]
+                if not remove_pattern.tags:
+                    remove_pattern.delete()
+                else:
+                    remove_pattern.save()
+                    # Apply the modified remove pattern
+                    remove_pattern._apply_tag_operation(delta_url)
+
+            # Check for existing add pattern
+            add_pattern, created = DeltaTdammTagPattern.objects.get_or_create(
+                collection=delta_url.collection,
+                match_pattern=delta_url.url,
+                match_pattern_type=1,
+                operation=OperationChoices.ADD,
+                source=source,
+                defaults={"tags": [tag]},
+            )
+
+            if not created:
+                # Add tag if not already present
+                current_tags = add_pattern.tags or []
+                if tag not in current_tags:
+                    add_pattern.tags = current_tags + [tag]
+                    add_pattern.save()
+
+            # Always apply the add pattern
+            add_pattern._apply_tag_operation(delta_url)
+
+            return Response({"status": "success"})
+        except Exception as e:
+            logger.error(f"Error occurred: {str(e)}")
+            return Response({"error": "An internal error has occurred."}, status=500)
+
+    # @action(detail=True, methods=["post"], url_path="remove_tag")
+    # def remove_tag(self, request, pk=None):
+    #     delta_url = self.get_object()
+    #     tag = request.data.get("tag")
+    #     source = request.data.get("source", "manual")
+
+    #     if not tag:
+    #         return Response({"error": "Tag not specified"}, status=400)
+
+    #     try:
+    #         # Create or get a pattern for this specific URL
+    #         pattern, created = DeltaTdammTagPattern.objects.get_or_create(
+    #             collection=delta_url.collection,
+    #             match_pattern=delta_url.url,
+    #             match_pattern_type=1,
+    #             # tag=tag,
+    #             operation=OperationChoices.REMOVE,
+    #             source=source,
+    #             defaults={"tags": [tag]},
+    #         )
+
+    #         if not created:
+    #             # Add tag to remove list if not already present
+    #             current_tags = pattern.tags or []
+    #             if tag not in current_tags:
+    #                 pattern.tags = current_tags + [tag]
+    #                 pattern.save()
+
+    #         # Remove from ADD pattern if it exists
+    #         add_pattern = DeltaTdammTagPattern.objects.filter(
+    #             collection=delta_url.collection,
+    #             match_pattern=delta_url.url,
+    #             operation=OperationChoices.ADD,
+    #             source=source,
+    #         ).first()
+
+    #         if add_pattern and add_pattern.tags and tag in add_pattern.tags:
+    #             # Remove this tag from the add pattern
+    #             add_pattern.tags = [t for t in add_pattern.tags if t != tag]
+    #             if not add_pattern.tags:
+    #                 add_pattern.delete()
+    #             else:
+    #                 add_pattern.save()
+
+    #         # Apply the pattern
+    #         pattern._apply_tag_operation(delta_url)
+
     #         return Response({"status": "success"})
     #     except Exception as e:
     #         logger.error(f"Error occurred: {str(e)}")
@@ -363,122 +499,96 @@ class DeltaURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             return Response({"error": "Tag not specified"}, status=400)
 
         try:
-            # Create or get a pattern for this specific URL
-            pattern, created = DeltaTdammTagPattern.objects.get_or_create(
-                collection=delta_url.collection,
-                match_pattern=delta_url.url,
-                match_pattern_type=1,
-                # tag=tag,
-                operation=OperationChoices.REMOVE,
-                source=source,
-                defaults={"tags": [tag]},
-            )
+            # Get current tags
+            current_tags = delta_url.tdamm_tag_manual or []
 
-            if not created:
-                # Add tag to remove list if not already present
-                current_tags = pattern.tags or []
-                if tag not in current_tags:
-                    pattern.tags = current_tags + [tag]
-                    pattern.save()
-
-            # Remove from ADD pattern if it exists
+            # Check if there's an add pattern with this tag
             add_pattern = DeltaTdammTagPattern.objects.filter(
                 collection=delta_url.collection,
                 match_pattern=delta_url.url,
+                match_pattern_type=1,
                 operation=OperationChoices.ADD,
                 source=source,
             ).first()
 
             if add_pattern and add_pattern.tags and tag in add_pattern.tags:
-                # Remove this tag from the add pattern
+                # Remove tag from ADD pattern
                 add_pattern.tags = [t for t in add_pattern.tags if t != tag]
+
+                # Delete pattern if empty, otherwise save it
                 if not add_pattern.tags:
                     add_pattern.delete()
                 else:
                     add_pattern.save()
 
-            # Apply the pattern
-            pattern._apply_tag_operation(delta_url)
+                # Important: Directly remove the tag from the URL
+                if tag in current_tags:
+                    delta_url.tdamm_tag_manual = [t for t in current_tags if t != tag]
+                    delta_url.save()
+
+                    # Explicitly call cleanup
+                    if hasattr(delta_url, "_cleanup_if_needed"):
+                        delta_url._cleanup_if_needed()
+
+            # If tag still exists in URL, create a REMOVE pattern
+            elif tag in current_tags:
+                remove_pattern, created = DeltaTdammTagPattern.objects.get_or_create(
+                    collection=delta_url.collection,
+                    match_pattern=delta_url.url,
+                    match_pattern_type=1,
+                    operation=OperationChoices.REMOVE,
+                    source=source,
+                    defaults={"tags": [tag]},
+                )
+
+                if not created:
+                    if tag not in (remove_pattern.tags or []):
+                        remove_pattern.tags = (remove_pattern.tags or []) + [tag]
+                        remove_pattern.save()
+
+                # Directly remove the tag from the URL
+                delta_url.tdamm_tag_manual = [t for t in current_tags if t != tag]
+                delta_url.save()
+
+                # Explicitly call cleanup
+                if hasattr(delta_url, "_cleanup_if_needed"):
+                    delta_url._cleanup_if_needed()
+
+            # Force refresh all patterns for this URL to ensure consistency
+            self._refresh_url_tags(delta_url)
 
             return Response({"status": "success"})
         except Exception as e:
             logger.error(f"Error occurred: {str(e)}")
             return Response({"error": "An internal error has occurred."}, status=500)
 
-    # @action(detail=True, methods=["post"], url_path="add_tag")
-    # def add_tag(self, request, pk=None):
-    #     delta_url = self.get_object()
-    #     tag = request.data.get("tag")
-    #     source = request.data.get("source")
+    def _refresh_url_tags(self, url_obj):
+        """Refresh URL tags by reapplying all patterns affecting this URL."""
+        # Get all patterns affecting this URL
+        add_patterns = DeltaTdammTagPattern.objects.filter(
+            collection=url_obj.collection, delta_urls=url_obj, operation=OperationChoices.ADD
+        )
 
-    #     if not tag:
-    #         return Response({"error": "Tag not specified"}, status=400)
+        remove_patterns = DeltaTdammTagPattern.objects.filter(
+            collection=url_obj.collection, delta_urls=url_obj, operation=OperationChoices.REMOVE
+        )
 
-    #     try:
-    #         # delta_url.add_tag(tag, source)
-    #         DeltaTdammTagPattern.objects.create(
-    #             collection=delta_url.collection,
-    #             match_pattern=delta_url.url,
-    #             match_pattern_type=1,
-    #             tag=tag,
-    #             source=source,
-    #         )
-    #         return Response({"status": "success"})
-    #     except Exception as e:
-    #         logger.error("An error occurred while adding a tag to DeltaURL: %s", str(e))
-    #         return Response({"error": "An internal error has occurred."}, status=500)
+        # Collect all tags from ADD patterns
+        add_tags = set()
+        for pattern in add_patterns:
+            add_tags.update(pattern.tags or [])
 
-    @action(detail=True, methods=["post"], url_path="add_tag")
-    def add_tag(self, request, pk=None):
-        delta_url = self.get_object()
-        tag = request.data.get("tag")
-        source = request.data.get("source", "manual")
+        # Collect all tags from REMOVE patterns
+        remove_tags = set()
+        for pattern in remove_patterns:
+            remove_tags.update(pattern.tags or [])
 
-        if not tag:
-            return Response({"error": "Tag not specified"}, status=400)
+        # Final tags = (add tags) - (remove tags)
+        final_tags = list(add_tags - remove_tags)
 
-        try:
-            # Create or get a pattern for this specific URL
-            pattern, created = DeltaTdammTagPattern.objects.get_or_create(
-                collection=delta_url.collection,
-                match_pattern=delta_url.url,
-                match_pattern_type=1,
-                # tag=tag,
-                operation=OperationChoices.ADD,
-                source=source,
-                defaults={"tags": [tag]},
-            )
-
-            if not created:
-                # Add tag if not already present
-                current_tags = pattern.tags or []
-                if tag not in current_tags:
-                    pattern.tags = current_tags + [tag]
-                    pattern.save()
-
-            # Remove from REMOVE pattern if it exists
-            remove_pattern = DeltaTdammTagPattern.objects.filter(
-                collection=delta_url.collection,
-                match_pattern=delta_url.url,
-                operation=OperationChoices.REMOVE,
-                source=source,
-            ).first()
-
-            if remove_pattern and remove_pattern.tags and tag in remove_pattern.tags:
-                # Remove this tag from the remove pattern
-                remove_pattern.tags = [t for t in remove_pattern.tags if t != tag]
-                if not remove_pattern.tags:
-                    remove_pattern.delete()
-                else:
-                    remove_pattern.save()
-
-            # Apply the pattern
-            pattern._apply_tag_operation(delta_url)
-
-            return Response({"status": "success"})
-        except Exception as e:
-            logger.error(f"Error occurred: {str(e)}")
-            return Response({"error": "An internal error has occurred."}, status=500)
+        # Update URL tags
+        url_obj.tdamm_tag_manual = final_tags if final_tags else None
+        url_obj.save()
 
 
 class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
@@ -523,15 +633,46 @@ class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     #         # Create delta URL first
     #         delta_url = curated_url._create_or_update_delta()
 
-    #         # Then apply operation to the delta
+    #         # Then apply tag operations to the delta
     #         pattern, created = DeltaTdammTagPattern.objects.get_or_create(
     #             collection=curated_url.collection,
     #             match_pattern=curated_url.url,
     #             match_pattern_type=1,
-    #             tag=tag,
     #             operation=OperationChoices.ADD,
     #             source=source,
+    #             defaults={"tags": [tag]},
     #         )
+
+    #         if not created:
+    #             # Add tag if not already present
+    #             current_tags = pattern.tags or []
+    #             if tag not in current_tags:
+    #                 pattern.tags = current_tags + [tag]
+    #                 pattern.save()
+
+    #         if not created:
+    #             # Add tag if not already present
+    #             current_tags = pattern.tags or []
+    #             if tag not in current_tags:
+    #                 pattern.tags = current_tags + [tag]
+    #                 pattern.save()
+
+    #         # Remove from REMOVE pattern if it exists
+    #         remove_pattern = DeltaTdammTagPattern.objects.filter(
+    #             collection=delta_url.collection,
+    #             match_pattern=delta_url.url,
+    #             operation=OperationChoices.REMOVE,
+    #             source=source,
+    #         ).first()
+
+    #         if remove_pattern and remove_pattern.tags and tag in remove_pattern.tags:
+    #             # Remove this tag from the remove pattern
+    #             remove_pattern.tags = [t for t in remove_pattern.tags if t != tag]
+    #             if not remove_pattern.tags:
+    #                 remove_pattern.delete()
+    #             else:
+    #                 remove_pattern.save()
+
     #         pattern._apply_tag_operation(delta_url)
 
     #         # Clean up if delta becomes identical to curated
@@ -556,34 +697,11 @@ class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             # Create delta URL first
             delta_url = curated_url._create_or_update_delta()
 
-            # Then apply tag operations to the delta
-            pattern, created = DeltaTdammTagPattern.objects.get_or_create(
+            # Check for existing remove pattern with this tag
+            remove_pattern = DeltaTdammTagPattern.objects.filter(
                 collection=curated_url.collection,
                 match_pattern=curated_url.url,
                 match_pattern_type=1,
-                operation=OperationChoices.ADD,
-                source=source,
-                defaults={"tags": [tag]},
-            )
-
-            if not created:
-                # Add tag if not already present
-                current_tags = pattern.tags or []
-                if tag not in current_tags:
-                    pattern.tags = current_tags + [tag]
-                    pattern.save()
-
-            if not created:
-                # Add tag if not already present
-                current_tags = pattern.tags or []
-                if tag not in current_tags:
-                    pattern.tags = current_tags + [tag]
-                    pattern.save()
-
-            # Remove from REMOVE pattern if it exists
-            remove_pattern = DeltaTdammTagPattern.objects.filter(
-                collection=delta_url.collection,
-                match_pattern=delta_url.url,
                 operation=OperationChoices.REMOVE,
                 source=source,
             ).first()
@@ -595,8 +713,28 @@ class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
                     remove_pattern.delete()
                 else:
                     remove_pattern.save()
+                    # Apply the modified remove pattern
+                    remove_pattern._apply_tag_operation(delta_url)
 
-            pattern._apply_tag_operation(delta_url)
+            # Get or create add pattern
+            add_pattern, created = DeltaTdammTagPattern.objects.get_or_create(
+                collection=curated_url.collection,
+                match_pattern=curated_url.url,
+                match_pattern_type=1,
+                operation=OperationChoices.ADD,
+                source=source,
+                defaults={"tags": [tag]},
+            )
+
+            if not created:
+                # Add tag if not already present
+                current_tags = add_pattern.tags or []
+                if tag not in current_tags:
+                    add_pattern.tags = current_tags + [tag]
+                    add_pattern.save()
+
+            # Always apply the add pattern
+            add_pattern._apply_tag_operation(delta_url)
 
             # Clean up if delta becomes identical to curated
             if not delta_url.to_delete and delta_url._fields_match(curated_url):
@@ -620,15 +758,40 @@ class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
     #         # Create delta URL first
     #         delta_url = curated_url._create_or_update_delta()
 
-    #         # Then apply operation to the delta
+    #         # Create or get a pattern for tag removal
     #         pattern, created = DeltaTdammTagPattern.objects.get_or_create(
     #             collection=curated_url.collection,
     #             match_pattern=curated_url.url,
     #             match_pattern_type=1,
-    #             tag=tag,
-    #             operation=OperationChoices.REMOVE,
+    #             operation=DeltaTdammTagPattern.OperationChoices.REMOVE,
     #             source=source,
+    #             defaults={"tags": [tag]},
     #         )
+
+    #         if not created:
+    #             # Add tag to removal list if not already present
+    #             current_tags = pattern.tags or []
+    #             if tag not in current_tags:
+    #                 pattern.tags = current_tags + [tag]
+    #                 pattern.save()
+
+    #         # Check for and update ADD pattern if it exists
+    #         add_pattern = DeltaTdammTagPattern.objects.filter(
+    #             collection=curated_url.collection,
+    #             match_pattern=curated_url.url,
+    #             operation=DeltaTdammTagPattern.OperationChoices.ADD,
+    #             source=source,
+    #         ).first()
+
+    #         if add_pattern and add_pattern.tags and tag in add_pattern.tags:
+    #             # Remove tag from add pattern
+    #             add_pattern.tags = [t for t in add_pattern.tags if t != tag]
+    #             if not add_pattern.tags:
+    #                 add_pattern.delete()
+    #             else:
+    #                 add_pattern.save()
+
+    #         # Apply the pattern
     #         pattern._apply_tag_operation(delta_url)
 
     #         # Clean up if delta becomes identical to curated
@@ -653,41 +816,55 @@ class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
             # Create delta URL first
             delta_url = curated_url._create_or_update_delta()
 
-            # Create or get a pattern for tag removal
-            pattern, created = DeltaTdammTagPattern.objects.get_or_create(
-                collection=curated_url.collection,
-                match_pattern=curated_url.url,
-                match_pattern_type=1,
-                operation=DeltaTdammTagPattern.OperationChoices.REMOVE,
-                source=source,
-                defaults={"tags": [tag]},
-            )
+            # Get current tags
+            current_tags = delta_url.tdamm_tag_manual or []
 
-            if not created:
-                # Add tag to removal list if not already present
-                current_tags = pattern.tags or []
-                if tag not in current_tags:
-                    pattern.tags = current_tags + [tag]
-                    pattern.save()
-
-            # Check for and update ADD pattern if it exists
+            # Check if there's an add pattern with this tag
             add_pattern = DeltaTdammTagPattern.objects.filter(
-                collection=curated_url.collection,
-                match_pattern=curated_url.url,
-                operation=DeltaTdammTagPattern.OperationChoices.ADD,
+                collection=delta_url.collection,
+                match_pattern=delta_url.url,
+                match_pattern_type=1,
+                operation=OperationChoices.ADD,
                 source=source,
             ).first()
 
             if add_pattern and add_pattern.tags and tag in add_pattern.tags:
-                # Remove tag from add pattern
+                # Remove tag from ADD pattern
                 add_pattern.tags = [t for t in add_pattern.tags if t != tag]
+
+                # Delete pattern if empty, otherwise save it
                 if not add_pattern.tags:
                     add_pattern.delete()
                 else:
                     add_pattern.save()
 
-            # Apply the pattern
-            pattern._apply_tag_operation(delta_url)
+                # Directly remove the tag from the URL
+                if tag in current_tags:
+                    delta_url.tdamm_tag_manual = [t for t in current_tags if t != tag]
+                    delta_url.save()
+
+            # If tag still exists in URL, create a REMOVE pattern
+            elif tag in current_tags or tag in (curated_url.tdamm_tag_manual or []):
+                remove_pattern, created = DeltaTdammTagPattern.objects.get_or_create(
+                    collection=curated_url.collection,
+                    match_pattern=curated_url.url,
+                    match_pattern_type=1,
+                    operation=OperationChoices.REMOVE,
+                    source=source,
+                    defaults={"tags": [tag]},
+                )
+
+                if not created:
+                    if tag not in (remove_pattern.tags or []):
+                        remove_pattern.tags = (remove_pattern.tags or []) + [tag]
+                        remove_pattern.save()
+
+                # Directly remove the tag from the delta URL
+                delta_url.tdamm_tag_manual = [t for t in current_tags if t != tag]
+                delta_url.save()
+
+            # Force refresh all patterns for this URL
+            self._refresh_url_tags(delta_url)
 
             # Clean up if delta becomes identical to curated
             if not delta_url.to_delete and delta_url._fields_match(curated_url):
@@ -697,6 +874,34 @@ class CuratedURLViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
         except Exception as e:
             logger.error(f"Error occurred: {str(e)}")
             return Response({"error": "An internal error has occurred."}, status=500)
+
+    def _refresh_url_tags(self, url_obj):
+        """Refresh URL tags by reapplying all patterns affecting this URL."""
+        # Get all patterns affecting this URL
+        add_patterns = DeltaTdammTagPattern.objects.filter(
+            collection=url_obj.collection, delta_urls=url_obj, operation=OperationChoices.ADD
+        )
+
+        remove_patterns = DeltaTdammTagPattern.objects.filter(
+            collection=url_obj.collection, delta_urls=url_obj, operation=OperationChoices.REMOVE
+        )
+
+        # Collect all tags from ADD patterns
+        add_tags = set()
+        for pattern in add_patterns:
+            add_tags.update(pattern.tags or [])
+
+        # Collect all tags from REMOVE patterns
+        remove_tags = set()
+        for pattern in remove_patterns:
+            remove_tags.update(pattern.tags or [])
+
+        # Final tags = (add tags) - (remove tags)
+        final_tags = list(add_tags - remove_tags)
+
+        # Update URL tags
+        url_obj.tdamm_tag_manual = final_tags if final_tags else None
+        url_obj.save()
 
 
 class DeltaURLBulkCreateView(generics.ListCreateAPIView):
