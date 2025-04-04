@@ -36,6 +36,9 @@ class Command(BaseCommand):
         parser.add_argument(
             "--batch-size", type=int, default=1000, help="Number of records to process in each batch (default: 1000)"
         )
+        parser.add_argument(
+            "--full_text", action="store_true", default=False, help="Include full text in export (default: False)"
+        )
 
     def handle(self, *args, **options):
         model_name = options["model"]
@@ -77,12 +80,18 @@ class Command(BaseCommand):
         base_fields = [
             "url",
             "scraped_title",
-            "scraped_text",
             "generated_title",
             "visited",
             "document_type",
             "division",
         ]
+
+        # Add scraped_text only if full_text is True
+        if options["full_text"]:
+            base_fields.append("scraped_text")
+            self.stdout.write("Including full text content in export")
+        else:
+            self.stdout.write("Excluding full text content from export (use --full_text to include)")
 
         # Add paired field tags separately
         tag_fields = ["tdamm_tag_manual", "tdamm_tag_ml"]
