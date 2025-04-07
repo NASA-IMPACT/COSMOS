@@ -81,7 +81,6 @@ class Command(BaseCommand):
             "url",
             "scraped_title",
             "generated_title",
-            "visited",
             "document_type",
             "division",
         ]
