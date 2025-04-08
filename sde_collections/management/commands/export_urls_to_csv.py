@@ -2,6 +2,39 @@
     docker-compose -f local.yml run --rm django python manage.py export_urls_to_csv \
         --output physics_of_the_cosmos.csv --collections physics_of_the_cosmos
 
+    This management command allows you to export URLs from DumpUrl, DeltaUrl, or CuratedUrl models
+    to a CSV file for analysis or backup purposes. The export can be filtered by collections and
+    can optionally include full text content.
+
+    Examples:
+        # Export all CuratedUrls (default behavior)
+        docker-compose -f local.yml run --rm django python manage.py export_urls_to_csv
+
+        # Export DeltaUrls for specific collections
+        docker-compose -f local.yml run --rm django python manage.py export_urls_to_csv \
+            --model DeltaUrl --collections collection1 collection2
+
+        # Export with full text content included
+        docker-compose -f local.yml run --rm django python manage.py export_urls_to_csv \
+            --full_text
+
+        # Specify custom output filename
+        docker-compose -f local.yml run --rm django python manage.py export_urls_to_csv \
+            --output custom_name.csv
+
+        # Export in larger batches for performance
+        docker-compose -f local.yml run --rm django python manage.py export_urls_to_csv \
+            --batch-size 5000
+
+    All exports are saved to the 'csv_exports' directory which is created if it doesn't exist.
+
+    Available options:
+        --model: Model to export (DumpUrl, DeltaUrl, or CuratedUrl)
+        --collections: List of collection config_folders to filter by. Separated by spaces.
+        --output: Output filename (saved in csv_exports directory)
+        --batch-size: Number of records to process in each batch
+        --full_text: Include full text content in the export
+
 """
 
 import csv
