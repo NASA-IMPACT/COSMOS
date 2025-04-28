@@ -166,6 +166,9 @@ sentry_sdk.init(
     traces_sample_rate=env.float("SENTRY_TRACES_SAMPLE_RATE", default=0.0),
 )
 
+# Inference API
+# ------------------------------------------------------------------------------
+INFERENCE_API_URL = env("INFERENCE_API_URL", default="http://172.17.0.1:8000")
 
 # Your stuff...
 # ------------------------------------------------------------------------------

@@ -15,12 +15,12 @@ from .models.collection import Collection, ReindexingHistory, WorkflowHistory
 from .models.collection_choice_fields import TDAMMTags
 from .models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
-from .tasks import fetch_and_replace_full_text, import_candidate_urls_from_api
+from .tasks import fetch_full_text, import_candidate_urls_from_api
 
 
 def fetch_and_replace_text_for_server(modeladmin, request, queryset, server_name):
     for collection in queryset:
-        fetch_and_replace_full_text.delay(collection.id, server_name)
+        fetch_full_text.delay(collection.id, server_name)
     modeladmin.message_user(request, f"Started importing URLs from {server_name.upper()} Server")
 
 
