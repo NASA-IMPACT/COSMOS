@@ -1,4 +1,4 @@
-# docker-compose -f local.yml run --rm django pytest sde_collections/tests/api_tests.py
+# docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_sinequa_api.py
 import json
 from unittest.mock import MagicMock, patch
 
@@ -170,7 +170,6 @@ class TestApiClass:
 
         # Collect all batches from the iterator
         batches = list(api_instance.get_full_texts("test_folder"))
-
         assert len(batches) == 2  # Should have two batches
         assert len(batches[0]) == 2  # First batch has 2 records
         assert len(batches[1]) == 1  # Second batch has 1 record

@@ -1,3 +1,4 @@
+# /sde_collections/tasks.py
 import json
 import os
 import shutil
@@ -156,25 +157,19 @@ def resolve_title_pattern(title_pattern_id):
 
 
 @celery_app.task(soft_time_limit=600)
-def fetch_and_replace_full_text(collection_id, server_name):
-    """
-    Task to fetch and replace full text and metadata for a collection.
-    Handles data in batches to manage memory usage and updates appropriate statuses
-    upon completion.
-    """
+def fetch_full_text(collection_id, server_name):
+    """Task to fetch full text and create DumpUrls only (no migration)"""
     Collection = apps.get_model("sde_collections", "Collection")
-
     collection = Collection.objects.get(id=collection_id)
     api = Api(server_name)
-
-    initial_workflow_status = collection.workflow_status
-    initial_reindexing_status = collection.reindexing_status
 
     # Step 1: Delete existing DumpUrl entries
     deleted_count, _ = DumpUrl.objects.filter(collection=collection).delete()
     print(f"Deleted {deleted_count} old records.")
-
     try:
+        total_server_count = api.get_total_count(collection.config_folder)
+        print(f"Total records on the server: {total_server_count}")
+
         # Step 2: Process data in batches
         total_processed = 0
         for batch in api.get_full_texts(collection.config_folder):
@@ -193,30 +188,44 @@ def fetch_and_replace_full_text(collection_id, server_name):
             total_processed += len(batch)
             print(f"Processed batch of {len(batch)} records. Total: {total_processed}")
 
-        # Step 3: Migrate dump URLs to delta URLs
-        collection.migrate_dump_to_delta()
+        # Step 3: Check if classification is needed and queue if necessary
+        collection.queue_necessary_classifications()
 
-        # Step 4: Update statuses if needed
-        collection.refresh_from_db()
-
-        # Check workflow status transition
-        pre_workflow_statuses = [
-            WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
-            WorkflowStatusChoices.READY_FOR_ENGINEERING,
-            WorkflowStatusChoices.ENGINEERING_IN_PROGRESS,
-            WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV,
-        ]
-        if initial_workflow_status in pre_workflow_statuses:
-            collection.workflow_status = WorkflowStatusChoices.READY_FOR_CURATION
-            collection.save()
-
-        # Check reindexing status transition
-        if initial_reindexing_status == ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV:
-            collection.reindexing_status = ReindexingStatusChoices.REINDEXING_READY_FOR_CURATION
-            collection.save()
-
-        return f"Successfully processed {total_processed} records and updated the database."
-
+        return f"Successfully processed {total_processed} records."
     except Exception as e:
         print(f"Error processing records: {str(e)}")
         raise
+
+
+@celery_app.task()
+def migrate_dump_to_delta_and_handle_status_transistions(collection_id):
+    """Task to migrate DumpUrls to DeltaUrls after classification is complete"""
+    Collection = apps.get_model("sde_collections", "Collection")
+    collection = Collection.objects.get(id=collection_id)
+
+    initial_workflow_status = collection.workflow_status
+    initial_reindexing_status = collection.reindexing_status
+
+    # Migrate dump URLs to delta URLs
+    collection.migrate_dump_to_delta()
+
+    # Update statuses if needed
+    collection.refresh_from_db()
+
+    # Check workflow status transition
+    pre_workflow_statuses = [
+        WorkflowStatusChoices.RESEARCH_IN_PROGRESS,
+        WorkflowStatusChoices.READY_FOR_ENGINEERING,
+        WorkflowStatusChoices.ENGINEERING_IN_PROGRESS,
+        WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV,
+    ]
+    if initial_workflow_status in pre_workflow_statuses:
+        collection.workflow_status = WorkflowStatusChoices.READY_FOR_CURATION
+        collection.save()
+
+    # Check reindexing status transition
+    if initial_reindexing_status == ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV:
+        collection.reindexing_status = ReindexingStatusChoices.REINDEXING_READY_FOR_CURATION
+        collection.save()
+
+    return f"Successfully migrated DumpUrls to DeltaUrls for collection {collection.name}."

@@ -1,4 +1,4 @@
-# docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_apis.py
+# docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_url_apis.py
 
 import pytest
 from django.urls import reverse

@@ -1,4 +1,5 @@
 # docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_workflow_status_triggers.py
+
 from unittest.mock import Mock, patch
 
 import pytest
@@ -9,8 +10,11 @@ from sde_collections.models.collection_choice_fields import (
     ReindexingStatusChoices,
     WorkflowStatusChoices,
 )
-from sde_collections.models.delta_url import DeltaUrl, DumpUrl
-from sde_collections.tasks import fetch_and_replace_full_text
+from sde_collections.models.delta_url import DumpUrl
+from sde_collections.tasks import (
+    fetch_full_text,
+    migrate_dump_to_delta_and_handle_status_transistions,
+)
 from sde_collections.tests.factories import CollectionFactory, DumpUrlFactory
 
 
@@ -18,17 +22,16 @@ class TestWorkflowStatusTransitions(TestCase):
     def setUp(self):
         self.collection = CollectionFactory()
 
+    @patch("sde_collections.models.collection.GitHubHandler")
     @patch("sde_collections.models.collection.Collection.create_scraper_config")
-    @patch("sde_collections.models.collection.Collection.create_indexer_config")
-    def test_ready_for_engineering_triggers_config_creation(self, mock_indexer, mock_scraper):
+    def test_ready_for_engineering_triggers_config_creation(self, mock_scraper, mock_github_handler):
         """When status changes to READY_FOR_ENGINEERING, it should create configs"""
         self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
         self.collection.save()
 
         mock_scraper.assert_called_once_with(overwrite=False)
-        mock_indexer.assert_called_once_with(overwrite=False)
 
-    @patch("sde_collections.tasks.fetch_and_replace_full_text.delay")
+    @patch("sde_collections.tasks.fetch_full_text.delay")
     def test_indexing_finished_triggers_full_text_fetch(self, mock_fetch):
         """When status changes to INDEXING_FINISHED_ON_DEV, it should trigger full text fetch"""
         self.collection.workflow_status = WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV
@@ -36,13 +39,14 @@ class TestWorkflowStatusTransitions(TestCase):
 
         mock_fetch.assert_called_once_with(self.collection.id, "lrm_dev")
 
-    @patch("sde_collections.models.collection.Collection.create_plugin_config")
-    def test_ready_for_curation_triggers_plugin_config(self, mock_plugin):
-        """When status changes to READY_FOR_CURATION, it should create plugin config"""
+    @patch("sde_collections.models.collection.Collection.create_indexer_config")
+    @patch("sde_collections.models.collection.GitHubHandler")
+    def test_ready_for_curation_triggers_indexer_config(self, mock_github_handler, mock_indexer):
+        """When status changes to READY_FOR_CURATION, it should create indexer config"""
         self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_CURATION
         self.collection.save()
 
-        mock_plugin.assert_called_once_with(overwrite=True)
+        mock_indexer.assert_called_once_with(overwrite=True)
 
     @patch("sde_collections.models.collection.Collection.promote_to_curated")
     def test_curated_triggers_promotion(self, mock_promote):
@@ -82,7 +86,7 @@ class TestReindexingStatusTransitions(TestCase):
             reindexing_status=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
         )
 
-    @patch("sde_collections.tasks.fetch_and_replace_full_text.delay")
+    @patch("sde_collections.tasks.fetch_full_text.delay")
     def test_reindexing_finished_triggers_full_text_fetch(self, mock_fetch):
         """When reindexing status changes to FINISHED, it should trigger full text fetch"""
         self.collection.reindexing_status = ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV
@@ -108,9 +112,10 @@ class TestFullTextImport(TestCase):
             {"url": "http://example.com/2", "title": "Title 2", "full_text": "Content 2"},
         ]
 
+    @patch("sde_collections.utils.slack_utils.send_detailed_import_notification")
     @patch("sde_collections.tasks.Api")
     @patch("sde_collections.models.collection.GitHubHandler")
-    def test_full_text_import_workflow(self, MockGitHub, MockApi):
+    def test_full_text_import_workflow(self, MockGitHub, MockApi, MockSlackNotification):
         """Test the full process of importing full text data"""
         # Setup mock GitHub handler with proper XML content
         mock_github = Mock()
@@ -119,28 +124,292 @@ class TestFullTextImport(TestCase):
         # Include all the fields that convert_template_to_plugin_indexer checks for
         mock_xml = """<?xml version="1.0" encoding="UTF-8"?>
         <Sinequa>
-            <KeepHashFragmentInUrl>false</KeepHashFragmentInUrl>
+            <connector>crawler2</connector>
+            <description></description>
+            <identity></identity>
+            <indexers></indexers>
+            <index></index>
+            <domain></domain>
+            <treeRoot></treeRoot>
+            <Revision>1</Revision>
+            <visibility></visibility>
+            <ForceReindexation>false</ForceReindexation>
+            <Url></Url>
+            <Plugin>SMD_Plugins/Sinequa.Plugin.WebCrawler_Index_URLList</Plugin>
+            <WorkerCount>3</WorkerCount>
+            <MaxWorkerPerHost></MaxWorkerPerHost>
+            <UrlList></UrlList>
+            <DynamicUrlList></DynamicUrlList>
+            <IncludedExtensions></IncludedExtensions>
+            <ExcludedExtensions></ExcludedExtensions>
+            <IncludedFilenames></IncludedFilenames>
+            <ExcludedFilenames></ExcludedFilenames>
+            <IncludedFolders></IncludedFolders>
+            <ExcludedFolders></ExcludedFolders>
+            <EnableNeuralIndexing>true</EnableNeuralIndexing>
+            <NeuralSearchSelectionQuery></NeuralSearchSelectionQuery>
+            <UrlStayInside>true</UrlStayInside>
+            <MaxLevel></MaxLevel>
+            <MaxToIndex></MaxToIndex>
+            <MaxToCrawl></MaxToCrawl>
+            <MaxRedirection></MaxRedirection>
+            <CrawlMaxSize></CrawlMaxSize>
+            <CrawlTimeout></CrawlTimeout>
+            <NormalizeUrls>true</NormalizeUrls>
             <CorrectDomainCookies>false</CorrectDomainCookies>
             <IgnoreSessionCookies>false</IgnoreSessionCookies>
-            <DownloadImages>false</DownloadImages>
-            <DownloadMedia>false</DownloadMedia>
+            <DownloadImages>true</DownloadImages>
+            <DownloadMedia>true</DownloadMedia>
             <DownloadCss>false</DownloadCss>
             <DownloadFtp>true</DownloadFtp>
             <DownloadFile>true</DownloadFile>
             <IndexJs>false</IndexJs>
             <FollowJs>true</FollowJs>
             <CrawlFlash>true</CrawlFlash>
-            <NormalizeUrls>true</NormalizeUrls>
-            <NormalizeSecureSchemesWhenTestingVisited>True</NormalizeSecureSchemesWhenTestingVisited>
-            <UrlAccess>
-                <AllowXPathCookies>false</AllowXPathCookies>
-                <UseBrowserForWebRequests>true</UseBrowserForWebRequests>
-                <UseHttpClientForWebRequests>false</UseHttpClientForWebRequests>
-            </UrlAccess>
+            <IndexEmptyPages>true</IndexEmptyPages>
+            <CrawlWebsphereSeedlist>true</CrawlWebsphereSeedlist>
+            <KeepHashFragmentInUrl>false</KeepHashFragmentInUrl>
             <RetryCount></RetryCount>
             <RetryPause></RetryPause>
-            <AddBaseHref></AddBaseHref>
-            <AddMetaContentType></AddMetaContentType>
+            <HttpCodesToRetry></HttpCodesToRetry>
+            <UseIfModifiedSince>true</UseIfModifiedSince>
+            <UseIfNoneMatch>no</UseIfNoneMatch>
+            <AcceptWeakETag>false</AcceptWeakETag>
+            <ForcedEncoding></ForcedEncoding>
+            <UseCompression>false</UseCompression>
+            <UseUnsafeHeaderParsing>false</UseUnsafeHeaderParsing>
+            <NormalizeSecureSchemesWhenTestingVisited>false</NormalizeSecureSchemesWhenTestingVisited>
+            <ExactDeduplication>false</ExactDeduplication>
+            <NearDeduplication>false</NearDeduplication>
+            <CrawlPauseDelay></CrawlPauseDelay>
+            <CrawlPauseCount></CrawlPauseCount>
+            <UseRuntimeAutoRedirect>false</UseRuntimeAutoRedirect>
+            <RememberDnsFailure>true</RememberDnsFailure>
+            <RememberConnectFailure>true</RememberConnectFailure>
+            <RememberTrustFailure>true</RememberTrustFailure>
+            <RememberProxyNameResolutionFailure>false</RememberProxyNameResolutionFailure>
+            <UseRobotsNoIndex>false</UseRobotsNoIndex>
+            <UseRobotsNoFollow>true</UseRobotsNoFollow>
+            <UseRobotsTxt>false</UseRobotsTxt>
+            <RobotsTxtCaseSensitive>false</RobotsTxtCaseSensitive>
+            <LoadRobotsTxtSitemapUrls>false</LoadRobotsTxtSitemapUrls>
+            <CheckSitemapUrlLastmodInRealtimeMode>false</CheckSitemapUrlLastmodInRealtimeMode>
+            <AddRobotsTxtAllowUrlsToSeedList>false</AddRobotsTxtAllowUrlsToSeedList>
+            <UseCanonicalLinks>false</UseCanonicalLinks>
+            <UseRelNoFollow>false</UseRelNoFollow>
+            <DownloadSelectionQuery></DownloadSelectionQuery>
+            <FollowSelectionQuery></FollowSelectionQuery>
+            <IndexSelectionQuery></IndexSelectionQuery>
+            <LoadDefaultTags>true</LoadDefaultTags>
+            <LoadDefaultJsTransforms>true</LoadDefaultJsTransforms>
+            <UrlAccess>
+                <UseDefaultCredentials>true</UseDefaultCredentials>
+                <UseDefaultNetworkCredentials>false</UseDefaultNetworkCredentials>
+                <User></User>
+                <Password></Password>
+                <Domain></Domain>
+                <UseRfc1945>false</UseRfc1945>
+                <Timeout></Timeout>
+                <ChangeConnectionGroupNameOnTimeout>false</ChangeConnectionGroupNameOnTimeout>
+                <AllowAuthenticatedConnectionSharing>true</AllowAuthenticatedConnectionSharing>
+                <PreAuthenticate>false</PreAuthenticate>
+                <HttpVersion></HttpVersion>
+                <KeepAlive>true</KeepAlive>
+                <SecurityProtocol></SecurityProtocol>
+                <UserAgent></UserAgent>
+                <ClientCertificateFile></ClientCertificateFile>
+                <ClientCertificatePassword></ClientCertificatePassword>
+                <ClientCertificateStorage></ClientCertificateStorage>
+                <AllowXPathCookies>false</AllowXPathCookies>
+                <UseHttpClientForWebRequests>false</UseHttpClientForWebRequests>
+                <ThrottleManagerCode>expBackoff+headers</ThrottleManagerCode>
+                <UseBrowserForWebRequests>false</UseBrowserForWebRequests>
+                <BrowserForWebRequestsReadinessThreshold></BrowserForWebRequestsReadinessThreshold>
+                <BrowserForWebRequestsInitialDelay></BrowserForWebRequestsInitialDelay>
+                <BrowserForWebRequestsMaxTotalDelay></BrowserForWebRequestsMaxTotalDelay>
+                <BrowserForWebRequestsMaxResourcesDelay></BrowserForWebRequestsMaxResourcesDelay>
+                <BrowserForWebRequestsLogLevel></BrowserForWebRequestsLogLevel>
+                <BrowserForWebRequestsViewportWidth></BrowserForWebRequestsViewportWidth>
+                <BrowserForWebRequestsViewportHeight></BrowserForWebRequestsViewportHeight>
+                <BrowserForWebRequestsAdditionalJavascript></BrowserForWebRequestsAdditionalJavascript>
+                <WebConnectionPluginName></WebConnectionPluginName>
+                <PostLoginUrl></PostLoginUrl>
+                <PostLoginData></PostLoginData>
+                <GetBeforePostLogin>false</GetBeforePostLogin>
+                <PostLoginAutoRedirect>true</PostLoginAutoRedirect>
+                <ReLoginCount></ReLoginCount>
+                <ReLoginDelay></ReLoginDelay>
+                <DetectHtmlLoginPattern></DetectHtmlLoginPattern>
+                <BrowserLogin>
+                    <Activate>false</Activate>
+                    <RemoteDebuggingPort></RemoteDebuggingPort>
+                    <BrowserLogLevel></BrowserLogLevel>
+                    <ShowDevTools>false</ShowDevTools>
+                    <SuccessCondition></SuccessCondition>
+                    <CookieFilter></CookieFilter>
+                </BrowserLogin>
+                <FtpUser></FtpUser>
+                <FtpPassword></FtpPassword>
+                <FtpDomain></FtpDomain>
+                <FtpUseBinary>true</FtpUseBinary>
+                <FtpUsePassive>true</FtpUsePassive>
+                <FtpReadWriteTimeout></FtpReadWriteTimeout>
+                <FtpTimeout></FtpTimeout>
+                <FtpEnableSsl>false</FtpEnableSsl>
+                <FileUser></FileUser>
+                <FilePassword></FilePassword>
+                <FileDomain></FileDomain>
+                <FileTimeout></FileTimeout>
+                <AmazonS3>
+                    <AccessKey></AccessKey>
+                    <SecretKey></SecretKey>
+                    <RegionEndpoint>eu-west-1</RegionEndpoint>
+                    <ServiceURL></ServiceURL>
+                </AmazonS3>
+                <ProxyAutoDetect>true</ProxyAutoDetect>
+                <ProxyAddress></ProxyAddress>
+                <ProxyBypassOnLocal>true</ProxyBypassOnLocal>
+                <ProxyServer></ProxyServer>
+                <ProxyPort></ProxyPort>
+                <ProxyUseDefaultCredentials>true</ProxyUseDefaultCredentials>
+                <ProxyUseDefaultNetworkCredentials>false</ProxyUseDefaultNetworkCredentials>
+                <ProxyUser></ProxyUser>
+                <ProxyPassword></ProxyPassword>
+                <ProxyDomain></ProxyDomain>
+            </UrlAccess>
+            <System>
+                <LogLevel>INFO</LogLevel>
+            </System>
+            <DisplayLongProperties>false</DisplayLongProperties>
+            <LongPropertyLimit></LongPropertyLimit>
+            <UsePerformanceMetrics>true</UsePerformanceMetrics>
+            <LogPerformanceMetricsPeriodically>false</LogPerformanceMetricsPeriodically>
+            <LogPerformanceMetricsPeriod></LogPerformanceMetricsPeriod>
+            <PasswordRepository></PasswordRepository>
+            <StoreDocumentCache></StoreDocumentCache>
+            <AuditEnabled>false</AuditEnabled>
+            <SaveDeniedDocs>false</SaveDeniedDocs>
+            <SavePropertiesToRegistry>false</SavePropertiesToRegistry>
+            <CollectionStateNative>false</CollectionStateNative>
+            <HtmlNavigatorNative>true</HtmlNavigatorNative>
+            <XPathNavigatorNative>false</XPathNavigatorNative>
+            <StatusMaxOk></StatusMaxOk>
+            <DelApiSecret></DelApiSecret>
+            <IndexerClient>
+                <Simulate>false</Simulate>
+                <SimulateGetCollectionState>false</SimulateGetCollectionState>
+                <QueueMaxCount></QueueMaxCount>
+                <SendingThreadFactor></SendingThreadFactor>
+                <DirectFileAccess>false</DirectFileAccess>
+                <UseCompression>false</UseCompression>
+                <SessionIsFinishedWait>false</SessionIsFinishedWait>
+                <SendTimeout></SendTimeout>
+                <RetryConnectCount></RetryConnectCount>
+                <RetryConnectDelay></RetryConnectDelay>
+                <RetryTimeout></RetryTimeout>
+                <RetrySleep></RetrySleep>
+                <DeactivationTimeout></DeactivationTimeout>
+            </IndexerClient>
+            <Indexation>
+                <SimulateLemma>false</SimulateLemma>
+                <SimulateEngine>false</SimulateEngine>
+                <SimulateCache>false</SimulateCache>
+                <SimulateLemmaMin></SimulateLemmaMin>
+                <SimulateLemmaMax></SimulateLemmaMax>
+                <CollectionStateParallelRowFetch></CollectionStateParallelRowFetch>
+                <EngineMetaEnabled>true</EngineMetaEnabled>
+                <ThumbnailHeight></ThumbnailHeight>
+                <ThumbnailWidth></ThumbnailWidth>
+                <ThumbnailSmallTimeout></ThumbnailSmallTimeout>
+                <ThumbnailMediumTimeout></ThumbnailMediumTimeout>
+                <ThumbnailLargeTimeout></ThumbnailLargeTimeout>
+                <SynchThumbnailGen>false</SynchThumbnailGen>
+                <StoreInCollectionCache>false</StoreInCollectionCache>
+                <GetFilePropertiesFromConverter>false</GetFilePropertiesFromConverter>
+            </Indexation>
+            <CollectDocumentProperties>true</CollectDocumentProperties>
+            <DocCountLimitOnCollectProperties></DocCountLimitOnCollectProperties>
+            <ForceBlobSend>false</ForceBlobSend>
+            <ContinueOnError>true</ContinueOnError>
+            <DoDelete>true</DoDelete>
+            <DeleteOnError>false</DeleteOnError>
+            <DeleteOnNetworkOrServerError>false</DeleteOnNetworkOrServerError>
+            <DeleteOnEnumerationError>false</DeleteOnEnumerationError>
+            <AcceptDeleteAll>false</AcceptDeleteAll>
+            <DeleteMaxPercentThreshold></DeleteMaxPercentThreshold>
+            <DeleteMaxThreshold></DeleteMaxThreshold>
+            <DeleteMinRemainingThreshold></DeleteMinRemainingThreshold>
+            <SaveCollectionState>false</SaveCollectionState>
+            <IncrementalState>false</IncrementalState>
+            <RealTimeIncrementalState>true</RealTimeIncrementalState>
+            <RealTimeInfoOnError>false</RealTimeInfoOnError>
+            <ConversionProxies></ConversionProxies>
+            <ConversionPlan></ConversionPlan>
+            <AddBaseHref>true</AddBaseHref>
+            <AddMetaContentType>false</AddMetaContentType>
+            <Throttle></Throttle>
+            <DocumentClass></DocumentClass>
+            <ConnectorLanguage></ConnectorLanguage>
+            <ClearHttpRequestCanonicalizeAsFilePath>true</ClearHttpRequestCanonicalizeAsFilePath>
+            <PdfGen>
+                <ConverterType></ConverterType>
+                <TimeoutSmall></TimeoutSmall>
+                <TimeoutMedium></TimeoutMedium>
+                <TimeoutLarge></TimeoutLarge>
+            </PdfGen>
+            <IndexZipContent>false</IndexZipContent>
+            <IndexPdfAttachments>false</IndexPdfAttachments>
+            <IndexOleAttachments>false</IndexOleAttachments>
+            <IndexMsgContent>false</IndexMsgContent>
+            <IndexMsgAttachments>false</IndexMsgAttachments>
+            <IndexOftContent>false</IndexOftContent>
+            <IndexOftAttachments>false</IndexOftAttachments>
+            <IndexEmlContent>false</IndexEmlContent>
+            <IndexEmlAttachments>false</IndexEmlAttachments>
+            <IndexPstContent>false</IndexPstContent>
+            <IndexOstContent>false</IndexOstContent>
+            <IndexPstMsg>true</IndexPstMsg>
+            <IndexPstMsgAttachments>true</IndexPstMsgAttachments>
+            <IndexPstContact>false</IndexPstContact>
+            <IndexPstCalendar>false</IndexPstCalendar>
+            <IndexPstNote>false</IndexPstNote>
+            <IndexPstTask>false</IndexPstTask>
+            <IndexPstDocument>true</IndexPstDocument>
+            <PstUseSafeId>false</PstUseSafeId>
+            <IndexArchivesExtensions></IndexArchivesExtensions>
+            <ArchiveItemsUseArchiveVersion>false</ArchiveItemsUseArchiveVersion>
+            <UseShortAttachmentId>false</UseShortAttachmentId>
+            <UseExtendedExtensionGuesser>false</UseExtendedExtensionGuesser>
+            <AlwaysScanContainerFiles>false</AlwaysScanContainerFiles>
+            <XmpExtensions></XmpExtensions>
+            <MediaExtensions></MediaExtensions>
+            <ExiftoolExtensions></ExiftoolExtensions>
+            <EarlySelectionQuery></EarlySelectionQuery>
+            <SelectionQuery></SelectionQuery>
+            <AttachmentSelectionQuery></AttachmentSelectionQuery>
+            <ArchiveItemSelectionQuery></ArchiveItemSelectionQuery>
+            <EngineConnectionWait></EngineConnectionWait>
+            <FetchCollectionDataDirectlyFromEngine></FetchCollectionDataDirectlyFromEngine>
+            <CalculateGraphBoost>false</CalculateGraphBoost>
+            <GraphBoostColumn></GraphBoostColumn>
+            <GraphBoostEMColumn></GraphBoostEMColumn>
+            <GraphBoostIterations></GraphBoostIterations>
+            <GraphBoostPower></GraphBoostPower>
+            <GraphBoostAdd></GraphBoostAdd>
+            <UseFieldPermissions>false</UseFieldPermissions>
+            <ShardIndexes></ShardIndexes>
+            <ShardingStrategy></ShardingStrategy>
+            <ShardSelections></ShardSelections>
+            <CurationType></CurationType>
+            <CurationIdPattern></CurationIdPattern>
+            <RunIndexMiningInIndexer>false</RunIndexMiningInIndexer>
+            <Namespace></Namespace>
+            <Mapping>
+                <Name>id</Name>
+                <Value>doc.url1</Value>
+            </Mapping>
+            <UrlRefererStayInside>false</UrlRefererStayInside>
+            <FollowLinks>false</FollowLinks>
         </Sinequa>"""
         mock_file_contents.decoded_content = mock_xml.encode("utf-8")
         mock_github._get_file_contents.return_value = mock_file_contents
@@ -148,23 +417,28 @@ class TestFullTextImport(TestCase):
 
         # Setup mock API
         mock_api = Mock()
-        mock_api.get_full_texts.return_value = [self.api_response]
+        mock_api.get_full_texts.return_value = iter([self.api_response])
         MockApi.return_value = mock_api
 
         # Setup initial workflow state
         self.collection.workflow_status = WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV
         self.collection.save()
 
-        # Run the import
-        fetch_and_replace_full_text(self.collection.id, "lrm_dev")
+        # Step 1: Run fetch_full_text
+        with patch("sde_collections.models.collection.Collection.queue_necessary_classifications") as mock_queue:
+            fetch_full_text(self.collection.id, "lrm_dev")
+            mock_queue.assert_called_once()
 
-        # Verify old DumpUrls were cleared
+        # Verify old DumpUrls were cleared and new ones were also created
         assert not DumpUrl.objects.filter(id=self.existing_dump.id).exists()
+        new_dumps = DumpUrl.objects.filter(collection=self.collection)
+        assert new_dumps.count() == 2
+        assert {dump.url for dump in new_dumps} == {"http://example.com/1", "http://example.com/2"}
 
-        # Verify new Delta urls were created
-        new_deltas = DeltaUrl.objects.filter(collection=self.collection)
-        assert new_deltas.count() == 2
-        assert {dump.url for dump in new_deltas} == {"http://example.com/1", "http://example.com/2"}
+        # Step 2: Run migrate_dump_to_delta
+        with patch("sde_collections.models.collection.Collection.migrate_dump_to_delta") as mock_migrate:
+            migrate_dump_to_delta_and_handle_status_transistions(self.collection.id)
+            mock_migrate.assert_called_once()
 
         # Verify status updates
         self.collection.refresh_from_db()
@@ -202,7 +476,7 @@ class TestErrorHandling(TransactionTestCase):
         initial_status = self.collection.workflow_status
 
         with pytest.raises(Exception):
-            fetch_and_replace_full_text(self.collection.id, "lrm_dev")
+            fetch_full_text(self.collection.id, "lrm_dev")
 
         # Verify status wasn't changed on error
         self.collection.refresh_from_db()
