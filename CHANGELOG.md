@@ -12,7 +12,13 @@ For each PR made, an entry should be added to this changelog. It should contain
   - etc.
 
 ## Changelog
+### 3.1.??
+- 1232-process-the-full-text-dump
+  - Description: A script was added `/scripts/sde_dump_processing/clean_text_dump.py` which cleans dumps from sinequa. The sinequa dump does not respect normal csv new line formatting, so that a dump of 1.8 million records becomes a csv of 900 million lines. This script can detect the headers and process the dump with the three possible sources TDAMM, SDE, and scripts, in order to create a final, clean csv. It has a simple CLI which allows setting the input and output, the verbosity of the logs, etc. Because the input files can be very large, the script streams them instead of holding them in memory.
+  - Changes:
+    - add file /scripts/sde_dump_processing/clean_text_dump.py`
 
+### 3.1.0
 - 1209-bug-fix-document-type-creator-form
   - Description: The dropdown on the pattern creation form needs to be set as multi as the default option since this is why the doc type creator form is used for the majority of multi-URL pattern creations. This should be applied to doc types, division types, and titles as well.
   - Changes:
@@ -183,3 +189,14 @@ For each PR made, an entry should be added to this changelog. It should contain
       - physics_of_the_cosmos
       - stsci_space_telescope_science_institute
     - Once the front end has been updated to allow for tag edits, all astrophysics collections will be marked to be run through the pipeline
+
+- 1298-csv-export-command-for-urls
+  - Description: Added a new Django management command to export URLs (DumpUrl, DeltaUrl, or CuratedUrl) to CSV files for analysis or backup purposes. The command allows filtering by collection and provides configurable export options.
+  - Changes:
+    - Created a new management command `export_urls_to_csv.py` to extract URL data to CSV format
+    - Implemented options to filter exports by model type and specific collections
+    - Added support for excluding full text content with the `--full_text` flag to reduce file size
+    - Included proper handling for paired fields (tdamm_tag_manual, tdamm_tag_ml)
+    - Added automatic creation of a dedicated `csv_exports` directory for storing export files
+    - Implemented batched processing to efficiently handle large datasets
+    - Added progress reporting during export operations
