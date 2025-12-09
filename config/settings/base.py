@@ -102,7 +102,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://sciencediscoveryengine.nasa.gov",
     "https://localhost:4200",
     "http://localhost:4200",
-    "https://science.data.nasa.gov/",
+    "https://science.data.nasa.gov",
 ]
 
 # MIGRATIONS
