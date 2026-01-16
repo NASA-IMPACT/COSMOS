@@ -103,6 +103,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://localhost:4200",
     "http://localhost:4200",
     "https://science.data.nasa.gov",
+    "https://d2vsr84ys2zd7q.cloudfront.net",
 ]
 
 # MIGRATIONS
