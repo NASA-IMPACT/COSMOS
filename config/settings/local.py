@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from .base import *  # noqa
 from .base import env
 
@@ -68,3 +70,13 @@ AWS_STORAGE_BUCKET_NAME = env("DJANGO_AWS_STORAGE_BUCKET_NAME")
 
 # Cross origin resource sharing set-up for development
 CORS_ALLOW_ALL_ORIGINS = True  # For development
+
+# Define how often to reindex collections in days
+COLLECTION_REINDEX_INTERVAL_DAYS = 60
+
+CELERY_BEAT_SCHEDULE = {
+    "check-collections-reindexing": {
+        "task": "sde_collections.tasks.check_collections_reindexing_needed",
+        "schedule": timedelta(days=1),  # Run daily
+    },
+}
