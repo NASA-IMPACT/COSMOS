@@ -67,4 +67,9 @@ urlpatterns = [
         name="candidate-url-api",
     ),
     path("titles-and-errors/", views.TitlesAndErrorsView.as_view(), name="titles-and-errors-list"),
+    path(
+        "api/title-patterns/<int:pattern_id>/status/",
+        views.TitlePatternStatusView.as_view(),
+        name="title-pattern-status",
+    ),
 ]

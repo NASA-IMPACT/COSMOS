@@ -1,5 +1,6 @@
 # /sde_collections/tasks.py
 import json
+import logging
 import os
 import shutil
 
@@ -8,7 +9,7 @@ from django.apps import apps
 from django.conf import settings
 from django.core import management
 from django.core.management.commands import loaddata
-from django.db import transaction
+from django.db import IntegrityError, transaction
 
 from config import celery_app
 from sde_collections.models.collection_choice_fields import (
@@ -19,6 +20,8 @@ from sde_collections.models.collection_choice_fields import (
 from .models.delta_url import DumpUrl
 from .sinequa_api import Api
 from .utils.github_helper import GitHubHandler
+
+logger = logging.getLogger(__name__)
 
 
 def _get_data_to_import(collection, server_name):
@@ -149,11 +152,115 @@ def pull_latest_collection_metadata_from_github():
     s3_client.upload_file(FILENAME, s3_bucket_name, s3_key)
 
 
-@celery_app.task()
-def resolve_title_pattern(title_pattern_id):
-    TitlePattern = apps.get_model("sde_collections", "TitlePattern")
-    title_pattern = TitlePattern.objects.get(id=title_pattern_id)
-    title_pattern.apply()
+@celery_app.task(name="sde_collections.tasks.process_title_resolutions", soft_time_limit=10000)
+def process_title_resolutions(pattern_id: int) -> None:
+    """Background task to process and resolve title patterns"""
+
+    DeltaTitlePattern = apps.get_model("sde_collections", "DeltaTitlePattern")
+    DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
+    DeltaResolvedTitle = apps.get_model("sde_collections", "DeltaResolvedTitle")
+    DeltaResolvedTitleError = apps.get_model("sde_collections", "DeltaResolvedTitleError")
+
+    pattern = DeltaTitlePattern.objects.get(id=pattern_id)
+
+    # Process curated URLs
+    matching_curated_urls = pattern.get_matching_curated_urls()
+    previously_unaffected_curated = matching_curated_urls.exclude(
+        id__in=pattern.curated_urls.values_list("id", flat=True)
+    )
+
+    for curated_url in previously_unaffected_curated:
+        if not pattern.is_most_distinctive_pattern(curated_url):
+            continue
+
+        # Generate new title
+        new_title, error = pattern.generate_title_for_url(curated_url)
+
+        if error:
+            DeltaResolvedTitleError.objects.update_or_create(
+                delta_url=curated_url, defaults={"title_pattern": pattern, "error_string": error}  # lookup field
+            )
+            logger.error(f"Title resolution FAILED for CuratedURL {curated_url.id}: {error}")
+            continue
+
+        # Skip if the generated title matches existing or if Delta already exists
+        if (
+            curated_url.generated_title == new_title
+            or DeltaUrl.objects.filter(url=curated_url.url, collection=pattern.collection).exists()
+        ):
+            continue
+
+        # Create Delta URL with the new title
+        fields = {
+            field.name: getattr(curated_url, field.name)
+            for field in curated_url._meta.fields
+            if field.name not in ["id", "collection"]
+        }
+        fields["generated_title"] = new_title
+        fields["to_delete"] = False
+        fields["collection"] = pattern.collection
+
+        delta_url = DeltaUrl.objects.create(**fields)
+
+        DeltaResolvedTitle.objects.create(
+            title_pattern=pattern,
+            delta_url=delta_url,
+            resolved_title=new_title,
+            status=DeltaResolvedTitle.Status.RESOLVED,
+        )
+
+    # Process delta URLs
+    # Set PENDING status initially to all the matching URLs
+    for delta_url in pattern.get_matching_delta_urls():
+        if not pattern.is_most_distinctive_pattern(delta_url):
+            continue
+        try:
+            resolution, created = DeltaResolvedTitle.objects.update_or_create(
+                delta_url=delta_url,  # lookup field
+                defaults={"title_pattern": pattern, "status": DeltaResolvedTitle.Status.PENDING},
+            )
+        except IntegrityError as e:
+            logger.error(f"IntegrityError for delta_url {delta_url.id}: {str(e)}")
+            continue
+
+    for delta_url in pattern.get_matching_delta_urls():
+        if not pattern.is_most_distinctive_pattern(delta_url):
+            continue
+
+        try:
+            resolution, created = DeltaResolvedTitle.objects.update_or_create(
+                delta_url=delta_url,  # lookup field
+                defaults={"title_pattern": pattern, "status": DeltaResolvedTitle.Status.PROCESSING},
+            )
+
+            # Generate new title
+            new_title, error = pattern.generate_title_for_url(delta_url)
+
+            if error:
+                DeltaResolvedTitleError.objects.update_or_create(
+                    delta_url=delta_url, defaults={"title_pattern": pattern, "error_string": error}  # lookup field
+                )
+                resolution.status = DeltaResolvedTitle.Status.FAILED
+                resolution.save()
+                logger.error(f"Title resolution FAILED for DeltaURL {delta_url.id}: {error}")
+                continue
+
+            delta_url.generated_title = new_title
+            delta_url.save()
+            resolution.resolved_title = new_title
+            resolution.status = DeltaResolvedTitle.Status.RESOLVED
+            resolution.save()
+
+        except Exception as e:
+            logger.error(f"Error processing delta URL {delta_url.id}: {str(e)}")
+            DeltaResolvedTitleError.objects.update_or_create(
+                delta_url=delta_url, defaults={"title_pattern": pattern, "error_string": str(e)}  # lookup field
+            )
+            resolution.status = DeltaResolvedTitle.Status.FAILED
+            resolution.save()
+
+    # Update relationships
+    pattern.update_affected_delta_urls_list()
 
 
 @celery_app.task(soft_time_limit=600)

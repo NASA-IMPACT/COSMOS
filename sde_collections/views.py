@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
+from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -448,6 +449,34 @@ class TitlePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         return super().get_queryset().order_by("match_pattern")
+
+
+class TitlePatternStatusView(APIView):
+    def get(self, request, pattern_id):
+        pattern = DeltaTitlePattern.objects.get(id=pattern_id)
+
+        # Get counts for each status
+        if DeltaResolvedTitle.objects.filter(title_pattern=pattern).exists():
+            status_counts = (
+                DeltaResolvedTitle.objects.filter(title_pattern=pattern)
+                .values("status")
+                .annotate(count=Count("status"))
+            )
+
+            # Initialize counts
+            result = {"pending": 0, "processing": 0, "resolved": 0, "failed": 0, "total": 0}
+
+            # Update counts
+            for item in status_counts:
+                status_type = item["status"].lower()
+                count = item["count"]
+                result[status_type] = count
+                result["total"] += count
+
+            return Response(result)
+
+        else:
+            return Response({"error": "DeltaResolvedTitleNotFound"})
 
 
 class DocumentTypePatternViewSet(CollectionFilterMixin, viewsets.ModelViewSet):

@@ -1746,6 +1746,7 @@ function postTitlePatterns(
       csrfmiddlewaretoken: csrftoken
     },
     success: function (data) {
+      toastr.success("Background title resolution started for pattern: " + data.match_pattern);
       $('#delta_urls_table').DataTable().ajax.reload(null, false);
       $('#title_patterns_table').DataTable().ajax.reload(null, false);
       if (currentTab === "") { //Only add a notification if we are on the first tab
@@ -1756,6 +1757,7 @@ function postTitlePatterns(
           `</span>`
         );
       }
+      pollTitleResolutionStatus(data.id, data.match_pattern);
     },
     error: function (xhr, status, error) {
       var errorMessage = xhr.responseText;
@@ -1770,6 +1772,63 @@ function postTitlePatterns(
     }
   });
 }
+
+function pollTitleResolutionStatus(patternId, match_pattern) {
+  const POLL_INTERVAL = 2000; // 2 seconds
+  const MAX_POLLS = 150;      // 5 minutes = (5 * 60 * 1000) / 2000 = 150 polls
+  let pollCount = 0;
+
+  let pollInterval = setInterval(async () => {
+      try {
+          // Check if we've exceeded max polls
+          if (pollCount >= MAX_POLLS) {
+              clearInterval(pollInterval);
+              toastr.warning(`Title Resolution timed out after 5 minutes for pattern: ${match_pattern}`);
+              return;
+          }
+
+          pollCount++;
+          const response = await fetch(`/api/title-patterns/${patternId}/status/`);
+          const data = await response.json();
+
+          if (data.error && data.error === "DeltaResolvedTitleNotFound") {
+            toastr.error("No URLs were affected by this pattern.");
+            clearInterval(pollInterval);
+          }
+
+          // Check resolution status and show appropriate message
+          else if (data.total > 0) {
+            if(data.pending === 0 && data.processing === 0) {
+              clearInterval(pollInterval);
+
+              // All successful
+              if (data.failed === 0) {
+                toastr.success(
+                    `Title Resolution completed successfully for pattern: ${match_pattern}\n` +
+                    `[ ${data.resolved} URLs processed ]`
+                );
+                }
+
+                // Some failed
+                else {
+                    toastr.warning(
+                        `Title Resolution completed with some issues for pattern: ${match_pattern}\n` +
+                        `[ ${data.resolved} succeeded, ${data.failed} failed ]`
+                    );
+                }
+
+                // Refresh tables
+                $('#delta_urls_table').DataTable().ajax.reload(null, false);
+                $('#title_patterns_table').DataTable().ajax.reload(null, false);
+          } }
+
+      } catch (error) {
+          console.error('Error polling status:', error);
+          clearInterval(pollInterval);
+      }
+  }, POLL_INTERVAL);
+}
+
 
 function postVisited(url) {
   $.ajax({

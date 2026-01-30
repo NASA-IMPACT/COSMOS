@@ -3,7 +3,7 @@ from typing import Any
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 
 from ..utils.title_resolver import (
     is_valid_xpath,
@@ -476,81 +476,21 @@ class DeltaTitlePattern(BaseMatchPattern):
 
     def apply(self) -> None:
         """
-        Apply the title pattern to matching URLs:
+        Queue title pattern resolution for matching URLs:
         1. Find new Curated URLs that match but weren't previously affected
         2. Create Delta URLs only where the generated title differs
-        3. Update all matching Delta URLs with new titles
+        3. Queue background tasks for title resolution
         4. Track title resolution status and errors
         """
-        DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
-        DeltaResolvedTitle = apps.get_model("sde_collections", "DeltaResolvedTitle")
-        DeltaResolvedTitleError = apps.get_model("sde_collections", "DeltaResolvedTitleError")
 
-        # Get newly matching Curated URLs
-        matching_curated_urls = self.get_matching_curated_urls()
-        previously_unaffected_curated = matching_curated_urls.exclude(
-            id__in=self.curated_urls.values_list("id", flat=True)
-        )
+        # Inserting here to avoid circular import issue
+        from ..tasks import process_title_resolutions
 
-        # Process each previously unaffected curated URL
-        for curated_url in previously_unaffected_curated:
-            if not self.is_most_distinctive_pattern(curated_url):
-                continue
+        def queue_task():
+            process_title_resolutions.delay(self.id)
 
-            new_title, error = self.generate_title_for_url(curated_url)
-
-            if error:
-                DeltaResolvedTitleError.objects.update_or_create(
-                    delta_url=curated_url, defaults={"title_pattern": self, "error_string": error}  # lookup field
-                )
-                continue
-
-            # Skip if the generated title matches existing or if Delta already exists
-            if (
-                curated_url.generated_title == new_title
-                or DeltaUrl.objects.filter(url=curated_url.url, collection=self.collection).exists()
-            ):
-                continue
-
-            # Create new Delta URL with the new title
-            fields = {
-                field.name: getattr(curated_url, field.name)
-                for field in curated_url._meta.fields
-                if field.name not in ["id", "collection"]
-            }
-            fields["generated_title"] = new_title
-            fields["to_delete"] = False
-            fields["collection"] = self.collection
-
-            delta_url = DeltaUrl.objects.create(**fields)
-
-            # Record successful title resolution
-            DeltaResolvedTitle.objects.create(title_pattern=self, delta_url=delta_url, resolved_title=new_title)
-
-        # Update titles for all matching Delta URLs
-        for delta_url in self.get_matching_delta_urls():
-            if not self.is_most_distinctive_pattern(delta_url):
-                continue
-
-            new_title, error = self.generate_title_for_url(delta_url)
-
-            if error:
-                DeltaResolvedTitleError.objects.update_or_create(
-                    delta_url=delta_url, defaults={"title_pattern": self, "error_string": error}  # lookup field
-                )
-                continue
-
-            # Update title and record resolution - key change here
-            DeltaResolvedTitle.objects.update_or_create(
-                delta_url=delta_url,  # Only use delta_url for lookup
-                defaults={"title_pattern": self, "resolved_title": new_title},
-            )
-
-            delta_url.generated_title = new_title
-            delta_url.save()
-
-        # Update pattern relationships
-        self.update_affected_delta_urls_list()
+        # Queue the background task only after the transaction commits (i.e, after apply() method)
+        transaction.on_commit(queue_task)
 
     def unapply(self) -> None:
         """
@@ -670,24 +610,45 @@ class DeltaResolvedTitleBase(models.Model):
     title_pattern = models.ForeignKey(DeltaTitlePattern, on_delete=models.CASCADE)
     delta_url = models.OneToOneField("sde_collections.DeltaUrl", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
 
 
 class DeltaResolvedTitle(DeltaResolvedTitleBase):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        PROCESSING = "processing", "Processing"
+        RESOLVED = "resolved", "Resolved"
+        FAILED = "failed", "Failed"
+
     resolved_title = models.CharField(blank=True, default="")
+    status = models.CharField(max_length=20, choices=Status.choices, null=True)
 
     class Meta:
         verbose_name = "Resolved Title"
         verbose_name_plural = "Resolved Titles"
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+        ]
 
     def save(self, *args, **kwargs):
-        # Finds the linked delta URL and deletes DeltaResolvedTitleError objects linked to it
-        DeltaResolvedTitleError.objects.filter(delta_url=self.delta_url).delete()
+        if self.status == self.Status.RESOLVED:
+            # Finds the linked delta URL and deletes DeltaResolvedTitleError objects linked to it
+            DeltaResolvedTitleError.objects.filter(delta_url=self.delta_url).delete()
         super().save(*args, **kwargs)
 
 
 class DeltaResolvedTitleError(DeltaResolvedTitleBase):
     error_string = models.TextField(null=False, blank=False)
     http_status_code = models.IntegerField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        # When saving an error, update the related DeltaResolvedTitle status
+        DeltaResolvedTitle.objects.update_or_create(
+            delta_url=self.delta_url,
+            title_pattern=self.title_pattern,
+            defaults={"status": DeltaResolvedTitle.Status.FAILED, "resolved_title": ""},
+        )
+        super().save(*args, **kwargs)
