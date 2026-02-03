@@ -694,6 +694,7 @@ class Collection(models.Model):
         tdamm_collections = [
             "imagine_the_universe",
             "physics_of_the_cosmos",
+            "science_at_gsfc",
             "stsci_space_telescope_science_institute",
         ]
         if self.config_folder in tdamm_collections:
