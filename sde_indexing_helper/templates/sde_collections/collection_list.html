@@ -11,110 +11,132 @@
 {% block content %}
     {% csrf_token %}
     <br>
-<!-- Page Title -->
-<h2 class="title">Welcome back!</h2>
+    <!-- Page Title -->
+    <h2 class="title">Welcome back!</h2>
 
-<!-- Main Collections Table -->
-<table id="collection_table" class="table table-striped" style="width:100%">
-    <thead class="tableHeader">
-        <!-- Column Headers Row -->
-        <tr>
-            <!-- Visible Columns -->
-            <th class="text-center noBorder" style="padding-right:25px !important">Name</th>
-            <th class="text-center noBorder url-th" style="padding-right:25px !important">Url</th>
-            <th class="text-center noBorder" style="padding-right:25px !important">Division</th>
-            <th class="text-center noBorder" style="padding-right:25px !important">Delta Urls</th>
-            <th class="text-center noBorder" style="padding-right:25px !important">Curated Urls</th>
-            <th class="text-center noBorder" style="padding-right:25px !important">Workflow Status</th>
-            <th class="text-center noBorder" style="padding-right:25px !important">Curator</th>
-            <th class="text-center noBorder" style="padding-right:25px !important">Connector Type</th>
-            <th class="text-center noBorder" style="padding-right:25px !important">Reindexing Status</th>
+    <!-- Store dropdown data once in page -->
+    <script>
+        // Global dropdown options that will be used to populate menus
+        const workflowStatusOptions = [
+            {% for choice in workflow_status_choices %}
+                {value: "{{ choice }}", label: "{{ choice.label }}"},
+            {% endfor %}
+        ];
 
-            <!-- Hidden Columns - Used for internal data storage -->
-            <th class="hideDisplay"></th>
-            <th class="hideDisplay"></th>
-            <th class="hideDisplay"></th>
-        </tr>
+        const reindexingStatusOptions = [
+            {% for choice in reindexing_status_choices %}
+                {value: "{{ choice }}", label: "{{ choice.label }}"},
+            {% endfor %}
+        ];
 
-        <!-- Filter Row - Contains inputs and dropdowns for filtering table data -->
-        <tr>
-            <!-- Text input filter for Name -->
-            <td class="filterRowBottom">
-                <input class="table_filter_row_input textBoxStyling"
-                       type="text"
-                       id="nameFilter"
-                       placeholder="Name" />
-            </td>
+        const curatorOptions = [
+            {% for curator in curators %}
+                {value: "{{ curator.pk }}", label: "{{ curator.username }}"},
+            {% endfor %}
+        ];
+    </script>
 
-            <!-- Text input filter for URL -->
-            <td class="filterRowBottom url-td">
-                <input class="table_filter_row_input textBoxStyling"
-                       type="text"
-                       id="urlFilter"
-                       placeholder="URL" />
-            </td>
+    <!-- Main Collections Table -->
+    <table id="collection_table" class="table table-striped" style="width:100%">
+        <thead class="tableHeader">
+            <!-- Column Headers Row -->
+            <tr>
+                <!-- Visible Columns -->
+                <th class="text-center noBorder" style="padding-right:25px !important">Name</th>
+                <th class="text-center noBorder url-th" style="padding-right:25px !important">Url</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Division</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Delta Urls</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Curated Urls</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Workflow Status</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Curator</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Connector Type</th>
+                <th class="text-center noBorder" style="padding-right:25px !important">Reindexing Status</th>
 
-            <!-- Text input filter for Division -->
-            <td class="filterRowBottom">
-                <input class="table_filter_row_input textBoxStyling"
-                       type="text"
-                       id="divisionFilter"
-                       placeholder="Division" />
-            </td>
+                <!-- Hidden Columns - Used for internal data storage -->
+                <th class="hideDisplay"></th>
+                <th class="hideDisplay"></th>
+                <th class="hideDisplay"></th>
+            </tr>
 
-            <!-- Empty cell for Delta Urls (no filter) -->
-            <td class="filterRowBottom"></td>
+            <!-- Filter Row - Contains inputs and dropdowns for filtering table data -->
+            <tr>
+                <!-- Text input filter for Name -->
+                <td class="filterRowBottom">
+                    <input class="table_filter_row_input textBoxStyling"
+                           type="text"
+                           id="nameFilter"
+                           placeholder="Name" />
+                </td>
 
-            <!-- Empty cell for Curated Urls (no filter) -->
-            <td class="filterRowBottom"></td>
+                <!-- Text input filter for URL -->
+                <td class="filterRowBottom url-td">
+                    <input class="table_filter_row_input textBoxStyling"
+                           type="text"
+                           id="urlFilter"
+                           placeholder="URL" />
+                </td>
 
-            <!-- Dropdown filter for Workflow Status -->
-            <td class="filterRowBottom">
-                <select id="collection-dropdown-4" class="select-dropdown selectStyling">
-                    <option value="">SELECT</option>
-                    {% for choice in workflow_status_choices %}
-                        <option value="{{ choice }}"
-                                data-collection-id={{ collection.id }}>{{ choice.label }}</option>
-                    {% endfor %}
-                </select>
-            </td>
+                <!-- Text input filter for Division -->
+                <td class="filterRowBottom">
+                    <input class="table_filter_row_input textBoxStyling"
+                           type="text"
+                           id="divisionFilter"
+                           placeholder="Division" />
+                </td>
 
-            <!-- Dropdown filter for Curator -->
-            <td class="filterRowBottom">
-                <select id="collection-dropdown-5" class="select-dropdown selectStyling">
-                    <option value="">SELECT</option>
-                    {% for curator in curators %}
-                        <option value="{{ curator.pk }}"
-                                data-collection-id={{ collection.id }}>{{ curator.username }}</option>
-                    {% endfor %}
-                </select>
-            </td>
+                <!-- Empty cell for Delta Urls (no filter) -->
+                <td class="filterRowBottom"></td>
 
-            <!-- Text input filter for Connector Type -->
-            <td class="filterRowBottom">
-                <input class="table_filter_row_input textBoxStyling"
-                       type="text"
-                       id="connectorTypeFilter"
-                       placeholder="Connector Type" />
-            </td>
+                <!-- Empty cell for Curated Urls (no filter) -->
+                <td class="filterRowBottom"></td>
 
-            <!-- Dropdown filter for Reindexing Status -->
-            <td class="filterRowBottom">
-                <select id="collection-dropdown-6" class="select-dropdown selectStyling">
-                    <option value="">SELECT</option>
-                    {% for choice in reindexing_status_choices %}
-                        <option value="{{ choice }}"
-                                data-collection-id={{ collection.id }}>{{ choice.label }}</option>
-                    {% endfor %}
-                </select>
-            </td>
+                <!-- Dropdown filter for Workflow Status -->
+                <td class="filterRowBottom">
+                    <select id="collection-dropdown-4" class="select-dropdown selectStyling">
+                        <option value="">SELECT</option>
+                        {% for choice in workflow_status_choices %}
+                            <option value="{{ choice }}"
+                                    data-collection-id={{ collection.id }}>{{ choice.label }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
 
-            <!-- Hidden cells corresponding to hidden columns -->
-            <td class="hideDisplay"></td>  <!-- Stores raw workflow_status value (number) -->
-            <td class="hideDisplay"></td>  <!-- Stores raw curated_by_id value -->
-            <td class="hideDisplay"></td>  <!-- Stores raw reindexing_status value (number) -->
-        </tr>
-    </thead>
+                <!-- Dropdown filter for Curator -->
+                <td class="filterRowBottom">
+                    <select id="collection-dropdown-5" class="select-dropdown selectStyling">
+                        <option value="">SELECT</option>
+                        {% for curator in curators %}
+                            <option value="{{ curator.pk }}"
+                                    data-collection-id={{ collection.id }}>{{ curator.username }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+
+                <!-- Text input filter for Connector Type -->
+                <td class="filterRowBottom">
+                    <input class="table_filter_row_input textBoxStyling"
+                           type="text"
+                           id="connectorTypeFilter"
+                           placeholder="Connector Type" />
+                </td>
+
+                <!-- Dropdown filter for Reindexing Status -->
+                <td class="filterRowBottom">
+                    <select id="collection-dropdown-6" class="select-dropdown selectStyling">
+                        <option value="">SELECT</option>
+                        {% for choice in reindexing_status_choices %}
+                            <option value="{{ choice }}"
+                                    data-collection-id={{ collection.id }}>{{ choice.label }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+
+                <!-- Hidden cells corresponding to hidden columns -->
+                <td class="hideDisplay"></td>  <!-- Stores raw workflow_status value (number) -->
+                <td class="hideDisplay"></td>  <!-- Stores raw curated_by_id value -->
+                <td class="hideDisplay"></td>  <!-- Stores raw reindexing_status value (number) -->
+            </tr>
+        </thead>
         <tbody>
             <!-- Universal search bar above the table -->
             <div class="search-container">
@@ -164,85 +186,51 @@
                            role="button">{{ collection.num_curated_urls|intcomma }}</a>
                     </td>
 
-                    <!-- Workflow Status Dropdown -->
                     <td class="noBorder">
                         <div class="dropdown workflow_status_dropdown"
-                             data-match-pattern
-                             remove_protocol
-                             row
-                             url>
-                            <!-- Workflow status button with dynamic color -->
+                             data-collection-id="{{ collection.id }}">
                             <button class="btn {{ collection.workflow_status_button_color }} btn-sm dropdown-toggle"
                                     type="button"
                                     id="workflow-status-button-{{ collection.id }}"
                                     data-toggle="dropdown"
                                     aria-haspopup="true"
                                     aria-expanded="false">{{ collection.get_workflow_status_display }}</button>
-                            <!-- Dropdown menu with all possible workflow statuses -->
+                            <!-- Empty dropdown menu will be populated by JavaScript -->
                             <div class="dropdown-menu"
-                                 aria-labelledby="workflow-status-button-{{ collection.id }}">
-                                {% for choice in workflow_status_choices %}
-                                    <a class="dropdown-item workflow_status_select"
-                                       value="{{ choice }}"
-                                       data-collection-id={{ collection.id }}>{{ choice.label }}</a>
-                                {% endfor %}
-                            </div>
+                                 aria-labelledby="workflow-status-button-{{ collection.id }}"></div>
                         </div>
                     </td>
 
-                    <!-- Curator Dropdown -->
                     <td class="noBorder">
                         <div class="dropdown curator_dropdown"
-                             data-match-pattern
-                             remove_protocol
-                             row
-                             url>
-                            <!-- Curator button - green if assigned, dark if not -->
+                             data-collection-id="{{ collection.id }}">
                             <button class="btn {% if collection.curated_by %} btn-success {% else %} btn-dark {% endif %} btn-sm dropdown-toggle"
                                     type="button"
                                     id="curator-button-{{ collection.id }}"
                                     data-toggle="dropdown"
                                     aria-haspopup="true"
                                     aria-expanded="false">{{ collection.curated_by }}</button>
-                            <!-- Dropdown menu with all possible curators -->
+                            <!-- Empty dropdown menu will be populated by JavaScript -->
                             <div class="dropdown-menu"
-                                 aria-labelledby="curator-button-{{ collection.id }}">
-                                {% for curator in curators %}
-                                    <a key="{{ curator.pk }}"
-                                       class="dropdown-item curator_select"
-                                       value="{{ curator.pk }}"
-                                       data-collection-id={{ collection.id }}>{{ curator.username }}</a>
-                                {% endfor %}
-                            </div>
+                                 aria-labelledby="curator-button-{{ collection.id }}"></div>
                         </div>
                     </td>
 
                     <!-- Connector Type Column -->
                     <td class="whiteText noBorder">{{ collection.get_connector_display }}</td>
 
-                    <!-- Reindexing Status Dropdown -->
                     <td class="noBorder">
                         <div class="dropdown reindexing_status_dropdown"
-                             data-match-pattern
-                             remove_protocol
-                             row
-                             url>
-                            <!-- Reindexing status button with dynamic color -->
+                             data-collection-id="{{ collection.id }}">
                             <button class="btn {{ collection.reindexing_status_button_color }} btn-sm dropdown-toggle"
                                     type="button"
                                     id="reindexing-status-button-{{ collection.id }}"
                                     data-toggle="dropdown"
                                     aria-haspopup="true"
                                     aria-expanded="false">{{ collection.get_reindexing_status_display }}</button>
-                            <!-- Dropdown menu with all possible reindexing statuses -->
+                            <!-- Empty dropdown menu will be populated by JavaScript -->
                             <div class="dropdown-menu"
-                                 aria-labelledby="reindexing-status-button-{{ collection.id }}">
-                                {% for choice in reindexing_status_choices %}
-                                    <a class="dropdown-item reindexing_status_select"
-                                       value="{{ choice }}"
-                                       data-collection-id={{ collection.id }}>{{ choice.label }}</a>
-                                {% endfor %}
-                            </div>
+                                 aria-labelledby="reindexing-status-button-{{ collection.id }}"></div>
                         </div>
                     </td>
 

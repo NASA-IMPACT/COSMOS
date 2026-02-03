@@ -148,6 +148,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
 MIDDLEWARE = [
+    "django.middleware.gzip.GZipMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -354,3 +355,6 @@ LRM_DEV_TOKEN = env("LRM_DEV_TOKEN")
 XLI_TOKEN = env("XLI_TOKEN")
 INFERENCE_API_URL = env("INFERENCE_API_URL", default="http://host.docker.internal:8000")
 TDAMM_CLASSIFICATION_THRESHOLD = env("TDAMM_CLASSIFICATION_THRESHOLD", default="0.5")
+
+# Setting this to a larger value like 1KB ensures we don't waste resources compressing small responses
+GZIP_MIN_LENGTH = 1024
