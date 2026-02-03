@@ -9,6 +9,7 @@ var newExcludePatternsCount = 0;
 var newTitlePatternsCount = 0;
 var newDocumentTypePatternsCount = 0;
 var newDivisionPatternsCount = 0;
+var newTdammTagPatternsCount = 0;
 var currentTab = ""; //blank for the first tab
 var matchPatternTypeMap = {
   "Individual URL Pattern": 1,
@@ -258,6 +259,7 @@ function initializeDataTable() {
       getScrapedTitleColumn(),
       getGeneratedTitleColumn(),
       getDocumentTypeColumn(),
+      getTdammTagColumn(),
       getDivisionColumn(),
       { data: "id", visible: false, searchable: false },
       { data: "exclude_pattern_type", visible: false, searchable: false },
@@ -266,6 +268,7 @@ function initializeDataTable() {
       { data: "match_pattern_type", visible: false, searchable: false },
       { data: "delta_urls_count", visible: false, searchable: false },
       { data: "excluded", visible: false, searchable: false },
+      { data: "tag_source", visible: false, searchable: false },
       {
         data: null,
         render: function (data, type, row) {
@@ -476,12 +479,14 @@ function initializeDataTable() {
       getCuratedScrapedTitleColumn(),
       getCuratedGeneratedTitleColumn(),
       getCuratedDocumentTypeColumn(),
+      getTdammTagColumn(),
       getCuratedDivisionColumn(),
       { data: "id", visible: false, searchable: false },
       { data: "generated_title_id", visible: false, searchable: false },
       { data: "match_pattern_type", visible: false, searchable: false },
       { data: "curated_urls_count", visible: false, searchable: false },
       { data: "excluded", visible: false, searchable: false },
+      { data: "tag_source", visible: false, searchable: false },
       {
         data: null,
         render: function (data, type, row) {
@@ -802,6 +807,10 @@ function initializeDataTable() {
     title_patterns_table.columns(2).search(this.value).draw();
   });
 
+  $("#deltaTdammTagFilter").on("beforeinput", DataTable.util.debounce(function (val) {
+    delta_urls_table.column('tdamm_tag:name').search(this.value).draw();
+  }, 1000));
+
   var document_type_patterns_table = $(
     "#document_type_patterns_table"
   ).DataTable({
@@ -966,6 +975,291 @@ $("#deltaDivisionMatchPatternFilter").on("beforeinput", function (val) {
   division_patterns_table.columns(0).search(this.value).draw();
 });
 
+var tdamm_tag_patterns_table = $("#tdamm_tag_patterns_table").DataTable({
+  dom: "lBrtip",
+  buttons: [
+      {
+          text: "Add Pattern",
+          className: "addPattern",
+          action: function () {
+              $modal = $("#tdammTagPatternModal").modal();
+          }
+      },
+      {
+          text: "Customize Columns",
+          className: "customizeColumns",
+          action: function () {
+              modalContents("#tdamm_tag_patterns_table");
+          }
+      },
+  ],
+  lengthMenu: [
+      [25, 50, 100, 500],
+      ["Show 25", "Show 50", "Show 100", "Show 500"],
+  ],
+  orderCellsTop: true,
+  pageLength: 100,
+  ajax: `/api/tdamm-tag-patterns/?format=datatables&collection_id=${collection_id}`,
+  initComplete: function (data) {
+      this.api()
+          .columns()
+          .every(function (index) {
+              var table = $("#tdamm_tag_patterns_table").DataTable();
+
+              let addDropdownSelect = {
+                  1: {
+                      columnToSearch: 9,
+                      matchPattern: {
+                          "Individual URL Pattern": 1,
+                          "Multi-URL Pattern": 2,
+                      }
+                  },
+                  2: {
+                      columnToSearch: 10,
+                      matchPattern: {}
+                  },
+                  3: {
+                      columnToSearch: 11,
+                      matchPattern: {
+                          "Add Tag": 1,
+                          "Remove Tag": 2
+                      }
+                  },
+                  // 4: {
+                  //     columnToSearch: 12,
+                  //     matchPattern: {
+                  //         "manual": "manual",
+                  //         "ml": "ml"
+                  //     }
+                  // }
+              };
+
+              // Populate TDAMM tag mappings
+              tdamm_choices.forEach(choice => {
+                  addDropdownSelect[2].matchPattern[choice.display] = choice.code;
+              });
+
+              let column = this;
+              if (column.data().length === 0) {
+                  $(`#tdamm-patterns-dropdown-${index}`).prop("disabled", true);
+              } else if (index in addDropdownSelect) {
+                  $("#tdamm-patterns-dropdown-" + index).on("change", function () {
+                      let col = addDropdownSelect[index].columnToSearch;
+                      let searchInput = addDropdownSelect[index].matchPattern[$(this).val()];
+                      if ($(this).val() === "" || $(this).val() === undefined)
+                          table.columns(col).search("").draw();
+                      else {
+                          table.columns(col).search(searchInput).draw();
+                      }
+                  });
+              }
+          });
+  },
+
+  columns: [
+      { data: "match_pattern", class: "whiteText" },
+      {
+          data: "match_pattern_type_display",
+          class: "text-center whiteText",
+          sortable: false,
+      },
+      {
+          data: "tags_display",
+          class: "whiteText",
+          render: function(data, type, row) {
+            if (!data || !data.length) return "None";
+            return Array.isArray(data) ? data.join(", ") : data;
+        }
+      },
+      {
+          data: "operation_display",
+          class: "whiteText"
+      },
+      // {
+      //     data: "source",
+      //     class: "whiteText"
+      // },
+      {
+          data: "delta_urls_count",
+          class: "text-center whiteText",
+          sortable: true,
+      },
+      {
+          data: "curated_urls_count",
+          class: "text-center whiteText",
+          sortable: true,
+      },
+      {
+          data: null,
+          sortable: false,
+          class: "text-center",
+          render: function (data, type, row) {
+              return `<button class="btn btn-danger btn-sm delete-tdamm-tag-pattern-button" data-row-id="${row["id"]}"><i class="material-icons">delete</i></button >`;
+          },
+      },
+      { data: "id", visible: false, searchable: false },
+      { data: "match_pattern_type", visible: false },
+      { data: "tags", visible: false },
+      { data: "operation", visible: false },
+      // { data: "source", visible: false },
+  ],
+});
+
+$("#tdammTagMatchPatternFilter").on("beforeinput", function (val) {
+  tdamm_tag_patterns_table.columns(0).search(this.value).draw();
+});
+
+// Handle form submission for TDAMM tag pattern
+$("#tdamm_tag_pattern_form").on("submit", function (e) {
+  e.preventDefault();
+  inputs = {};
+  input_serialized = $(this).serializeArray();
+  input_serialized.forEach((field) => {
+      inputs[field.name] = field.value;
+  });
+
+  postTdammTagPattern(
+      inputs.match_pattern,
+      inputs.match_pattern_type,
+      inputs.tdamm_tag,
+      inputs.tdamm_operation,
+      // inputs.tdamm_source
+      "manual"
+  );
+
+  // Close the modal
+  $("#tdammTagPatternModal").modal("hide");
+});
+
+// Handle TDAMM tag form dropdown selections
+$(".tdamm_tag_form_select").on("click", function (e) {
+  e.preventDefault();
+  $('input[name="tdamm_tag"]').val($(this).attr("value"));
+  $(".tdamm-tag-dropdown").text($(this).text());
+});
+
+$(".tdamm_operation_form_select").on("click", function (e) {
+  e.preventDefault();
+  $('input[name="tdamm_operation"]').val($(this).attr("value"));
+  $(".operation-dropdown").text($(this).text());
+});
+
+// $(".tdamm_source_form_select").on("click", function (e) {
+//   e.preventDefault();
+//   $('input[name="tdamm_source"]').val($(this).attr("value"));
+//   $(".source-dropdown").text($(this).text());
+// });
+
+// Handle delete button click for TDAMM tag patterns
+function handleDeleteTdammTagPatternButtonClick() {
+  $("body").on("click", ".delete-tdamm-tag-pattern-button", function () {
+      var patternRowId = $(this).data("row-id");
+      currentURLtoDelete = `/api/tdamm-tag-patterns/${patternRowId}/`;
+      deletePattern(
+          `/api/tdamm-tag-patterns/${patternRowId}/`,
+          "TDAMM Tag Pattern"
+      );
+  });
+}
+
+// function postTdammTagPattern(match_pattern, match_pattern_type, tag, operation, source="manual") {
+//   console.log("Posting tag pattern:", {
+//     match_pattern,
+//     match_pattern_type,
+//     tag,
+//     operation,
+//     source
+//   });
+
+//   if (!match_pattern) {
+//       toastr.error("Please provide a match pattern.");
+//       return;
+//   }
+
+//   if (!tag) {
+//       toastr.error("Please select a TDAMM tag.");
+//       return;
+//   }
+
+//   if (!operation) {
+//       toastr.error("Please select an operation (Add or Remove).");
+//       return;
+//   }
+
+//   if (!source) {
+//       toastr.error("Please select a source (Manual or ML).");
+//       return;
+//   }
+
+//   $.ajax({
+//       url: "/api/tdamm-tag-patterns/",
+//       type: "POST",
+//       data: {
+//           collection: collection_id,
+//           match_pattern: match_pattern,
+//           match_pattern_type: match_pattern_type,
+//           tags: [tag],
+//           operation: operation,
+//           source: source,
+//           csrfmiddlewaretoken: csrftoken,
+//       },
+//       success: function (data) {
+//           console.log("Success:", data);
+//           $("#delta_urls_table").DataTable().ajax.reload(null, false);
+//           $("#tdamm_tag_patterns_table").DataTable().ajax.reload(null, false);
+//           if (currentTab === "") { // Only add a notification if we are on the first tab
+//               newTdammTagPatternsCount = newTdammTagPatternsCount + 1;
+//               $("#tdammTagPatternsTab").html(
+//                   `TDAMM Tag Patterns <span class="pill notifyBadge badge badge-pill badge-primary">` +
+//                   newTdammTagPatternsCount + " new" +
+//                   `</span>`
+//               );
+//           }
+//       },
+//       error: function (xhr, status, error) {
+//           console.error("Error:", xhr.responseText);
+//           var errorMessage = xhr.responseText;
+//           if (errorMessage.includes("unique")) {
+//               toastr.success("Pattern already exists");
+//               return;
+//           }
+//           toastr.error(errorMessage);
+//       },
+//   });
+// }
+
+function postTdammTagPattern(match_pattern, match_pattern_type, tag, operation, source="manual") {
+  // Log to see what's being sent
+  console.log("Sending tag:", tag);
+
+  // Create FormData to properly handle the array
+  var formData = new FormData();
+  formData.append('collection', collection_id);
+  formData.append('match_pattern', match_pattern);
+  formData.append('match_pattern_type', match_pattern_type);
+  formData.append('operation', operation);
+  formData.append('source', source);
+  formData.append('csrfmiddlewaretoken', csrftoken);
+
+  // Add tag as individual value (server will convert to array)
+  formData.append('tag', tag);
+
+  $.ajax({
+      url: "/api/tdamm-tag-patterns/",
+      type: "POST",
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(data) {
+          console.log("Success:", data);
+          // Rest of success handler
+      },
+      error: function(xhr) {
+          console.error("Error:", xhr.responseText);
+          // Rest of error handler
+      }
+  });
+}
 
 function handleTabsClick() {
   $("#includePatternsTab").on("click", function () {
@@ -988,6 +1282,10 @@ function handleTabsClick() {
     newDivisionPatternsCount = 0;
     $("#divisionPatternsTab").html(`Division Patterns`);
   });
+  $("#tdammTagPatternsTab").on("click", function () {
+    newTdammTagPatternsCount = 0;
+    $("#tdammTagPatternsTab").html(`TDAMM Tag Patterns`);
+  });
 }
 
 function setupClickHandlers() {
@@ -1000,11 +1298,14 @@ function setupClickHandlers() {
   handleDeleteIncludePatternButtonClick();
   handleDeleteTitlePatternButtonClick();
   handleDeleteDivisionButtonClick();
+  handleDeleteTdammTagPatternButtonClick();
 
   handleDocumentTypeSelect();
   handleDivisionSelect();
   handleExcludeIndividualUrlClick();
   handleNewTitleChange();
+  handleTagDeletion();
+  handleTagAddition();
 
   handleUrlLinkClick();
   handleTabsClick();
@@ -1285,6 +1586,55 @@ function getCuratedExcludedColumn(true_icon, false_icon) {
   };
 }
 
+function getTdammTagColumn() {
+  return {
+    data: "tdamm_tag",
+    width: "10%",
+    visible: (has_tdamm_tags === 'true'),
+    className: "text-center",
+    render: function(data, type, row) {
+      if (!data || !data.length) {
+        return `<div class="tdamm-tags-container">
+            <button class="btn btn-sm btn-outline-primary add-tdamm-tag"
+                data-url-id="${row.id}"
+                data-source="manual">
+                Add Tag
+            </button>
+        </div>`;
+      }
+      // console.log('Row data for tags:', {
+      //   data,
+      //   tagSource: row.tag_source,
+      //   fullRow: row
+      // });
+
+      const tagSource = row.tag_source;
+
+      const tags = data.map(tag => {
+        const fullName = tdamm_choices.find(choice => choice.code === tag)?.label || tag;
+        return `
+          <div class="tdamm-tag" data-full-name="${fullName}">
+            <span class="tag-text">${tag}</span>
+            <button class="delete-tag"
+              data-url-id="${row.id}"
+              data-tag="${tag}"
+              data-source="${tagSource}">×</button>
+          </div>
+        `;
+      }).join('');
+
+      return `<div class="tdamm-tags-container" data-source="${tagSource}">
+          ${tags}
+          <button class="btn btn-sm btn-outline-primary add-tdamm-tag"
+              data-url-id="${row.id}"
+              data-source="${tagSource}">
+              Add Tag
+          </button>
+      </div>`;
+    }
+  };
+}
+
 function getDocumentTypeColumn() {
   return {
     data: "document_type",
@@ -1398,6 +1748,7 @@ function handleHideorShowKeypress() {
   addEnterEscapeKeypress("#titlePatternModal", "#title_pattern_form");
   addEnterEscapeKeypress("#documentTypePatternModal", "#document_type_pattern_form");
   addEnterEscapeKeypress("#divisionPatternModal", "#division_pattern_form");
+  addEnterEscapeKeypress("#tdammTagPatternModal", "#tdamm_tag_pattern_form");
 
 }
 
@@ -1969,6 +2320,11 @@ function division_pattern_form(selected_text) {
   $modal.find("#division_match_pattern_input").val(selected_text); // Updated to match the HTML ID
 }
 
+function tdamm_tag_pattern_form(selected_text) {
+  $modal = $("#tdammTagPatternModal").modal();
+  $modal.find("#tdamm_match_pattern_input").val(selected_text);
+}
+
 // If the menu element is clicked
 $(".custom-menu li").click(function () {
   // This is the triggered action name
@@ -1987,6 +2343,9 @@ $(".custom-menu li").click(function () {
       break;
     case "division-pattern":
       division_pattern_form(selected_text.trim());
+      break;
+    case "tdamm-tag-pattern":
+      tdamm_tag_pattern_form(selected_text.trim());
       break;
   }
 
@@ -2272,5 +2631,169 @@ function handleReindexingStatusSelect() {
           break;
       }
     });
+  });
+}
+
+function getApiEndpoint($element) {
+  return $element.closest('#curated_urls_table').length > 0 ? 'curated-urls' : 'delta-urls';
+}
+
+function handleTagDeletion() {
+  let currentTagData = null;
+  let $clickedButton = null;
+
+  $("body").on("click", ".delete-tag", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    $clickedButton = $(this);
+    const urlId = $clickedButton.data("url-id");
+    const tagToDelete = $clickedButton.data("tag");
+    const source = $clickedButton.data("source");
+
+    currentTagData = { urlId, tagToDelete, source };
+
+    // console.log('Tag deletion data:', {
+    //   urlId,
+    //   tagToDelete,
+    //   source,
+    //   buttonData: $button.data()
+    // });
+
+    // Confirm deletion
+    $("#deleteTagModal").modal();
+    $(".delete-tag-caption").text(`Are you sure you want to remove the tag "${tagToDelete}"?`);
+  });
+
+  $("#deleteTagModalForm").on("click", "button", function(event) {
+    event.preventDefault();
+    const buttonId = $(this).attr("id");
+
+    if (buttonId === "dontDeleteTag") {
+      $("#deleteTagModal").modal("hide");
+      return;
+    }
+
+    if (buttonId === "deleteTag" && currentTagData) {
+      const { urlId, tagToDelete, source } = currentTagData;
+      const apiEndpoint = getApiEndpoint($clickedButton);
+
+      $.ajax({
+        url: `/api/${apiEndpoint}/${urlId}/remove_tag/`,
+        type: "POST",
+        data: {
+          tag: tagToDelete,
+          source: source,
+          csrfmiddlewaretoken: csrftoken
+        },
+        success: function(response) {
+          $("#deleteTagModal").modal("hide");
+          $("#delta_urls_table").DataTable().ajax.reload(null, false);
+          $("#curated_urls_table").DataTable().ajax.reload(null, false);
+          toastr.success("Tag removed successfully");
+        },
+        error: function(xhr, status, error) {
+          toastr.error("Error removing tag: " + error);
+        }
+      });
+    }
+  });
+}
+
+function handleTagAddition() {
+  let activeDropdown = null;
+
+  function createDropdownContent() {
+    return tdamm_choices.map(choice =>
+      `<div class="tdamm-option" data-value="${choice.code}">
+        ${choice.display}
+      </div>`
+    ).join('');
+  }
+
+  function hideDropdown(dropdown) {
+    if (dropdown) {
+      dropdown.remove();
+      activeDropdown = null;
+    }
+  }
+
+  $('body').on('click', '.add-tdamm-tag', function(e) {
+      // console.log("Add tag button clicked");
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (activeDropdown) {
+        hideDropdown(activeDropdown);
+      }
+
+      const $button = $(this);
+      const urlId = $button.data('url-id');
+      const source = $button.data('source');
+
+      // console.log("Button data:", { urlId, source });
+
+      // Clone dropdown template
+      const dropdown = $('#tdammDropdownTemplate').children().first().clone();
+      // console.log("Cloned template:", dropdown.html());
+
+      const optionsList = dropdown.find('.tdamm-options-list');
+      optionsList.html(createDropdownContent());
+
+      // Position dropdown
+      dropdown.css({
+          position: 'absolute',
+          top: $button.offset().top + $button.outerHeight() + 5,
+          left: $button.offset().left,
+          display: 'block',
+          width: '300px',
+          // zIndex: 1000
+          zIndex: 9999
+          // background: 'red',
+          // border: '2px solid yellow'
+      });
+
+      optionsList.on('click', '.tdamm-option', function() {
+          const selectedTag = $(this).data('value');
+          const apiEndpoint = getApiEndpoint($button);
+
+          $.ajax({
+            url: `/api/${apiEndpoint}/${urlId}/add_tag/`,
+            type: 'POST',
+            data: {
+              tag: selectedTag,
+              source: source,
+              csrfmiddlewaretoken: csrftoken
+            },
+            success: function(response) {
+              $("#delta_urls_table").DataTable().ajax.reload(null, false);
+              $("#curated_urls_table").DataTable().ajax.reload(null, false);
+              toastr.success("Tag added successfully");
+              hideDropdown(dropdown[0]);
+            },
+            error: function(xhr, status, error) {
+              toastr.error("Error adding tag: " + error);
+            }
+          });
+        });
+
+        if ($button.offset().left + 300 > $(window).width()) {
+          dropdown.css({
+            left: 'auto',
+            right: $(window).width() - ($button.offset().left + $button.outerWidth())
+          });
+        }
+
+      // Add to document and store reference
+      $('body').append(dropdown);
+      // console.log("Dropdown appended to body:", dropdown);
+      activeDropdown = dropdown[0];
+  });
+
+  // Close dropdown when clicking outside
+  $(document).on('click', function(e) {
+      if (activeDropdown && !$(e.target).closest('.tdamm-dropdown').length) {
+          hideDropdown(activeDropdown);
+      }
   });
 }

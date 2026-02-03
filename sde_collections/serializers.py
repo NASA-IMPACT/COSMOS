@@ -7,6 +7,7 @@ from .models.delta_patterns import (
     DeltaDocumentTypePattern,
     DeltaExcludePattern,
     DeltaIncludePattern,
+    DeltaTdammTagPattern,
     DeltaTitlePattern,
 )
 from .models.delta_url import CuratedUrl, DeltaUrl
@@ -73,12 +74,21 @@ class DeltaURLSerializer(serializers.ModelSerializer):
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
     delta_urls_count = serializers.SerializerMethodField(read_only=True)
     tdamm_tag = serializers.SerializerMethodField()
+    tag_source = serializers.SerializerMethodField()
     exclude_pattern_type = serializers.IntegerField(read_only=True)
     include_pattern_id = serializers.IntegerField(read_only=True)
 
     def get_tdamm_tag(self, obj):
         tags = obj.tdamm_tag
+        # print(f"TDAMM tags for {obj.url}:")
+        # print(f"- Raw tags: {tags}")
+        # print(f"- Manual tags: {obj.tdamm_tag_manual}")
+        # print(f"- ML tags: {obj.tdamm_tag_ml}")
         return tags if tags is not None else []
+
+    def get_tag_source(self, obj):
+        # print(f"get_tag_source called for {obj.url}, returning: {obj.get_tag_source()}")
+        return obj.get_tag_source()
 
     def get_delta_urls_count(self, obj):
         titlepattern = obj.deltatitlepatterns.last()
@@ -110,6 +120,7 @@ class DeltaURLSerializer(serializers.ModelSerializer):
             "division_display",
             "visited",
             "tdamm_tag",
+            "tag_source",
             "exclude_pattern_type",
             "include_pattern_id",
         )
@@ -124,10 +135,14 @@ class CuratedURLSerializer(serializers.ModelSerializer):
     match_pattern_type = serializers.SerializerMethodField(read_only=True)
     curated_urls_count = serializers.SerializerMethodField(read_only=True)
     tdamm_tag = serializers.SerializerMethodField()
+    tag_source = serializers.SerializerMethodField()
 
     def get_tdamm_tag(self, obj):
         tags = obj.tdamm_tag
         return tags if tags is not None else []
+
+    def get_tag_source(self, obj):
+        return obj.get_tag_source()
 
     def get_curated_urls_count(self, obj):
         titlepattern = obj.deltatitlepatterns.last()
@@ -158,6 +173,7 @@ class CuratedURLSerializer(serializers.ModelSerializer):
             "division_display",
             "visited",
             "tdamm_tag",
+            "tag_source",
         )
 
 
@@ -385,3 +401,30 @@ class DivisionPatternSerializer(BasePatternSerializer, serializers.ModelSerializ
         except DeltaDivisionPattern.DoesNotExist:
             pass
         return value
+
+
+class TdammTagPatternSerializer(BasePatternSerializer, serializers.ModelSerializer):
+    tags_display = serializers.SerializerMethodField(read_only=True)
+    operation_display = serializers.CharField(source="get_operation_display", read_only=True)
+
+    class Meta:
+        model = DeltaTdammTagPattern
+        fields = BasePatternSerializer.Meta.fields + (
+            "tags",
+            "tags_display",
+            "operation",
+            "operation_display",
+            "source",
+        )
+
+    def create(self, validated_data):
+        # Ensure tags field exists and is not None
+        if "tags" not in validated_data or validated_data["tags"] is None:
+            validated_data["tags"] = []
+        return super().create(validated_data)
+
+    def get_tags_display(self, obj):
+        """Return display names for all tags"""
+        if not obj.tags:
+            return []
+        return [dict(TDAMMTags.choices).get(tag, tag) for tag in obj.tags]

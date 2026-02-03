@@ -134,6 +134,84 @@ class BaseUrl(models.Model):
                 parts.append((part_string, part))
         return parts
 
+    def get_tag_source(self):
+        """Returns the source of the TDAMM tags: 'manual', 'ml', or 'Not Set'"""
+        # Convert None to empty list for comparison
+        manual_tags = self.tdamm_tag_manual or []
+        ml_tags = self.tdamm_tag_ml or []
+
+        if manual_tags and manual_tags != []:
+            return "manual"
+        elif ml_tags and ml_tags != []:
+            return "ml"
+
+        return "Not Set"
+
+    def _fields_match(self, other):
+        """Compare fields between two URL objects."""
+        fields_to_compare = [
+            "scraped_title",
+            "scraped_text",
+            "generated_title",
+            "visited",
+            "document_type",
+            "division",
+        ]
+
+        # Regular field comparison
+        basic_match = all(getattr(self, field) == getattr(other, field) for field in fields_to_compare)
+
+        # Special handling for tag fields - treat [] and None as equivalent
+        def tags_equivalent(a, b):
+            if not a and not b:  # Both are empty (None or [])
+                return True
+            return a == b
+
+        # Compare tag fields with special handling
+        tags_match = tags_equivalent(self.tdamm_tag_manual, other.tdamm_tag_manual) and tags_equivalent(
+            self.tdamm_tag_ml, other.tdamm_tag_ml
+        )
+
+        return basic_match and tags_match
+
+    def add_tag(self, tag: str, source: str) -> None:
+        """Add a tag and handle cleanup if needed."""
+        if source == "ml":
+            current_tags = self.tdamm_tag_ml or []
+            new_tags = list(current_tags)
+            if tag not in new_tags:
+                new_tags.append(tag)
+            self.tdamm_tag_manual = new_tags
+        else:
+            current_tags = self.tdamm_tag_manual or []
+            if tag not in current_tags:
+                current_tags.append(tag)
+                self.tdamm_tag_manual = current_tags
+
+        self.save()
+        self._cleanup_if_needed()
+
+    def remove_tag(self, tag: str, source: str) -> None:
+        """Remove a tag and handle cleanup if needed."""
+        if source == "ml":
+            ml_tags = self.tdamm_tag_ml
+            if ml_tags:
+                new_manual_tags = [t for t in ml_tags if t != tag]
+                self.tdamm_tag_manual = new_manual_tags
+        else:
+            if self.tdamm_tag_manual:
+                manual_tags = self.tdamm_tag_manual
+                if tag in manual_tags:
+                    manual_tags.remove(tag)
+                    self.tdamm_tag_manual = manual_tags
+
+        self.save()
+        self._cleanup_if_needed()
+
+    def _cleanup_if_needed(self):
+        """Override in DeltaUrl to implement cleanup logic."""
+        pass
+
     @property
     def path(self) -> str:
         parsed = urlparse(self.url)
@@ -165,6 +243,15 @@ class DeltaUrl(BaseUrl):
     objects = DeltaUrlManager()
     to_delete = models.BooleanField(default=False)
 
+    def _cleanup_if_needed(self):
+        """Delete if identical to curated URL and not marked for deletion."""
+        try:
+            curated_url = CuratedUrl.objects.get(collection=self.collection, url=self.url)
+            if not self.to_delete and self._fields_match(curated_url):
+                self.delete()
+        except CuratedUrl.DoesNotExist:
+            pass
+
     class Meta:
         verbose_name = "Delta Urls"
         verbose_name_plural = "Delta Urls"
@@ -175,8 +262,42 @@ class CuratedUrl(BaseUrl):
     """Urls that are curated and ready for production"""
 
     collection = models.ForeignKey("Collection", on_delete=models.CASCADE, related_name="curated_urls")
-
     objects = CuratedUrlManager()
+
+    def _is_delta_identical(self, delta_url):
+        """Check if DeltaUrl has identical metadata to CuratedUrl."""
+        fields_to_compare = [
+            "scraped_title",
+            "scraped_text",
+            "generated_title",
+            "visited",
+            "document_type",
+            "division",
+            "tdamm_tag_manual",
+            "tdamm_tag_ml",
+        ]
+        return all(getattr(delta_url, field) == getattr(self, field) for field in fields_to_compare)
+
+    def _create_or_update_delta(self):
+        """Create or update delta URL using collection's delta migration logic."""
+        self.collection.create_or_update_delta_url(self, to_delete=False)
+        return self.collection.delta_urls.get(url=self.url)
+
+    def add_tag(self, tag: str, source: str) -> None:
+        """Create/update DeltaUrl and add tag to it."""
+        delta_url = self._create_or_update_delta()
+        if delta_url:
+            delta_url.add_tag(tag, source)
+            if not delta_url.to_delete and delta_url.tdamm_tag == self.tdamm_tag:
+                delta_url.delete()
+
+    def remove_tag(self, tag: str, source: str) -> None:
+        """Create/update DeltaUrl and remove tag from it."""
+        delta_url = self._create_or_update_delta()
+        if delta_url:
+            delta_url.remove_tag(tag, source)
+            if not delta_url.to_delete and delta_url.tdamm_tag == self.tdamm_tag:
+                delta_url.delete()
 
     class Meta:
         verbose_name = "Curated Urls"

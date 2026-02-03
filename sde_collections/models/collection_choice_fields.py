@@ -165,3 +165,10 @@ class TDAMMTags(models.TextChoices):
             if choice[1].lower() == text.lower():
                 return choice[0]
         return None
+
+
+class OperationChoices(models.IntegerChoices):
+    """Operation choices for the TDAMM tag pattern model."""
+
+    ADD = 1, "Add Tag"
+    REMOVE = 2, "Remove Tag"

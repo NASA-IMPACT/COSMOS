@@ -2,6 +2,7 @@ import re
 from typing import Any
 
 from django.apps import apps
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -11,7 +12,12 @@ from ..utils.title_resolver import (
     resolve_title,
     validate_fstring,
 )
-from .collection_choice_fields import Divisions, DocumentTypes
+from .collection_choice_fields import (
+    Divisions,
+    DocumentTypes,
+    OperationChoices,
+    TDAMMTags,
+)
 
 
 class BaseMatchPattern(models.Model):
@@ -691,3 +697,365 @@ class DeltaResolvedTitle(DeltaResolvedTitleBase):
 class DeltaResolvedTitleError(DeltaResolvedTitleBase):
     error_string = models.TextField(null=False, blank=False)
     http_status_code = models.IntegerField(null=True, blank=True)
+
+
+class DeltaTdammTagPattern(BaseMatchPattern):
+    """Pattern for adding or removing TDAMM tags."""
+
+    # tag = models.CharField(max_length=255, choices=TDAMMTags.choices)
+    tags = ArrayField(
+        models.CharField(max_length=255, choices=TDAMMTags.choices),
+        blank=True,
+        null=True,
+        default=list,
+        help_text="List of tags to add or remove",
+    )
+    operation = models.IntegerField(choices=OperationChoices.choices, default=OperationChoices.ADD)
+    source = models.CharField(max_length=10, default="manual")
+
+    def save(self, *args, **kwargs):
+        # Ensure tags are never None
+        if self.tags is None:
+            self.tags = []
+        super().save(*args, **kwargs)
+
+    def apply(self):
+        """
+        Apply tag operation to matching URLs.
+        Similar to FieldModifyingPattern.apply() but with custom tag handling.
+        """
+        DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
+
+        # Get newly matching Curated URLs
+        matching_curated_urls = self.get_matching_curated_urls()
+        previously_unaffected_curated = matching_curated_urls.exclude(
+            id__in=self.curated_urls.values_list("id", flat=True)
+        )
+
+        # Process each unaffected Curated URL
+        for curated_url in previously_unaffected_curated:
+            if not self.is_most_distinctive_pattern(curated_url):
+                continue
+
+            # Check if operation would change tags
+            if self._would_operation_change_tags(curated_url):
+                # Check if Delta already exists
+                delta_exists = DeltaUrl.objects.filter(url=curated_url.url, collection=self.collection).exists()
+
+                if not delta_exists:
+                    # Create new Delta URL with copied fields
+                    fields = {
+                        field.name: getattr(curated_url, field.name)
+                        for field in curated_url._meta.fields
+                        if field.name not in ["id", "collection"]
+                    }
+                    fields["to_delete"] = False
+                    fields["collection"] = self.collection
+
+                    delta = DeltaUrl.objects.create(**fields)
+
+                    # Apply tag operation
+                    self._apply_tag_operation(delta)
+
+        # Update tags for all matching Delta URLs
+        for delta_url in self.get_matching_delta_urls():
+            if self.is_most_distinctive_pattern(delta_url):
+                self._apply_tag_operation(delta_url)
+
+        # affected_urls = list(self.get_matching_delta_urls().values_list('url', flat=True))
+
+        # Update pattern relationships
+        self.update_affected_delta_urls_list()
+        self.update_affected_curated_urls_list()
+
+        # for pattern_model in ['DeltaExcludePattern',
+        #                       'DeltaIncludePattern',
+        #                       'DeltaTitlePattern',
+        #                       'DeltaDocumentTypePattern',
+        #                       'DeltaDivisionPattern']:
+        #     model = ContentType.objects.get(app_label="sde_collections", model=pattern_model.lower()).model_class()
+        #     for pattern in model.objects.filter(collection=self.collection):
+        #         # Only check patterns that might apply to our URLs
+        #         for url in affected_urls:
+        #             if re.search(pattern.get_regex_pattern(), url):
+        #                 pattern.apply_to_url(url)
+
+    # def unapply(self):
+    #     """Remove tag operation effects with comprehensive checks."""
+    #     DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
+    #     CuratedUrl = apps.get_model("sde_collections", "CuratedUrl")
+
+    #     # Store affected URLs
+    #     affected_urls = [(delta.id, delta.url) for delta in self.delta_urls.all()]
+
+    #     # Clear relationships
+    #     self.delta_urls.clear()
+    #     self.curated_urls.clear()
+
+    #     # Process each affected URL
+    #     for delta_id, url in affected_urls:
+    #         try:
+    #             delta = DeltaUrl.objects.get(id=delta_id)
+    #             curated = CuratedUrl.objects.get(collection=delta.collection, url=url)
+
+    #             # Revert tags
+    #             if delta.tdamm_tag_manual:
+    #                 if self.operation == 1:  # ADD
+    #                     if self.tag in delta.tdamm_tag_manual:
+    #                         delta.tdamm_tag_manual.remove(self.tag)
+    #                 elif self.operation == 2:  # REMOVE
+    #                     if self.tag not in delta.tdamm_tag_manual and self.tag in (delta.tdamm_tag_ml or []):
+    #                         delta.tdamm_tag_manual = [t for t in (delta.tdamm_tag_ml or []) if t != self.tag]
+
+    #                 if not delta.tdamm_tag_manual:
+    #                     delta.tdamm_tag_manual = None
+
+    #                 delta.save()
+
+    #             # Check ALL pattern types that might affect this URL
+    #             other_patterns_exist = (
+    #                 DeltaExcludePattern.objects.filter(delta_urls=delta).exists()
+    #                 or DeltaIncludePattern.objects.filter(delta_urls=delta).exists()
+    #                 or DeltaTitlePattern.objects.filter(delta_urls=delta).exists()
+    #                 or DeltaDocumentTypePattern.objects.filter(delta_urls=delta).exists()
+    #                 or DeltaDivisionPattern.objects.filter(delta_urls=delta).exists()
+    #                 or DeltaTdammTagPattern.objects.filter(delta_urls=delta).exists()
+    #             )
+
+    #             # Only delete if no other patterns affect it AND it matches curated
+    #             if not other_patterns_exist and delta._fields_match(curated) and not delta.to_delete:
+    #                 DeltaUrl.objects.filter(id=delta_id).delete()
+
+    #         except (DeltaUrl.DoesNotExist, CuratedUrl.DoesNotExist):
+    #             continue
+
+    def unapply(self):
+        """Remove tag operation effects with comprehensive handling for multiple tags."""
+        # DeltaUrl = apps.get_model("sde_collections", "DeltaUrl")
+        CuratedUrl = apps.get_model("sde_collections", "CuratedUrl")
+
+        # Store affected URLs
+        affected_urls = list(self.delta_urls.all())
+
+        # Clear relationship before deleting to avoid cascade issues
+        self.delta_urls.clear()
+        self.curated_urls.clear()
+
+        # Process each affected URL
+        for delta_url in affected_urls:
+            current_tags = delta_url.tdamm_tag_manual or []
+            changed = False
+
+            # If it was an ADD pattern, remove these tags
+            if self.operation == OperationChoices.ADD and self.tags:
+                # Remove all tags that were added by this pattern
+                new_tags = [t for t in current_tags if t not in self.tags]
+                if new_tags != current_tags:
+                    delta_url.tdamm_tag_manual = new_tags if new_tags else None
+                    changed = True
+
+            # If it was a REMOVE pattern, we don't need to add back tags automatically
+            # Other patterns will be reapplied by refresh_url_tags below
+
+            if changed:
+                delta_url.save()
+
+            # Refresh all patterns for this URL to ensure consistency
+            self._refresh_url_tags(delta_url)
+
+            # Check for cleanup
+            try:
+                curated_url = CuratedUrl.objects.get(collection=delta_url.collection, url=delta_url.url)
+                if not delta_url.to_delete and delta_url._fields_match(curated_url):
+                    delta_url.delete()
+            except CuratedUrl.DoesNotExist:
+                pass
+
+    def _refresh_url_tags(self, url_obj):
+        """Refresh URL tags by reapplying all patterns affecting this URL."""
+        DeltaTdammTagPattern = apps.get_model("sde_collections", "DeltaTdammTagPattern")
+
+        # Get all patterns affecting this URL
+        add_patterns = DeltaTdammTagPattern.objects.filter(
+            collection=self.collection, delta_urls=url_obj, operation=OperationChoices.ADD
+        ).exclude(
+            id=self.id
+        )  # Exclude this pattern
+
+        remove_patterns = DeltaTdammTagPattern.objects.filter(
+            collection=self.collection, delta_urls=url_obj, operation=OperationChoices.REMOVE
+        ).exclude(
+            id=self.id
+        )  # Exclude this pattern
+
+        # Collect all tags from ADD patterns
+        add_tags = set()
+        for pattern in add_patterns:
+            add_tags.update(pattern.tags or [])
+
+        # Collect all tags from REMOVE patterns
+        remove_tags = set()
+        for pattern in remove_patterns:
+            remove_tags.update(pattern.tags or [])
+
+        # Final tags = (add tags) - (remove tags)
+        final_tags = list(add_tags - remove_tags)
+
+        # Update URL tags
+        if set(url_obj.tdamm_tag_manual or []) != set(final_tags):
+            url_obj.tdamm_tag_manual = final_tags if final_tags else None
+            url_obj.save()
+
+    def _would_operation_change_tags(self, url_obj):
+        """Determine if applying the operation would change the tags."""
+        ml_tags = url_obj.tdamm_tag_ml or []
+        manual_tags = url_obj.tdamm_tag_manual or []
+
+        if self.tags is None:
+            return False
+
+        if self.operation == OperationChoices.ADD:
+            # Would only change if at least one tag is not in manual tags
+            # return self.tag not in (manual_tags or [])
+            return any(tag not in manual_tags for tag in self.tags)
+
+        elif self.operation == OperationChoices.REMOVE:
+            # Would only change if 1) tag in manual OR 2) no manual tags and tag in ML
+            # return (manual_tags and self.tag in manual_tags) or (not manual_tags and ml_tags and self.tag in ml_tags)
+            # Would only change if any tag is present in manual OR no manual tags and any tag is in ML
+            return (manual_tags and any(tag in manual_tags for tag in self.tags)) or (
+                not manual_tags and ml_tags and any(tag in ml_tags for tag in self.tags)
+            )
+
+    # def _apply_tag_operation(self, url_obj):
+    #     manual_tags = url_obj.tdamm_tag_manual or []
+    #     changed = False
+
+    #     print(f"Applying operation {self.operation} to URL: {url_obj.url}")
+    #     print(f"Pattern tags: {self.tags}")
+    #     print(f"Current manual tags: {manual_tags}")
+
+    #     if self.operation == OperationChoices.ADD:
+    #         # Add all tags in the list
+    #         current_tags = manual_tags or []
+    #         for tag in self.tags:
+    #             if tag not in current_tags:
+    #                 current_tags.append(tag)
+    #                 changed = True
+    #         if changed:
+    #             print(f"New tags after ADD: {current_tags}")
+    #             url_obj.tdamm_tag_manual = current_tags
+    #     else:  # REMOVE
+    #         # Remove all tags in the list
+    #         if manual_tags:
+    #             new_tags = [t for t in manual_tags if t not in self.tags]
+    #             if new_tags != manual_tags:
+    #                 print(f"New tags after REMOVE: {new_tags}")
+    #                 url_obj.tdamm_tag_manual = new_tags
+    #                 changed = True
+
+    #     if changed:
+    #         url_obj.save()
+    #         if hasattr(url_obj, "_cleanup_if_needed"):
+    #             url_obj._cleanup_if_needed()
+    #         print(f"URL saved with new tags: {url_obj.tdamm_tag_manual}")
+
+    def _apply_tag_operation(self, url_obj):
+        """Apply tag operations to the URL with proper synchronization."""
+        manual_tags = url_obj.tdamm_tag_manual or []
+        changed = False
+
+        # Ensure tags is a list, not None
+        self.tags = self.tags or []
+
+        if self.operation == OperationChoices.ADD:
+            # For ADD operations, we want to synchronize the tags
+            # This means the URL should have exactly the tags in the pattern
+            # Get tags from all ADD patterns that apply to this URL
+            all_add_tags = set(self.tags)
+
+            # Find all other ADD patterns for this URL
+            other_add_patterns = DeltaTdammTagPattern.objects.filter(
+                collection=self.collection,
+                operation=OperationChoices.ADD,
+                delta_urls__id=url_obj.id,  # This pattern applies to this URL
+            ).exclude(id=self.id)
+
+            # Add tags from other applicable ADD patterns
+            for pattern in other_add_patterns:
+                all_add_tags.update(pattern.tags or [])
+
+            # Find all REMOVE patterns for this URL
+            remove_patterns = DeltaTdammTagPattern.objects.filter(
+                collection=self.collection,
+                operation=OperationChoices.REMOVE,
+                delta_urls__id=url_obj.id,  # This pattern applies to this URL
+            )
+
+            # Remove tags specified by REMOVE patterns
+            remove_tags = set()
+            for pattern in remove_patterns:
+                remove_tags.update(pattern.tags or [])
+
+            # Final tags = (all add tags) - (all remove tags)
+            final_tags = list(all_add_tags - remove_tags)
+
+            # Update if different from current tags
+            if set(final_tags) != set(manual_tags):
+                url_obj.tdamm_tag_manual = final_tags
+                changed = True
+
+        elif self.operation == OperationChoices.REMOVE:
+            # For REMOVE operations, just remove the tags
+            if manual_tags:
+                new_tags = [t for t in manual_tags if t not in self.tags]
+                if len(new_tags) != len(manual_tags):
+                    url_obj.tdamm_tag_manual = new_tags if new_tags else None
+                    changed = True
+
+        # Save changes
+        if changed:
+            url_obj.save()
+            if hasattr(url_obj, "_cleanup_if_needed"):
+                url_obj._cleanup_if_needed()
+
+    def _revert_tag_operation(self, url_obj):
+        """Revert the effects of the tag operation."""
+        ml_tags = url_obj.tdamm_tag_ml or []
+        manual_tags = url_obj.tdamm_tag_manual or []
+        changed = False
+
+        if self.operation == OperationChoices.ADD:
+            # If we added the tag, remove it
+            if manual_tags and self.tag in manual_tags:
+                manual_tags.remove(self.tag)
+                changed = True
+
+            if changed:
+                url_obj.tdamm_tag_manual = manual_tags
+                url_obj.save()
+
+        elif self.operation == OperationChoices.REMOVE:
+            # If we removed a tag, add it back if it was in ML tags
+            if ml_tags and self.tag in ml_tags:
+                if not manual_tags:
+                    manual_tags = list(ml_tags)
+                    changed = True
+                elif self.tag not in manual_tags:
+                    manual_tags.append(self.tag)
+                    changed = True
+
+            if changed:
+                if not manual_tags:
+                    manual_tags = None
+                url_obj.tdamm_tag_manual = manual_tags
+                url_obj.save()
+
+                if hasattr(url_obj, "_cleanup_if_needed"):
+                    url_obj._cleanup_if_needed()
+        print(f"Delta URL {url_obj.url} - ML tags: {url_obj.tdamm_tag_ml}, Manual tags: {url_obj.tdamm_tag_manual}")
+
+    class Meta(BaseMatchPattern.Meta):
+        verbose_name = "Delta TDAMM Tag Pattern"
+        verbose_name_plural = "Delta TDAMM Tag Patterns"
+        unique_together = ("collection", "match_pattern", "operation", "source")
