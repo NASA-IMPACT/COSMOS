@@ -20,7 +20,8 @@ from inference.models.inference_choice_fields import (
 )
 from sde_collections.tasks import (
     dispatch_scrape_job,
-    fetch_full_text,
+    index_collection_to_prod,
+    index_collection_to_test,
     migrate_dump_to_delta_and_handle_status_transistions,
 )
 
@@ -742,22 +743,9 @@ class Collection(models.Model):
         if not self.config_folder:
             self.config_folder = self._compute_config_folder_name()
 
-        if not self._state.adding:
-            old_status = Collection.objects.get(id=self.id).workflow_status
-            new_status = self.workflow_status
-            if old_status != new_status:
-                transition = (old_status, new_status)
-                if transition in STATUS_CHANGE_NOTIFICATIONS:
-                    details = STATUS_CHANGE_NOTIFICATIONS[transition]
-                    message = format_slack_message(self.name, details, self.id)
-                    try:
-                        # TODO: find a better way to allow this to work on dev environments with
-                        # no slack integration
-                        send_slack_message(message)
-                    except Exception as e:
-                        print(f"Error sending Slack message: {e}")
-
-        # Call the parent class's save method
+        # Status-change Slack notifications live in the post_save receiver
+        # (handle_workflow_status_change), so a message can never be sent for a save
+        # that then fails.
         super().save(*args, **kwargs)
 
     def __init__(self, *args, **kwargs):
@@ -883,10 +871,37 @@ class ReindexingHistory(models.Model):
         return color_choices[self.reindexing_status]
 
 
-@receiver(post_save, sender=Collection)
-def create_configs_on_status_change(sender, instance, created, **kwargs):
-    """Creates various config files on certain workflow status changes"""
+def _send_status_change_notification(instance, old_status, new_status):
+    """Slack notification for a committed status transition. Lives in post_save (not
+    Collection.save) so a message can never be sent for a save that then fails, and so
+    it reuses the tracker's old value instead of an extra Collection.objects.get()."""
+    details = STATUS_CHANGE_NOTIFICATIONS.get((old_status, new_status))
+    if details is None:
+        return
+    message = format_slack_message(instance.name, details, instance.id)
+    try:
+        # TODO: find a better way to allow this to work on dev environments with
+        # no slack integration
+        send_slack_message(message)
+    except Exception as e:
+        print(f"Error sending Slack message: {e}")
 
+
+@receiver(post_save, sender=Collection)
+def handle_workflow_status_change(sender, instance, created, **kwargs):
+    """Single dispatcher for status-triggered side effects (WORKFLOW.md steps 12–18).
+
+    workflow_status:
+      READY_FOR_ENGINEERING    -> dispatch_scrape_job         (P3)
+      CURATED                  -> promote_to_curated + test-indexing hand-off
+      QC_PERFECT / QC_MINOR    -> prod-indexing hand-off
+    reindexing_status:
+      REINDEXING_NEEDED_ON_DEV -> dispatch_scrape_job         (P3, re-scrape)
+      REINDEXING_CURATED       -> promote_to_curated
+
+    REINDEXING_FINISHED_ON_DEV deliberately triggers nothing: the P4 ingest sets that
+    status itself, so a trigger here would double-fire.
+    """
     if getattr(instance, "_handling_status_change", False):
         return
 
@@ -894,27 +909,24 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
         instance._handling_status_change = True
 
         if "workflow_status" in instance.tracker.changed():
-            if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
-                instance.create_indexer_config(overwrite=True)
-                instance.create_indexer_job(overwrite=False)
+            old_status = instance.tracker.changed()["workflow_status"]
+            _send_status_change_notification(instance, old_status, instance.workflow_status)
+
+            if instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
+                dispatch_scrape_job.delay(instance.id)
             elif instance.workflow_status == WorkflowStatusChoices.CURATED:
                 instance.promote_to_curated()
-            elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
-                dispatch_scrape_job.delay(instance.id)
-            elif instance.workflow_status == WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV:
-                fetch_full_text.delay(instance.id, "lrm_dev")
+                index_collection_to_test.delay(instance.id)
             elif instance.workflow_status in [
                 WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
                 WorkflowStatusChoices.QUALITY_CHECK_MINOR,
             ]:
-                instance.add_to_public_query()
+                index_collection_to_prod.delay(instance.id)
 
         if "reindexing_status" in instance.tracker.changed():
             if instance.reindexing_status == ReindexingStatusChoices.REINDEXING_NEEDED_ON_DEV:
                 # Re-scrape path: replaces the engineer manually re-running a Sinequa job.
                 dispatch_scrape_job.delay(instance.id)
-            elif instance.reindexing_status == ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV:
-                fetch_full_text.delay(instance.id, "lrm_dev")
             elif instance.reindexing_status == ReindexingStatusChoices.REINDEXING_CURATED:
                 instance.promote_to_curated()
 

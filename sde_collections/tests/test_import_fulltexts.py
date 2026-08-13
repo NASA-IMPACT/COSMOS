@@ -7,7 +7,7 @@ from django.db.models.signals import post_save
 
 from inference.models.inference import ModelVersion
 from inference.models.inference_choice_fields import ClassificationType
-from sde_collections.models.collection import create_configs_on_status_change
+from sde_collections.models.collection import handle_workflow_status_change
 from sde_collections.models.delta_url import DeltaUrl, DumpUrl
 from sde_collections.tasks import (
     fetch_full_text,
@@ -19,10 +19,10 @@ from sde_collections.tests.factories import CollectionFactory
 @pytest.fixture
 def disconnect_signals():
     # Disconnect the signal before each test
-    post_save.disconnect(create_configs_on_status_change, sender="sde_collections.Collection")
+    post_save.disconnect(handle_workflow_status_change, sender="sde_collections.Collection")
     yield
     # Reconnect the signal after each test
-    post_save.connect(create_configs_on_status_change, sender="sde_collections.Collection")
+    post_save.connect(handle_workflow_status_change, sender="sde_collections.Collection")
 
 
 @pytest.fixture

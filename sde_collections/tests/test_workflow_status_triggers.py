@@ -20,6 +20,9 @@ from sde_collections.tests.factories import CollectionFactory, DumpUrlFactory
 
 
 class TestWorkflowStatusTransitions(TestCase):
+    """P5 trigger table: the dispatcher (handle_workflow_status_change) drives only the
+    crawl4ai/indexing pipeline — every Sinequa branch is gone."""
+
     def setUp(self):
         self.collection = CollectionFactory()
 
@@ -33,67 +36,113 @@ class TestWorkflowStatusTransitions(TestCase):
         mock_dispatch.assert_called_once_with(self.collection.id)
 
     @patch("sde_collections.tasks.fetch_full_text.delay")
-    def test_indexing_finished_triggers_full_text_fetch(self, mock_fetch):
-        """When status changes to INDEXING_FINISHED_ON_DEV, it should trigger full text fetch"""
+    def test_indexing_finished_triggers_nothing(self, mock_fetch):
+        """INDEXING_FINISHED_ON_DEV is a Sinequa-era status: its full-text-fetch trigger is
+        gone (the P4 ingest replaces the fetch entirely)."""
         self.collection.workflow_status = WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV
         self.collection.save()
 
-        mock_fetch.assert_called_once_with(self.collection.id, "lrm_dev")
+        mock_fetch.assert_not_called()
 
     @patch("sde_collections.models.collection.Collection.create_indexer_config")
-    @patch("sde_collections.models.collection.GitHubHandler")
-    def test_ready_for_curation_triggers_indexer_config(self, mock_github_handler, mock_indexer):
-        """When status changes to READY_FOR_CURATION, it should create indexer config"""
+    @patch("sde_collections.models.collection.Collection.create_indexer_job")
+    def test_ready_for_curation_triggers_nothing(self, mock_indexer_job, mock_indexer_config):
+        """The Sinequa indexer-config branch on READY_FOR_CURATION is gone."""
         self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_CURATION
         self.collection.save()
 
-        mock_indexer.assert_called_once_with(overwrite=True)
+        mock_indexer_config.assert_not_called()
+        mock_indexer_job.assert_not_called()
 
+    @patch("sde_collections.tasks.index_collection_to_test.delay")
     @patch("sde_collections.models.collection.Collection.promote_to_curated")
-    def test_curated_triggers_promotion(self, mock_promote):
-        """When status changes to CURATED, it should promote DeltaUrls to CuratedUrls"""
+    def test_curated_promotes_and_enqueues_test_indexing(self, mock_promote, mock_index_test):
+        """CURATED promotes DeltaUrls to CuratedUrls AND hands off to test indexing."""
         self.collection.workflow_status = WorkflowStatusChoices.CURATED
         self.collection.save()
 
         mock_promote.assert_called_once()
+        mock_index_test.assert_called_once_with(self.collection.id)
 
     @patch("sde_collections.models.collection.Collection.add_to_public_query")
-    def test_quality_check_perfect_triggers_public_query(self, mock_add):
-        """When status changes to QUALITY_CHECK_PERFECT, it should add to public query"""
-        self.collection.workflow_status = WorkflowStatusChoices.QUALITY_CHECK_PERFECT
+    @patch("sde_collections.tasks.index_collection_to_prod.delay")
+    def test_quality_check_statuses_enqueue_prod_indexing(self, mock_index_prod, mock_add):
+        """QC_PERFECT / QC_MINOR hand off to prod indexing; add_to_public_query is gone."""
+        for status in [WorkflowStatusChoices.QUALITY_CHECK_PERFECT, WorkflowStatusChoices.QUALITY_CHECK_MINOR]:
+            collection = CollectionFactory()
+            collection.workflow_status = status
+            collection.save()
+
+            mock_index_prod.assert_called_with(collection.id)
+        assert mock_index_prod.call_count == 2
+        mock_add.assert_not_called()
+
+    @patch("sde_collections.tasks.index_collection_to_test.delay")
+    def test_reentrancy_guard_prevents_recursion(self, mock_index_test):
+        """A save() performed inside a trigger must not re-fire the dispatcher."""
+
+        def promote_and_save_again():
+            # Simulates a trigger mutating and saving the same instance.
+            self.collection.save()
+
+        with patch(
+            "sde_collections.models.collection.Collection.promote_to_curated",
+            side_effect=promote_and_save_again,
+        ) as mock_promote:
+            self.collection.workflow_status = WorkflowStatusChoices.CURATED
+            self.collection.save()
+
+        mock_promote.assert_called_once()
+        mock_index_test.assert_called_once()
+
+
+class TestSlackNotificationOnTransition(TestCase):
+    """P5: the Slack send moved out of Collection.save() into the post_save receiver."""
+
+    def setUp(self):
+        self.collection = CollectionFactory(workflow_status=WorkflowStatusChoices.RESEARCH_IN_PROGRESS)
+
+    @patch("sde_collections.tasks.dispatch_scrape_job.delay")
+    @patch("sde_collections.models.collection.send_slack_message")
+    def test_mapped_transition_sends_message_once(self, mock_send, mock_dispatch):
+        self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
         self.collection.save()
 
-        mock_add.assert_called_once()
+        mock_send.assert_called_once()
+        assert self.collection.name in mock_send.call_args.args[0] or "<" in mock_send.call_args.args[0]
+
+    @patch("sde_collections.models.collection.send_slack_message")
+    def test_unmapped_transition_sends_nothing(self, mock_send):
+        self.collection.workflow_status = WorkflowStatusChoices.MERGE_PENDING
+        self.collection.save()
+
+        mock_send.assert_not_called()
+
+    @patch("sde_collections.models.collection.send_slack_message", side_effect=Exception("slack down"))
+    @patch("sde_collections.tasks.dispatch_scrape_job.delay")
+    def test_slack_failure_does_not_break_the_save(self, mock_dispatch, mock_send):
+        self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
+        self.collection.save()  # must not raise
+
+        self.collection.refresh_from_db()
+        assert self.collection.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING
 
 
 class TestReindexingStatusTransitions(TestCase):
     def setUp(self):
-        # Mock the GitHubHandler to return valid XML content
-        self.mock_github_handler = patch("sde_collections.models.collection.GitHubHandler").start()
-
-        self.mock_github_handler.return_value._get_file_contents.return_value.decoded_content = (
-            b'<?xml version="1.0" encoding="UTF-8"?>\n'
-            b"<Sinequa>\n"
-            b"    <KeepHashFragmentInUrl>false</KeepHashFragmentInUrl>\n"
-            b"    <CollectionSelection>Sample Collection</CollectionSelection>\n"
-            b"</Sinequa>"
-        )
-
-        self.addCleanup(patch.stopall)
-
-        # Create the collection with the mock applied
         self.collection = CollectionFactory(
-            workflow_status=WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
+            workflow_status=WorkflowStatusChoices.PROD_PERFECT,
             reindexing_status=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
         )
 
     @patch("sde_collections.tasks.fetch_full_text.delay")
-    def test_reindexing_finished_triggers_full_text_fetch(self, mock_fetch):
-        """When reindexing status changes to FINISHED, it should trigger full text fetch"""
+    def test_reindexing_finished_triggers_nothing(self, mock_fetch):
+        """REINDEXING_FINISHED_ON_DEV must trigger nothing: the P4 ingest sets this status
+        itself — a fetch trigger here would double-fire."""
         self.collection.reindexing_status = ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV
         self.collection.save()
 
-        mock_fetch.assert_called_once_with(self.collection.id, "lrm_dev")
+        mock_fetch.assert_not_called()
 
     @patch("sde_collections.models.collection.Collection.promote_to_curated")
     def test_reindexing_curated_triggers_promotion(self, mock_promote):

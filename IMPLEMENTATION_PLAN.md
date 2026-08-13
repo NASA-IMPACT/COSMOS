@@ -550,9 +550,9 @@ Expect dump count to match `documents_scraped` in the summary, deltas created, s
 - [x] Ingest claims via CAS before writing, is idempotent, and populates `DumpUrl` without touching the model
 - [x] Re-scrape path (`REINDEXING_NEEDED_ON_DEV`) polls and ingests end to end
 - [x] A real dev collection goes seed URL → `Ready for Curation` end to end
-- [ ] Slack posts an ingest summary *(wired in the migrate task + unit-asserted with counts; a real
-      post is blocked until P5 removes the Sinequa `READY_FOR_CURATION → create_indexer_config`
-      branch, which currently raises after the status save and cuts the task short — re-verify in P5)*
+- [x] Slack posts an ingest summary *(wired in the migrate task; was blocked by the Sinequa
+      `READY_FOR_CURATION → create_indexer_config` branch raising mid-task — P5 removed that
+      branch, and the P4 end-to-end test now runs unpatched, asserting the notification + counts)*
 
 ---
 
@@ -620,10 +620,10 @@ Confirm `CuratedUrl`s appear, `DeltaUrl`s are cleared, status lands on `Test Ind
 and Slack posts the curation message.
 
 ### Done when
-- [ ] Dispatcher renamed and rewired; no Sinequa calls remain in the trigger path
-- [ ] Slack moved into `post_save`
-- [ ] Indexing stubs enqueue and set the in-flight statuses
-- [ ] `test_workflow_status_triggers.py` rewritten and green
+- [x] Dispatcher renamed and rewired; no Sinequa calls remain in the trigger path
+- [x] Slack moved into `post_save`
+- [x] Indexing stubs enqueue and set the in-flight statuses
+- [x] `test_workflow_status_triggers.py` rewritten and green
 
 ---
 

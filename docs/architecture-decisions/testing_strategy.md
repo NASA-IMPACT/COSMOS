@@ -134,7 +134,7 @@ tests/test_merge_production_dotenvs_in_dotenv.py  |                             
     - _write_to_github()
     - update_config_xml()
     - apply_all_patterns()
-    - create_configs_on_status_change()
+    - handle_workflow_status_change()
   - sde_collections/models/collection_choice_fields.py
   - sde_collections/models/delta_patterns.py
   - sde_collections/models/delta_url.py

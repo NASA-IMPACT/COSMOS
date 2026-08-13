@@ -177,13 +177,7 @@ class TestIngestScrapedCollection:
             ingest_scraped_collection(collection.id)
         mock_delay.assert_called_once_with(collection.id)
 
-        # READY_FOR_CURATION still fires the Sinequa indexer-config branch until P5
-        # removes it — patch it out here as the pre-existing trigger tests do.
-        with (
-            patch("sde_collections.models.collection.Collection.create_indexer_config"),
-            patch("sde_collections.models.collection.Collection.create_indexer_job"),
-        ):
-            migrate_dump_to_delta_and_handle_status_transistions(collection.id)
+        migrate_dump_to_delta_and_handle_status_transistions(collection.id)
 
         collection.refresh_from_db()
         assert collection.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION

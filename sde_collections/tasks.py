@@ -333,6 +333,32 @@ def poll_scrape_jobs():
     return f"Enqueued ingest for {enqueued} collection(s)."
 
 
+@celery_app.task()
+def index_collection_to_test(collection_id):
+    """P5 stub — the event-trigger seam for the WEB_COSMOS indexing pipeline
+    (sde-api-scrapers, branch web-indexing). P7 fills this in: mint a run_id, export the
+    curated set to S3 (documents.jsonl + manifest.json, manifest written last), assume
+    the dispatch role, and ecs:RunTask with a command override. Never indexes in-process.
+    """
+    Collection = apps.get_model("sde_collections", "Collection")
+    collection = Collection.objects.get(id=collection_id)
+    collection.workflow_status = WorkflowStatusChoices.TEST_INDEXING
+    collection.save()
+    print(f"[P5 stub] Test indexing recorded for {collection.config_folder}; dispatch lands in P7.")
+    return f"Test indexing started for {collection.config_folder}"
+
+
+@celery_app.task()
+def index_collection_to_prod(collection_id):
+    """P5 stub — prod counterpart of index_collection_to_test; see its docstring."""
+    Collection = apps.get_model("sde_collections", "Collection")
+    collection = Collection.objects.get(id=collection_id)
+    collection.workflow_status = WorkflowStatusChoices.PRODUCTION_INDEXING
+    collection.save()
+    print(f"[P5 stub] Production indexing recorded for {collection.config_folder}; dispatch lands in P7.")
+    return f"Production indexing started for {collection.config_folder}"
+
+
 @celery_app.task(soft_time_limit=600)
 def ingest_scraped_collection(collection_id, claim=True):
     """Ingest completed crawl results from S3 into DumpUrls (replaces fetch_full_text).
