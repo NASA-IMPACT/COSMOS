@@ -544,13 +544,15 @@ Expect dump count to match `documents_scraped` in the summary, deltas created, s
 `Ready for Curation`.
 
 ### Done when
-- [ ] S3 completion contract implemented, including the zero-document failure case **and the
+- [x] S3 completion contract implemented, including the zero-document failure case **and the
       `dispatched_at` freshness rule**
-- [ ] `poll_scrape_jobs` beat row created via `post_migrate`, gated on `SCRAPE_POLL_ENABLED`
-- [ ] Ingest claims via CAS before writing, is idempotent, and populates `DumpUrl` without touching the model
-- [ ] Re-scrape path (`REINDEXING_NEEDED_ON_DEV`) polls and ingests end to end
-- [ ] A real dev collection goes seed URL → `Ready for Curation` end to end
-- [ ] Slack posts an ingest summary
+- [x] `poll_scrape_jobs` beat row created via `post_migrate`, gated on `SCRAPE_POLL_ENABLED`
+- [x] Ingest claims via CAS before writing, is idempotent, and populates `DumpUrl` without touching the model
+- [x] Re-scrape path (`REINDEXING_NEEDED_ON_DEV`) polls and ingests end to end
+- [x] A real dev collection goes seed URL → `Ready for Curation` end to end
+- [ ] Slack posts an ingest summary *(wired in the migrate task + unit-asserted with counts; a real
+      post is blocked until P5 removes the Sinequa `READY_FOR_CURATION → create_indexer_config`
+      branch, which currently raises after the status save and cuts the task short — re-verify in P5)*
 
 ---
 

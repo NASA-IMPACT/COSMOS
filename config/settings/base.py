@@ -361,6 +361,8 @@ SDE_S3_BUCKET = env("SDE_S3_BUCKET", default="")  # crawler output bucket
 CRAWLER_INSTANCE_ID = env("CRAWLER_INSTANCE_ID", default="")  # i-0b6a61d95888886f4 on dev
 CRAWLER_INBOX_PATH = env("CRAWLER_INBOX_PATH", default="/opt/sde-crawler/jobs/incoming")
 SCRAPE_POLL_ENABLED = env.bool("SCRAPE_POLL_ENABLED", default=False)
+# A dispatched crawl with no fresh S3 summary after this long is declared dead (P4).
+SCRAPE_STALL_TIMEOUT_HOURS = env.int("SCRAPE_STALL_TIMEOUT_HOURS", default=24)
 INFERENCE_ENABLED = env.bool("INFERENCE_ENABLED", default=False)
 # pipeline-scoped credentials for local dev ONLY; blank in AWS (instance role takes over)
 SDE_AWS_ACCESS_KEY_ID = env("SDE_AWS_ACCESS_KEY_ID", default="")
