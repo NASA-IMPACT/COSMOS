@@ -15,6 +15,7 @@ from .models.collection import Collection, ReindexingHistory, WorkflowHistory
 from .models.collection_choice_fields import TDAMMTags
 from .models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
+from .models.scraper_config import ScrapeDispatch, ScraperConfigOverride
 from .tasks import fetch_full_text, import_candidate_urls_from_api
 
 
@@ -501,3 +502,38 @@ admin.site.register(DeltaDivisionPattern, DeltaDivisionPatternAdmin)
 admin.site.register(DumpUrl, DumpUrlAdmin)
 admin.site.register(DeltaUrl, DeltaUrlAdmin)
 admin.site.register(CuratedUrl, CuratedUrlAdmin)
+
+
+@admin.register(ScraperConfigOverride)
+class ScraperConfigOverrideAdmin(admin.ModelAdmin):
+    """Curator-editable crawl overrides (WORKFLOW.md step 6)."""
+
+    list_display = (
+        "collection",
+        "max_pages",
+        "depth_limit",
+        "delay",
+        "concurrent_requests",
+        "obey_robots",
+        "include_subdomains",
+    )
+    search_fields = ("collection__name", "collection__config_folder")
+    raw_id_fields = ("collection",)
+
+
+@admin.register(ScrapeDispatch)
+class ScrapeDispatchAdmin(admin.ModelAdmin):
+    """Read-only dispatch log for debugging scrape runs."""
+
+    list_display = ("collection", "dispatched_at", "ssm_command_id")
+    search_fields = ("collection__name", "collection__config_folder", "ssm_command_id")
+    list_filter = ("dispatched_at",)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

@@ -434,11 +434,11 @@ aws ssm send-command --instance-ids i-0b6a61d95888886f4 \
 ```
 
 ### Done when
-- [ ] `ScraperConfigOverride` + `ScrapeDispatch` created, admin-visible, migration applied
-- [ ] Job JSON omits null overrides and rejects `max_pages > 100_000`
-- [ ] `READY_FOR_ENGINEERING` **and** `REINDEXING_NEEDED_ON_DEV` dispatch via SSM; Sinequa scraper-config calls gone from those branches
-- [ ] Every dispatch records `dispatched_at` + `ssm_command_id`
-- [ ] A real job JSON lands in the dev crawler inbox and moves to `jobs/done/`
+- [x] `ScraperConfigOverride` + `ScrapeDispatch` created, admin-visible, migration applied
+- [x] Job JSON omits null overrides and rejects `max_pages > 100_000`
+- [x] `READY_FOR_ENGINEERING` **and** `REINDEXING_NEEDED_ON_DEV` dispatch via SSM; Sinequa scraper-config calls gone from those branches
+- [x] Every dispatch records `dispatched_at` + `ssm_command_id`
+- [x] A real job JSON lands in the dev crawler inbox and moves to `jobs/done/`
 
 ---
 

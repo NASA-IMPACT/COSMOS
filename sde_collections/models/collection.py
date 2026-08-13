@@ -19,6 +19,7 @@ from inference.models.inference_choice_fields import (
     InferenceJobStatus,
 )
 from sde_collections.tasks import (
+    dispatch_scrape_job,
     fetch_full_text,
     migrate_dump_to_delta_and_handle_status_transistions,
 )
@@ -899,8 +900,7 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
             elif instance.workflow_status == WorkflowStatusChoices.CURATED:
                 instance.promote_to_curated()
             elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
-                instance.create_scraper_config(overwrite=False)
-                instance.create_scraper_job(overwrite=False)
+                dispatch_scrape_job.delay(instance.id)
             elif instance.workflow_status == WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV:
                 fetch_full_text.delay(instance.id, "lrm_dev")
             elif instance.workflow_status in [
@@ -910,7 +910,10 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
                 instance.add_to_public_query()
 
         if "reindexing_status" in instance.tracker.changed():
-            if instance.reindexing_status == ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV:
+            if instance.reindexing_status == ReindexingStatusChoices.REINDEXING_NEEDED_ON_DEV:
+                # Re-scrape path: replaces the engineer manually re-running a Sinequa job.
+                dispatch_scrape_job.delay(instance.id)
+            elif instance.reindexing_status == ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV:
                 fetch_full_text.delay(instance.id, "lrm_dev")
             elif instance.reindexing_status == ReindexingStatusChoices.REINDEXING_CURATED:
                 instance.promote_to_curated()

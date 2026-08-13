@@ -17,6 +17,7 @@ from sde_collections.models.collection_choice_fields import (
 )
 
 from .models.delta_url import DumpUrl
+from .scraping.ssm_dispatch import send_job_to_crawler
 from .sinequa_api import Api
 from .utils.github_helper import GitHubHandler
 
@@ -229,3 +230,28 @@ def migrate_dump_to_delta_and_handle_status_transistions(collection_id):
         collection.save()
 
     return f"Successfully migrated DumpUrls to DeltaUrls for collection {collection.name}."
+
+
+@celery_app.task()
+def dispatch_scrape_job(collection_id):
+    """Send a scrape job for the collection to the crawl4ai crawler via SSM.
+
+    Triggered by READY_FOR_ENGINEERING and REINDEXING_NEEDED_ON_DEV (and manually via
+    the dispatch_scrape management command). On success records a ScrapeDispatch row —
+    the poller's freshness reference and the stall timeout's start time. On failure
+    sets SCRAPING_FAILED and records nothing; the error never raises out of the task.
+    """
+    Collection = apps.get_model("sde_collections", "Collection")
+    ScrapeDispatch = apps.get_model("sde_collections", "ScrapeDispatch")
+    collection = Collection.objects.get(id=collection_id)
+
+    try:
+        command_id = send_job_to_crawler(collection)
+    except Exception as e:
+        print(f"Scrape dispatch failed for {collection.config_folder}: {e}")
+        collection.workflow_status = WorkflowStatusChoices.SCRAPING_FAILED
+        collection.save()
+        return None
+
+    ScrapeDispatch.objects.create(collection=collection, ssm_command_id=command_id)
+    return command_id

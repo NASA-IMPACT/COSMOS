@@ -23,14 +23,14 @@ class TestWorkflowStatusTransitions(TestCase):
     def setUp(self):
         self.collection = CollectionFactory()
 
-    @patch("sde_collections.models.collection.GitHubHandler")
-    @patch("sde_collections.models.collection.Collection.create_scraper_config")
-    def test_ready_for_engineering_triggers_config_creation(self, mock_scraper, mock_github_handler):
-        """When status changes to READY_FOR_ENGINEERING, it should create configs"""
+    @patch("sde_collections.tasks.dispatch_scrape_job.delay")
+    def test_ready_for_engineering_triggers_scrape_dispatch(self, mock_dispatch):
+        """When status changes to READY_FOR_ENGINEERING, it should dispatch a scrape job (P3:
+        replaces the Sinequa create_scraper_config/create_scraper_job trigger)."""
         self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
         self.collection.save()
 
-        mock_scraper.assert_called_once_with(overwrite=False)
+        mock_dispatch.assert_called_once_with(self.collection.id)
 
     @patch("sde_collections.tasks.fetch_full_text.delay")
     def test_indexing_finished_triggers_full_text_fetch(self, mock_fetch):
@@ -450,22 +450,10 @@ class TestErrorHandling(TransactionTestCase):
     def setUp(self):
         self.collection = CollectionFactory(workflow_status=WorkflowStatusChoices.RESEARCH_IN_PROGRESS)
 
-    @patch("sde_collections.models.collection.Collection.create_scraper_config")
-    @patch("sde_collections.models.collection.Collection.create_indexer_config")
-    def test_config_creation_failure_handling(self, mock_indexer, mock_scraper):
-        """Test handling of config creation failures"""
-        mock_scraper.side_effect = Exception("Config creation failed")
-
-        initial_status = self.collection.workflow_status
-
-        with pytest.raises(Exception):
-            with transaction.atomic():
-                self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
-                self.collection.save()
-
-        # Verify status wasn't changed on error
-        self.collection.refresh_from_db()
-        assert self.collection.workflow_status == initial_status
+    # The old test_config_creation_failure_handling is gone with the Sinequa trigger it
+    # exercised: scrape dispatch is now async (dispatch_scrape_job.delay), so a dispatch
+    # failure can no longer abort the status save. Failure handling for the new path
+    # (SSM error -> SCRAPING_FAILED, no ScrapeDispatch row) lives in test_scrape_dispatch.py.
 
     @patch("sde_collections.tasks.Api")
     def test_full_text_fetch_failure_handling(self, MockApi):
