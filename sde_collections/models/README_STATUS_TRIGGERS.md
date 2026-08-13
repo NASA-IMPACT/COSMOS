@@ -59,6 +59,24 @@ The full text import process integrates with both workflows:
    - In main workflow: Updates to `READY_FOR_CURATION`
    - In reindexing: Updates to `REINDEXING_READY_FOR_CURATION`
 
+## New Pipeline Statuses (crawl4ai scraper + web indexing)
+
+Statuses 21–26 support the Sinequa-replacement pipeline (see `WORKFLOW.md`). As of Phase 1
+they are selectable and rendered everywhere; their triggers land in later phases (P3–P7):
+
+- `SCRAPING_SUCCESSFUL` (21) — set by the ingest task when fresh scrape results with
+  `documents_scraped > 0` are ingested from S3.
+- `TEST_INDEXING` (22) — in-flight: curated content is being indexed to OpenSearch test.
+- `SCRAPING_FAILED` (23) — scrape produced zero documents, the SSM dispatch failed, or the
+  job stalled past the timeout.
+- `INDEXING_FAILED_ON_TEST` (24) — the test-indexing run reported failure.
+- `INDEXING_FAILED_ON_PROD` (25) — the prod-indexing run reported failure.
+- `PRODUCTION_INDEXING` (26) — in-flight: curated content is being indexed to OpenSearch prod.
+
+Failure statuses (23–25) render `btn-danger`; in-flight statuses (22, 26) render `btn-light`.
+Both Python colour maps fall back to `btn-light` for unmapped values instead of raising
+`KeyError`.
+
 ## Key Models and Files
 
 - `Collection`: Main model handling status transitions

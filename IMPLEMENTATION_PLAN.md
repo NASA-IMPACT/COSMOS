@@ -278,11 +278,11 @@ New tests in `sde_collections/tests/test_workflow_status_triggers.py`:
    and the detail page **Workflow History** tab shows the transition.
 
 ### Done when
-- [ ] Six statuses added, migration applied
-- [ ] Both Python colour maps use `.get(...)` with a default; JS map covers 1–26
-- [ ] Slack map has the four new transitions
-- [ ] Parametrised colour test passes for every enum member
-- [ ] Dropdowns/filters render all statuses with no JS console errors
+- [x] Six statuses added, migration applied
+- [x] Both Python colour maps use `.get(...)` with a default; JS map covers 1–26
+- [x] Slack map has the four new transitions
+- [x] Parametrised colour test passes for every enum member
+- [x] Dropdowns/filters render all statuses with no JS console errors
 
 ---
 

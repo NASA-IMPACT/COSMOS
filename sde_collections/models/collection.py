@@ -354,9 +354,12 @@ class Collection(models.Model):
             20: "btn-info",
             21: "btn-success",
             22: "btn-light",
-            23: "btn-light",
+            23: "btn-danger",
+            24: "btn-danger",
+            25: "btn-danger",
+            26: "btn-light",
         }
-        return color_choices[self.workflow_status]
+        return color_choices.get(self.workflow_status, "btn-light")
 
     @property
     def reindexing_status_button_color(self) -> str:
@@ -818,9 +821,12 @@ class WorkflowHistory(models.Model):
             20: "btn-info",
             21: "btn-success",
             22: "btn-light",
-            23: "btn-light",
+            23: "btn-danger",
+            24: "btn-danger",
+            25: "btn-danger",
+            26: "btn-light",
         }
-        return color_choices[self.workflow_status]
+        return color_choices.get(self.workflow_status, "btn-light")
 
 
 @receiver(post_save, sender=Collection)

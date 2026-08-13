@@ -6,6 +6,7 @@ import pytest
 from django.db import transaction
 from django.test import TestCase, TransactionTestCase
 
+from sde_collections.models.collection import Collection, WorkflowHistory
 from sde_collections.models.collection_choice_fields import (
     ReindexingStatusChoices,
     WorkflowStatusChoices,
@@ -481,3 +482,64 @@ class TestErrorHandling(TransactionTestCase):
         # Verify status wasn't changed on error
         self.collection.refresh_from_db()
         assert self.collection.workflow_status == initial_status
+
+
+NEW_PIPELINE_STATUSES = [
+    WorkflowStatusChoices.SCRAPING_SUCCESSFUL,
+    WorkflowStatusChoices.TEST_INDEXING,
+    WorkflowStatusChoices.SCRAPING_FAILED,
+    WorkflowStatusChoices.INDEXING_FAILED_ON_TEST,
+    WorkflowStatusChoices.INDEXING_FAILED_ON_PROD,
+    WorkflowStatusChoices.PRODUCTION_INDEXING,
+]
+
+VALID_BUTTON_COLORS = {
+    "btn-light",
+    "btn-danger",
+    "btn-warning",
+    "btn-info",
+    "btn-success",
+    "btn-primary",
+    "btn-secondary",
+}
+
+
+@pytest.mark.parametrize("status", list(WorkflowStatusChoices))
+def test_collection_button_color_resolves_for_every_status(status):
+    """Regression guard: an unmapped status used to raise KeyError and break the
+    collection list and detail pages. Every enum member must resolve a colour."""
+    collection = Collection(workflow_status=status)
+    assert collection.workflow_status_button_color in VALID_BUTTON_COLORS
+
+
+@pytest.mark.parametrize("status", list(WorkflowStatusChoices))
+def test_workflow_history_button_color_resolves_for_every_status(status):
+    history = WorkflowHistory(workflow_status=status)
+    assert history.workflow_status_button_color in VALID_BUTTON_COLORS
+
+
+def test_unmapped_status_falls_back_to_default_color():
+    assert Collection(workflow_status=999).workflow_status_button_color == "btn-light"
+    assert WorkflowHistory(workflow_status=999).workflow_status_button_color == "btn-light"
+
+
+@pytest.mark.parametrize(
+    "status",
+    [
+        WorkflowStatusChoices.SCRAPING_FAILED,
+        WorkflowStatusChoices.INDEXING_FAILED_ON_TEST,
+        WorkflowStatusChoices.INDEXING_FAILED_ON_PROD,
+    ],
+)
+def test_failure_statuses_do_not_render_neutral(status):
+    assert Collection(workflow_status=status).workflow_status_button_color == "btn-danger"
+    assert WorkflowHistory(workflow_status=status).workflow_status_button_color == "btn-danger"
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("status", NEW_PIPELINE_STATUSES)
+def test_setting_new_status_writes_workflow_history(status):
+    collection = CollectionFactory()
+    collection.workflow_status = status
+    collection.save()
+    assert WorkflowHistory.objects.filter(collection=collection, workflow_status=status).exists()

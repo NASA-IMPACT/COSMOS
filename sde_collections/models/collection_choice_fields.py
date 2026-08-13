@@ -98,6 +98,12 @@ class WorkflowStatusChoices(models.IntegerChoices):
     MERGE_PENDING = 17, "Code Merge Pending"
     NEEDS_DELETE = 19, "Delete from Prod"
     INDEXING_FINISHED_ON_DEV = 20, "Indexing Finished on LRM Dev"
+    SCRAPING_SUCCESSFUL = 21, "Scraping Successful"
+    TEST_INDEXING = 22, "Test Indexing"
+    SCRAPING_FAILED = 23, "Scraping Failed"
+    INDEXING_FAILED_ON_TEST = 24, "Indexing Failed on Test"
+    INDEXING_FAILED_ON_PROD = 25, "Indexing Failed on Prod"
+    PRODUCTION_INDEXING = 26, "Production Indexing"
 
 
 class ReindexingStatusChoices(models.IntegerChoices):

@@ -46,6 +46,42 @@ STATUS_CHANGE_NOTIFICATIONS = {
         "message": "{name} is now live on Public Prod! Congrats team! :sparkles:",
         "mention_users": ["channel"],
     },
+    # --- SDE curation pipeline (crawl4ai scraper + web indexing) ---
+    # Detailed scrape counts are posted separately via send_detailed_import_notification on ingest.
+    (WorkflowStatusChoices.READY_FOR_ENGINEERING, WorkflowStatusChoices.SCRAPING_SUCCESSFUL): {
+        "message": "Scraping of {name} finished successfully. Ingest and delta migration underway! :white_check_mark:",
+    },
+    (WorkflowStatusChoices.ENGINEERING_IN_PROGRESS, WorkflowStatusChoices.SCRAPING_SUCCESSFUL): {
+        "message": "Scraping of {name} finished successfully. Ingest and delta migration underway! :white_check_mark:",
+    },
+    (WorkflowStatusChoices.READY_FOR_ENGINEERING, WorkflowStatusChoices.SCRAPING_FAILED): {
+        "message": "Alert: Scraping of {name} has failed! :warning:",
+        "mention_users": ["Shravan Vishwanathan", "Advait Yogaonkar"],
+    },
+    (WorkflowStatusChoices.ENGINEERING_IN_PROGRESS, WorkflowStatusChoices.SCRAPING_FAILED): {
+        "message": "Alert: Scraping of {name} has failed! :warning:",
+        "mention_users": ["Shravan Vishwanathan", "Advait Yogaonkar"],
+    },
+    (WorkflowStatusChoices.CURATED, WorkflowStatusChoices.INDEXING_FAILED_ON_TEST): {
+        "message": "Alert: Indexing of {name} on Test has failed! :warning:",
+    },
+    (WorkflowStatusChoices.TEST_INDEXING, WorkflowStatusChoices.INDEXING_FAILED_ON_TEST): {
+        "message": "Alert: Indexing of {name} on Test has failed! :warning:",
+    },
+    # INDEXING_FAILED_ON_PROD can be reached from any of the prod hand-off statuses;
+    # the lookup is exact (old, new) pairs, so each realistic predecessor is listed.
+    (WorkflowStatusChoices.PRODUCTION_INDEXING, WorkflowStatusChoices.INDEXING_FAILED_ON_PROD): {
+        "message": "Alert: Indexing of {name} on Prod has failed! :warning:",
+        "mention_users": ["Shravan Vishwanathan", "Advait Yogaonkar"],
+    },
+    (WorkflowStatusChoices.QUALITY_CHECK_PERFECT, WorkflowStatusChoices.INDEXING_FAILED_ON_PROD): {
+        "message": "Alert: Indexing of {name} on Prod has failed! :warning:",
+        "mention_users": ["Shravan Vishwanathan", "Advait Yogaonkar"],
+    },
+    (WorkflowStatusChoices.QUALITY_CHECK_MINOR, WorkflowStatusChoices.INDEXING_FAILED_ON_PROD): {
+        "message": "Alert: Indexing of {name} on Prod has failed! :warning:",
+        "mention_users": ["Shravan Vishwanathan", "Advait Yogaonkar"],
+    },
 }
 
 
