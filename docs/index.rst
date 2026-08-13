@@ -10,7 +10,6 @@ Welcome to SDE Indexing Helper's documentation!
    :maxdepth: 2
    :caption: Working with Sinequa:
 
-   documentation/sinequa_api
    howto
 
 .. toctree::
@@ -24,5 +23,4 @@ Welcome to SDE Indexing Helper's documentation!
 Quick Links
 ==================
 
-* :ref:`sinequa_api`
 * :ref:`indexing_guidelines`

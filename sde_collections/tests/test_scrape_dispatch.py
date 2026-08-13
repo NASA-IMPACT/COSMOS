@@ -70,14 +70,18 @@ class TestStatusTriggersDispatch:
 
         mock_delay.assert_called_once_with(collection.id)
 
-    @patch("sde_collections.models.collection.Collection.create_scraper_config")
     @patch("sde_collections.tasks.dispatch_scrape_job.delay")
-    def test_ready_for_engineering_no_longer_touches_sinequa_configs(self, mock_delay, mock_scraper_config):
+    def test_ready_for_engineering_no_longer_touches_sinequa_configs(self, mock_delay):
+        """P6 deleted the Sinequa config methods outright — the trigger can only dispatch."""
+        from sde_collections.models.collection import Collection
+
         collection = CollectionFactory()
         collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
         collection.save()
 
-        mock_scraper_config.assert_not_called()
+        mock_delay.assert_called_once_with(collection.id)
+        assert not hasattr(Collection, "create_scraper_config")
+        assert not hasattr(Collection, "create_scraper_job")
 
 
 @pytest.mark.django_db

@@ -12,7 +12,6 @@ django-stubs==4.2.7  # https://github.com/typeddjango/django-stubs
 pytest==8.0.0  # https://github.com/pytest-dev/pytest
 pytest-sugar==1.0.0  # https://github.com/Frozenball/pytest-sugar
 types-requests # maybe instead, we should add `mypy --install-types` to the dockerfile?
-types-xmltodict
 pytest-xdist>=3.3.1
 pytest-cov>=4.1.0
 selenium>=4.15.2    # Selenium (Frontend Testing)

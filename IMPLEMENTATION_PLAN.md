@@ -682,10 +682,11 @@ Unset every deleted env var in `.envs/.local/.django` **before** running — `co
 inherits `base.py`, so a lingering required var would mask a missed reference.
 
 ### Done when
-- [ ] All listed files deleted; `manage.py check` clean
-- [ ] Full test suite green with the Sinequa env vars **unset**
-- [ ] Grep is clean apart from the retained enum member
-- [ ] `requirements/base.txt` pruned; image rebuilds
+- [x] All listed files deleted; `manage.py check` clean
+- [x] Full test suite green with the Sinequa env vars **unset**
+- [x] Grep is clean apart from the retained enum member (plus historical migration text and
+      comments, per the "changelog/history" allowance)
+- [x] `requirements/base.txt` pruned; image rebuilds
 
 ---
 

@@ -16,49 +16,6 @@ from .models.collection_choice_fields import TDAMMTags
 from .models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
 from .models.scraper_config import ScrapeDispatch, ScraperConfigOverride
-from .tasks import fetch_full_text, import_candidate_urls_from_api
-
-
-def fetch_and_replace_text_for_server(modeladmin, request, queryset, server_name):
-    for collection in queryset:
-        fetch_full_text.delay(collection.id, server_name)
-    modeladmin.message_user(request, f"Started importing URLs from {server_name.upper()} Server")
-
-
-@admin.action(description="Import candidate URLs from LRM Dev Server with Full Text")
-def fetch_full_text_lrm_dev_action(modeladmin, request, queryset):
-    fetch_and_replace_text_for_server(modeladmin, request, queryset, "lrm_dev")
-
-
-@admin.action(description="Import candidate URLs from XLI Server with Full Text")
-def fetch_full_text_xli_action(modeladmin, request, queryset):
-    fetch_and_replace_text_for_server(modeladmin, request, queryset, "xli")
-
-
-@admin.action(description="Generate deployment message")
-def generate_deployment_message(modeladmin, request, queryset):
-    # generate deployment message
-    response = HttpResponse(content_type="text/txt")
-
-    message_start = """:rocket: Production Deployment Update :rocket:
-Hello Team,
-
-I'm pleased to announce that we have successfully moved several key collections
-to our production environment as part of our latest deployment! :tada:\n
-Collections Now Live in Prod:\n"""
-
-    message_middle = "\n\n".join(
-        [f"- {collection.name} | {collection.server_url_prod}" for collection in queryset.all()]
-    )
-
-    message_end = """
-If you find something needs changing, please let us know.
-
-Dev Team"""
-
-    response.content = f"{message_start}\n{message_middle}\n{message_end}"
-
-    return response
 
 
 @admin.action(description="Download candidate URLs as csv")
@@ -82,30 +39,6 @@ def download_candidate_urls_as_csv(modeladmin, request, queryset):
     return response
 
 
-@admin.action(description="Import metadata from Sinequa configs")
-def import_sinequa_metadata(modeladmin, request, queryset):
-    for collection in queryset.all():
-        # eventually this needs to be done in celery
-        collection.import_metadata_from_sinequa_config()
-        messages.add_message(
-            request,
-            messages.INFO,
-            f"Imported metadata for collection: {collection.name}",
-        )
-
-
-@admin.action(description="Export metadata to Sinequa config")
-def export_sinequa_metadata(modeladmin, request, queryset):
-    for collection in queryset.all():
-        # eventually this needs to be done in celery
-        collection.export_metadata_to_sinequa_config()
-        messages.add_message(
-            request,
-            messages.INFO,
-            f"Exported sinequa config for collection: {collection.name}",
-        )
-
-
 @admin.action(description="Generate candidate URLs")
 def generate_candidate_urls(modeladmin, request, queryset):
     collection = queryset.first()
@@ -115,63 +48,6 @@ def generate_candidate_urls(modeladmin, request, queryset):
         messages.INFO,
         f"Started generating candidate URLs for: {collection.name}",
     )
-
-
-def import_candidate_urls_from_api_caller(modeladmin, request, queryset, server_name):
-    id_list = queryset.values_list("id", flat=True)
-    if len(id_list) > 1:
-        messages.add_message(
-            request,
-            messages.ERROR,
-            "We can only import one collection at a time using the admin action."
-            " Consider using the django shell for bulk imports.",
-        )
-        return
-    import_candidate_urls_from_api.delay(
-        collection_ids=list(queryset.values_list("id", flat=True)),
-        server_name=server_name,
-    )
-    collection_names = ", ".join(queryset.values_list("name", flat=True))
-    messages.add_message(
-        request,
-        messages.INFO,
-        f"Started importing URLs from the API for: {collection_names} from {server_name.upper()} Server",
-    )
-
-
-@admin.action(description="Import candidate URLs from Test")
-def import_candidate_urls_test(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "test")
-
-
-@admin.action(description="Import candidate URLs from Production")
-def import_candidate_urls_production(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "production")
-
-
-@admin.action(description="Import candidate URLs from Secret Test")
-def import_candidate_urls_secret_test(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "secret_test")
-
-
-@admin.action(description="Import candidate URLs from Secret Production")
-def import_candidate_urls_secret_production(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "secret_production")
-
-
-@admin.action(description="Import candidate URLs from XLI Server")
-def import_candidate_urls_xli_server(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "xli")
-
-
-@admin.action(description="Import candidate URLs from LRM Dev Server")
-def import_candidate_urls_lrm_dev_server(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lrm_dev")
-
-
-@admin.action(description="Import candidate URLs from LRM QA Server")
-def import_candidate_urls_lrm_qa_server(modeladmin, request, queryset):
-    import_candidate_urls_from_api_caller(modeladmin, request, queryset, "lrm_qa")
 
 
 class ExportCsvMixin:
@@ -192,16 +68,8 @@ class ExportCsvMixin:
     export_as_csv.short_description = "Export selected as csv"
 
 
-class UpdateConfigMixin:
-    def update_config(self, request, queryset):
-        for collection in queryset:
-            collection.update_existing_config()
-
-    update_config.short_description = "Update configs of selected"
-
-
 @admin.register(Collection)
-class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
+class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin):
     """Admin View for Collection"""
 
     fieldsets = (
@@ -288,12 +156,8 @@ class CollectionAdmin(admin.ModelAdmin, ExportCsvMixin, UpdateConfigMixin):
     )
     search_fields = ("name", "url", "config_folder")
     actions = [
-        generate_deployment_message,
         "export_as_csv",
-        "update_config",
         download_candidate_urls_as_csv,
-        fetch_full_text_lrm_dev_action,
-        fetch_full_text_xli_action,
     ]
     ordering = ("cleaning_order",)
 

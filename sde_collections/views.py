@@ -51,9 +51,6 @@ from .serializers import (
     IncludePatternSerializer,
     TitlePatternSerializer,
 )
-from .tasks import push_to_github_task
-from .utils.health_check import generate_db_github_metadata_differences
-
 User = get_user_model()
 
 
@@ -498,119 +495,6 @@ class CollectionViewSet(viewsets.ModelViewSet):
 class CollectionReadViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Collection.objects.all()
     serializer_class = CollectionReadSerializer
-
-
-class PushToGithubView(APIView):
-    def post(self, request):
-        collection_ids = request.POST.getlist("collection_ids[]", [])
-        if len(collection_ids) == 0:
-            return Response("collection_ids can't be empty.", status=status.HTTP_400_BAD_REQUEST)
-
-        push_to_github_task.delay(collection_ids)
-
-        return Response(
-            {"Success": "Started pushing collections to github"},
-            status=status.HTTP_200_OK,
-        )
-
-
-class IndexingInstructionsView(APIView):
-    """
-    Serves the name of the first curated collection to be indexed and updates collection workflow status
-    """
-
-    def get(self, request):
-        curated_collections = Collection.objects.filter(workflow_status=WorkflowStatusChoices.CURATED)
-
-        job_name = ""
-        if curated_collections.exists():
-            collection = curated_collections.first()
-            job_name = f"collection.indexer.{collection.config_folder}.xml"
-
-        return Response(
-            {
-                "job_name": job_name,
-            },
-            status=status.HTTP_200_OK,
-        )
-
-    def post(self, request):
-        config_folder = request.data.get("collection")
-        indexing_status = request.data.get("status")
-
-        if not config_folder or not indexing_status:
-            raise ValidationError({"error": "Config folder name and indexing status are required."})
-
-        collection = get_object_or_404(Collection, config_folder=config_folder)
-
-        if indexing_status == "STARTED_INDEXING" and collection.workflow_status == WorkflowStatusChoices.CURATED:
-            collection.workflow_status = WorkflowStatusChoices.SECRET_DEPLOYMENT_STARTED
-            collection.save()
-
-            return Response(
-                {"message": f"Status for collection '{collection.name}' updated to Secret Deployment Started."},
-                status=status.HTTP_200_OK,
-            )
-        elif (
-            indexing_status == "FINISHED_INDEXING"
-            and collection.workflow_status == WorkflowStatusChoices.SECRET_DEPLOYMENT_STARTED
-        ):
-            collection.workflow_status = WorkflowStatusChoices.READY_FOR_LRM_QUALITY_CHECK
-            collection.save()
-
-            return Response(
-                {"message": f"Status for collection '{collection.name}' updated to Ready For LRM Quality Check."},
-                status=status.HTTP_200_OK,
-            )
-        else:
-            return Response({"error": "Invalid indexing or workflow status."}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class WebappGitHubConsolidationView(LoginRequiredMixin, TemplateView):
-    """
-    Display a list of collections in the system
-    """
-
-    template_name = "sde_collections/consolidate_db_and_github_configs.html"
-
-    def get(self, request, *args, **kwargs):
-        if not request.GET.get("reindex") == "true":
-            self.data = generate_db_github_metadata_differences()
-        else:
-            # this needs to be a celery task eventually
-            self.data = generate_db_github_metadata_differences(reindex_configs_from_github=True)
-
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        config_folder = self.request.POST.get("config_folder")
-        field = self.request.POST.get("field")
-        new_value = self.request.POST.get("github_value")
-
-        if new_value and new_value != "None":
-            new_value = new_value.strip()
-            if field == "division":
-                new_value = Divisions.lookup_by_text(new_value)
-            elif field == "document_type":
-                new_value = DocumentTypes.lookup_by_text(new_value)
-            elif field == "connector":
-                new_value = ConnectorChoices.lookup_by_text(new_value)
-
-            Collection.objects.filter(config_folder=config_folder).update(**{field: new_value})
-            messages.success(request, f"Successfully updated {field} of {config_folder}.")
-        else:
-            messages.error(
-                request,
-                f"Can't update empty value from GitHub: {field} of {config_folder}.",
-            )
-
-        return redirect("sde_collections:consolidate_db_and_github_configs")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["differences"] = self.data
-
-        return context
 
 
 class ResolvedTitleListView(ListView):
