@@ -338,9 +338,9 @@ New tests:
 → both `False`. Confirm `celerybeat` logs show no inference ticks over ~10 min.
 
 ### Done when
-- [ ] Flag added and honoured at all three sites
-- [ ] TDAMM collections still migrate to `Ready for Curation` with inference off
-- [ ] `PeriodicTask.enabled` survives a re-run of `migrate`
+- [x] Flag added and honoured at all three sites
+- [x] TDAMM collections still migrate to `Ready for Curation` with inference off
+- [x] `PeriodicTask.enabled` survives a re-run of `migrate`
 
 ---
 

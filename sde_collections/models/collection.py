@@ -4,6 +4,7 @@ import urllib.parse
 
 import requests
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -694,6 +695,13 @@ class Collection(models.Model):
 
     def queue_necessary_classifications(self):
         """Check if collection needs classification and queue jobs if needed"""
+        if not settings.INFERENCE_ENABLED:
+            # Inference pipeline is dormant: never create an InferenceJob (it would queue
+            # forever and strand the collection before Ready for Curation) — go straight
+            # to migration for every collection, including the TDAMM-listed ones.
+            migrate_dump_to_delta_and_handle_status_transistions.delay(self.id)
+            return
+
         tdamm_collections = [
             "imagine_the_universe",
             "physics_of_the_cosmos",
