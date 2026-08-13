@@ -356,6 +356,27 @@ SDE_AWS_ACCESS_KEY_ID = env("SDE_AWS_ACCESS_KEY_ID", default="")
 SDE_AWS_SECRET_ACCESS_KEY = env("SDE_AWS_SECRET_ACCESS_KEY", default="")
 # COSMOS never talks to OpenSearch or SageMaker: chunk/vectorize/index AND the QC validation
 # report are produced by the WEB_COSMOS task in sde-api-scrapers (branch web-indexing), which
-# holds the AOSS credentials. The P7 dispatch/poll settings — SDE_INDEX_BUCKET (distinct from
-# SDE_S3_BUCKET), INDEXING_ECS_CLUSTER, INDEXING_TASK_FAMILY, INDEXING_DISPATCH_ROLE_ARN,
-# INDEX_POLL_ENABLED — land with P7, all with defaults so config.settings.test keeps booting.
+# holds the AOSS credentials. COSMOS only writes exports to S3, assumes one role, and calls
+# ecs:RunTask.
+#
+# --- P7 indexing hand-off ---
+# ONLY the sde-dev environment is wired today: the indexer's dev deployment targets the
+# disposable sde-web-copy index, and its target->endpoint resolution is tier-capped, so a
+# dev dispatch can never reach prod AOSS. All defaults are blank/off — with any of the
+# required values unset, dispatch fails fast and the poller never runs. Dev values:
+#   SDE_INDEX_BUCKET            sde-cosmos-indexing-dev
+#   INDEXING_ECS_CLUSTER        api-scrapers-cluster-dev
+#   INDEXING_TASK_FAMILY        web_cosmos-scraper-dev
+#   INDEXING_CONTAINER_NAME     WEB_COSMOSContainer
+#   INDEXING_DISPATCH_ROLE_ARN  arn:aws:iam::<indexer acct>:role/CosmosIndexingDispatchRole-dev
+SDE_INDEX_BUCKET = env("SDE_INDEX_BUCKET", default="")  # distinct from SDE_S3_BUCKET (crawler)
+INDEXING_ECS_CLUSTER = env("INDEXING_ECS_CLUSTER", default="")
+INDEXING_TASK_FAMILY = env("INDEXING_TASK_FAMILY", default="")
+INDEXING_CONTAINER_NAME = env("INDEXING_CONTAINER_NAME", default="WEB_COSMOSContainer")
+INDEXING_DISPATCH_ROLE_ARN = env("INDEXING_DISPATCH_ROLE_ARN", default="")
+# Fargate RunTask needs awsvpc network config; comma-separated ids, from the indexer's VPC.
+INDEXING_SUBNETS = env("INDEXING_SUBNETS", default="")
+INDEXING_SECURITY_GROUPS = env("INDEXING_SECURITY_GROUPS", default="")
+INDEX_POLL_ENABLED = env.bool("INDEX_POLL_ENABLED", default=False)
+# An index run with no status.json after this long is declared dead (indexing is minutes, not hours).
+INDEX_STALL_TIMEOUT_HOURS = env.int("INDEX_STALL_TIMEOUT_HOURS", default=6)

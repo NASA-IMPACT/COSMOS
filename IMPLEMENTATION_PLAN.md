@@ -801,12 +801,19 @@ unknown-state-as-failure) and enforces the stall timeout; a stale run's `status.
 completes a newer dispatch.
 
 ### Done when
-- [ ] Export/dispatch/poll implemented per the contract; `IndexDispatch` migration applied
-- [ ] P5 stubs replaced: a `CURATED` collection reaches `TEST_INDEXING`, and on `succeeded` the
-      validation report posts to Slack
-- [ ] `QC_PERFECT`/`QC_MINOR` dispatches a prod run and lands on `PROD_PERFECT`/`PROD_MINOR`
-- [ ] Failure/stall paths land on `INDEXING_FAILED_ON_TEST`/`INDEXING_FAILED_ON_PROD`
+- [x] Export/dispatch/poll implemented per the contract; `IndexDispatch` migration applied
+- [x] P5 stubs replaced: a `CURATED` collection reaches `TEST_INDEXING`, and on `succeeded` the
+      validation report posts to Slack *(verified with mocked AWS; all settings default blank/off
+      so nothing can dispatch until the dev values are configured — dev is the only wired env)*
+- [x] `QC_PERFECT`/`QC_MINOR` dispatches a prod run and lands on `PROD_PERFECT`/`PROD_MINOR`
+- [x] Failure/stall paths land on `INDEXING_FAILED_ON_TEST`/`INDEXING_FAILED_ON_PROD`
 - [ ] Closed loop verified against dev (their E2E.10): Curated → export → `RunTask` → poller → Slack
+      *(blocked cross-repo, checked 2026-08-13: `api-scrapers-cluster-dev` is ACTIVE, but
+      `sde-cosmos-indexing-dev`, `CosmosIndexingDispatchRole-dev`, and the `web_cosmos-scraper-dev`
+      task family do not exist — the web-indexing branch is undeployed and `COSMOS_AWS_ACCOUNT_ID`
+      is unfilled on their side. Also hand them our subnet/SG needs: Fargate `RunTask` requires
+      `networkConfiguration`, so COSMOS needs `INDEXING_SUBNETS`/`INDEXING_SECURITY_GROUPS` values
+      from their VPC stack)*
 
 ---
 
@@ -824,7 +831,7 @@ posts it to `sde-data-curation`. The QC statuses stay **curator-set from the rep
 else is needed on the status side after Phase 1.
 
 ### Done when
-- [ ] Covered by P7's done-when (validation report posted to Slack on test runs) — no separate work
+- [x] Covered by P7's done-when (validation report posted to Slack on test runs) — no separate work
 
 ---
 

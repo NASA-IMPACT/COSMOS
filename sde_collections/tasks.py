@@ -10,10 +10,16 @@ from sde_collections.models.collection_choice_fields import (
     WorkflowStatusChoices,
 )
 
+from .indexing.dispatch import run_index_task
+from .indexing.export import export_curated_to_s3
+from .indexing.run_status import fetch_run_status, fetch_validation_report
 from .models.delta_url import DumpUrl
 from .scraping.s3_results import fetch_documents, fetch_summary, results_ready
 from .scraping.ssm_dispatch import send_job_to_crawler
-from .utils.slack_utils import send_detailed_import_notification
+from .utils.slack_utils import (
+    send_detailed_import_notification,
+    send_indexing_validation_report,
+)
 
 
 @celery_app.task()
@@ -164,30 +170,155 @@ def poll_scrape_jobs():
     return f"Enqueued ingest for {enqueued} collection(s)."
 
 
+def _mint_run_id():
+    import uuid
+
+    from django.utils import timezone
+
+    return f"{timezone.now().strftime('%Y-%m-%dT%H-%M-%SZ')}-{uuid.uuid4().hex[:6]}"
+
+
+def _dispatch_index_run(collection_id, target, in_flight_status, failed_status):
+    """Shared body of the two indexing hand-off tasks: mint run_id -> export (manifest
+    last) -> RunTask -> record IndexDispatch -> set the in-flight status. Never indexes
+    in-process; failure lands on the target's failed status and never raises."""
+    Collection = apps.get_model("sde_collections", "Collection")
+    IndexDispatch = apps.get_model("sde_collections", "IndexDispatch")
+    collection = Collection.objects.get(id=collection_id)
+    run_id = _mint_run_id()
+    previous_status = collection.workflow_status
+
+    try:
+        document_count = export_curated_to_s3(collection, target, run_id)
+        if document_count == 0:
+            raise ValueError("curated set is empty — nothing to index")
+        task_arn = run_index_task(collection, target, run_id)
+    except Exception as e:
+        print(f"Index dispatch ({target}) failed for {collection.config_folder}: {e}")
+        collection.workflow_status = failed_status
+        collection.save()
+        return None
+
+    IndexDispatch.objects.create(
+        collection=collection,
+        run_id=run_id,
+        target=target,
+        task_arn=task_arn,
+        previous_workflow_status=previous_status,
+    )
+    collection.workflow_status = in_flight_status
+    collection.save()
+    print(f"Dispatched {target} index run {run_id} for {collection.config_folder} ({document_count} documents)")
+    return run_id
+
+
 @celery_app.task()
 def index_collection_to_test(collection_id):
-    """P5 stub — the event-trigger seam for the WEB_COSMOS indexing pipeline
-    (sde-api-scrapers, branch web-indexing). P7 fills this in: mint a run_id, export the
-    curated set to S3 (documents.jsonl + manifest.json, manifest written last), assume
-    the dispatch role, and ecs:RunTask with a command override. Never indexes in-process.
-    """
-    Collection = apps.get_model("sde_collections", "Collection")
-    collection = Collection.objects.get(id=collection_id)
-    collection.workflow_status = WorkflowStatusChoices.TEST_INDEXING
-    collection.save()
-    print(f"[P5 stub] Test indexing recorded for {collection.config_folder}; dispatch lands in P7.")
-    return f"Test indexing started for {collection.config_folder}"
+    """Hand a curated collection to the WEB_COSMOS indexer, test target."""
+    return _dispatch_index_run(
+        collection_id,
+        target="test",
+        in_flight_status=WorkflowStatusChoices.TEST_INDEXING,
+        failed_status=WorkflowStatusChoices.INDEXING_FAILED_ON_TEST,
+    )
 
 
 @celery_app.task()
 def index_collection_to_prod(collection_id):
-    """P5 stub — prod counterpart of index_collection_to_test; see its docstring."""
+    """Hand a QC-passed collection to the WEB_COSMOS indexer, prod target."""
+    return _dispatch_index_run(
+        collection_id,
+        target="prod",
+        in_flight_status=WorkflowStatusChoices.PRODUCTION_INDEXING,
+        failed_status=WorkflowStatusChoices.INDEXING_FAILED_ON_PROD,
+    )
+
+
+@celery_app.task()
+def poll_index_runs():
+    """Beat task (every 2 min, gated on INDEX_POLL_ENABLED): resolve in-flight index runs
+    by polling S3 status.json — never ecs.describe_tasks.
+
+    Mapping: succeeded+test -> stay TEST_INDEXING and post the validation report to Slack
+    (curator sets QC from it); succeeded+prod -> PROD_PERFECT/PROD_MINOR mirroring the QC
+    status the run entered with; failed, unknown state, or stall timeout -> the target's
+    INDEXING_FAILED status. run_id namespacing means an old run's status.json can never
+    satisfy a newer dispatch.
+    """
+    from datetime import timedelta
+
+    from django.utils import timezone
+
     Collection = apps.get_model("sde_collections", "Collection")
-    collection = Collection.objects.get(id=collection_id)
-    collection.workflow_status = WorkflowStatusChoices.PRODUCTION_INDEXING
-    collection.save()
-    print(f"[P5 stub] Production indexing recorded for {collection.config_folder}; dispatch lands in P7.")
-    return f"Production indexing started for {collection.config_folder}"
+
+    failed_status_for_target = {
+        "test": WorkflowStatusChoices.INDEXING_FAILED_ON_TEST,
+        "prod": WorkflowStatusChoices.INDEXING_FAILED_ON_PROD,
+    }
+    stall_timeout = timedelta(hours=settings.INDEX_STALL_TIMEOUT_HOURS)
+    now = timezone.now()
+    resolved = 0
+
+    in_flight = Collection.objects.filter(
+        workflow_status__in=[
+            WorkflowStatusChoices.TEST_INDEXING,
+            WorkflowStatusChoices.PRODUCTION_INDEXING,
+        ]
+    )
+    for collection in in_flight:
+        dispatch = collection.index_dispatches.filter(completed_at__isnull=True).first()
+        if dispatch is None:
+            continue  # nothing open to poll (e.g. status set by hand)
+
+        try:
+            status = fetch_run_status(collection.config_folder, dispatch.run_id)
+        except Exception as e:
+            print(f"Error checking index run for {collection.config_folder}: {e}")
+            continue
+
+        if status is None:
+            if now - dispatch.dispatched_at > stall_timeout:
+                print(f"Index run stalled for {collection.config_folder} (run {dispatch.run_id})")
+                collection.workflow_status = failed_status_for_target[dispatch.target]
+                collection.save()
+                dispatch.completed_at = now
+                dispatch.save()
+                resolved += 1
+            continue
+
+        state = status.get("state")
+        if state == "succeeded":
+            if dispatch.target == "test":
+                # Collection stays at TEST_INDEXING; the curator sets QC from the report.
+                try:
+                    validation = fetch_validation_report(collection.config_folder, dispatch.run_id)
+                    send_indexing_validation_report(collection.name, dispatch.run_id, validation)
+                except Exception as e:
+                    print(f"Error posting validation report for {collection.config_folder}: {e}")
+            else:
+                mirror = {
+                    WorkflowStatusChoices.QUALITY_CHECK_MINOR: WorkflowStatusChoices.PROD_MINOR,
+                }
+                collection.workflow_status = mirror.get(
+                    dispatch.previous_workflow_status, WorkflowStatusChoices.PROD_PERFECT
+                )
+                collection.save()
+        else:
+            # "failed" and any unknown state are both failures — needs_confirmation is
+            # reserved for future two-phase deletion and must not read as success.
+            error = status.get("error")
+            print(
+                f"Index run for {collection.config_folder} (run {dispatch.run_id}) "
+                f"ended state={state!r} error={error!r}"
+            )
+            collection.workflow_status = failed_status_for_target[dispatch.target]
+            collection.save()
+
+        dispatch.completed_at = now
+        dispatch.save()
+        resolved += 1
+
+    return f"Resolved {resolved} index run(s)."
 
 
 @celery_app.task(soft_time_limit=600)

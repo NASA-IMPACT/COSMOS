@@ -114,6 +114,30 @@ def send_detailed_import_notification(
         print(f"Error sending Slack message: {response.text}")
 
 
+def send_indexing_validation_report(collection_name, run_id, validation):
+    """Post the indexer-produced validation.json (WORKFLOW.md steps 22-25 QC report) to
+    the curation channel so the curator can set the QC status from it."""
+    if validation is None:
+        message = (
+            f"Test indexing of '{collection_name}' succeeded (run {run_id}), "
+            f"but no validation report was found."
+        )
+    else:
+        missing = validation.get("titles_missing_in_index") or []
+        extra = validation.get("titles_only_in_index") or []
+        message = (
+            f"Test indexing of '{collection_name}' succeeded (run {run_id}). QC report:\n"
+            f"Expected documents: {validation.get('expected_count')}\n"
+            f"Indexed documents: {validation.get('indexed_count')}\n"
+            f"Counts match: {validation.get('count_matches')}\n"
+            f"Title match rate: {validation.get('title_match_rate')}\n"
+            f"Titles missing from index: {len(missing)}\n"
+            f"Titles only in index: {len(extra)}\n"
+            f"Please review and set the QC status."
+        )
+    send_slack_message(message)
+
+
 def send_slack_message(message):
     webhook_url = settings.SLACK_WEBHOOK_URL
     payload = {"text": message}

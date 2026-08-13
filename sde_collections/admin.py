@@ -15,6 +15,7 @@ from .models.collection import Collection, ReindexingHistory, WorkflowHistory
 from .models.collection_choice_fields import TDAMMTags
 from .models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
 from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
+from .models.indexing import IndexDispatch
 from .models.scraper_config import ScrapeDispatch, ScraperConfigOverride
 
 
@@ -392,6 +393,24 @@ class ScrapeDispatchAdmin(admin.ModelAdmin):
     list_display = ("collection", "dispatched_at", "ssm_command_id")
     search_fields = ("collection__name", "collection__config_folder", "ssm_command_id")
     list_filter = ("dispatched_at",)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(IndexDispatch)
+class IndexDispatchAdmin(admin.ModelAdmin):
+    """Read-only dispatch log for debugging WEB_COSMOS index runs."""
+
+    list_display = ("collection", "target", "run_id", "dispatched_at", "completed_at")
+    search_fields = ("collection__name", "collection__config_folder", "run_id", "task_arn")
+    list_filter = ("target", "dispatched_at")
 
     def has_add_permission(self, request):
         return False
