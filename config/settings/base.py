@@ -354,3 +354,19 @@ LRM_DEV_TOKEN = env("LRM_DEV_TOKEN")
 XLI_TOKEN = env("XLI_TOKEN")
 INFERENCE_API_URL = env("INFERENCE_API_URL", default="http://host.docker.internal:8000")
 TDAMM_CLASSIFICATION_THRESHOLD = env("TDAMM_CLASSIFICATION_THRESHOLD", default="0.5")
+
+# --- SDE curation pipeline ---
+AWS_REGION = env("AWS_REGION", default="us-east-1")
+SDE_S3_BUCKET = env("SDE_S3_BUCKET", default="")  # crawler output bucket
+CRAWLER_INSTANCE_ID = env("CRAWLER_INSTANCE_ID", default="")  # i-0b6a61d95888886f4 on dev
+CRAWLER_INBOX_PATH = env("CRAWLER_INBOX_PATH", default="/opt/sde-crawler/jobs/incoming")
+SCRAPE_POLL_ENABLED = env.bool("SCRAPE_POLL_ENABLED", default=False)
+INFERENCE_ENABLED = env.bool("INFERENCE_ENABLED", default=False)
+# pipeline-scoped credentials for local dev ONLY; blank in AWS (instance role takes over)
+SDE_AWS_ACCESS_KEY_ID = env("SDE_AWS_ACCESS_KEY_ID", default="")
+SDE_AWS_SECRET_ACCESS_KEY = env("SDE_AWS_SECRET_ACCESS_KEY", default="")
+# COSMOS never talks to OpenSearch or SageMaker: chunk/vectorize/index AND the QC validation
+# report are produced by the WEB_COSMOS task in sde-api-scrapers (branch web-indexing), which
+# holds the AOSS credentials. The P7 dispatch/poll settings — SDE_INDEX_BUCKET (distinct from
+# SDE_S3_BUCKET), INDEXING_ECS_CLUSTER, INDEXING_TASK_FAMILY, INDEXING_DISPATCH_ROLE_ARN,
+# INDEX_POLL_ENABLED — land with P7, all with defaults so config.settings.test keeps booting.

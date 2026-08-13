@@ -47,3 +47,17 @@ LRM_QA_PASSWORD=''
 #--------------------------------------------------------------------------------
 LRM_DEV_TOKEN=''
 XLI_TOKEN=''
+
+# SDE curation pipeline
+# All optional — defaults hold when unset. SDE_AWS_* are pipeline-scoped credentials
+# for local dev ONLY (distinct from DJANGO_AWS_* static-assets credentials above);
+# leave blank in AWS, where the instance role takes over.
+# ------------------------------------------------------------------------------
+AWS_REGION='us-east-1'
+SDE_S3_BUCKET=''
+CRAWLER_INSTANCE_ID=''
+CRAWLER_INBOX_PATH='/opt/sde-crawler/jobs/incoming'
+SCRAPE_POLL_ENABLED=False
+INFERENCE_ENABLED=False
+SDE_AWS_ACCESS_KEY_ID=''
+SDE_AWS_SECRET_ACCESS_KEY=''

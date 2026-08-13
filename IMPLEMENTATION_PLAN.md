@@ -37,7 +37,7 @@ inference pipeline dormant, and a repeatable deploy path.
 |---|---|
 | Scope | Pipeline rewiring **+** the CI/CD machinery from `DEPLOYMENT.md` |
 | Sinequa | **Delete outright** (unwire first, then remove the files) |
-| Indexing pipeline (chunk → SageMaker → AOSS) | **Deferred** — likely a different repo; this plan defines the contract only |
+| Indexing pipeline (chunk → SageMaker → AOSS) | **Built as a `WEB_COSMOS` source inside `sde-api-scrapers`** (branch `web-indexing`) — supersedes the earlier "separate repo" call: the quantization math must stay byte-identical to what built the live index, so `uploader/` is reused, not forked. Event-triggered from COSMOS via cross-account `ecs:RunTask`. Its phases W0–W3 + W5 are **code-complete** (209 offline tests, `cdk synth` clean); this plan owns only the COSMOS side — its Phase 7 = that repo's **W4** |
 | Validation per phase | pytest with mocked AWS; manual smoke tests against the real `sde-dev` account |
 
 ### Decisions added after plan review (2026-08-11) — confirm with team
@@ -46,6 +46,7 @@ inference pipeline dormant, and a repeatable deploy path.
 |---|---|
 | **Reindexing (re-scrape) flow** | `create_configs_on_status_change` has a second, `reindexing_status`-keyed block (`REINDEXING_FINISHED_ON_DEV → fetch_full_text`, `REINDEXING_CURATED → promote_to_curated`) that the original plan didn't account for — P6 deletes `fetch_full_text`, which would sever re-scrapes. **Rewire it onto the same dispatch/poll path**: dispatch on `REINDEXING_NEEDED_ON_DEV` (P3), poll it (P4), ingest flips to `REINDEXING_FINISHED_ON_DEV`, and the migrate task's existing `→ REINDEXING_READY_FOR_CURATION` transition takes over. Keep `REINDEXING_CURATED → promote_to_curated`. |
 | **Dispatch record & result freshness** | S3 objects persist between runs, so on any re-dispatch the poller would instantly "complete" against the **previous run's** output, and the stall timeout has nothing to measure from. Add a small **`ScrapeDispatch`** model (P3): `collection` FK, `dispatched_at`, `ssm_command_id`. `results_ready()` requires the S3 summary's `LastModified > dispatched_at`; the stall timeout is measured from `dispatched_at`. |
+| **Web indexing pipeline: `WEB_COSMOS` in `sde-api-scrapers`, event-triggered** *(updated 2026-08-13 from the built `web-indexing` branch — supersedes the earlier separate-repo / container-env / `describe_tasks` sketch)* | The pipeline is a **`WEB_COSMOS` source inside `sde-api-scrapers`** (ECS Fargate: chunk → SageMaker vectorize → AOSS bulk upsert, `uploader/` reused with parameterized `chunk_field`/filtered scans; `schedule=None` in every env — fired only by COSMOS, per collection, the moment curation completes via the P5 triggers: `CURATED` → test, `QC_PERFECT`/`QC_MINOR` → prod). The hand-off is **S3 both ways** through a dedicated bucket `sde-cosmos-indexing-{env}`: COSMOS exports `CuratedUrl`s as `documents.jsonl` + `manifest.json` (manifest written **last** = export complete) under `curated_collections/{config_folder}/{run_id}/`, then assumes `CosmosIndexingDispatchRole-{env}` and calls `ecs:RunTask` with a **command override** (`--source WEB_COSMOS --collection <config_folder> --target test\|prod --run-id <run_id>`). Completion is observed by **polling S3 `index_runs/{config_folder}/{run_id}/status.json`** (written by the indexer last and unconditionally, incl. on failure) — **not** `ecs.describe_tasks`; an **`IndexDispatch`** record (`collection`, `run_id`, `target`, `task_arn`, `dispatched_at`) provides the stall timeout, and the COSMOS-minted `run_id` namespaces every artifact, so no `LastModified` freshness rule is needed. No callback endpoint into COSMOS. |
 
 ### Hard constraints
 
@@ -97,11 +98,15 @@ COSMOS/
 │   │   ├── collection.py             ✎ triggers rewired, Sinequa methods removed
 │   │   ├── collection_choice_fields.py  ✎ statuses 21–26
 │   │   ├── scraper_config.py         ★ P3  ScraperConfigOverride + ScrapeDispatch
+│   │   ├── indexing.py               ★ P7  IndexDispatch
 │   │   └── delta_url.py              ✔ UNCHANGED (hard constraint)
 │   ├── scraping/                     ★ P3/P4  new subpackage
 │   │   ├── job_builder.py            ★ build_job_json(collection) -> dict
 │   │   ├── ssm_dispatch.py           ★ send_job_to_crawler(collection)
 │   │   └── s3_results.py             ★ fetch summary + documents from S3
+│   ├── indexing/                     ★ P7  new subpackage (mirrors sde-api-scrapers W4)
+│   │   ├── export.py                 ★ export_curated_to_s3(collection, target, run_id)
+│   │   └── dispatch.py               ★ run_index_task(collection, target, run_id)
 │   ├── utils/
 │   │   ├── aws.py                    ★ P0  get_boto3_session() — shared credential chain
 │   │   ├── slack_utils.py            ✎ new transitions
@@ -155,10 +160,11 @@ INFERENCE_ENABLED     = env.bool("INFERENCE_ENABLED", default=False)
 # pipeline-scoped credentials for local dev ONLY; blank in AWS (instance role takes over)
 SDE_AWS_ACCESS_KEY_ID     = env("SDE_AWS_ACCESS_KEY_ID", default="")
 SDE_AWS_SECRET_ACCESS_KEY = env("SDE_AWS_SECRET_ACCESS_KEY", default="")
-# declared now, consumed by the deferred indexing phase + validate_deploy_env
-OPENSEARCH_ENDPOINT_TEST = env("OPENSEARCH_ENDPOINT_TEST", default="")
-OPENSEARCH_ENDPOINT_PROD = env("OPENSEARCH_ENDPOINT_PROD", default="")
-SAGEMAKER_ENDPOINT_NAME  = env("SAGEMAKER_ENDPOINT_NAME", default="")
+# COSMOS never talks to OpenSearch or SageMaker: chunk/vectorize/index AND the QC validation
+# report are produced by the WEB_COSMOS task in sde-api-scrapers (branch web-indexing), which
+# holds the AOSS credentials. The P7 dispatch/poll settings — SDE_INDEX_BUCKET (distinct from
+# SDE_S3_BUCKET), INDEXING_ECS_CLUSTER, INDEXING_TASK_FAMILY, INDEXING_DISPATCH_ROLE_ARN,
+# INDEX_POLL_ENABLED — land with P7, all with defaults so config.settings.test keeps booting.
 ```
 
 > **Naming note:** existing settings use the `DJANGO_AWS_*` prefix for the *static assets*
@@ -201,10 +207,10 @@ chain when the `SDE_AWS_*` keys are blank (their `base.py` default, so no `overr
 gymnastics needed), and uses explicit keys when set (mock `boto3.Session`).
 
 ### Done when
-- [ ] Settings added; `manage.py check` clean with all new vars unset (defaults hold)
-- [ ] `get_boto3_session()` exists with tests
-- [ ] Four rewiring docs committed
-- [ ] Full existing test suite green
+- [x] Settings added; `manage.py check` clean with all new vars unset (defaults hold)
+- [x] `get_boto3_session()` exists with tests
+- [x] Four rewiring docs committed
+- [x] Full existing test suite green
 
 ---
 
@@ -583,8 +589,16 @@ reindexing_status:
 > `old_workflow_status`) removes the extra query and the false-positive notification.
 
 In this phase `index_collection_to_test` / `index_collection_to_prod` are **stubs**: they set
-`TEST_INDEXING` / `PRODUCTION_INDEXING`, log, and return. Phase 7 fills them in. Statuses 22/24/25/26
-are therefore defined and wired but not yet driven to completion.
+`TEST_INDEXING` / `PRODUCTION_INDEXING`, log, and return. Statuses 22/24/25/26 are therefore
+defined and wired but not yet driven to completion.
+
+These stubs are the **event-trigger seam for the `WEB_COSMOS` pipeline** (built in
+`sde-api-scrapers`, branch `web-indexing` — see the decisions table). Phase 7 turns them into
+export-then-dispatch tasks: mint a `run_id`, export the curated set to S3
+(`documents.jsonl` + `manifest.json`, manifest last), assume the dispatch role, and `ecs:RunTask`
+with a command override (`--source WEB_COSMOS --collection <config_folder> --target test|prod
+--run-id <run_id>`) — they never index in-process. This is what replaces the api pipeline's
+EventBridge schedule: indexing runs as soon as a collection is curated, not on a timer.
 
 ### Validation
 
@@ -673,68 +687,141 @@ inherits `base.py`, so a lingering required var would mask a missed reference.
 
 ---
 
-## Phase 7 — `[D]` DEFERRED: indexing pipeline (test + prod)
+## Phase 7 — Indexing hand-off: export, dispatch, poll (= `sde-api-scrapers` Phase W4)
 
-**Deferred by decision** — this will likely live in a different repo. Do not implement now.
-This section records the contract so the seam stays honest.
+**No longer "deferred until the pipeline exists" — the pipeline exists.** It landed as a
+`WEB_COSMOS` source on the **`web-indexing` branch of `sde-api-scrapers`** (its phases W0
+foundations, W1 shared-component parameterization, W2 web pipeline, W3 infrastructure, and W5 tests
+are code-complete: 209 offline tests green, `cdk synth` clean for dev/test/prod — but **nothing has
+run against real AWS yet**, and all runtime defaults there target the disposable **`sde-web-copy`**
+index until an explicit cutover). What remains here is exactly that repo's **Phase W4 — the
+COSMOS side**: export, dispatch, poll, Slack. Authoritative docs on that branch: `DESIGN.md`,
+`Web Indexing - Task Plan & Tracking.md`, `Update.md`, `open_questions.md` (decision record).
 
-### What is already decided
-- Trigger points exist as stubs from Phase 5 (`index_collection_to_test`, `index_collection_to_prod`).
-- Statuses 22/24/25/26 exist from Phase 1.
-- Source of truth is `CuratedUrl` for the collection, with `public_visibility = true`.
+**Still blocked on Phase 5** (the stubs this phase fills in). Everything indexer-side is
+independent of COSMOS and is exercised from its own CLI against hand-written exports.
 
-### What must be resolved before implementing
+### The contract (fixed by the built indexer — do not re-negotiate silently)
 
-1. **Where it runs.** Either (a) Celery tasks inside COSMOS, or (b) an external service that calls
-   back into COSMOS to set status. `IndexingInstructionsView` (deleted in P6) was Sinequa's
-   version of (b) and is the precedent for re-adding a narrow status-callback endpoint.
-2. **Two things exist in neither sibling repo and must be authored:**
-   - the **AOSS web-document index mapping**, including `public_visibility`.
-     `sde-api-scrapers` has *no* mapping definition and *no* occurrence of `public_visibility`
-     anywhere in its history; indices are auto-created on first bulk write. The live dev `sde-web`
-     index already has a mapping (`public_visibility`, `vectorized_title` knn_vector, nested
-     `vectorized_full_text`, `collection_key`, `division`, `document_type`) — treat that as the
-     reference and pin it explicitly rather than relying on auto-creation.
-   - the **validation script** (Phase 8 below).
-3. **Field-shape mismatches to bridge:**
-   - crawl4ai documents carry `full_text`; the `sde-api-scrapers` vectorizer is hardwired to
-     `data_product_desc` (`api_processor.py:87`, `sagemaker_vectorizer.py:135`). Either rename on
-     ingest or parameterise the vectorizer.
-   - crawl4ai documents have **no `id` and no `version`**, both required by the AOSS upsert/diff
-     logic. COSMOS must mint them — `id = f"/SDE/{config_folder}/|{url}"` (matching the existing
-     dev index convention) and a content hash for `version`.
-4. **Reusable components** if porting: `uploader/text_chunker.py` (`nasa-impact/nasa-smd-ibm-st-v2`,
-   250 tokens / 25 overlap), `uploader/sagemaker_vectorizer.py` (768-dim mean-pooled, then binary
-   quantisation with a seeded rotation matrix — *do not alter the quantisation*),
-   `uploader/opensearch_client.py` (`AWS4Auth`, service `"aoss"`, **not** `AWSV4SignerAuth`),
-   `uploader/api_opensearch_upload.py` (AOSS ignores custom `_id`, so upsert requires a lookup first).
-5. **Dependencies this adds:** `opensearch-py`, `requests-aws4auth`, `numpy`, `transformers`/`tokenizers`.
-   Per `DEPLOYMENT.md`, the tokenizer must be **baked into the image** (`HF_HOME` + download step +
-   `HF_HUB_OFFLINE=1`), or the first indexing task on a fresh container fetches from HuggingFace on
-   the critical path of a Celery task.
-6. **Deletion safety.** `sde-api-scrapers` aborts a run when deletions exceed 2% of the index
-   (`DELETION_ABORT_THRESHOLD`, added after a 2026-05-22 incident that wrongly deleted 1,359
-   records). Any COSMOS indexing path that deletes must carry the same guard.
+1. **Export (COSMOS → S3).** Write to the dedicated bucket **`sde-cosmos-indexing-{env}`**
+   (cross-account; **not** the crawler's `SDE_S3_BUCKET`):
+
+   ```
+   curated_collections/{config_folder}/{run_id}/documents.jsonl
+   curated_collections/{config_folder}/{run_id}/manifest.json   ← written LAST = "export complete"
+   ```
+
+   `run_id` is minted by COSMOS and threaded through every artifact. Each JSONL line:
+   `{url, title, full_text, document_type, division, tdamm_tag, is_metadata_viewer}` — per-URL
+   `division`/`document_type` only when they differ from the collection default. The manifest:
+   `{schema_version, run_id, collection_key (= config_folder), collection_name, division, target,
+   document_count, exported_at, cosmos_workflow_status}`. The indexer verifies line count against
+   `document_count` and skips deletions on mismatch, so the count must be exact.
+
+2. **Dispatch.** Assume **`CosmosIndexingDispatchRole-{env}`** (cross-account), then `ecs:RunTask`
+   with a **command override**: `--source WEB_COSMOS --collection {config_folder}
+   --target test|prod --run-id {run_id}`. (Not container-env overrides — the earlier
+   `COLLECTION_ID`/`TARGET` sketch is superseded. Target→endpoint resolution is tier-capped on the
+   indexer side, so a dev dispatch can never reach prod AOSS.)
+
+3. **Completion (S3 poll — not `ecs.describe_tasks`).** The indexer writes
+   `index_runs/{config_folder}/{run_id}/status.json` **last and unconditionally, including on
+   failure**; on `test` runs it also writes `validation.json` (count + title diff vs the manifest —
+   the WORKFLOW.md steps 22–25 QC report, produced indexer-side because only it holds AOSS
+   credentials). `status.json` carries `state ∈ succeeded|failed`, counts, `deletion_ratio`,
+   `deletion_mode` (deletes are **tombstones** — `public_visibility: false`, reversible), and a
+   machine-readable `error`: `export_not_found | export_incomplete | foreign_documents_in_scan |
+   scope_filter_ineffective | deletion_threshold_exceeded | deletion_budget_exceeded |
+   opensearch_error`. **Treat unknown `state` values as failure** — `needs_confirmation` is
+   reserved for future two-phase deletion.
+
+### What COSMOS must NOT do
+
+- **No `id`/`version` minting** — the indexer mints `id = /SDE/{config_folder}/|{url}` and a
+  content-hash `version` itself (`web/web_processor.py` is the sole owner of identity). COSMOS
+  exports raw curated fields only.
+- **No AOSS, SageMaker, mapping, or deletion-guard concerns** — all live indexer-side. COSMOS gains
+  no ML or OpenSearch dependencies; only S3 writes, one `sts:AssumeRole`, and one `ecs:RunTask`.
+
+### Export traps (verified against the COSMOS models by the indexer team)
+
+- **`excluded` is a queryset annotation, not a field** — export with
+  `CuratedUrl.objects.filter(collection=c).exclude(excluded=True).iterator()`, or curator
+  exclusions get published.
+- **`tdamm_tag` is a `PairedFieldDescriptor`** (manual over ML), not a column — `.values()` /
+  `.only()` on it fail; iterate instances. It is **exported but not indexed** (dropped by the
+  indexer's allow-list, excluded from its version hash, so a tag-only edit never re-vectorizes).
+- `title = generated_title or scraped_title`, resolved at export time.
+- `document_type` / `division` are **nullable ints** — resolve `DocumentTypes(v).label` /
+  `Divisions(v).label`, falling back to the collection's value.
+
+### Files (mirrors `sde-api-scrapers` W4.1–W4.7)
+
+| File | Change |
+|---|---|
+| `sde_collections/indexing/export.py` | **New.** `export_curated_to_s3(collection, target, run_id)` — stream `CuratedUrl`s per the traps above; write `documents.jsonl`, then `manifest.json` **last** |
+| `sde_collections/indexing/dispatch.py` | **New.** `run_index_task(collection, target, run_id)` — assume the dispatch role, `ecs:RunTask` with the command override, return `taskArn` |
+| `sde_collections/models/indexing.py` | **New** `IndexDispatch` (`collection` FK, `run_id`, `target`, `task_arn`, `dispatched_at`) — stall-timeout reference mirroring `ScrapeDispatch` (P3). Required because `CELERY_RESULT_BACKEND = None` means Celery task state cannot be polled |
+| `sde_collections/tasks.py` | Fill the P5 stubs: `index_collection_to_test/prod` = mint `run_id` → export → dispatch → record `IndexDispatch` → set `TEST_INDEXING`/`PRODUCTION_INDEXING`. **New** `poll_index_runs()` |
+| `sde_collections/signals.py` | `poll_index_runs` `PeriodicTask` every 2 min, gated on `INDEX_POLL_ENABLED` (same `post_migrate` pattern as P4's poller) |
+| `sde_collections/utils/slack_utils.py` | Post `validation.json` to `sde-data-curation` (WORKFLOW.md step 24) |
+| `config/settings/base.py` | `SDE_INDEX_BUCKET`, `INDEXING_ECS_CLUSTER`, `INDEXING_TASK_FAMILY`, `INDEXING_DISPATCH_ROLE_ARN`, `INDEX_POLL_ENABLED` — all **with defaults** so `config.settings.test` keeps booting |
+| new migration | Creates `IndexDispatch` (additive) |
+
+`poll_index_runs` status mapping: `succeeded` + `test` → stay at `TEST_INDEXING`, post the
+validation report to Slack, curator sets QC; `succeeded` + `prod` → `PROD_PERFECT` / `PROD_MINOR`
+mirroring the QC status it entered with (WORKFLOW.md step 30); `failed`, unknown state, or stall
+timeout (measured from `dispatched_at`) → `INDEXING_FAILED_ON_TEST` / `INDEXING_FAILED_ON_PROD`.
+The `run_id` namespacing means an old run's `status.json` can never satisfy a newer dispatch — no
+`LastModified` freshness rule needed (unlike the P4 crawler contract).
+
+### Cross-repo blockers (hand these over early — they gate the closed loop, not the coding)
+
+- [ ] **Give the `sde-api-scrapers` team the COSMOS AWS account id** (per environment).
+      `settings.COSMOS_AWS_ACCOUNT_ID` is empty there, and until it is filled the cross-account
+      bucket policy and `CosmosIndexingDispatchRole` are deliberately **not synthesized** —
+      dispatch cannot work. One dict entry + redeploy on their side; nothing else changes.
+- [ ] Indexer stacks deployed to dev and the AOSS data-access policy granted (their OOB.2), plus
+      `version` added as `keyword` to live `sde-web` before cutover (their OOB.1).
+- [ ] **Cutover awareness:** flipping the indexer's `WEB_INDEX_NAME` from `sde-web-copy` to
+      `sde-web` *is* the production cutover; COSMOS needs no change for it. Their open
+      id-scheme-collision finding (12 collections, incl. 100% of `gcn_circulars`) is an
+      indexer-side guard/repair — COSMOS is unaffected but should not onboard those collections
+      until it lands.
+
+### Validation
+
+New `sde_collections/tests/test_indexing_dispatch.py` (AWS mocked): export writes the manifest
+last; excluded URLs absent from the JSONL; tdamm/label resolution correct; `document_count` exact;
+dispatch records an `IndexDispatch` row; the poller maps every `status.json` state (including
+unknown-state-as-failure) and enforces the stall timeout; a stale run's `status.json` never
+completes a newer dispatch.
 
 ### Done when
-- [D] Deferred — revisit once the target repo is chosen
+- [ ] Export/dispatch/poll implemented per the contract; `IndexDispatch` migration applied
+- [ ] P5 stubs replaced: a `CURATED` collection reaches `TEST_INDEXING`, and on `succeeded` the
+      validation report posts to Slack
+- [ ] `QC_PERFECT`/`QC_MINOR` dispatches a prod run and lands on `PROD_PERFECT`/`PROD_MINOR`
+- [ ] Failure/stall paths land on `INDEXING_FAILED_ON_TEST`/`INDEXING_FAILED_ON_PROD`
+- [ ] Closed loop verified against dev (their E2E.10): Curated → export → `RunTask` → poller → Slack
 
 ---
 
-## Phase 8 — `[D]` DEFERRED: validation script and QC reporting
+## Phase 8 — QC reporting: resolved, folded into Phase 7
 
-**Deferred with Phase 7** (it validates the index that Phase 7 writes).
+**The validation script no longer needs to be authored — the indexer produces it.** On every
+`--target test` run, the `WEB_COSMOS` task writes `validation.json`
+(`expected_count`, `indexed_count`, `count_matches`, `titles_missing_in_index`,
+`titles_only_in_index`, `title_match_rate` — exactly the WORKFLOW.md steps 22–25 count/title
+comparison) next to `status.json`. It lives indexer-side by design: the indexer already holds AOSS
+credentials and COSMOS has none. Its counts exclude tombstoned documents.
 
-Per WORKFLOW.md steps 22–25: compare **total document count** and **document titles** between the
-test OpenSearch index and the collection's `CuratedUrl`s; post the result to the `sde-data-curation`
-Slack channel; the curator then sets `QC: Perfect` / `QC: Minor Issues` / `QC: Failed`.
-
-Note the QC statuses are **curator-set from the report**, so COSMOS already has everything it needs
-on the status side after Phase 1 — only the report itself is missing. Neither sibling repo contains
-any count/title comparison tooling or Slack integration.
+COSMOS's entire share of this phase is inside P7: `poll_index_runs` reads `validation.json` and
+posts it to `sde-data-curation`. The QC statuses stay **curator-set from the report**, so nothing
+else is needed on the status side after Phase 1.
 
 ### Done when
-- [D] Deferred — follows Phase 7
+- [ ] Covered by P7's done-when (validation report posted to Slack on test runs) — no separate work
 
 ---
 
@@ -755,8 +842,8 @@ clean host needs dummy Sinequa secrets to boot.
 
 | File | Content |
 |---|---|
-| `sde_collections/management/commands/validate_deploy_env.py` | **New.** Fails if required settings are missing. Once the deferred search endpoints exist, it must also **refuse a host where `OPENSEARCH_ENDPOINT_TEST == OPENSEARCH_ENDPOINT_PROD`** (that would make the QC gate decorative) |
-| `sde_collections/management/commands/preflight_aws.py` | **New.** SSM reachability to the crawler instance and S3 read on `SDE_S3_BUCKET`, using `get_boto3_session()` from P0. Reports each check independently rather than aborting on the first failure. AOSS/SageMaker checks are added with Phase 7, not now |
+| `sde_collections/management/commands/validate_deploy_env.py` | **New.** Fails if required settings are missing. Once P7 lands, it must also require the indexing settings (`SDE_INDEX_BUCKET`, `INDEXING_ECS_CLUSTER`, `INDEXING_TASK_FAMILY`, `INDEXING_DISPATCH_ROLE_ARN`) non-empty on deployed hosts. (Test/prod endpoint separation is enforced **indexer-side** — its target→endpoint resolution is tier-capped — so COSMOS has no endpoint-equality check to make) |
+| `sde_collections/management/commands/preflight_aws.py` | **New.** SSM reachability to the crawler instance and S3 read on `SDE_S3_BUCKET`, using `get_boto3_session()` from P0. Reports each check independently rather than aborting on the first failure. P7 adds checks on `SDE_INDEX_BUCKET` (write `curated_collections/*`, read `index_runs/*`) and an `sts:AssumeRole` on the dispatch role; COSMOS never gets AOSS/SageMaker access, so no such checks exist here |
 | `config/urls.py` + a `healthz` view | **New.** There is **no health endpoint in the repo today**; the deploy smoke checks need one. Minimal 200 + DB connectivity, unauthenticated |
 | `.pre-commit-config.yaml` | **Fix:** the gitleaks hook passes `--config=gitleaks-config.toml`, but that file does not exist and is not tracked — the hook fails instead of scanning. Add the config or drop the arg |
 | `scripts/deploy.sh` | **New.** The single definition of a deploy, in `DEPLOYMENT.md`'s order: fetch artifact → `validate_deploy_env` → backup (prod only) → `migrate` → `docker compose up -d` → smoke checks → rollback on failure |
@@ -772,8 +859,8 @@ All `deploy-*` and `rollback` workflows gate on repo variable **`CD_ENABLED`**; 
 they skip.
 
 > **Ordering matters:** `validate_deploy_env` runs *before* anything mutates. A host missing
-> `OPENSEARCH_ENDPOINT_PROD` must fail there, not inside a Celery task that has already half-written
-> an index.
+> `INDEXING_DISPATCH_ROLE_ARN` must fail there, not inside a Celery task that has already exported
+> a collection it can never dispatch.
 
 > **`celerybeat` must be recreated on every deploy.** The inference `PeriodicTask` rows (P2) and the
 > `poll_scrape_jobs` schedule (P4) are written by `post_migrate`; a beat process left running on the
@@ -788,9 +875,8 @@ docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_de
 bash -n scripts/deploy.sh && shellcheck scripts/deploy.sh
 ```
 
-Tests (AWS mocked): `validate_deploy_env` exits non-zero on a missing endpoint and on identical
-test/prod endpoints; `preflight_aws` reports each check independently and does not abort on the
-first failure.
+Tests (AWS mocked): `validate_deploy_env` exits non-zero on any missing required setting;
+`preflight_aws` reports each check independently and does not abort on the first failure.
 
 ### Manual verification
 1. `aws ssm describe-instance-information --filters "Key=InstanceIds,Values=<staging-id>" --query 'InstanceInformationList[0].PingStatus'` → `Online`
@@ -834,8 +920,10 @@ Then, against the dev AWS account:
    confirm a *new* `ScrapeDispatch` row, that the poller ignores the old S3 output until fresh
    results land, and that the collection reaches **Ready for Re-Curation**.
 
-Steps beyond 8 (test indexing, validation, prod indexing) are **deferred** — status will stop at
-`Test Indexing` until Phase 7 lands.
+Steps beyond 8 (test indexing, validation, prod indexing) need **Phase 7**. The indexer side is
+code-complete on `sde-api-scrapers`' `web-indexing` branch, but the closed loop additionally needs
+the COSMOS AWS account id recorded there, its stacks deployed, and the AOSS data-access policy
+granted. Until then status stops at `Test Indexing`.
 
 ---
 
@@ -852,5 +940,9 @@ Steps beyond 8 (test indexing, validation, prod indexing) are **deferred** — s
 | Duplicate ingest from the 5-minute poller | Ingest claims via an atomic status CAS **before** writing (ingest can outrun the poll interval, and `BaseUrl.url` is globally unique — concurrent writes would `IntegrityError`); manual re-ingest stays idempotent by deleting `DumpUrl`s first |
 | Deleting Sinequa breaks unrelated GitHub metadata sync | P6 keeps `sync_with_production_webapp` (COSMOS prod webapp) and removes only the Sinequa-configs-repo paths |
 | `config/settings/test.py` inherits `base.py`, so stale env vars mask missed references | P6 validation runs with the deleted vars unset |
+| **Cross-account dispatch silently unbuildable** — `sde-api-scrapers` has no COSMOS account id, so its bucket policy and `CosmosIndexingDispatchRole` are (deliberately) not synthesized | Hand the account id over as a P7 precondition — one dict entry (`settings.COSMOS_AWS_ACCOUNT_ID`) + redeploy on their side |
+| Curator-excluded URLs published to search | P7 export uses `.exclude(excluded=True)` — `excluded` is a queryset annotation, not a field; test asserts exclusions never reach the JSONL |
+| Truncated export read as a mass deletion | Indexer-side guard: line count vs `manifest.document_count` → `export_incomplete`, deletions skipped. COSMOS's job is writing the manifest **last** with an exact count |
+| Stale `status.json` completes a newer index dispatch | Every artifact is namespaced by the COSMOS-minted `run_id` (`index_runs/{cf}/{run_id}/`), so cross-run staleness is structurally impossible — unlike the P4 crawler contract, which needs the `LastModified` freshness rule |
 | `factories.py:49` has a suspect `tracker = factory.Maybe("workflow_status")` | Watch during P1/P5 test rewrites; fix if it interferes with `FieldTracker` |
 | Migration rollback safety | All migrations here are additive (new model, choices-only `AlterField`); `DEPLOYMENT.md`'s "image rollback is a complete rollback" property holds |
