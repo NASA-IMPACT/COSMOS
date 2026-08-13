@@ -721,7 +721,9 @@ independent of COSMOS and is exercised from its own CLI against hand-written exp
    document_count, exported_at, cosmos_workflow_status}`. The indexer verifies line count against
    `document_count` and skips deletions on mismatch, so the count must be exact.
 
-2. **Dispatch.** Assume **`CosmosIndexingDispatchRole-{env}`** (cross-account), then `ecs:RunTask`
+2. **Dispatch.** Assume **`CosmosIndexingDispatchRole-{env}`** (same-account in dev — see
+   "Cross-repo status" below; the assume-role indirection is kept so test/prod can be genuinely
+   cross-account later), then `ecs:RunTask`
    with a **command override**: `--source WEB_COSMOS --collection {config_folder}
    --target test|prod --run-id {run_id}`. (Not container-env overrides — the earlier
    `COLLECTION_ID`/`TARGET` sketch is superseded. Target→endpoint resolution is tier-capped on the
@@ -778,14 +780,39 @@ timeout (measured from `dispatched_at`) → `INDEXING_FAILED_ON_TEST` / `INDEXIN
 The `run_id` namespacing means an old run's `status.json` can never satisfy a newer dispatch — no
 `LastModified` freshness rule needed (unlike the P4 crawler contract).
 
-### Cross-repo blockers (hand these over early — they gate the closed loop, not the coding)
+### Cross-repo status (updated 2026-08-13 from their tracker's "Next Steps" — NS numbering is theirs)
 
-- [ ] **Give the `sde-api-scrapers` team the COSMOS AWS account id** (per environment).
-      `settings.COSMOS_AWS_ACCOUNT_ID` is empty there, and until it is filled the cross-account
-      bucket policy and `CosmosIndexingDispatchRole` are deliberately **not synthesized** —
-      dispatch cannot work. One dict entry + redeploy on their side; nothing else changes.
-- [ ] Indexer stacks deployed to dev and the AOSS data-access policy granted (their OOB.2), plus
-      `version` added as `keyword` to live `sde-web` before cutover (their OOB.1).
+> **Correction: there is no cross-account boundary in dev.** Verified by the indexer team against
+> AWS: the COSMOS Django host (`i-02b3d3e1ac0671952`, instance profile `indexing-helper-role`), the
+> crawler, the indexer stacks, and the web AOSS collection all live in account **998871305517**.
+> The earlier blocker "give them the COSMOS account id" had no unknown in it — the dev answer is
+> the account both repos already deploy into. The assume-role indirection stays anyway (dispatch.py
+> is unchanged), so test/prod can move to a genuinely separate account later. Test/prod account ids
+> remain unknown but block nothing until those tiers exist (their NS.5).
+
+- [ ] **NS.1 (their side):** fill `COSMOS_AWS_ACCOUNT_ID[DEV] = "998871305517"` — this is what makes
+      their CDK synthesize the `sde-cosmos-indexing-dev` bucket policy and
+      `CosmosIndexingDispatchRole-dev`. They will also narrow the role's trust from
+      `AccountPrincipal` to `ArnPrincipal(...role/indexing-helper-role)` — **which means COSMOS's
+      host role `indexing-helper-role` needs `sts:AssumeRole` on the dispatch role in its identity
+      policy** (a COSMOS deploy-time item; fold into P9's preflight).
+- [ ] **NS.2 (their side):** deploy the `web-indexing` branch stacks to dev (nothing from the branch
+      exists in AWS yet — bucket/role/task-family absence re-confirmed by both teams 2026-08-13).
+- [ ] **NS.3 (their side → our env):** they send the Fargate network values (their cluster uses the
+      default VPC, so it's a lookup, not code). On receipt, set in COSMOS dev env:
+      `INDEXING_SUBNETS`, `INDEXING_SECURITY_GROUPS`, plus the known values
+      `SDE_INDEX_BUCKET=sde-cosmos-indexing-dev`, `INDEXING_ECS_CLUSTER=api-scrapers-cluster-dev`,
+      `INDEXING_TASK_FAMILY=web_cosmos-scraper-dev`,
+      `INDEXING_DISPATCH_ROLE_ARN=arn:aws:iam::998871305517:role/CosmosIndexingDispatchRole-dev`.
+- [ ] **NS.4 (our side): commit Phase 7.** Their tracker flags our indexing work as complete but
+      uncommitted — "the closed loop is unreviewable until it lands."
+- [x] **Contract verified by the indexer team (2026-08-13)** — they read our `export.py` against
+      their `cosmos_source.py`/`web_processor.py`: manifest fields, JSONL names, label resolution,
+      `tdamm_tag`/`is_metadata_viewer` handling all match. *"Nothing to renegotiate."*
+- [x] AOSS data-access policy for dev (their OOB.2) — **already satisfied**: the existing
+      `sde-services-access` policy's `index/sde-binary/sde-*` wildcard covers `sde-web-copy`, with
+      `ApiScraperTaskRole-dev` as principal. `version: keyword` is already mapped on `sde-web-copy`
+      (431,363 docs); their OOB.1 (`version` on live `sde-web`) is **cutover-only**.
 - [ ] **Cutover awareness:** flipping the indexer's `WEB_INDEX_NAME` from `sde-web-copy` to
       `sde-web` *is* the production cutover; COSMOS needs no change for it. Their open
       id-scheme-collision finding (12 collections, incl. 100% of `gcn_circulars`) is an
@@ -808,12 +835,8 @@ completes a newer dispatch.
 - [x] `QC_PERFECT`/`QC_MINOR` dispatches a prod run and lands on `PROD_PERFECT`/`PROD_MINOR`
 - [x] Failure/stall paths land on `INDEXING_FAILED_ON_TEST`/`INDEXING_FAILED_ON_PROD`
 - [ ] Closed loop verified against dev (their E2E.10): Curated → export → `RunTask` → poller → Slack
-      *(blocked cross-repo, checked 2026-08-13: `api-scrapers-cluster-dev` is ACTIVE, but
-      `sde-cosmos-indexing-dev`, `CosmosIndexingDispatchRole-dev`, and the `web_cosmos-scraper-dev`
-      task family do not exist — the web-indexing branch is undeployed and `COSMOS_AWS_ACCOUNT_ID`
-      is unfilled on their side. Also hand them our subnet/SG needs: Fargate `RunTask` requires
-      `networkConfiguration`, so COSMOS needs `INDEXING_SUBNETS`/`INDEXING_SECURITY_GROUPS` values
-      from their VPC stack)*
+      *(gated on their NS.1 + NS.2 + NS.3 — see "Cross-repo status" above. All implementation on
+      both sides is done; what remains is their dev deploy plus env values on ours)*
 
 ---
 
@@ -852,7 +875,7 @@ clean host needs dummy Sinequa secrets to boot.
 
 | File | Content |
 |---|---|
-| `sde_collections/management/commands/validate_deploy_env.py` | **New.** Fails if required settings are missing. Once P7 lands, it must also require the indexing settings (`SDE_INDEX_BUCKET`, `INDEXING_ECS_CLUSTER`, `INDEXING_TASK_FAMILY`, `INDEXING_DISPATCH_ROLE_ARN`) non-empty on deployed hosts. (Test/prod endpoint separation is enforced **indexer-side** — its target→endpoint resolution is tier-capped — so COSMOS has no endpoint-equality check to make) |
+| `sde_collections/management/commands/validate_deploy_env.py` | **New.** Fails if required settings are missing. Once P7 lands, it must also require the indexing settings (`SDE_INDEX_BUCKET`, `INDEXING_ECS_CLUSTER`, `INDEXING_TASK_FAMILY`, `INDEXING_DISPATCH_ROLE_ARN`, and the Fargate networking pair `INDEXING_SUBNETS`/`INDEXING_SECURITY_GROUPS`) non-empty on deployed hosts. (Test/prod endpoint separation is enforced **indexer-side** — its target→endpoint resolution is tier-capped — so COSMOS has no endpoint-equality check to make) |
 | `sde_collections/management/commands/preflight_aws.py` | **New.** SSM reachability to the crawler instance and S3 read on `SDE_S3_BUCKET`, using `get_boto3_session()` from P0. Reports each check independently rather than aborting on the first failure. P7 adds checks on `SDE_INDEX_BUCKET` (write `curated_collections/*`, read `index_runs/*`) and an `sts:AssumeRole` on the dispatch role; COSMOS never gets AOSS/SageMaker access, so no such checks exist here |
 | `config/urls.py` + a `healthz` view | **New.** There is **no health endpoint in the repo today**; the deploy smoke checks need one. Minimal 200 + DB connectivity, unauthenticated |
 | `.pre-commit-config.yaml` | **Fix:** the gitleaks hook passes `--config=gitleaks-config.toml`, but that file does not exist and is not tracked — the hook fails instead of scanning. Add the config or drop the arg |
