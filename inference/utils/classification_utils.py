@@ -82,7 +82,7 @@ def update_url_with_classification_results(url_object, classification_results, t
     Returns:
         list: The list of TDAMM tags that were applied
     """
-    tdamm_tags = map_classification_to_tdamm_tags(classification_results)
+    tdamm_tags = map_classification_to_tdamm_tags(classification_results, threshold=threshold)
 
     # Update the URL object
     url_object.tdamm_tag_ml = tdamm_tags

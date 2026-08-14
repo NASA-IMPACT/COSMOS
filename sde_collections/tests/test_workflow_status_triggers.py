@@ -131,7 +131,9 @@ class TestSlackNotificationOnTransition(TestCase):
         self.collection.save()
 
         mock_send.assert_called_once()
-        assert self.collection.name in mock_send.call_args.args[0] or "<" in mock_send.call_args.args[0]
+        message = mock_send.call_args.args[0]
+        assert self.collection.name in message
+        assert "Ready for engineering" in message
 
     @patch("sde_collections.models.collection.send_slack_message")
     def test_unmapped_transition_sends_nothing(self, mock_send):

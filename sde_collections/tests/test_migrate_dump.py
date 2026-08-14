@@ -3,6 +3,8 @@
 
 import pytest
 
+# The production list — a local copy would silently drift and stop covering new fields.
+from sde_collections.models.collection import DELTA_COMPARISON_FIELDS  # noqa: E402
 from sde_collections.models.collection_choice_fields import Divisions, DocumentTypes
 from sde_collections.models.delta_patterns import (
     DeltaDocumentTypePattern,
@@ -15,8 +17,6 @@ from sde_collections.tests.factories import (
     DeltaUrlFactory,
     DumpUrlFactory,
 )
-
-DELTA_COMPARISON_FIELDS = ["scraped_title", "tdamm_tag", "division"]  # Assuming a central definition
 
 
 @pytest.mark.django_db
@@ -230,20 +230,19 @@ class TestGranularFullMigrationFlow:
 
 @pytest.mark.django_db
 def test_empty_delta_comparison_fields():
+    """The comparison-field list is what drives delta creation: with it patched empty
+    in the PRODUCTION module, even a differing title must not produce a DeltaUrl.
+    (Rebinding this test module's import would be a no-op — patch where it's used.)"""
+    from unittest.mock import patch
+
     collection = CollectionFactory()
-    dump_url = DumpUrlFactory(collection=collection, scraped_title="Same Title")
-    CuratedUrlFactory(collection=collection, url=dump_url.url, scraped_title="Same Title")  # noqa
+    dump_url = DumpUrlFactory(collection=collection, scraped_title="New Title")
+    CuratedUrlFactory(collection=collection, url=dump_url.url, scraped_title="Old Title")
 
-    global DELTA_COMPARISON_FIELDS
-    original_fields = DELTA_COMPARISON_FIELDS
-    DELTA_COMPARISON_FIELDS = []  # Simulate empty comparison fields
-
-    try:
+    with patch("sde_collections.models.collection.DELTA_COMPARISON_FIELDS", []):
         collection.migrate_dump_to_delta()
-        # No DeltaUrl should be created as there are no fields to compare
-        assert not DeltaUrl.objects.filter(url=dump_url.url).exists()
-    finally:
-        DELTA_COMPARISON_FIELDS = original_fields  # Reset the fields after test
+
+    assert not DeltaUrl.objects.filter(url=dump_url.url).exists()
 
 
 @pytest.mark.django_db

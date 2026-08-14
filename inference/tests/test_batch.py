@@ -1,6 +1,6 @@
 # inference/tests/test_batch.py
 # docker-compose -f local.yml run --rm django pytest inference/tests/test_batch.py
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from django.db.models import QuerySet
@@ -307,31 +307,24 @@ class TestBatchProcessor:
         # Verify close was still called despite the exception
         mock_iterator.close.assert_called_once()
 
-    def test_integration_with_mock_django_db(self, processor):
-        """Test integration with mocked Django DB objects"""
+    def test_integration_with_factory_urls(self, processor):
+        """Real model instances (unsaved factory builds) flow through prepare_url_data."""
         from sde_collections.tests.factories import DumpUrlFactory
 
-        # Create a patch for the QuerySet iterator that returns our factory objects
-        with patch.object(QuerySet, "iterator") as mock_iterator:
-            # Create mock URLs using the factory
-            url1 = DumpUrlFactory.build(id=1, scraped_text="Text 1")
-            url2 = DumpUrlFactory.build(id=2, scraped_text="Text 2")
+        url1 = DumpUrlFactory.build(id=1, scraped_text="Text 1")
+        url2 = DumpUrlFactory.build(id=2, scraped_text="Text 2")
 
-            # Set up the mock to return these objects
-            mock_iterator.return_value = iter([url1, url2])
+        mock_queryset = MagicMock(spec=QuerySet)
+        mock_queryset.iterator.return_value = iter([url1, url2])
 
-            # Create a real QuerySet (that will use our mock iterator)
-            mock_queryset = MagicMock(spec=QuerySet)
-            mock_queryset.iterator = mock_iterator
+        batches = list(processor.iter_url_batches(mock_queryset))
 
-            # Process the batches
-            batches = list(processor.iter_url_batches(mock_queryset))
-
-            # Verify the output
-            assert len(batches) == 1  # Both URLs fit in one batch
-            assert len(batches[0]) == 2
-            assert batches[0][0]["url_id"] == 1
-            assert batches[0][1]["url_id"] == 2
+        assert len(batches) == 1  # Both URLs fit in one batch
+        assert len(batches[0]) == 2
+        assert batches[0][0]["url_id"] == 1
+        assert batches[0][0]["text"] == "Text 1"
+        assert batches[0][0]["metadata"] == {"title": url1.scraped_title or "", "url": url1.url}
+        assert batches[0][1]["url_id"] == 2
 
 
 # Additional test class to identify potential issues
@@ -339,30 +332,25 @@ class TestBatchProcessorPotentialIssues:
     """Tests focused on identifying potential problems with BatchProcessor"""
 
     def test_extremely_large_text(self):
-        """Test handling of extremely large text to check for memory issues"""
-        processor = BatchProcessor()
-
-        # Create a URL with extremely large text (100MB)
-        # This is simulated rather than actually creating such a large string
-        large_text_size = 100 * 1024 * 1024  # 100MB
+        """An oversized URL must be truncated to the batch limit and yielded as its own
+        batch — with real text against a small limit, not by patching the processor."""
+        processor = BatchProcessor(max_batch_text_length=100)
 
         url = Mock()
         url.id = 1
+        url.scraped_text = "A" * 250
+        url.scraped_title = "Big page"
+        url.url = "https://example.com/big"
 
-        # Instead of creating a huge string, we'll patch get_text_length
-        # to simulate the size calculation
-        with patch.object(processor, "get_text_length", return_value=large_text_size):
-            url_data = {"url_id": url.id, "text": "LARGE", "metadata": {}}
+        mock_queryset = MagicMock(spec=QuerySet)
+        mock_queryset.iterator.return_value = iter([url])
 
-            with patch.object(processor, "prepare_url_data", return_value=url_data):
-                mock_queryset = MagicMock(spec=QuerySet)
-                mock_queryset.iterator.return_value = iter([url])
+        batches = list(processor.iter_url_batches(mock_queryset))
 
-                batches = list(processor.iter_url_batches(mock_queryset))
-
-                # Should create a single batch with truncated content
-                assert len(batches) == 1
-                assert len(batches[0]) == 1
+        assert len(batches) == 1
+        assert len(batches[0]) == 1
+        assert batches[0][0]["text"] == "A" * 100  # actually truncated to the limit
+        assert batches[0][0]["url_id"] == 1
 
     def test_url_with_no_text(self):
         """Test handling of URLs with empty text"""

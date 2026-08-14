@@ -23,8 +23,10 @@ def client():
 
 
 @pytest.fixture(autouse=True)
-def setup_urls():
-    """Setup URLs for testing"""
-    from django.conf import settings
+def setup_urls(settings):
+    """Point ROOT_URLCONF at this module's router-only urlpatterns.
 
+    Uses pytest-django's `settings` fixture so the change is rolled back after each
+    test — assigning django.conf.settings directly leaked the EJ-only urlconf into
+    every later test module and broke all reverse() calls in a full-suite run."""
     settings.ROOT_URLCONF = __name__

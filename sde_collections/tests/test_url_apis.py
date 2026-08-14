@@ -221,22 +221,25 @@ class TestCandidateURLAPIView:
         assert set(data.keys()) == expected_fields
 
     def test_candidate_url_api_alias(self, client):
-        """Should verify candidate-urls-api endpoint aliases to candidate-urls-api"""
-        candidate_url = CuratedUrlFactory(collection=self.collection, generated_title="Test Generated Title")
+        """The legacy candidate-urls-api route must serve the exact same payload as
+        curated-urls-api (both are wired to CuratedURLAPIView)."""
+        CuratedUrlFactory(collection=self.collection, generated_title="Test Generated Title")
 
         candidate_url = reverse(
             "sde_collections:candidate-url-api", kwargs={"config_folder": self.collection.config_folder}
         )
-        candidate_url = reverse(
-            "sde_collections:candidate-url-api", kwargs={"config_folder": self.collection.config_folder}
+        curated_url = reverse(
+            "sde_collections:curated-url-api", kwargs={"config_folder": self.collection.config_folder}
         )
+        assert candidate_url != curated_url  # distinct routes, same view
 
         candidate_response = client.get(candidate_url)
-        candidate_response = client.get(candidate_url)
+        curated_response = client.get(curated_url)
 
         assert candidate_response.status_code == status.HTTP_200_OK
-        assert candidate_response.status_code == status.HTTP_200_OK
-        assert candidate_response.json()["results"] == candidate_response.json()["results"]
+        assert curated_response.status_code == status.HTTP_200_OK
+        assert len(candidate_response.json()["results"]) == 1
+        assert candidate_response.json()["results"] == curated_response.json()["results"]
 
     def test_multiple_collections(self, client):
         """Should only return URLs from the specified collection"""

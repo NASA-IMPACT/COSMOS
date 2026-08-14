@@ -1,19 +1,27 @@
 # docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_scrape_ingest.py
 
-from datetime import datetime, timedelta, timezone as dt_timezone
-from unittest.mock import patch
+import io
+import json
+from datetime import datetime, timedelta
+from datetime import timezone as dt_timezone
+from unittest.mock import MagicMock, patch
 
 import pytest
+from botocore.exceptions import ClientError
+from django.test import override_settings
 from django.utils import timezone
 
-from sde_collections.models.collection import Collection
 from sde_collections.models.collection_choice_fields import (
     ReindexingStatusChoices,
     WorkflowStatusChoices,
 )
 from sde_collections.models.delta_url import DumpUrl
 from sde_collections.models.scraper_config import ScrapeDispatch
-from sde_collections.scraping.s3_results import results_ready
+from sde_collections.scraping.s3_results import (
+    fetch_documents,
+    fetch_summary,
+    results_ready,
+)
 from sde_collections.tasks import (
     ingest_scraped_collection,
     migrate_dump_to_delta_and_handle_status_transistions,
@@ -248,6 +256,81 @@ class TestPollScrapeJobs:
         poll_scrape_jobs()
 
         mock_ingest.assert_called_once_with(collection.id)
+
+
+def _s3_stub(get_object=None):
+    """Patchable session whose s3 client's get_object returns (or raises) the given value."""
+    s3 = MagicMock()
+    if isinstance(get_object, BaseException):
+        s3.get_object.side_effect = get_object
+    else:
+        s3.get_object.return_value = get_object
+    session = MagicMock()
+    session.client.return_value = s3
+    return session, s3
+
+
+def _client_error(code):
+    return ClientError({"Error": {"Code": code}}, "GetObject")
+
+
+def _s3_object(payload, last_modified=None):
+    return {
+        "Body": io.BytesIO(json.dumps(payload).encode("utf-8")),
+        "LastModified": last_modified or datetime(2026, 8, 13, 12, 0, 0, tzinfo=dt_timezone.utc),
+    }
+
+
+class TestS3ResultFetchers:
+    """The S3 boundary itself: the ingest/poll tests all mock fetch_summary/fetch_documents,
+    so the real key layout, bucket wiring and missing-key handling must be proven here.
+    The keys are the crawler's contract (sde_crawler/job.py::s3_keys_for_collection)."""
+
+    @pytest.fixture(autouse=True)
+    def crawler_bucket(self):
+        # override_settings can't decorate a plain (non-SimpleTestCase) class
+        with override_settings(SDE_S3_BUCKET="crawler-bucket-test"):
+            yield
+
+    def test_fetch_summary_reads_crawler_summary_key_and_returns_last_modified(self):
+        summary = make_summary(7)
+        modified = datetime(2026, 8, 14, 9, 30, 0, tzinfo=dt_timezone.utc)
+        session, s3 = _s3_stub(_s3_object(summary, modified))
+
+        with patch("sde_collections.scraping.s3_results.get_boto3_session", return_value=session):
+            result = fetch_summary("astro_data")
+
+        assert result == (summary, modified)
+        s3.get_object.assert_called_once_with(
+            Bucket="crawler-bucket-test", Key="failure_logs/astro_data_failures_summary.json"
+        )
+
+    @pytest.mark.parametrize("code", ["NoSuchKey", "404"])
+    def test_fetch_summary_missing_key_means_run_not_finished(self, code):
+        session, _ = _s3_stub(_client_error(code))
+
+        with patch("sde_collections.scraping.s3_results.get_boto3_session", return_value=session):
+            assert fetch_summary("astro_data") is None
+
+    def test_fetch_summary_propagates_real_s3_errors(self):
+        """AccessDenied etc. must surface, not read as 'still crawling' forever."""
+        session, _ = _s3_stub(_client_error("AccessDenied"))
+
+        with patch("sde_collections.scraping.s3_results.get_boto3_session", return_value=session):
+            with pytest.raises(ClientError):
+                fetch_summary("astro_data")
+
+    def test_fetch_documents_reads_scraped_collections_key(self):
+        documents = make_documents(2)
+        session, s3 = _s3_stub(_s3_object(documents))
+
+        with patch("sde_collections.scraping.s3_results.get_boto3_session", return_value=session):
+            result = fetch_documents("astro_data")
+
+        assert result == documents
+        s3.get_object.assert_called_once_with(
+            Bucket="crawler-bucket-test", Key="scraped_collections/astro_data.json"
+        )
 
 
 class TestResultsFreshness:

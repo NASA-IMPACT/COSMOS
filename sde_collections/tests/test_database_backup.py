@@ -3,7 +3,8 @@ import gzip
 import os
 import subprocess
 from datetime import datetime
-from unittest.mock import Mock, patch
+from io import StringIO
+from unittest.mock import patch
 
 import pytest
 from django.core.management import call_command
@@ -141,37 +142,58 @@ class TestBackupCommand:
         # Verify correct command execution
         mock_subprocess.assert_called_once()
 
-        # Verify correct filename used
+        # Verify the dump lands on the exact backups-volume path
         cmd_args = mock_subprocess.call_args[0][0]
-        date_str = "20240115"
-        expected_base = f"{env_name}_backup_{date_str}.sql"
-        assert cmd_args[-1].endswith(expected_base)
+        assert cmd_args[-1] == f"/app/backups/{env_name}_backup_20240115.sql"
 
-        # Verify cleanup attempted if compressed
-        if compress:
-            assert not os.path.exists(expected_base)
+    def test_compressed_backup_writes_gz_and_removes_temp_dump(self, mock_subprocess, tmp_path):
+        """Real file lifecycle: the mocked pg_dump writes a dump file, the real
+        compress_file gzips it, and temp_file_handler removes the intermediate .sql."""
+        dump_content = b"-- PostgreSQL dump"
 
-    def test_handle_pg_dump_error(self, mock_subprocess, mock_date, monkeypatch):
-        """Test error handling when pg_dump fails."""
+        def fake_pg_dump(cmd, env, check):
+            with open(cmd[-1], "wb") as f:
+                f.write(dump_content)
+
+        mock_subprocess.side_effect = fake_pg_dump
+        output = tmp_path / "backup.sql"
+
+        call_command("database_backup", output=str(output))
+
+        assert not output.exists()  # temp dump cleaned up
+        with gzip.open(str(output) + ".gz", "rb") as f:
+            assert f.read() == dump_content
+
+    def test_handle_pg_dump_error(self, mock_subprocess, tmp_path):
+        """pg_dump failure must be reported, swallowed, and leave no backup artifacts."""
         mock_subprocess.side_effect = subprocess.CalledProcessError(1, "pg_dump")
-        monkeypatch.setenv("BACKUP_ENVIRONMENT", "staging")
+        output = tmp_path / "backup.sql"
+        out = StringIO()
 
-        call_command("database_backup")
+        call_command("database_backup", output=str(output), stdout=out)  # must not raise
 
-        # Verify error handling and cleanup
-        date_str = "20240115"
-        temp_file = f"staging_backup_{date_str}.sql"
-        assert not os.path.exists(temp_file)
+        assert "Backup failed" in out.getvalue()
+        assert not output.exists()
+        assert not os.path.exists(str(output) + ".gz")
 
-    def test_handle_compression_error(self, mock_subprocess, mock_date, command, monkeypatch):
-        """Test error handling during compression."""
-        monkeypatch.setenv("BACKUP_ENVIRONMENT", "staging")
-        # Mock compression to fail
-        command.compress_file = Mock(side_effect=Exception("Compression failed"))
+    def test_handle_compression_error(self, mock_subprocess, tmp_path):
+        """Compression failure must be reported, swallowed, and still clean up the temp
+        dump that pg_dump produced. (Patch compress_file on the class: call_command
+        instantiates its own Command, so patching a fixture instance guards nothing.)"""
 
-        call_command("database_backup")
+        def fake_pg_dump(cmd, env, check):
+            with open(cmd[-1], "wb") as f:
+                f.write(b"-- dump")
 
-        # Verify cleanup
-        date_str = "20240115"
-        temp_file = f"staging_backup_{date_str}.sql"
-        assert not os.path.exists(temp_file)
+        mock_subprocess.side_effect = fake_pg_dump
+        output = tmp_path / "backup.sql"
+        out = StringIO()
+
+        with patch.object(
+            database_backup.Command, "compress_file", side_effect=Exception("Compression failed")
+        ):
+            call_command("database_backup", output=str(output), stdout=out)  # must not raise
+
+        assert "Error during backup process" in out.getvalue()
+        assert not output.exists()  # temp dump cleaned up despite the failure
+        assert not os.path.exists(str(output) + ".gz")

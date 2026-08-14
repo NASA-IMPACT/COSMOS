@@ -1,15 +1,21 @@
 # docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_indexing_dispatch.py
 
+import io
 import json
 from datetime import timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
+from botocore.exceptions import ClientError
 from django.test import override_settings
 from django.utils import timezone
 
-from sde_collections.indexing.export import export_curated_to_s3
 from sde_collections.indexing.dispatch import run_index_task
+from sde_collections.indexing.export import export_curated_to_s3
+from sde_collections.indexing.run_status import (
+    fetch_run_status,
+    fetch_validation_report,
+)
 from sde_collections.models.collection_choice_fields import (
     Divisions,
     DocumentTypes,
@@ -70,6 +76,7 @@ class TestExportCuratedToS3:
     def indexing_settings(self):
         with override_settings(**INDEXING_SETTINGS):
             yield
+
     def test_manifest_written_last_with_exact_count_and_keys(self, s3_export):
         collection = CollectionFactory()
         CuratedUrlFactory.create_batch(3, collection=collection)
@@ -91,9 +98,7 @@ class TestExportCuratedToS3:
         collection = CollectionFactory()
         CuratedUrlFactory(collection=collection, url="https://keep.nasa.gov/a")
         excluded_url = CuratedUrlFactory(collection=collection, url="https://exclude.nasa.gov/b")
-        pattern = DeltaExcludePattern.objects.create(
-            collection=collection, match_pattern="https://exclude.nasa.gov/b"
-        )
+        pattern = DeltaExcludePattern.objects.create(collection=collection, match_pattern="https://exclude.nasa.gov/b")
         # The excluded annotation reads this M2M; population is the pattern system's job
         # (covered in test_promote_collection) — here we only care that export honours it.
         pattern.curated_urls.add(excluded_url)
@@ -166,11 +171,16 @@ class TestRunIndexTask:
         # The executable must lead the list: a container override replaces the task
         # definition's command wholesale, and the indexer image has no ENTRYPOINT.
         assert command == [
-            "python3", "api_scraper.py",
-            "--source", "WEB_COSMOS",
-            "--collection", collection.config_folder,
-            "--target", "test",
-            "--run-id", RUN_ID,
+            "python3",
+            "api_scraper.py",
+            "--source",
+            "WEB_COSMOS",
+            "--collection",
+            collection.config_folder,
+            "--target",
+            "test",
+            "--run-id",
+            RUN_ID,
         ]
 
     @override_settings(**INDEXING_SETTINGS)
@@ -246,6 +256,65 @@ class TestIndexDispatchTasks:
         assert dispatch.previous_workflow_status == WorkflowStatusChoices.QUALITY_CHECK_MINOR
         collection.refresh_from_db()
         assert collection.workflow_status == WorkflowStatusChoices.PRODUCTION_INDEXING
+
+
+class TestRunStatusFetchers:
+    """The S3 boundary itself: poll_index_runs tests mock fetch_run_status, so the real
+    index_runs/{config_folder}/{run_id}/ key layout and missing-key handling (None while
+    the run is in flight, raise on real errors) must be proven here."""
+
+    @pytest.fixture(autouse=True)
+    def index_bucket(self):
+        # override_settings can't decorate a plain (non-SimpleTestCase) class
+        with override_settings(SDE_INDEX_BUCKET="sde-cosmos-indexing-test"):
+            yield
+
+    def _patch_s3(self, get_object):
+        s3 = MagicMock()
+        if isinstance(get_object, BaseException):
+            s3.get_object.side_effect = get_object
+        else:
+            s3.get_object.return_value = get_object
+        session = MagicMock()
+        session.client.return_value = s3
+        return patch("sde_collections.indexing.run_status.get_boto3_session", return_value=session), s3
+
+    def test_fetch_run_status_reads_status_json_under_run_prefix(self):
+        payload = {"state": "succeeded"}
+        patcher, s3 = self._patch_s3({"Body": io.BytesIO(json.dumps(payload).encode("utf-8"))})
+
+        with patcher:
+            assert fetch_run_status("astro_data", RUN_ID) == payload
+
+        s3.get_object.assert_called_once_with(
+            Bucket="sde-cosmos-indexing-test", Key=f"index_runs/astro_data/{RUN_ID}/status.json"
+        )
+
+    def test_fetch_validation_report_reads_validation_json(self):
+        payload = {"count_matches": True}
+        patcher, s3 = self._patch_s3({"Body": io.BytesIO(json.dumps(payload).encode("utf-8"))})
+
+        with patcher:
+            assert fetch_validation_report("astro_data", RUN_ID) == payload
+
+        s3.get_object.assert_called_once_with(
+            Bucket="sde-cosmos-indexing-test", Key=f"index_runs/astro_data/{RUN_ID}/validation.json"
+        )
+
+    @pytest.mark.parametrize("code", ["NoSuchKey", "404"])
+    def test_missing_status_means_run_in_flight(self, code):
+        patcher, _ = self._patch_s3(ClientError({"Error": {"Code": code}}, "GetObject"))
+
+        with patcher:
+            assert fetch_run_status("astro_data", RUN_ID) is None
+
+    def test_real_s3_errors_propagate(self):
+        """AccessDenied etc. must surface, not read as 'still indexing' until stall timeout."""
+        patcher, _ = self._patch_s3(ClientError({"Error": {"Code": "AccessDenied"}}, "GetObject"))
+
+        with patcher:
+            with pytest.raises(ClientError):
+                fetch_run_status("astro_data", RUN_ID)
 
 
 def _dispatched(collection, target, previous, run_id="run-1"):

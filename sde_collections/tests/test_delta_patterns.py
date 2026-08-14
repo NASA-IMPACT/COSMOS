@@ -134,18 +134,17 @@ class TestDeltaTitlePattern:
             generated_title=resolve_title(title_pattern, context),
         )
 
-        # Create and apply a `DeltaTitlePattern` with the same title pattern
-        DeltaTitlePattern.objects.create(
+        # Creating the pattern auto-applies it (BaseMatchPattern.save calls apply)
+        pattern = DeltaTitlePattern.objects.create(
             collection=collection,
             match_pattern="https://example.com/*",
             match_pattern_type=2,
             title_pattern=title_pattern,
         )
-        # pattern.apply()
 
-        # Since the title matches, no new `DeltaUrl` should be created
-        DeltaUrl.objects.filter(url=curated_url.url).first()
-
+        # The pattern did match the CuratedUrl — so the absence of a DeltaUrl below
+        # is a deliberate skip on equal titles, not a failure to match.
+        assert pattern.get_matching_curated_urls().filter(url=curated_url.url).exists()
         assert not DeltaUrl.objects.filter(url=curated_url.url).exists()
 
     def test_apply_resolves_title_for_delta_urls(self):
@@ -253,7 +252,7 @@ class TestDeltaTitlePattern:
         )
 
         delta_url.refresh_from_db()
-        delta_url.generated_title = "Title Before - Processed"
+        assert delta_url.generated_title == "Title Before - Processed"  # applied on create
 
         # Promote to CuratedUrl
         collection.promote_to_curated()

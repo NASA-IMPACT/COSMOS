@@ -153,7 +153,7 @@ class TestUpdateUrlWithClassificationResults:
         result = update_url_with_classification_results(mock_url, classification_results)
 
         # Verify map_classification_to_tdamm_tags was called properly
-        mock_map_function.assert_called_once_with(classification_results)
+        mock_map_function.assert_called_once_with(classification_results, threshold=None)
 
         # Verify URL object was updated correctly
         assert mock_url.tdamm_tag_ml == mock_tdamm_tags
@@ -164,7 +164,8 @@ class TestUpdateUrlWithClassificationResults:
 
     @patch("inference.utils.classification_utils.map_classification_to_tdamm_tags")
     def test_threshold_parameter_behavior(self, mock_map_function, mock_url):
-        """Test how threshold parameter is handled"""
+        """A caller-supplied threshold must reach the mapping function (it used to be
+        silently discarded, so every caller got settings.TDAMM_CLASSIFICATION_THRESHOLD)."""
         mock_tdamm_tags = ["MMA_M_EM_O"]
         mock_map_function.return_value = mock_tdamm_tags
 
@@ -173,8 +174,7 @@ class TestUpdateUrlWithClassificationResults:
 
         update_url_with_classification_results(mock_url, classification_results, threshold=custom_threshold)
 
-        # Based on the implementation, the function doesn't pass the threshold parameter
-        mock_map_function.assert_called_once_with(classification_results)
+        mock_map_function.assert_called_once_with(classification_results, threshold=custom_threshold)
 
     def test_integration_with_real_mapping(self, mock_url):
         """Test end-to-end integration with real mapping function"""
