@@ -28,5 +28,21 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 # DEBUGGING FOR TEMPLATES
 # ------------------------------------------------------------------------------
 TEMPLATES[0]["OPTIONS"]["debug"] = True  # type: ignore # noqa F405
+
+# CELERY
+# ------------------------------------------------------------------------------
+# Never publish to the real broker from tests. The container entrypoint exports
+# CELERY_BROKER_URL=${REDIS_URL} — the same Redis the celeryworker container consumes —
+# so any test that changes a workflow status without patching .delay() would enqueue a
+# real message, and the live worker would run it against the LOCAL database (test-DB
+# collection ids can collide with local rows, flipping their statuses). kombu's
+# memory:// transport queues in-process and dies with the test run.
+# Celery gives the CELERY_BROKER_URL *environment variable* precedence over Django
+# settings, so the env var must be overridden too; this runs at settings import, before
+# the celery app's lazy config finalizes.
+import os  # noqa: E402
+
+os.environ["CELERY_BROKER_URL"] = "memory://"
+CELERY_BROKER_URL = "memory://"
 # Your stuff...
 # ------------------------------------------------------------------------------

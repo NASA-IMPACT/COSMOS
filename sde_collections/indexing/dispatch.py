@@ -41,7 +41,11 @@ def run_index_task(collection, target: str, run_id: str) -> str:
             "containerOverrides": [
                 {
                     "name": settings.INDEXING_CONTAINER_NAME,
+                    # An ECS command override replaces the task definition's command
+                    # wholesale, and the indexer image has no ENTRYPOINT — so the
+                    # executable must be restated here, not just the flags.
                     "command": [
+                        "python3", "api_scraper.py",
                         "--source", "WEB_COSMOS",
                         "--collection", collection.config_folder,
                         "--target", target,

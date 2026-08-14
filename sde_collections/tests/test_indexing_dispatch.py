@@ -163,7 +163,10 @@ class TestRunIndexTask:
         assert run_kwargs["cluster"] == "api-scrapers-cluster-dev"
         assert run_kwargs["taskDefinition"] == "web_cosmos-scraper-dev"
         command = run_kwargs["overrides"]["containerOverrides"][0]["command"]
+        # The executable must lead the list: a container override replaces the task
+        # definition's command wholesale, and the indexer image has no ENTRYPOINT.
         assert command == [
+            "python3", "api_scraper.py",
             "--source", "WEB_COSMOS",
             "--collection", collection.config_folder,
             "--target", "test",
