@@ -119,8 +119,7 @@ def send_indexing_validation_report(collection_name, run_id, validation):
     the curation channel so the curator can set the QC status from it."""
     if validation is None:
         message = (
-            f"Test indexing of '{collection_name}' succeeded (run {run_id}), "
-            f"but no validation report was found."
+            f"Test indexing of '{collection_name}' succeeded (run {run_id}), " f"but no validation report was found."
         )
     else:
         missing = validation.get("titles_missing_in_index") or []

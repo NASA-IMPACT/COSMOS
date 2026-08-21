@@ -14,8 +14,8 @@ from .models.candidate_url import CandidateURL, ResolvedTitle
 from .models.collection import Collection, ReindexingHistory, WorkflowHistory
 from .models.collection_choice_fields import TDAMMTags
 from .models.delta_url import CuratedUrl, DeltaUrl, DumpUrl
-from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
 from .models.indexing import IndexDispatch
+from .models.pattern import DivisionPattern, IncludePattern, TitlePattern
 from .models.scraper_config import ScrapeDispatch, ScraperConfigOverride
 
 

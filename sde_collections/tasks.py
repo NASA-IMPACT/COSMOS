@@ -347,9 +347,7 @@ def ingest_scraped_collection(collection_id, claim=True):
     # Zero-document completion is a failure: without this, an empty crawl would
     # "succeed" and silently publish an empty collection.
     if summary.get("documents_scraped", 0) == 0:
-        Collection.objects.filter(id=collection_id).update(
-            workflow_status=WorkflowStatusChoices.SCRAPING_FAILED
-        )
+        Collection.objects.filter(id=collection_id).update(workflow_status=WorkflowStatusChoices.SCRAPING_FAILED)
         return f"Scrape of {cid} completed with 0 documents; marked Scraping Failed."
 
     if claim:
@@ -394,7 +392,5 @@ def ingest_scraped_collection(collection_id, claim=True):
     except Exception as e:
         # Never leave a claimed collection stuck in SCRAPING_SUCCESSFUL with no DumpUrls.
         print(f"Ingest failed for {cid}: {e}")
-        Collection.objects.filter(id=collection_id).update(
-            workflow_status=WorkflowStatusChoices.SCRAPING_FAILED
-        )
+        Collection.objects.filter(id=collection_id).update(workflow_status=WorkflowStatusChoices.SCRAPING_FAILED)
         return None

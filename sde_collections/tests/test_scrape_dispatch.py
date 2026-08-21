@@ -97,9 +97,7 @@ class TestSendJobToCrawler:
     @pytest.fixture(autouse=True)
     def crawler_settings(self):
         # override_settings can't decorate a plain (non-SimpleTestCase) class
-        with override_settings(
-            CRAWLER_INSTANCE_ID="i-0test", CRAWLER_INBOX_PATH="/opt/sde-crawler/jobs/incoming"
-        ):
+        with override_settings(CRAWLER_INSTANCE_ID="i-0test", CRAWLER_INBOX_PATH="/opt/sde-crawler/jobs/incoming"):
             yield
 
     def _dispatch(self, collection):
@@ -143,9 +141,7 @@ class TestSendJobToCrawler:
     def test_hostile_seed_url_survives_shell_quoting(self):
         """Seed URLs contain quotes/spaces/ampersands that would break an unquoted heredoc."""
         collection = CollectionFactory()
-        Collection.objects.filter(id=collection.id).update(
-            url="https://example.nasa.gov/search?q='solar wind'&page=1"
-        )
+        Collection.objects.filter(id=collection.id).update(url="https://example.nasa.gov/search?q='solar wind'&page=1")
         collection.refresh_from_db()
 
         _, kwargs = self._dispatch(collection)
@@ -197,9 +193,7 @@ class TestDispatchScrapeJobTask:
 
         dispatch_scrape_job(collection.id)
 
-        ids = list(
-            ScrapeDispatch.objects.filter(collection=collection).values_list("ssm_command_id", flat=True)
-        )
+        ids = list(ScrapeDispatch.objects.filter(collection=collection).values_list("ssm_command_id", flat=True))
         assert set(ids) == {"cmd-1", "cmd-2"}
         # Meta.ordering is -dispatched_at: first row is the latest dispatch
         assert ScrapeDispatch.objects.filter(collection=collection).first().ssm_command_id == "cmd-2"

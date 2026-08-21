@@ -51,9 +51,7 @@ def make_summary(documents_scraped):
 
 
 def backdate_dispatch(dispatch, hours):
-    ScrapeDispatch.objects.filter(id=dispatch.id).update(
-        dispatched_at=timezone.now() - timedelta(hours=hours)
-    )
+    ScrapeDispatch.objects.filter(id=dispatch.id).update(dispatched_at=timezone.now() - timedelta(hours=hours))
 
 
 @pytest.mark.django_db
@@ -169,9 +167,7 @@ class TestIngestScrapedCollection:
     @patch("sde_collections.tasks.send_detailed_import_notification")
     @patch("sde_collections.tasks.fetch_documents")
     @patch("sde_collections.tasks.results_ready")
-    def test_end_to_end_reaches_ready_for_curation_with_inference_off(
-        self, mock_ready, mock_docs, mock_slack
-    ):
+    def test_end_to_end_reaches_ready_for_curation_with_inference_off(self, mock_ready, mock_docs, mock_slack):
         """P2+P4 integration: ingest -> SCRAPING_SUCCESSFUL -> migrate -> READY_FOR_CURATION,
         with the ingest summary posted to Slack."""
         collection = CollectionFactory(workflow_status=WorkflowStatusChoices.READY_FOR_ENGINEERING)
@@ -328,9 +324,7 @@ class TestS3ResultFetchers:
             result = fetch_documents("astro_data")
 
         assert result == documents
-        s3.get_object.assert_called_once_with(
-            Bucket="crawler-bucket-test", Key="scraped_collections/astro_data.json"
-        )
+        s3.get_object.assert_called_once_with(Bucket="crawler-bucket-test", Key="scraped_collections/astro_data.json")
 
 
 class TestResultsFreshness:

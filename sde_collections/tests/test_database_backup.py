@@ -189,9 +189,7 @@ class TestBackupCommand:
         output = tmp_path / "backup.sql"
         out = StringIO()
 
-        with patch.object(
-            database_backup.Command, "compress_file", side_effect=Exception("Compression failed")
-        ):
+        with patch.object(database_backup.Command, "compress_file", side_effect=Exception("Compression failed")):
             call_command("database_backup", output=str(output), stdout=out)  # must not raise
 
         assert "Error during backup process" in out.getvalue()

@@ -51,6 +51,7 @@ from .serializers import (
     IncludePatternSerializer,
     TitlePatternSerializer,
 )
+
 User = get_user_model()
 
 

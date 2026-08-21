@@ -45,9 +45,5 @@ def create_periodic_tasks(sender, **kwargs):
         )
         return crontab
 
-    _ensure_beat_row(
-        POLL_SCRAPE_TASK_NAME, POLL_SCRAPE_TASK, crontab_every(5), settings.SCRAPE_POLL_ENABLED
-    )
-    _ensure_beat_row(
-        POLL_INDEX_TASK_NAME, POLL_INDEX_TASK, crontab_every(2), settings.INDEX_POLL_ENABLED
-    )
+    _ensure_beat_row(POLL_SCRAPE_TASK_NAME, POLL_SCRAPE_TASK, crontab_every(5), settings.SCRAPE_POLL_ENABLED)
+    _ensure_beat_row(POLL_INDEX_TASK_NAME, POLL_INDEX_TASK, crontab_every(2), settings.INDEX_POLL_ENABLED)
