@@ -1,184 +1,153 @@
 ## Overview
-As of early 2025, we have only recently been writing tests for new features, and have about 250 tests in total, mostly centered around the EJ portal, the reindexing process, and pattern applications. 
+COSMOS's tests grew up around the EJ portal, the URL lifecycle, and the pattern system — the parts
+of the app that were always ours. The rewiring changed what sits at the edges: scraping is now
+COSMOS → SSM → the crawl4ai crawler on EC2 → S3 → `DumpUrl`s, and indexing is now COSMOS → an S3
+export → `sts:AssumeRole` → `ecs:RunTask` → the WEB_COSMOS indexer, whose result COSMOS reads back
+out of S3. Both of those halves were built with tests beside them.
 
-Although this covers much of the core system logic, there still remain a number of untested logical areas such as the config file generation, core project settings, frontend features, etc.
+This document records where testing effort belongs and why, so that new tests land where a
+regression is expensive rather than where code happens to be easy to exercise. It is deliberately
+qualitative: the coverage numbers are produced by CI on every pull request, and a table pasted in
+here goes stale the day after it is written.
 
-This document outlines a testing strategy for the project, which will guide us towards adding tests in the most critical areas first, followed by a plan to fully cover the remaining areas.
+## How the suite runs
+- `pytest.ini` pins `--ds=config.settings.test --reuse-db`; everything runs against
+  `config/settings/test.py`.
+- CI (`.github/workflows/run_full_test_suite.yml`) triggers on pull requests to `dev`, builds the
+  `local.yml` stack, runs `bash ./init.sh`, then `coverage report`.
+- `init.sh` runs each `test_*.py` file as its own pytest process under `coverage run --append`,
+  excluding `document_classifier/` and `functional_tests/`. To see current coverage locally:
+  `docker-compose -f local.yml run --rm django bash ./init.sh` followed by
+  `docker-compose -f local.yml run --rm django coverage report`.
 
-## Current Coverage
-Using the coverage library, the following report was generated:
-Name      |                                                                                            Stmts |  Miss | Cover |  Missing
-----------|--------------------------------------------------------------------------------------------------|-------|--------|--------
-config/__init__.py  |                                                                                        2 |      0 |   100% |
-config/celery_app.py  |                                                                                      6 |      0 |   100% |
-config/settings/__init__.py  |                                                                               0 |      0 |   100% |
-config/settings/base.py  |                                                                                  94 |      0 |   100% |
-config/settings/local.py  |                                                                                 20 |     20 |     0% |   1-65
-config/settings/production.py  |                                                                            48 |     48 |     0% |   1-162
-config/urls.py  |                                                                                           14 |      4 |    71% |   26-47
-config/wsgi.py  |                                                                                            8 |      8 |     0% |   17-36
-config_generation/__init__.py  |                                                                             0 |      0 |   100% |
-config_generation/api.py  |                                                                                 34 |     34 |     0% |   1-88
-config_generation/config_example.py  |                                                                      15 |     15 |     0% |   1-69
-config_generation/db_to_xml.py  |                                                                          203 |    133 |    34% |   45, 47, 50, 96, 119-125, 129-136, 142-149, 197-200, 206-214, 225-230, 242-271, 274-278, 285-292, 303-308, 311, 317, 326-332, 342-349, 361-368, 371-374, 377-378, 382-390, 393-399, 402-412, 415-429
-config_generation/db_to_xml_file_based.py  |                                                                52 |     52 |     0% |   4-119
-config_generation/delete_config_folders.py  |                                                               24 |     24 |     0% |   9-50
-config_generation/delete_server_content.py  |                                                               12 |     12 |     0% |   3-25
-config_generation/delete_webapp_collections.py  |                                                            5 |      5 |     0% |   6-12
-config_generation/export_collections.py  |                                                                  36 |     36 |     0% |   1-73
-config_generation/export_whole_index.py  |                                                                  28 |     28 |     0% |   1-58
-config_generation/generate_collection_list.py  |                                                            29 |     29 |     0% |   8-69
-config_generation/generate_commands.py  |                                                                   41 |     41 |     0% |   6-87
-config_generation/generate_emac_indexer.py  |                                                               24 |     24 |     0% |   1-81
-config_generation/generate_jobs.py  |                                                                       42 |     42 |     0% |   8-100
-config_generation/generate_scrapers.py  |                                                                   15 |     15 |     0% |   2-54
-config_generation/minimum_api.py  |                                                                         33 |     33 |     0% |   1-81
-config_generation/preprocess_sources.py  |                                                                  25 |     25 |     0% |   1-50
-config_generation/sources_to_scrape.py  |                                                                   28 |     28 |     0% |   2-1631
-docs/__init__.py  |                                                                                          0 |      0 |   100% |
-docs/conf.py  |                                                                                             17 |     17 |     0% |   13-62
-environmental_justice/__init__.py  |                                                                         0 |      0 |   100% |
-environmental_justice/admin.py  |                                                                            5 |      0 |   100% |
-environmental_justice/apps.py  |                                                                             4 |      0 |   100% |
-environmental_justice/models.py  |                                                                          29 |      1 |    97% |   44
-environmental_justice/serializers.py  |                                                                      6 |      0 |   100% |
-environmental_justice/views.py  |                                                                           23 |      0 |   100% |
-feedback/__init__.py  |                                                                                      0 |      0 |   100% |
-feedback/admin.py  |                                                                                        14 |      0 |   100% |
-feedback/apps.py  |                                                                                          4 |      0 |   100% |
-feedback/models.py  |                                                                                       42 |     15 |    64% |   20-29, 35-44, 61-63
-feedback/serializers.py  |                                                                                  10 |      0 |   100% |
-feedback/urls.py  |                                                                                          4 |      0 |   100% |
-feedback/views.py  |                                                                                         9 |      0 |   100% |
-manage.py  |                                                                                                16 |     16 |     0% |   2-31
-merge_production_dotenvs_in_dotenv.py  |                                                                    15 |      1 |    93% |   26
-scripts/ej/cmr_processing.py  |                                                                            241 |      5 |    98% |   160, 186-188, 397, 410
-scripts/ej/config.py  |                                                                                      6 |      0 |   100% |
-scripts/ej/test_cmr_processing.py  |                                                                       225 |      1 |    99% |   610
-scripts/ej/test_threshold_processing.py  |                                                                  97 |      1 |    99% |   209
-scripts/ej/threshold_processing.py  |                                                                       20 |      0 |   100% |
-sde_collections/__init__.py  |                                                                               0 |      0 |   100% |
-sde_collections/admin.py  |                                                                                212 |     72 |    66% |   22-24, 29, 34, 40-60, 65-81, 86-89, 98-101, 110-112, 120-134, 143, 148, 153, 158, 163, 168, 173, 178-189, 196-197, 260, 265, 270, 275, 302-303, 308-309, 314-316, 345-372, 478-480
-sde_collections/apps.py  |                                                                                   4 |      0 |   100% |
-sde_collections/forms.py  |                                                                                 15 |      0 |   100% |
-sde_collections/management/commands/database_backup.py  |                                                   62 |      1 |    98% |   68
-sde_collections/management/commands/database_restore.py  |                                                  83 |      8 |    90% |   34, 36, 87-89, 142-145
-sde_collections/models/__init__.py  |                                                                        0 |      0 |   100% |
-sde_collections/models/candidate_url.py  |                                                                  89 |     16 |    82% |   124, 128-134, 138-142, 145, 176-177
-sde_collections/models/collection.py  |                                                                    414 |    144 |    65% |   241, 269, 277-287, 291-301, 305-315, 319-344, 348-357, 361, 365, 369-376, 380-387, 394, 403-406, 419, 436-439, 449-470, 478, 482-515, 519, 523, 527, 531-532, 536, 540-546, 550-553, 558-567, 575-617, 640, 679, 689, 703, 707-732, 765, 769-777, 785
-sde_collections/models/collection_choice_fields.py  |                                                      138 |     20 |    86% |   14-17, 36-39, 56-59, 74-77, 168-171
-sde_collections/models/delta_patterns.py  |                                                                313 |     33 |    89% |   119, 123, 139, 226-227, 263, 267, 291, 382-389, 439-449, 498, 503-506, 592, 627-641
-sde_collections/models/delta_url.py  |                                                                      81 |     19 |    77% |   117-125, 129-135, 139-143, 146
-sde_collections/models/pattern.py  |                                                                       145 |     79 |    46% |   40-48, 56-63, 66, 69, 73-74, 78-79, 87, 94-96, 105, 117-119, 128, 139-151, 163-205, 208-212, 215-216, 230-233, 243, 257-260, 268
-sde_collections/serializers.py  |                                                                          191 |     47 |    75% |   80-81, 84-85, 88-89, 92-93, 129-130, 133-134, 137-138, 141-142, 197, 201, 211-214, 244-247, 257-260, 271, 274, 307-315, 335-343, 358-366
-sde_collections/sinequa_api.py  |                                                                          102 |      3 |    97% |   65, 255, 289
-sde_collections/tasks.py  |                                                                                119 |     67 |    44% |   25-67, 72-108, 113-117, 122-125, 130-148, 153-155, 215-216
-sde_collections/urls.py  |                                                                                  17 |      0 |   100% |
-sde_collections/utils/__init__.py  |                                                                         0 |      0 |   100% |
-sde_collections/utils/bulk_github_push.py  |                                                                 8 |      8 |     0% |   7-22
-sde_collections/utils/generate_deployment_message.py  |                                                      8 |      8 |     0% |   1-24
-sde_collections/utils/github_helper.py  |                                                                  115 |     93 |    19% |   12-18, 30-42, 49-52, 60-68, 81-96, 104-110, 119-123, 127-129, 132-142, 145-152, 155-172, 175, 178-185, 189-192, 196-224, 227
-sde_collections/utils/health_check.py  |                                                                   123 |    106 |    14% |   33-46, 51-57, 61-98, 102-143, 155-165, 172-187, 191-273
-sde_collections/utils/paired_field_descriptor.py  |                                                         33 |      2 |    94% |   35, 52
-sde_collections/utils/slack_utils.py  |                                                                     19 |      4 |    79% |   57-58, 66-67
-sde_collections/utils/title_resolver.py  |                                                                  90 |      5 |    94% |   64, 75, 83, 85, 92
-sde_collections/views.py  |                                                                                368 |    229 |    38% |   70, 82-89, 102-141, 144-187, 194, 208-212, 215-223, 226-237, 246, 249-251, 256-265, 273-277, 280-306, 309-315, 323-327, 330-336, 339-345, 353-355, 358-368, 410, 413-422, 430, 433-442, 450, 458, 461-475, 483, 486-490, 505-511, 523-530, 538-566, 577-583, 586-607, 610-613, 628-634
-sde_indexing_helper/__init__.py  |                                                                           2 |      0 |   100% |
-sde_indexing_helper/conftest.py  |                                                                           9 |      0 |   100% |
-sde_indexing_helper/contrib/__init__.py  |                                                                   0 |      0 |   100% |
-sde_indexing_helper/contrib/sites/__init__.py  |                                                             0 |      0 |   100% |
-sde_indexing_helper/users/__init__.py  |                                                                     0 |      0 |   100% |
-sde_indexing_helper/users/adapters.py  |                                                                    11 |     11 |     0% |   1-16
-sde_indexing_helper/users/admin.py  |                                                                       13 |      0 |   100% |
-sde_indexing_helper/users/apps.py  |                                                                        10 |      0 |   100% |
-sde_indexing_helper/users/context_processors.py  |                                                           3 |      0 |   100% |
-sde_indexing_helper/users/forms.py  |                                                                       15 |      0 |   100% |
-sde_indexing_helper/users/models.py  |                                                                      10 |      0 |   100% |
-sde_indexing_helper/users/tasks.py  |                                                                        6 |      0 |   100% |
-sde_indexing_helper/users/urls.py  |                                                                         4 |      0 |   100% |
-sde_indexing_helper/users/views.py  |                                                                       27 |      0 |   100% |
-sde_indexing_helper/utils/__init__.py  |                                                                     0 |      0 |   100% |
-sde_indexing_helper/utils/exceptions.py  |                                                                   7 |      0 |   100% |
-sde_indexing_helper/utils/storages.py  |                                                                     7 |      7 |     0% |   1-11
-tests/test_merge_production_dotenvs_in_dotenv.py  |                                                         13 |      0 |   100 |%
+Two properties of the test settings are load-bearing and must survive any refactor of them:
+
+- `CELERY_BROKER_URL` is forced to `memory://` (both the setting and the environment variable).
+  Without it, any test that changes a workflow status would publish a real message to the same
+  Redis the local `celeryworker` consumes, and that worker would run the task against the *local*
+  database.
+- Every pipeline setting (`SDE_S3_BUCKET`, `CRAWLER_INSTANCE_ID`, `SDE_INDEX_BUCKET`, `INDEXING_*`,
+  `SCRAPE_POLL_ENABLED`, `INDEX_POLL_ENABLED`, `INFERENCE_ENABLED`) defaults to blank/off, so a test
+  that forgets to mock is pointed at no real bucket, instance, or cluster. Tests that need those
+  values supply them with `override_settings`.
+
+## Where the tests live
+| Location | What it covers |
+|---|---|
+| `sde_collections/tests/` | The bulk of the suite: scrape dispatch and ingest, the indexing hand-off, workflow-status triggers, the URL lifecycle, the pattern system, the inference flag, AWS session selection, the URL APIs, the backup/restore commands. |
+| `sde_collections/tests/frontend/` | Selenium tests (auth, homepage features, pattern application). They `pytest.fail` unless `chromedriver` and `chromium` are on `PATH`. |
+| `inference/tests/` | The classification pipeline, which is dormant (`INFERENCE_ENABLED` defaults to `False`) but not deleted. Its unit tests still run; `test_inference_integration.py` skips itself unless a live inference API is reachable. |
+| `environmental_justice/tests/`, `sde_indexing_helper/users/tests/`, `scripts/ej/`, `tests/` | The EJ API, the user app, the EJ CMR/threshold processing scripts, and the dotenv merge helper. |
+| `document_classifier/`, `functional_tests/` | Excluded from `init.sh` and from CI. `functional_tests/test_check_collection.py` is a Sinequa-era Selenium script pointed at the retired `sciencediscoveryengine.*` endpoints; it no longer describes anything the system does. |
 
 ## Critical Areas
-### Config Generation
-- config_generation/db_to_xml.py
-   - update_or_add_element_value()
-   - _update_config_xml()
-   - convert_template_to_scraper()
-   - add_document_type()
-   - add_url_exclude()
-   - add_title_mapping()
-   - add_job_list_item()
-   - get_tag_value()
-   - fetch_treeroot()
-   - fetch_document_type()
-- config_generation/generate_jobs.py
-   - make_all_parallel_jobs()
 
-### Models
-  - environmental_justice/models.py
-  - sde_collections/models/collection.py
-    - clear_delta_urls()
-    - clear_dump_urls()
-    - refresh_url_lists_for_all_patterns ()
-    - migrate_dump_to_delta ()
-    - create_or_update_delta_url
-    - promote_to_curate
-    - add_to_public_query()
-    - create_scraper_config()
-    - create_indexer_config()
-    - create_plugin_config()
-    - _write_to_github()
-    - update_config_xml()
-    - apply_all_patterns()
-    - handle_workflow_status_change()
-  - sde_collections/models/collection_choice_fields.py
-  - sde_collections/models/delta_patterns.py
-  - sde_collections/models/delta_url.py
-  - sde_collections/models/pattern.py
-  - sde_indexing_helper/users/models.py
+### Scraping: dispatch and ingest
+This is a contract with another repository, expressed in shell commands and S3 key names — the
+class of thing that breaks silently. Cover, at minimum:
 
-### Views
-  - environmental_justice/views.py
-  - sde_collections/views.py
-  - sde_indexing_helper/users/views.py
+- `sde_collections/scraping/job_builder.py` — `build_job_json()`: which override fields are emitted
+  (`None` is skipped, `False` is not), and the `MAX_PAGES_CAP` refusal.
+- `sde_collections/scraping/ssm_dispatch.py` — `send_job_to_crawler()`: the exact command sent, the
+  `.tmp` + `mv` atomic delivery, shell quoting of hostile seed URLs, and the SSM comment limit.
+- `sde_collections/scraping/s3_results.py` — the key layout, missing-key codes meaning "not
+  finished" rather than an error, and `results_ready()` rejecting a summary older than the latest
+  `ScrapeDispatch` (without which a re-dispatch would instantly "complete" against the previous
+  run's output).
+- `sde_collections/tasks.py` — `dispatch_scrape_job()` (failure lands on **Scraping Failed** and
+  never raises), `poll_scrape_jobs()` (which statuses are scanned, the stall timeout), and
+  `ingest_scraped_collection()` (the compare-and-swap claim, zero documents counting as a failure,
+  replay idempotence, and failure after a claim not stranding the collection).
 
-### Serializers and APIs
-  - environmental_justice/serializers.py
-  - sde_collections/serializers.py
+### Indexing hand-off
+The export layout is fixed by the indexer and cannot be renegotiated in a patch release, so its
+shape belongs in tests:
 
-### Admin Interface
-  - environmental_justice/admin.py
-  - sde_collections/admin.py
-    - fetch_full_text_lrm_dev_action()
-    - fetch_full_text_xli_action()
-  - sde_indexing_helper/users/admin.py
+- `sde_collections/indexing/export.py` — manifest written **last**, `document_count` exactly
+  matching the JSONL line count, excluded URLs absent, title/label resolution, and the refusal to
+  export with a blank bucket.
+- `sde_collections/indexing/dispatch.py` — the settings guard, role assumption, the full command
+  override (the image has no entrypoint, so the executable must be restated), and `RunTask`
+  failures surfacing as errors.
+- `sde_collections/indexing/run_status.py` — status/validation reads under the `run_id` prefix, and
+  a missing `status.json` meaning "in flight".
+- `sde_collections/tasks.py` — `index_collection_to_test()` / `index_collection_to_prod()` and
+  `poll_index_runs()`: the `IndexDispatch` record, the in-flight and failed statuses, prod success
+  mirroring the QC status the run entered with, unknown states counting as failure, and an old
+  run's status never resolving a newer dispatch.
 
-### Utilities and Helpers
-  - sde_collections/utils/github_helper.py
-  - sde_collections/utils/health_check.py
-  - sde_collections/utils/title_resolver.py
-  - sde_collections/utils/github_helper.py
-     - fetch_metadata()
-     - _get_contents_from_path()
+### Workflow status machine
+`sde_collections/models/collection.py` is where the pipeline is actually wired: which status change
+promotes, which enqueues an index run, the re-entrancy guard, the Slack notification (whose failure
+must not break the save), and `WorkflowHistory` rows. Every status and reindexing status must
+resolve to a button colour — an unmapped status silently rendering neutral is a real defect class.
+The complementary assertion is negative: no removed Sinequa method may reappear on a transition.
 
-### Task Automation and Background Jobs
-  - sde_collections/tasks.py
+### URL lifecycle
+`DumpUrl → DeltaUrl → CuratedUrl` is the core data model, described in
+`sde_collections/models/README_LIFECYCLE.md`:
 
-### Key Operational Pipelines in the Repository
-The selection of critical areas for testing is guided by the following pipelines of the repository:
-1. Sinequa config files are generated
-2. COSMOS imports data from LRM Dev
-3. Imported data is processed
-4. Curators update URL metadata
-5. Sinequa reads results from the COSMOS APIs
+- `Collection.migrate_dump_to_delta()` and `create_or_update_delta_url()` — the diff, including
+  deletion markers and `DELTA_COMPARISON_FIELDS`.
+- `Collection.promote_to_curated()` — updates, deletions, metadata changes, repeated promotions,
+  and patterns re-applied afterwards.
+- `sde_collections/models/delta_url.py`, `candidate_url.py`.
 
-### Critical Areas Lacking Tests
-- **Config Generation**: Config generation files are under-tested. Develop unit tests for all critical functions in the config_generation files.
-- **Project Settings**: Environment-specific configurations (`local.py`, `production.py`) have no tests.
-- **Frontend Features**: Currently, there are no tests covering frontend logic and interactions.
-- **Utilities and Helpers**: Essential utility modules like github_helper.py and health_check.py lack tests
+### Pattern system
+`sde_collections/models/delta_patterns.py` and `pattern.py` carry the most intricate logic in the
+repo: apply and unapply for exclude, include, title, document type, division and other field
+modifiers, plus specificity resolution when patterns overlap. This area is comparatively well
+covered; keep it that way, and add a test for every reported mis-application rather than for the
+fix alone.
 
+### Inference gating
+The classification pipeline is disabled, not removed. What must stay tested is the gate itself:
+`queue_necessary_classifications()` short-circuiting straight to migration when
+`INFERENCE_ENABLED` is `False`, and `inference/signals.py` re-asserting `enabled` on its beat rows
+from the flag on every `post_migrate` — the flag, not a hand-edit in the admin, is the source of
+truth. Tests here should call the real method and patch only the queued task's `.delay`; patching
+the method wholesale would guard nothing.
+
+### AWS session boundary
+`sde_collections/utils/aws.py::get_boto3_session()` decides between explicit `SDE_AWS_*` keys (local
+dev) and the default credential chain (instance role in AWS), and deliberately ignores the
+`DJANGO_AWS_*` static-assets credentials. Partial keys must fall back rather than half-configure.
+
+### APIs, serializers, and the UI
+`sde_collections/views.py` and `sde_collections/serializers.py` back the curation UI and the
+DataTables endpoints. The list APIs keyed by `config_folder` are covered; the viewsets, the bulk
+create path, and `CollectionDetailView.post` are thinner.
+
+### Operational surfaces
+`sde_collections/management/commands/` (backup/restore are covered; the pipeline commands are not),
+`sde_collections/admin.py` actions, and `sde_collections/utils/slack_utils.py` message formatting.
+
+## Critical Areas Lacking Tests
+- **Beat-row creation for the pollers** — `sde_collections/signals.py` creates the `poll_scrape_jobs`
+  and `poll_index_runs` schedules on `post_migrate` and re-asserts `enabled` from
+  `SCRAPE_POLL_ENABLED` / `INDEX_POLL_ENABLED`. The equivalent handler in `inference/signals.py` is
+  tested; this one is not.
+- **Pipeline management commands** — `dispatch_scrape`, `ingest_scrape_results`,
+  `migrate_urls_and_patterns`, `deduplicate_patterns`, `deduplicate_urls`, `export_urls_to_csv`,
+  `sync_with_production_webapp`.
+- **Admin actions** — the CSV export, the exclude/include pattern actions, and the read-only
+  guarantees on the `ScrapeDispatch` / `IndexDispatch` admins.
+- **Slack message construction** — `send_detailed_import_notification()` and
+  `send_indexing_validation_report()` are exercised only as patched call sites; the message bodies
+  themselves are untested.
+- **Views and serializers** beyond the URL list APIs.
+- **Project settings** — `config/settings/local.py` and `production.py` have no tests.
+- **Frontend** — the Selenium suite covers auth, the homepage, and pattern application; the rest of
+  the curation UI is unverified, and the suite is skipped wherever Chromium is absent.
+
+## Conventions for new pipeline tests
+- Mock at the seam, not at AWS: patch `get_boto3_session` *in the module under test*
+  (`sde_collections.indexing.export.get_boto3_session`, `…scraping.s3_results._get_object`), or the
+  task-module alias of a helper (`sde_collections.tasks.fetch_run_status`). Patching
+  `boto3` globally hides which client a module actually asks for.
+- Drive the pipeline settings with `override_settings`; never rely on a developer's `.envs`.
+- Patch `.delay` when a test changes a workflow status, unless the enqueue *is* what is being
+  asserted.
+- Assert on the request that would have gone out — the SSM command text, the S3 key, the `RunTask`
+  overrides — rather than on the mock having been called. These are cross-repo contracts, and the
+  arguments are the contract.

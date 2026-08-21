@@ -1,3 +1,10 @@
+> **DORMANT — the inference pipeline is disabled, not deleted.**
+> As of Phase 2 classification is gated on the `INFERENCE_ENABLED` setting
+> (`config/settings/base.py`), which defaults to `False`. With the flag off,
+> `Collection.queue_necessary_classifications()` skips job creation entirely and
+> DumpUrls migrate straight to DeltaUrls, so no classification stage runs between them.
+> The design below describes the DumpUrl classification stage **when
+> `INFERENCE_ENABLED` is turned back on**.
 
 ## Classifying Collections
 
@@ -43,7 +50,7 @@ Pros
 - By using the DumpUrl and the associated promotion code, we can piggy back on the DeltaUrl determination processes to handle delta generation
 
 Cons
-- You have to re-pull from dev in order to classify
+- You have to re-scrape the collection in order to classify
 - Promotion has to wait on inference server processing (this is also a pro, as Emily will never see until the processing is done)
 
 ### Dedicated Process

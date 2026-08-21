@@ -8,7 +8,7 @@ The pattern system is designed to manage and track changes to URLs in a content 
 ### URL States
 - **Curated URLs**: Production-ready, approved content
 - **Delta URLs**: Work-in-progress changes, additions, or deletions to curated content
-- **Dump URLs**: Raw content from the dev server
+- **Dump URLs**: Raw content ingested from the crawl4ai scrape results in S3
 
 ### Pattern Types
 1. **Exclude Patterns**: Mark URLs for exclusion from the collection

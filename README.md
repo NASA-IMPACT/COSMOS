@@ -5,6 +5,49 @@
 
 COSMOS is a web application designed to manage collections indexed in NASA's Science Discovery Engine (SDE), facilitating precise content selection and allowing metadata modification before indexing.
 
+## How the pipeline works
+
+A collection moves through scrape → curate → index. COSMOS orchestrates that flow but does not
+crawl or index anything itself: it hands work to two external systems and watches S3 for results.
+Every hop is a file in S3 plus a poller — there are no callbacks.
+
+```
+ COSMOS (Django + Celery)          crawl4ai host              sde-api-scrapers (ECS Fargate)
+ ────────────────────────          ───────────────            ──────────────────────────────
+ Ready for Engineering ──SSM──▶ crawl ──▶ S3
+ Scraping Successful ◀──S3─── poll_scrape_jobs (5 min)
+ Ready for Curation → (curator works in the UI)
+ Curated ──S3 export + ecs:RunTask──────────────────────────▶ index into OpenSearch
+ Test Indexing ◀──S3─── poll_index_runs (2 min) ◀────────────  status.json / validation.json
+ QC: Perfect / QC: Minor Issues ──▶ prod run ──▶ Prod: Perfect / Prod: Minor Issues
+```
+
+The curator drives this by changing `workflow_status` in the admin; a `post_save` handler
+(`sde_collections/models/collection.py::handle_workflow_status_change`) fires the matching Celery
+task. Failures land on **Scraping Failed**, **Indexing Failed on Test**, or **Indexing Failed on
+Prod** rather than silently stalling.
+
+COSMOS holds no OpenSearch or SageMaker credentials. Chunking, vectorizing, indexing, and the QC
+validation report all happen in the indexer repo (`sde-api-scrapers`). COSMOS only writes exports
+to S3, assumes one IAM role, and calls `ecs:RunTask`.
+
+### Where things are documented
+
+| Doc | What it covers |
+|---|---|
+| [`WORKFLOW.md`](./WORKFLOW.md) | The curation workflow end to end, with a diagram |
+| [`sde_collections/DEPLOYMENT.md`](./sde_collections/DEPLOYMENT.md) | How deploys actually work today, and the CI/CD gaps |
+| [`LOCAL_VERIFICATION_GUIDE.md`](./LOCAL_VERIFICATION_GUIDE.md) | Verifying the pipeline locally, phase by phase |
+| [`sde_collections/models/README_STATUS_TRIGGERS.md`](./sde_collections/models/README_STATUS_TRIGGERS.md) | What each status change triggers |
+| [`sde_collections/models/README_LIFECYCLE.md`](./sde_collections/models/README_LIFECYCLE.md) | Dump → Delta → Curated URL lifecycle |
+
+> **Note on configuration:** every setting that gates a dispatch (S3 buckets, ECS cluster, task
+> family, IAM role ARN, subnets, security groups, and both `*_POLL_ENABLED` flags) defaults to
+> blank or off in `config/settings/base.py`. Nothing dispatches until a host is explicitly wired.
+> The pollers are `django_celery_beat` database rows written by a `post_migrate` receiver
+> (`sde_collections/signals.py`), so enabling a poller requires `manage.py migrate` — restarting
+> the services alone will not do it.
+
 ## Basic Commands
 
 ### Building the Project
@@ -202,19 +245,21 @@ $ pip install celery
 
 ### Running a Celery Worker
 
+Run these from the **repository root** — the folder containing `manage.py` and `config/`. For
+Celery's import magic to work, the working directory matters.
+
 ```bash
-$ cd sde_indexing_helper
 $ celery -A config.celery_app worker -l info
 ```
-
-Please note: For Celery's import magic to work, it is important where the celery commands are run. If you are in the same folder with manage.py, you should be right.
 
 ### Running Celery Beat Scheduler
 
 ```bash
-$ cd sde_indexing_helper
 $ celery -A config.celery_app beat
 ```
+
+Note that beat schedules in this project are `django_celery_beat` **database rows**, not a
+`CELERY_BEAT_SCHEDULE` setting — see the configuration note at the top of this file.
 
 ### Pre-Commit Hook Instructions
 
@@ -233,27 +278,57 @@ Sign up for a free account at [Sentry](https://sentry.io/signup/?code=cookiecutt
 
 ## Deployment
 
-Refer to the detailed [Cookiecutter Django Docker documentation](http://cookiecutter-django.readthedocs.io/en/latest/deployment-with-docker.html).
+See [`sde_collections/DEPLOYMENT.md`](./sde_collections/DEPLOYMENT.md) for how deploys work on this
+project — the compose stacks, the branch flow (`dev` → `staging` → `production`), the hand-maintained
+per-host env files, and the current CI/CD gaps. Deployment is manual today: SSH to the host and
+rebuild in place.
 
-## Importing Candidate URLs from the Test Server
-
-Documented [here](https://github.com/NASA-IMPACT/sde-indexing-helper/wiki/How-to-bring-in-Candidate-URLs-from-the-test-server).
+Background on the underlying Docker setup is in the
+[Cookiecutter Django Docker documentation](http://cookiecutter-django.readthedocs.io/en/latest/deployment-with-docker.html).
 
 ## Adding New Features/Fixes
 
 We welcome contributions to improve the project! Before you begin, please take a moment to review our [Contributing Guidelines](./CONTRIBUTING.md). These guidelines will help you understand the process for submitting new features, bug fixes, and other improvements.
 
-## Job Creation
+## Dispatching a Scrape
 
-Eventually, job creation will be done seamlessly by the webapp. Until then, edit the `config.py` file with the details of what sources you want to create jobs for, then run `generate_jobs.py`.
+Scrapes are normally triggered by setting a collection's `workflow_status` to **Ready for
+Engineering** in the admin, which dispatches a job to the crawl4ai host over AWS SSM.
 
-## Code Structure for SDE_INDEXING_HELPER
+To dispatch one by hand:
+
+```shell
+docker-compose -f local.yml run --rm django python manage.py dispatch_scrape --collection <config_folder>
+```
+
+Results are picked up automatically by the `poll_scrape_jobs` beat task (every 5 minutes, gated by
+`SCRAPE_POLL_ENABLED`). To ingest a completed scrape manually instead:
+
+```shell
+docker-compose -f local.yml run --rm django python manage.py ingest_scrape_results --collection <config_folder>
+```
+
+## Code Structure
+
+The Django project package is still named `sde_indexing_helper/` (COSMOS is the product name; the
+package was not renamed).
 
 - Frontend pages:
   - HTML: `/sde_indexing_helper/templates/`
   - JavaScript: `/sde_indexing_helper/static/js`
   - CSS: `/sde_indexing_helper/static/css`
   - Images: `/sde_indexing_helper/static/images`
+
+- Pipeline code, all under `sde_collections/`:
+  - `scraping/` — dispatching crawls and reading their results:
+    `job_builder.py` (job JSON), `ssm_dispatch.py` (SSM send-command to the crawl4ai host),
+    `s3_results.py` (freshness checks and result fetch)
+  - `indexing/` — the hand-off to the indexer:
+    `export.py` (writes `documents.jsonl`, then `manifest.json` last),
+    `dispatch.py` (`sts:AssumeRole` → `ecs:RunTask`), `run_status.py` (reads `status.json`)
+  - `tasks.py` — the Celery tasks, including both pollers
+  - `signals.py` — the `post_migrate` receiver that writes the beat schedule rows
+  - `models/` — collections, URL lifecycle, and patterns (see the `README_*.md` files there)
 
 
 ## Running Long Scripts on the Server

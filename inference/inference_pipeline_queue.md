@@ -1,7 +1,19 @@
 # COSMOS Inference Pipeline
 
+> **DORMANT — the inference pipeline is disabled, not deleted.**
+> As of Phase 2 the entire pipeline is gated on the `INFERENCE_ENABLED` setting
+> (`config/settings/base.py`), which defaults to `False`. While the flag is off:
+> - `Collection.queue_necessary_classifications()` never creates an `InferenceJob`; it
+>   goes straight to `migrate_dump_to_delta_and_handle_status_transistions`.
+> - `process_inference_job_queue()` returns immediately without touching the queue.
+> - The two `PeriodicTask` beat rows created in `inference/signals.py` are written with
+>   `enabled=settings.INFERENCE_ENABLED`, so beat never fires them.
+>
+> The models, tasks, and API client all remain in the tree. Everything below describes
+> how the pipeline behaves **when `INFERENCE_ENABLED` is turned back on**.
+
 ## Overview
-The server runs both the COSMOS curation app and an ML Inference Pipeline, which can analyze and classify website content. COSMOS is process whole collections and send the full_texts of the individual urls to the Inference Pipeline for classification. Right now it supports Division Classifications and TDAMM Classifications.
+The server runs both the COSMOS curation app and an ML Inference Pipeline, which can analyze and classify website content. When enabled, COSMOS processes whole collections and sends the full_texts of the individual urls to the Inference Pipeline for classification. Right now it supports Division Classifications and TDAMM Classifications.
 
 The Inference Pipeline can support multiple model versions for a single classification type. When a collection needs to be classified for certain classification and model, say "Division" and "v1", the COSMOS app will create an InferenceJob object. The InferenceJob will then create ExternalJob objects for each batch of urls in the collection. The ExternalJob objects will send the full_texts to the Inference Pipeline API, which will return a job_id. The ExternalJob will then ping the API with the job_id to get the results. Once all ExternalJobs are complete, the InferenceJob will be marked as complete.
 
@@ -39,9 +51,12 @@ The inference pipeline uses a two-level job system:
    - InferenceJob is created for the collection/classification pair
 
 2. **Chron**
-   - Every 5 minutes, between 6pm-7am, attempts to process_inference_job_queue()
+   - When enabled, every 5 minutes between 6pm-7am, attempts to process_inference_job_queue()
      - this could either mean batching and api sending
      - or it could mean reading in results from an open InferenceJob
+   - The beat rows are created disabled while `INFERENCE_ENABLED` is `False`, and
+     `process_inference_job_queue()` itself short-circuits on the same flag, so a
+     hand-enabled row or an ad-hoc invocation still processes nothing
 
 3. **def process_inference_job_queue()**
    - Loop through all InferenceJob objects to find status=Pending

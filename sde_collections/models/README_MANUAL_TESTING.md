@@ -1,166 +1,217 @@
 # COSMOS Curation System Testing Guide
 
-## Resources
-There are 14 collections which have been reindexed on dev and can have their statuses changed to `REINDEXING_FINISHED` to test url importing. The collections and their counts can be seen [here](https://docs.google.com/spreadsheets/d/1z_YeTwsyadW6ywPsahUElnf8X65gP7t7UyaO7sVqGiI/edit?gid=1316450061#gid=1316450061).
+Manual acceptance tests for the curation pipeline. This is the curator-facing counterpart to
+[`LOCAL_VERIFICATION_GUIDE.md`](../../LOCAL_VERIFICATION_GUIDE.md), which verifies a local install
+from a developer's point of view. Here the question is whether the workflow behaves correctly for
+the people who use it.
 
-## Test Flow 1: Basic URL Collection Lifecycle
+The pipeline these tests exercise is described in [`WORKFLOW.md`](../../WORKFLOW.md), and what each
+status change triggers is in [`README_STATUS_TRIGGERS.md`](./README_STATUS_TRIGGERS.md).
+
+## Before you start
+
+Every dispatch-gating setting defaults blank or off, so on an unwired host **nothing will happen**
+when you change a status and the tests below will all appear to fail. Confirm first:
+
+- `CRAWLER_INSTANCE_ID` and `SDE_S3_BUCKET` are set, and `SCRAPE_POLL_ENABLED=true`, for anything
+  involving a scrape.
+- `SDE_INDEX_BUCKET`, `INDEXING_ECS_CLUSTER`, `INDEXING_TASK_FAMILY`, `INDEXING_DISPATCH_ROLE_ARN`,
+  `INDEXING_SUBNETS`, `INDEXING_SECURITY_GROUPS` are set, and `INDEX_POLL_ENABLED=true`, for
+  anything involving indexing.
+- `manage.py migrate` has been run **since** those flags were last changed. The poller schedules are
+  `django_celery_beat` rows written by a `post_migrate` receiver, so a restart alone does not enable
+  them.
+
+Pick a small collection. Avoid one whose documents are already in the target index under a
+different id scheme — the indexer refuses those deliberately, which looks like a failure but is
+correct behaviour.
+
+## Test Flow 1: Scrape dispatch and ingest
 
 ### Objective
-Verify the complete lifecycle of a URL collection from initial creation through curation to production.
 
-### Prerequisites
-- Access to dev environment
-- Test collection created
-- Sample URLs ready for testing
+Verify a collection can be scraped and its results ingested.
 
 ### Test Cases
 
-#### 1.1 Collection Status Progression
-1. Create new collection in `RESEARCH_IN_PROGRESS` status
-2. Verify initial scraper and indexer configs are created when moved to `READY_FOR_ENGINEERING`
-3. Progress through `ENGINEERING_IN_PROGRESS` to `INDEXING_FINISHED_ON_DEV`
-4. Confirm full text fetch triggers automatically
-5. Verify status updates to `READY_FOR_CURATION`
-6. Check plugin config creation
-7. Move through `CURATION_IN_PROGRESS` to `CURATED`
-8. Verify DeltaUrls promotion to CuratedUrls
-9. Test quality check status changes (`QUALITY_CHECK_PERFECT/MINOR`)
-10. Confirm collection appears in public query after PR merge
+#### 1.1 Dispatch
 
-#### 1.2 Data State Transitions
-1. Verify DumpUrls are created during indexing
-2. Test migration from DumpUrls to DeltaUrls
-3. Confirm field preservation during transitions
-4. Check promotion from DeltaUrls to CuratedUrls
-5. Verify all metadata transfers correctly
+1. Set a collection's workflow status to **Ready for Engineering**.
+2. Confirm a `ScrapeDispatch` row is created, carrying an `ssm_command_id` and `dispatched_at`.
+3. Confirm the job JSON lands in the crawler's inbox. It is written via a temporary file and then
+   moved, so the watcher should never see a partial file.
+4. Failure path: with `CRAWLER_INSTANCE_ID` unset or the instance unreachable, confirm the status
+   moves to **Scraping Failed** rather than hanging.
+5. Cap check: request a page count above the crawler's cap (100,000) and confirm the job is
+   rejected outright rather than silently clamped.
 
-Expected Results:
-- Each status transition triggers appropriate automated actions
-- Data integrity maintained through all transitions
-- Correct config generation at each stage
-- Proper public visibility after final approval
+#### 1.2 Ingest
 
-## Test Flow 2: Pattern System Functionality
+1. Wait for the crawler to write its results. The poller runs every 5 minutes.
+2. Confirm the status moves to **Scraping Successful**, then on to **Ready for Curation**.
+3. Confirm `DumpUrl` rows appear, then `DeltaUrl` rows after migration.
+4. Confirm a summary is posted to Slack.
+5. Staleness: confirm results older than the dispatch are ignored — the poller only accepts a
+   summary written *after* `ScrapeDispatch.dispatched_at`.
+6. Empty result: a scrape returning zero pages should land on **Scraping Failed**, not
+   **Scraping Successful** with an empty collection.
+7. Stall: with nothing fresh for longer than `SCRAPE_STALL_TIMEOUT_HOURS` (default 24), confirm the
+   collection lands on **Scraping Failed**.
+
+Expected results:
+
+- Each status transition fires exactly once; re-saving a collection does not re-dispatch.
+- Claiming is atomic, so two pollers running concurrently cannot double-ingest.
+- With `INFERENCE_ENABLED=False` (the default) classification is skipped entirely and migration to
+  DeltaUrls runs immediately.
+
+## Test Flow 2: Curation and the test-indexing hand-off
 
 ### Objective
-Test the creation, application, and interaction of different pattern types.
 
-### Prerequisites
-- Collection with sample URLs
-- Mix of different URL types and structures
+Verify curation promotes correctly and hands off to the indexer.
 
 ### Test Cases
 
-#### 2.1 Include/Exclude Patterns
-1. Create exclude pattern for specific directory
+#### 2.1 Promotion and dispatch
+
+1. Curate the collection — apply include/exclude patterns, title and document-type changes.
+2. Set the status to **Curated**.
+3. Confirm `DeltaUrl`s are promoted to `CuratedUrl`s and the Delta set is cleared.
+4. Confirm an export appears in S3 under `curated_collections/{config_folder}/{run_id}/`, with
+   `documents.jsonl` written first and `manifest.json` **last**. The manifest's `document_count`
+   must exactly match the JSONL line count.
+5. Confirm excluded URLs are absent from the export.
+6. Confirm an `IndexDispatch` row is created with a `run_id`, `target=test`, and a `task_arn`, and
+   that the status moves to **Test Indexing**.
+7. Empty-curation failure path: a collection with no curated URLs should fail dispatch and land on
+   **Indexing Failed on Test** rather than exporting an empty file.
+
+#### 2.2 Reading the result
+
+1. The poller runs every 2 minutes. When the indexer finishes, confirm the collection **stays** in
+   **Test Indexing** — a successful test run is not an automatic promotion.
+2. Confirm the validation report is posted to Slack.
+3. Failure path: confirm a failed run, an unrecognised result, or no result at all within
+   `INDEX_STALL_TIMEOUT_HOURS` (default 6) lands on **Indexing Failed on Test**.
+
+## Test Flow 3: Quality check and production indexing
+
+### Objective
+
+Verify the QC decision drives the production hand-off.
+
+### Test Cases
+
+1. From **Test Indexing**, set **QC: Perfect** and confirm a second indexing run is dispatched with
+   a new `run_id`, and the status moves to **Production Indexing**.
+2. On success, confirm the status lands on **Prod: Perfect**.
+3. Repeat from **QC: Minor Issues** and confirm the terminal status is **Prod: Minor Issues** — the
+   distinction must survive the round trip.
+4. Failure path: confirm a failed production run lands on **Indexing Failed on Prod**.
+
+## Test Flow 4: Re-scrape and re-curation
+
+### Objective
+
+Verify an already-published collection can be refreshed.
+
+### Test Cases
+
+1. Set `reindexing_status` to **Re-Indexing Needed** and confirm a *new* `ScrapeDispatch` row is
+   created.
+2. Confirm the poller ignores the previous scrape's S3 output until fresh results land.
+3. Confirm the collection reaches **Ready for Re-Curation**.
+4. Confirm patterns are reapplied to the new URLs and that manual, per-URL changes are preserved.
+5. Set **Re-Curation Finished** and confirm promotion runs. Note the causality: the curator sets
+   this status, and that triggers promotion — not the reverse.
+6. Confirm **Re-Indexing Finished** triggers nothing on its own; the ingest task sets that status
+   itself, and a second trigger would double-fire.
+
+## Test Flow 5: Pattern system
+
+### Objective
+
+Test creation, application, and interaction of pattern types. This area is independent of the
+scrape/index plumbing and is unchanged by the rewiring.
+
+### Test Cases
+
+#### 5.1 Include/exclude patterns
+
+1. Create an exclude pattern for a directory:
    ```python
    pattern = "https://example.com/internal/*"
    ```
-2. Create include pattern for specific file within excluded directory
+2. Create an include pattern for one file inside it:
    ```python
    pattern = "https://example.com/internal/public-doc.html"
    ```
-3. Verify include pattern overrides exclude pattern
-4. Test wildcard pattern matching
-5. Check pattern precedence rules
+3. Verify the include pattern overrides the exclude.
+4. Test wildcard matching and precedence rules.
+5. Confirm excluded URLs do not reach the export in Test Flow 2.
 
-#### 2.2 Modification Patterns
+#### 5.2 Modification patterns
+
 1. Create overlapping title patterns:
    ```python
    pattern1 = "*/docs/* → title='Documentation'"
    pattern2 = "*/docs/api/* → title='API Reference'"
    ```
-2. Create division patterns with different specificity
-3. Test document type patterns with wildcards
-4. Verify "smallest set priority" resolution
-5. Check pattern application during migrations
+2. Create division patterns of differing specificity.
+3. Test document-type patterns with wildcards.
+4. Verify "smallest set priority" resolution.
+5. Check pattern application during migrations.
 
-#### 2.3 Pattern Removal Scenarios
-1. Test removing pattern affecting only Delta URLs
-2. Remove pattern affecting Curated URLs
-3. Verify handling of multiple pattern effects
-4. Test manual change preservation
-5. Check cleanup procedures
+#### 5.3 Pattern removal
 
-Expected Results:
-- Pattern precedence rules correctly applied
-- Proper handling of overlapping patterns
-- Manual changes preserved during pattern operations
-- Correct reversal of pattern effects on removal
+1. Remove a pattern affecting only Delta URLs.
+2. Remove one affecting Curated URLs.
+3. Verify handling where several patterns affect the same URL.
+4. Confirm manual changes are preserved.
 
-## Test Flow 3: Reindexing Workflow
+Expected results:
 
-### Objective
-Verify the reindexing process and status management.
+- Precedence rules are applied consistently.
+- Manual changes survive pattern operations.
+- Removing a pattern reverses its effects.
 
-### Prerequisites
-- Existing collection in production
-- Access to both dev and prod environments
+## Edge cases
 
-### Test Cases
+### URL patterns
 
-#### 3.1 Reindexing Status Progression
-1. Change status from `REINDEXING_NOT_NEEDED` to `REINDEXING_NEEDED_ON_DEV`
-2. Complete reindexing and update to `REINDEXING_FINISHED_ON_DEV`
-3. Verify automatic full text fetch
-4. Confirm status update to `REINDEXING_READY_FOR_CURATION`
-5. Progress through `REINDEXING_CURATED`
-6. Final update to `REINDEXING_INDEXED_ON_PROD`
+1. URLs with and without trailing slashes.
+2. Overlapping wildcards.
+3. Equal URL-count matches.
+4. Maximum pattern chain depth.
+5. Malformed URLs.
 
-#### 3.2 Data Handling During Reindex
-1. Verify existing DumpUrls are cleared
-2. Check new full text data processing
-3. Test DumpUrl to DeltaUrl migration
-4. Verify pattern reapplication
-5. Confirm CuratedUrl updates
+### Status transitions
 
-Expected Results:
-- Proper status progression through reindexing
-- Data integrity maintained
-- Patterns correctly reapplied
-- Existing customizations preserved
+1. Interrupted transitions.
+2. Failed automated actions — every failure path should reach a terminal *failed* status, never
+   leave the collection in an in-progress state indefinitely.
+3. Concurrent status updates.
+4. Invalid progressions.
+5. Recovery: confirm a collection that reached **Scraping Failed** or **Indexing Failed on Test**
+   can be re-driven through the workflow without manual database surgery.
 
-## Edge Cases and Stress Testing
+### Data volume
 
-### URL Pattern Edge Cases
-1. Test URLs with/without trailing slashes
-2. Verify handling of overlapping wildcards
-3. Check pattern resolution with equal URL count matches
-4. Test maximum pattern chain depth
-5. Verify handling of malformed URLs
+1. Large collections (>100k URLs).
+2. Pattern application performance.
+3. Migration speed on large datasets.
+4. Memory use during bulk operations.
 
-### Status Transition Edge Cases
-1. Test interrupted transitions
-2. Verify handling of failed automated actions
-3. Check concurrent status updates
-4. Test invalid status progressions
-5. Verify recovery procedures
+## Common issues to watch for
 
-### Data Volume Testing
-1. Test with large number of URLs (>100k)
-2. Check pattern application performance
-3. Verify migration speed with large datasets
-4. Test memory usage during bulk operations
-5. Check system response under heavy concurrent access
-
-## Common Issues to Watch For
-
-1. Pattern Precedence
-   - Multiple patterns affecting same URL
-   - Include/exclude pattern conflicts
-   - Resolution of equal-specificity patterns
-
-2. Data Integrity
-   - Field preservation during transitions
-   - Manual change retention
-   - Pattern effect tracking
-
-3. Performance
-   - Large collection handling
-   - Multiple pattern application
-   - Status transition timing
-
-4. Status Management
-   - Automated trigger reliability
-   - Status update race conditions
-   - Recovery from failed transitions
+1. **Nothing happens on a status change.** Almost always an unwired setting or a missing `migrate`
+   — check the prerequisites above before investigating anything else.
+2. **Pattern precedence.** Multiple patterns on one URL, include/exclude conflicts, equal-specificity
+   resolution.
+3. **Data integrity.** Field preservation across Dump → Delta → Curated, retention of manual
+   changes, pattern effect tracking.
+4. **Stale results.** The scrape poller uses dispatch time to reject old output; index runs are
+   namespaced by `run_id`. A collection picking up a previous run's data is a bug worth reporting
+   in detail.
+5. **Status races.** Two workers acting on one collection, or a status change firing twice.

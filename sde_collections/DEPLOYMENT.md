@@ -1,12 +1,11 @@
-# COSMOS CI/CD — Design
+# COSMOS Deployment and CI/CD
 
-> Companion to [WORKFLOW.md](../WORKFLOW.md) (the curation pipeline) and
-> [IMPLEMENTATION_PLAN.md](../IMPLEMENTATION_PLAN.md) (phased delivery, where this is Phase 9).
+> Companion to [WORKFLOW.md](../WORKFLOW.md) (the curation pipeline).
 > Database backup and restore are covered in [SQLDumpRestoration.md](../SQLDumpRestoration.md).
 
-**This document is a design, not a runbook.** Nothing described under "Proposed pipeline" exists
-in the repo. Deploys today are manual. Current state is recorded below and was verified against the
-tree on 2026-08-11 — keep the two sections distinct as the design lands.
+**Deploys are manual today.** Everything under "Current state" describes the repo as it actually
+is; everything under "Proposed pipeline" is a target that does **not** exist yet — there is no
+deploy script and no deployment workflow in `.github/workflows/`. Keep the two sections distinct.
 
 ---
 
@@ -22,8 +21,8 @@ tree on 2026-08-11 — keep the two sections distinct as the design lands.
 | Pre-commit | `.pre-commit-config.yaml` with black, isort, flake8, pyupgrade, bandit, mypy (excluded), and gitleaks. `pre-commit.ci` is enabled with weekly autoupdate. |
 | Compose stacks | `local.yml` and `production.yml`. Four services share the Django image: `django`, `celeryworker`, `celerybeat`, `flower`. `production.yml` adds `traefik`, `postgres`, `awscli`. |
 | Backup tooling | `manage.py database_backup` and `manage.py database_restore` exist in `sde_collections/management/commands/`. |
-| Beat schedules | No `CELERY_BEAT_SCHEDULE` setting anywhere. All schedules are `django_celery_beat` **database rows**, written by a `post_migrate` receiver — today only `inference/signals.py`. |
-| Credentials in code | AWS access is via static keys (`DJANGO_AWS_ACCESS_KEY_ID` / `DJANGO_AWS_SECRET_ACCESS_KEY`), not instance roles. Env files (`.envs/.production/.django`) are maintained by hand on each host. |
+| Beat schedules | No `CELERY_BEAT_SCHEDULE` setting anywhere. All schedules are `django_celery_beat` **database rows**, written by `post_migrate` receivers in `inference/signals.py` and `sde_collections/signals.py`. The latter writes "Poll crawler S3 results (every 5 min)" and "Poll index runs (every 2 min)", each enabled from `SCRAPE_POLL_ENABLED` / `INDEX_POLL_ENABLED`. Because `enabled` is re-asserted at migrate time, **changing one of those flags requires `manage.py migrate`** — restarting the services alone does nothing. |
+| Credentials | Two separate scopes. django-storages static assets use static keys (`DJANGO_AWS_ACCESS_KEY_ID` / `DJANGO_AWS_SECRET_ACCESS_KEY`). The pipeline uses `sde_collections/utils/aws.py::get_boto3_session()`, which deliberately does *not* read those: it prefers `SDE_AWS_*` if set and otherwise falls through to the default chain (the host's instance role). Dispatching an index run additionally requires `sts:AssumeRole` on the indexer's dispatch role. Env files (`.envs/.production/.django`) are maintained by hand on each host. |
 | Health endpoint | **None.** There is no `/healthz` or equivalent. |
 
 ### Two defects worth fixing regardless of CI/CD
@@ -52,10 +51,13 @@ Three reasons, in order of weight:
    task that deletes and rebuilds a collection's `DumpUrl` rows. A bad deploy stops being a broken
    UI and becomes unwanted writes to shared infrastructure.
 
-> The indexing pipeline (writes to the `sde-web` OpenSearch index) is **deferred** and likely lands
-> in a separate repo. When it arrives, add its endpoints to `validate_deploy_env` and its
-> reachability to `preflight_aws` — the hooks below are shaped to accept it, but do not write
-> checks for machinery that is not here.
+> The indexing hand-off now exists. COSMOS exports curated URLs to S3, assumes an IAM role in the
+> indexer's account, and calls `ecs:RunTask`; the indexer writes to OpenSearch. The settings that
+> gate it — `SDE_INDEX_BUCKET`, `INDEXING_ECS_CLUSTER`, `INDEXING_TASK_FAMILY`,
+> `INDEXING_DISPATCH_ROLE_ARN`, `INDEXING_SUBNETS`, `INDEXING_SECURITY_GROUPS`, `INDEX_POLL_ENABLED`
+> — all default blank or off, so a host that has not been wired cannot dispatch. `validate_deploy_env`
+> and `preflight_aws` should cover them: the bucket's reachability and the `sts:AssumeRole` grant on
+> the dispatch role.
 
 ---
 
@@ -159,7 +161,8 @@ introducing it must say so, and rollback for that release becomes restore-from-b
 
 The **deploy role** needs `ecr:*` on the repository plus `ssm:SendCommand` and
 `ssm:GetCommandInvocation` scoped to the two instances. The **hosts' own roles** need whatever the
-curation pipeline uses — initially SSM to the crawler instance and S3 read on the crawler bucket.
+curation pipeline uses: SSM to the crawler instance, S3 read on the crawler bucket, read/write on
+the indexing bucket (`SDE_INDEX_BUCKET`), and `sts:AssumeRole` on the indexer's dispatch role.
 
 Verify before flipping `CD_ENABLED`:
 

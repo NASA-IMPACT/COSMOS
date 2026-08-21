@@ -70,7 +70,7 @@ The pipeline generates a JSON file named `ej_dump_YYYYMMDD_HHMMSS.json` containi
 To deploy the output to the server:
 ```bash
 # Copy to server
-scp ej_dump_YYYYMMDD_HHMMSS.json sde:/home/ec2-user/sde_indexing_helper/backups/
+scp ej_dump_YYYYMMDD_HHMMSS.json sde:/home/ec2-user/sde-indexing-helper/backups/
 
 # Process on server using dm shell
 dmshell

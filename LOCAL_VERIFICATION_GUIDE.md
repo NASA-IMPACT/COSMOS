@@ -1,15 +1,17 @@
 # COSMOS Local Verification Guide — Phases 0–7
 
-This guide verifies the rewired COSMOS pipeline (branch `cosmos-rewiring`, Phases 0–7 of
-[`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md)) by **walking one real collection through the
-entire workflow on your machine**: *Aurorasaurus — Reporting Auroras from the Ground Up*
+This guide verifies the rewired COSMOS pipeline (branch `cosmos-rewiring`, Phases 0–7) by
+**walking one real collection through the entire workflow on your machine**:
+*Aurorasaurus — Reporting Auroras from the Ground Up*
 (`config_folder: aurorasaurus_reporting_auroras_from_the_ground_up`).
 
 Why this collection: the crawl4ai scraper **already crawled it for real** — its output (25
 documents from `aurorasaurus.org`) sits in the dev S3 bucket. That lets the demo ingest *genuine
 scraped data* through the *genuine production code path*, no mocks. Only one thing stays
-simulated: the WEB_COSMOS indexer's responses, because its AWS stacks (`sde-cosmos-indexing-dev`)
-are not deployed yet.
+simulated: the WEB_COSMOS indexer's responses. Its AWS stacks *are* deployed in the dev account
+(the `sde-cosmos-indexing-dev` bucket, the `CosmosIndexingDispatchRole-dev` role, and the
+`web_cosmos-scraper-dev` task family) — simulating its replies is a choice of this local
+walkthrough, which runs COSMOS on your machine and deliberately starts no real Fargate tasks.
 
 Each step of the walkthrough has the same shape:
 
@@ -83,7 +85,7 @@ All pipeline vars already exist in this file. For this walkthrough the AWS-facin
 |---|---|---|
 | `SLACK_WEBHOOK_URL` | any non-empty dummy, e.g. `http://localhost/dummy` | **Required to boot** (no default). Dummy → every Slack post prints a caught error and continues. Real webhook → messages actually post on every status change. |
 | `SDE_S3_BUCKET`, `CRAWLER_INSTANCE_ID` | blank | The scrape-dispatch hop then fails gracefully (Step 3's wiring proof). The real bucket is injected per-command in Step 4, not set here. |
-| `SDE_INDEX_BUCKET`, `INDEXING_*` | blank (keep `INDEXING_CONTAINER_NAME` default) | The indexing hops fail gracefully (Steps 5 & 7) — correct until the indexer's stacks deploy. |
+| `SDE_INDEX_BUCKET`, `INDEXING_*` | blank (keep `INDEXING_CONTAINER_NAME` default) | The indexing hops then fail gracefully (Steps 5 & 7). Deliberate: the dev stacks are live, and a local run should not export to their bucket or start real Fargate tasks. |
 | `SCRAPE_POLL_ENABLED`, `INDEX_POLL_ENABLED`, `INFERENCE_ENABLED` | `False` | With blank buckets the pollers would only log S3 errors every 2–5 min; the inference-off state is itself verified in Step 2. |
 | `SDE_AWS_ACCESS_KEY_ID`, `SDE_AWS_SECRET_ACCESS_KEY` | blank | Keeps `get_boto3_session()` on the default credential chain — which is exactly how Step 4 injects short-lived SSO credentials. |
 
@@ -442,7 +444,7 @@ trigger. Watch the worker log as you set **Curated**.
   curated data is never touched unnecessarily).
 - Worker log: `Index dispatch (test) failed for aurorasaurus_…: SDE_INDEX_BUCKET is not
   configured — cannot export`, and the status lands on **Indexing Failed on Test** (red).
-- With the indexer deployed, this same click would export
+- With the `INDEXING_*` settings filled in from the dev stacks, this same click would export
   `curated_collections/{cf}/{run_id}/documents.jsonl` + `manifest.json` to S3, `ecs:RunTask` the
   WEB_COSMOS indexer, and land on **Test Indexing**.
 
@@ -488,9 +490,9 @@ resolve the run by reading `index_runs/{cf}/{run_id}/status.json` from S3 — ne
 `ecs.describe_tasks`. The `run_id` namespacing means an old run's status can never satisfy a
 newer dispatch.
 
-The indexer isn't deployed yet, so here we simulate **its half only** — the `status.json`
-responses — while running COSMOS's poller for real. Three outcomes, continuing from
-*Indexing Failed on Test*:
+The indexer is live in the dev account, but a local walkthrough has no business starting real
+Fargate tasks — so here we simulate **its half only** — the `status.json` responses — while
+running COSMOS's poller for real. Three outcomes, continuing from *Indexing Failed on Test*:
 
 **Do this** — paste into `shell_plus`:
 
@@ -577,10 +579,10 @@ Open the collection's **Workflow History** tab. The full journey reads:
 Everything COSMOS-side ran for real: settings/credential plumbing (P0), the status vocabulary
 (P1), inference-off migration (P2), dispatch triggers and job building (P3), real-S3 ingest with
 claim semantics (P4), curation triggers and promote (P5), a Sinequa-free codebase (P6), and the
-export/dispatch/poll machinery (P7). The only simulated piece was the indexer's `status.json` —
-the moment the `sde-api-scrapers` `web-indexing` stacks deploy (its NS.2) and the COSMOS env gets
-the `INDEXING_*` values, Steps 5 and 7 stop failing gracefully and this same collection is the
-natural first candidate for the fully-real closed loop.
+export/dispatch/poll machinery (P7). The only simulated piece was the indexer's `status.json`.
+Its dev stacks are already deployed, so nothing further has to be built: fill a COSMOS
+environment's `INDEXING_*` values from those stack outputs and Steps 5 and 7 stop failing
+gracefully — this same collection is the natural first candidate for the fully-real closed loop.
 
 The walkthrough is repeatable end to end: Step 4's ingest replaces dumps and re-diffs, promote
 is idempotent, and each `IndexDispatch` gets a fresh `run_id`.
@@ -655,14 +657,15 @@ locally it fails on the blank bucket by design).
 
 ## Appendix B — What this guide deliberately does NOT verify
 
-These need real AWS beyond the crawler bucket, and are covered by the "Manual verification (real
-dev AWS)" blocks in `IMPLEMENTATION_PLAN.md` (P3, P4, P7) once the `sde-api-scrapers`
-`web-indexing` stacks deploy:
+These need real AWS beyond the crawler bucket. Nothing here is blocked on infrastructure — the
+crawler stack and the indexer's dev stacks both exist — they are simply out of scope for a local
+run, and are checked by hand against dev AWS instead:
 
 - A real SSM `send-command` reaching the crawler inbox on `i-0b6a61d95888886f4` (the Step 3
   success path — its output for Aurorasaurus already exists, which is what Step 4 consumed).
 - The real export → `sts:AssumeRole` → `ecs:RunTask` → `status.json` loop against
-  `sde-cosmos-indexing-dev` (Step 5/7 success paths; the indexer repo's E2E.10).
+  `sde-cosmos-indexing-dev` (Step 5/7 success paths), which runs from a COSMOS host whose instance
+  role may assume `CosmosIndexingDispatchRole-dev`.
 - Slack delivery, if you ran with a dummy webhook.
 - The stall-timeout paths in real time (both unit-tested; live simulation means waiting
   `SCRAPE_STALL_TIMEOUT_HOURS` / `INDEX_STALL_TIMEOUT_HOURS`).
