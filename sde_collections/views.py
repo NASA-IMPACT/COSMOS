@@ -1,29 +1,23 @@
 import re
 
-from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.views.generic import TemplateView, View
+from django.views.generic import View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
 from rest_framework import generics, status, viewsets
-from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from .forms import CollectionGithubIssueForm, CommentsForm, RequiredUrlForm
 from .models.collection import Collection, Comments, RequiredUrls, WorkflowHistory
 from .models.collection_choice_fields import (
-    ConnectorChoices,
     CurationStatusChoices,
-    Divisions,
-    DocumentTypes,
     ReindexingStatusChoices,
     WorkflowStatusChoices,
 )
