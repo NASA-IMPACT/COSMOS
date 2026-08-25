@@ -25,8 +25,22 @@ class TestWorkflowStatusTransitions(TestCase):
         """When status changes to READY_FOR_ENGINEERING, it should dispatch a scrape job (P3:
         replaces the Sinequa create_scraper_config/create_scraper_job trigger)."""
         self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
-        self.collection.save()
+        with self.captureOnCommitCallbacks(execute=True):
+            self.collection.save()
 
+        mock_dispatch.assert_called_once_with(self.collection.id)
+
+    @patch("sde_collections.tasks.dispatch_scrape_job.delay")
+    def test_task_is_enqueued_only_after_commit(self, mock_dispatch):
+        """Tasks are enqueued via transaction.on_commit so a worker can never read the
+        collection (or promote_to_curated's rows) before the triggering save commits."""
+        self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
+        with self.captureOnCommitCallbacks() as callbacks:
+            self.collection.save()
+            mock_dispatch.assert_not_called()
+
+        assert len(callbacks) == 1
+        callbacks[0]()
         mock_dispatch.assert_called_once_with(self.collection.id)
 
     def _save_and_assert_no_triggers(self, **status_updates):
@@ -41,7 +55,8 @@ class TestWorkflowStatusTransitions(TestCase):
         ):
             for field, value in status_updates.items():
                 setattr(self.collection, field, value)
-            self.collection.save()
+            with self.captureOnCommitCallbacks(execute=True):
+                self.collection.save()
 
         mock_dispatch.assert_not_called()
         mock_test.assert_not_called()
@@ -83,7 +98,8 @@ class TestWorkflowStatusTransitions(TestCase):
     def test_curated_promotes_and_enqueues_test_indexing(self, mock_promote, mock_index_test):
         """CURATED promotes DeltaUrls to CuratedUrls AND hands off to test indexing."""
         self.collection.workflow_status = WorkflowStatusChoices.CURATED
-        self.collection.save()
+        with self.captureOnCommitCallbacks(execute=True):
+            self.collection.save()
 
         mock_promote.assert_called_once()
         mock_index_test.assert_called_once_with(self.collection.id)
@@ -94,7 +110,8 @@ class TestWorkflowStatusTransitions(TestCase):
         for status in [WorkflowStatusChoices.QUALITY_CHECK_PERFECT, WorkflowStatusChoices.QUALITY_CHECK_MINOR]:
             collection = CollectionFactory()
             collection.workflow_status = status
-            collection.save()
+            with self.captureOnCommitCallbacks(execute=True):
+                collection.save()
 
             mock_index_prod.assert_called_with(collection.id)
         assert mock_index_prod.call_count == 2
@@ -112,7 +129,8 @@ class TestWorkflowStatusTransitions(TestCase):
             side_effect=promote_and_save_again,
         ) as mock_promote:
             self.collection.workflow_status = WorkflowStatusChoices.CURATED
-            self.collection.save()
+            with self.captureOnCommitCallbacks(execute=True):
+                self.collection.save()
 
         mock_promote.assert_called_once()
         mock_index_test.assert_called_once()
@@ -134,6 +152,15 @@ class TestSlackNotificationOnTransition(TestCase):
         message = mock_send.call_args.args[0]
         assert self.collection.name in message
         assert "Ready for engineering" in message
+
+    def test_prod_handoff_transitions_are_mapped(self):
+        """The prod hand-off goes QC_* -> PRODUCTION_INDEXING -> PROD_*; the 'live on prod'
+        message must be keyed on the transition the poller actually makes."""
+        from sde_collections.utils.slack_utils import STATUS_CHANGE_NOTIFICATIONS
+
+        for final in [WorkflowStatusChoices.PROD_PERFECT, WorkflowStatusChoices.PROD_MINOR]:
+            details = STATUS_CHANGE_NOTIFICATIONS[(WorkflowStatusChoices.PRODUCTION_INDEXING, final)]
+            assert "live on Public Prod" in details["message"]
 
     @patch("sde_collections.models.collection.send_slack_message")
     def test_unmapped_transition_sends_nothing(self, mock_send):

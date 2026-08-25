@@ -1,7 +1,11 @@
+import logging
+
 import requests
 from django.conf import settings
 
 from ..models.collection_choice_fields import WorkflowStatusChoices
+
+logger = logging.getLogger(__name__)
 
 SLACK_ID_MAPPING = {
     "Shravan Vishwanathan": "<@U056B4HMGEP>",
@@ -43,6 +47,17 @@ STATUS_CHANGE_NOTIFICATIONS = {
         "mention_users": ["channel"],
     },
     (WorkflowStatusChoices.QUALITY_CHECK_MINOR, WorkflowStatusChoices.PROD_MINOR): {
+        "message": "{name} is now live on Public Prod! Congrats team! :sparkles:",
+        "mention_users": ["channel"],
+    },
+    # The prod hand-off passes through PRODUCTION_INDEXING, so the transition the poller
+    # actually makes is PRODUCTION_INDEXING -> PROD_*; keep the QC_* -> PROD_* pairs above
+    # for the manual/legacy path.
+    (WorkflowStatusChoices.PRODUCTION_INDEXING, WorkflowStatusChoices.PROD_PERFECT): {
+        "message": "{name} is now live on Public Prod! Congrats team! :sparkles:",
+        "mention_users": ["channel"],
+    },
+    (WorkflowStatusChoices.PRODUCTION_INDEXING, WorkflowStatusChoices.PROD_MINOR): {
         "message": "{name} is now live on Public Prod! Congrats team! :sparkles:",
         "mention_users": ["channel"],
     },
@@ -111,7 +126,7 @@ def send_detailed_import_notification(
     payload = {"text": message}
     response = requests.post(webhook_url, json=payload)
     if response.status_code != 200:
-        print(f"Error sending Slack message: {response.text}")
+        logger.warning("Error sending Slack message: %s", response.text)
 
 
 def send_indexing_validation_report(collection_name, run_id, validation):
@@ -135,6 +150,19 @@ def send_indexing_validation_report(collection_name, run_id, validation):
             f"Please review and set the QC status."
         )
     send_slack_message(message)
+
+
+def notify_status_change(collection_name, collection_id, old_status, new_status):
+    """Post the mapped message for a transition that was written with a queryset
+    .update() (which bypasses post_save and therefore the model-level notifier).
+    No-op for unmapped transitions; never raises."""
+    details = STATUS_CHANGE_NOTIFICATIONS.get((old_status, new_status))
+    if details is None:
+        return
+    try:
+        send_slack_message(format_slack_message(collection_name, details, collection_id))
+    except Exception as e:
+        logger.warning("Error sending Slack message for %s: %s", collection_name, e)
 
 
 def send_slack_message(message):

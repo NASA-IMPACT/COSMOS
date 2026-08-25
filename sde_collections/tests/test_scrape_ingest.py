@@ -133,6 +133,68 @@ class TestIngestScrapedCollection:
         collection.refresh_from_db()
         assert collection.workflow_status == WorkflowStatusChoices.SCRAPING_FAILED
 
+    @patch("sde_collections.tasks.notify_status_change")
+    @patch("sde_collections.tasks.migrate_dump_to_delta_and_handle_status_transistions.delay")
+    @patch("sde_collections.tasks.fetch_documents")
+    @patch("sde_collections.tasks.results_ready")
+    def test_claim_posts_the_scraping_successful_notification(self, mock_ready, mock_docs, mock_migrate, mock_notify):
+        """The claim is a queryset .update() (no post_save), so the task must post the
+        READY_FOR_ENGINEERING -> SCRAPING_SUCCESSFUL message itself."""
+        collection = CollectionFactory(workflow_status=WorkflowStatusChoices.READY_FOR_ENGINEERING)
+        ScrapeDispatch.objects.create(collection=collection, ssm_command_id="cmd-1")
+        mock_ready.return_value = make_summary(1)
+        mock_docs.return_value = make_documents(1)
+
+        ingest_scraped_collection(collection.id)
+
+        mock_notify.assert_called_once_with(
+            collection.name,
+            collection.id,
+            WorkflowStatusChoices.READY_FOR_ENGINEERING,
+            WorkflowStatusChoices.SCRAPING_SUCCESSFUL,
+        )
+
+    @patch("sde_collections.tasks.send_slack_message")
+    @patch("sde_collections.tasks.fetch_documents", side_effect=Exception("S3 read died"))
+    @patch("sde_collections.tasks.results_ready")
+    def test_rescrape_ingest_failure_leaves_workflow_status_alone(self, mock_ready, mock_docs, mock_slack):
+        """A re-scrape hiccup must never rewrite a production collection's workflow status."""
+        collection = CollectionFactory(
+            workflow_status=WorkflowStatusChoices.PROD_PERFECT,
+            reindexing_status=ReindexingStatusChoices.REINDEXING_NEEDED_ON_DEV,
+        )
+        ScrapeDispatch.objects.create(collection=collection, ssm_command_id="cmd-1")
+        mock_ready.return_value = make_summary(2)
+
+        assert ingest_scraped_collection(collection.id) is None
+
+        collection.refresh_from_db()
+        assert collection.workflow_status == WorkflowStatusChoices.PROD_PERFECT
+        # Cleared so the poller does not re-enqueue the same failed run every 5 minutes.
+        assert collection.reindexing_status == ReindexingStatusChoices.REINDEXING_NOT_NEEDED
+        mock_slack.assert_called_once()
+
+    @patch("sde_collections.tasks.migrate_dump_to_delta_and_handle_status_transistions.delay")
+    @patch("sde_collections.tasks.fetch_documents")
+    @patch("sde_collections.tasks.results_ready")
+    def test_duplicate_urls_in_crawl_output_are_dropped(self, mock_ready, mock_docs, mock_migrate):
+        """BaseUrl.url is unique: one repeated URL must not abort the whole bulk_create."""
+        collection = CollectionFactory(workflow_status=WorkflowStatusChoices.READY_FOR_ENGINEERING)
+        ScrapeDispatch.objects.create(collection=collection, ssm_command_id="cmd-1")
+        documents = make_documents(3)
+        documents.append(dict(documents[0], title="Duplicate of page 0"))
+        documents.append({"url": "", "title": "blank url"})
+        mock_ready.return_value = make_summary(len(documents))
+        mock_docs.return_value = documents
+
+        ingest_scraped_collection(collection.id)
+
+        dumps = DumpUrl.objects.filter(collection=collection)
+        assert dumps.count() == 3
+        assert dumps.get(url=documents[0]["url"]).scraped_title == "Page 0"  # first occurrence wins
+        collection.refresh_from_db()
+        assert collection.workflow_status == WorkflowStatusChoices.SCRAPING_SUCCESSFUL
+
     @patch("sde_collections.tasks.send_detailed_import_notification")
     @patch("sde_collections.tasks.fetch_documents")
     @patch("sde_collections.tasks.results_ready")

@@ -5,7 +5,7 @@ import shlex
 from unittest.mock import MagicMock, patch
 
 import pytest
-from django.test import override_settings
+from django.test import TestCase, override_settings
 
 from sde_collections.models.collection import Collection
 from sde_collections.models.collection_choice_fields import (
@@ -59,11 +59,13 @@ class TestBuildJobJson:
 
 @pytest.mark.django_db
 class TestStatusTriggersDispatch:
+    # Triggers enqueue on commit; the test transaction never commits, so run the hooks.
     @patch("sde_collections.tasks.dispatch_scrape_job.delay")
     def test_ready_for_engineering_dispatches_scrape_job(self, mock_delay):
         collection = CollectionFactory()
         collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
-        collection.save()
+        with TestCase.captureOnCommitCallbacks(execute=True):
+            collection.save()
 
         mock_delay.assert_called_once_with(collection.id)
 
@@ -71,7 +73,8 @@ class TestStatusTriggersDispatch:
     def test_reindexing_needed_dispatches_scrape_job(self, mock_delay):
         collection = CollectionFactory()
         collection.reindexing_status = ReindexingStatusChoices.REINDEXING_NEEDED_ON_DEV
-        collection.save()
+        with TestCase.captureOnCommitCallbacks(execute=True):
+            collection.save()
 
         mock_delay.assert_called_once_with(collection.id)
 
@@ -82,7 +85,8 @@ class TestStatusTriggersDispatch:
 
         collection = CollectionFactory()
         collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
-        collection.save()
+        with TestCase.captureOnCommitCallbacks(execute=True):
+            collection.save()
 
         mock_delay.assert_called_once_with(collection.id)
         assert not hasattr(Collection, "create_scraper_config")
@@ -108,6 +112,14 @@ class TestSendJobToCrawler:
         with patch("sde_collections.scraping.ssm_dispatch.get_boto3_session", return_value=session):
             command_id = send_job_to_crawler(collection)
         return command_id, ssm.send_command.call_args.kwargs
+
+    def test_unconfigured_crawler_refuses_to_dispatch(self):
+        """A host without the crawler wired must fail loudly on the settings guard rather
+        than send an SSM command to InstanceIds=[""]."""
+        collection = CollectionFactory()
+        with override_settings(CRAWLER_INSTANCE_ID=""):
+            with pytest.raises(ValueError, match="CRAWLER_INSTANCE_ID"):
+                send_job_to_crawler(collection)
 
     def test_command_targets_crawler_instance_and_returns_command_id(self):
         collection = CollectionFactory()
@@ -184,6 +196,23 @@ class TestDispatchScrapeJobTask:
         collection.refresh_from_db()
         assert collection.workflow_status == WorkflowStatusChoices.SCRAPING_FAILED
         assert not ScrapeDispatch.objects.filter(collection=collection).exists()
+
+    @patch("sde_collections.tasks.send_slack_message")
+    @patch("sde_collections.tasks.send_job_to_crawler", side_effect=Exception("SSM unreachable"))
+    def test_rescrape_dispatch_failure_leaves_prod_status_alone(self, mock_send, mock_slack):
+        """On the re-scrape path the live workflow status (PROD_*) must not be rewritten;
+        the reindexing request is cleared and an alert is posted instead."""
+        collection = CollectionFactory(
+            workflow_status=WorkflowStatusChoices.PROD_PERFECT,
+            reindexing_status=ReindexingStatusChoices.REINDEXING_NEEDED_ON_DEV,
+        )
+
+        assert dispatch_scrape_job(collection.id) is None
+
+        collection.refresh_from_db()
+        assert collection.workflow_status == WorkflowStatusChoices.PROD_PERFECT
+        assert collection.reindexing_status == ReindexingStatusChoices.REINDEXING_NOT_NEEDED
+        mock_slack.assert_called_once()
 
     @patch("sde_collections.tasks.send_job_to_crawler", return_value="cmd-2")
     def test_redispatch_keeps_prior_dispatch_rows(self, mock_send):

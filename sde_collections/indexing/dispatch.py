@@ -60,12 +60,18 @@ def run_index_task(collection, target: str, run_id: str) -> str:
             ]
         },
     }
-    if settings.INDEXING_SUBNETS:
+    subnets = [s for s in settings.INDEXING_SUBNETS.split(",") if s]
+    security_groups = [s for s in settings.INDEXING_SECURITY_GROUPS.split(",") if s]
+    if subnets or security_groups:
+        if not (subnets and security_groups):
+            raise ValueError("INDEXING_SUBNETS and INDEXING_SECURITY_GROUPS must both be set (or both blank)")
         kwargs["networkConfiguration"] = {
             "awsvpcConfiguration": {
-                "subnets": [s for s in settings.INDEXING_SUBNETS.split(",") if s],
-                "securityGroups": [s for s in settings.INDEXING_SECURITY_GROUPS.split(",") if s],
-                "assignPublicIp": "ENABLED",
+                "subnets": subnets,
+                "securityGroups": security_groups,
+                # Public subnets (dev's default VPC) need a public IP to reach S3/AOSS;
+                # a private subnet with NAT should set INDEXING_ASSIGN_PUBLIC_IP=False.
+                "assignPublicIp": "ENABLED" if settings.INDEXING_ASSIGN_PUBLIC_IP else "DISABLED",
             }
         }
 

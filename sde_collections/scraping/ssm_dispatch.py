@@ -17,6 +17,10 @@ from .job_builder import build_job_json
 
 def send_job_to_crawler(collection) -> str:
     """Build and drop the job JSON for `collection`; returns the SSM command id."""
+    for name in ("CRAWLER_INSTANCE_ID", "CRAWLER_INBOX_PATH"):
+        if not getattr(settings, name):
+            raise ValueError(f"{name} is not configured — cannot dispatch a scrape job")
+
     job_json = json.dumps(build_job_json(collection))
     dest = f"{settings.CRAWLER_INBOX_PATH}/{collection.config_folder}.json"
     script = (

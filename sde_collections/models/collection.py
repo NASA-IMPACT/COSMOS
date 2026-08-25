@@ -4,7 +4,7 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
+from django.db import models, transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from model_utils import FieldTracker
@@ -631,6 +631,12 @@ class ReindexingHistory(models.Model):
         return color_choices[self.reindexing_status]
 
 
+def _enqueue_on_commit(task, collection_id):
+    """Enqueue `task` once the surrounding transaction commits (immediately when there
+    is none). Keeps post_save side effects from racing uncommitted writes."""
+    transaction.on_commit(lambda: task.delay(collection_id))
+
+
 def _send_status_change_notification(instance, old_status, new_status):
     """Slack notification for a committed status transition. Lives in post_save (not
     Collection.save) so a message can never be sent for a save that then fails, and so
@@ -672,21 +678,24 @@ def handle_workflow_status_change(sender, instance, created, **kwargs):
             old_status = instance.tracker.changed()["workflow_status"]
             _send_status_change_notification(instance, old_status, instance.workflow_status)
 
+            # Tasks are enqueued on commit: admin change views and callers wrapping the
+            # save in transaction.atomic() would otherwise let the worker start before
+            # the status (and promote_to_curated's CuratedUrl rows) are visible to it.
             if instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
-                dispatch_scrape_job.delay(instance.id)
+                _enqueue_on_commit(dispatch_scrape_job, instance.id)
             elif instance.workflow_status == WorkflowStatusChoices.CURATED:
                 instance.promote_to_curated()
-                index_collection_to_test.delay(instance.id)
+                _enqueue_on_commit(index_collection_to_test, instance.id)
             elif instance.workflow_status in [
                 WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
                 WorkflowStatusChoices.QUALITY_CHECK_MINOR,
             ]:
-                index_collection_to_prod.delay(instance.id)
+                _enqueue_on_commit(index_collection_to_prod, instance.id)
 
         if "reindexing_status" in instance.tracker.changed():
             if instance.reindexing_status == ReindexingStatusChoices.REINDEXING_NEEDED_ON_DEV:
                 # Re-scrape path: replaces the engineer manually re-running a Sinequa job.
-                dispatch_scrape_job.delay(instance.id)
+                _enqueue_on_commit(dispatch_scrape_job, instance.id)
             elif instance.reindexing_status == ReindexingStatusChoices.REINDEXING_CURATED:
                 instance.promote_to_curated()
 

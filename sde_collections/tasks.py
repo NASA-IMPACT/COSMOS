@@ -1,5 +1,7 @@
 # /sde_collections/tasks.py
 
+import logging
+
 from django.apps import apps
 from django.conf import settings
 from django.db import transaction
@@ -14,12 +16,52 @@ from .indexing.dispatch import run_index_task
 from .indexing.export import export_curated_to_s3
 from .indexing.run_status import fetch_run_status, fetch_validation_report
 from .models.delta_url import DumpUrl
+from .models.indexing import IndexDispatch
 from .scraping.s3_results import fetch_documents, fetch_summary, results_ready
 from .scraping.ssm_dispatch import send_job_to_crawler
 from .utils.slack_utils import (
+    notify_status_change,
     send_detailed_import_notification,
     send_indexing_validation_report,
+    send_slack_message,
 )
+
+logger = logging.getLogger(__name__)
+
+# Statuses a collection can hold while a crawl is in flight on the *workflow* path. A
+# scrape/ingest failure may only rewrite workflow_status when it is one of these; on the
+# re-scrape path (reindexing_status) the live workflow status — typically PROD_* — is
+# left alone.
+SCRAPE_FLOW_STATUSES = (
+    WorkflowStatusChoices.READY_FOR_ENGINEERING,
+    WorkflowStatusChoices.ENGINEERING_IN_PROGRESS,
+    WorkflowStatusChoices.SCRAPING_SUCCESSFUL,
+)
+
+
+def _mark_scrape_failed(collection, reason):
+    """Record a scrape/ingest failure without clobbering a status outside the scrape flow.
+
+    Uses a queryset .update() (so no post_save side effects fire) and posts the mapped
+    Slack message itself. Outside the scrape flow only an alert is sent.
+    """
+    Collection = apps.get_model("sde_collections", "Collection")
+    old_status = Collection.objects.filter(id=collection.id).values_list("workflow_status", flat=True).first()
+    if old_status in SCRAPE_FLOW_STATUSES:
+        Collection.objects.filter(id=collection.id).update(workflow_status=WorkflowStatusChoices.SCRAPING_FAILED)
+        notify_status_change(collection.name, collection.id, old_status, WorkflowStatusChoices.SCRAPING_FAILED)
+        return
+    # Re-scrape path: keep the live workflow status, and clear the reindexing request so
+    # the poller stops re-enqueueing the same failed run every 5 minutes.
+    logger.error("Re-scrape of %s failed (%s); workflow status left unchanged", collection.config_folder, reason)
+    Collection.objects.filter(id=collection.id).update(reindexing_status=ReindexingStatusChoices.REINDEXING_NOT_NEEDED)
+    try:
+        send_slack_message(
+            f"Alert: re-scrape of '{collection.name}' failed ({reason}). "
+            f"Workflow status was left unchanged; set Re-Indexing Needed again to retry."
+        )
+    except Exception as e:
+        logger.warning("Error sending Slack message for %s: %s", collection.name, e)
 
 
 @celery_app.task()
@@ -87,7 +129,7 @@ def migrate_dump_to_delta_and_handle_status_transistions(collection_id):
                 marked_for_deletion_count=collection.delta_urls.filter(to_delete=True).count(),
             )
         except Exception as e:
-            print(f"Error sending ingest summary to Slack: {e}")
+            logger.warning("Error sending ingest summary to Slack for %s: %s", collection.config_folder, e)
 
     return f"Successfully migrated DumpUrls to DeltaUrls for collection {collection.name}."
 
@@ -108,9 +150,8 @@ def dispatch_scrape_job(collection_id):
     try:
         command_id = send_job_to_crawler(collection)
     except Exception as e:
-        print(f"Scrape dispatch failed for {collection.config_folder}: {e}")
-        collection.workflow_status = WorkflowStatusChoices.SCRAPING_FAILED
-        collection.save()
+        logger.exception("Scrape dispatch failed for %s: %s", collection.config_folder, e)
+        _mark_scrape_failed(collection, f"dispatch error: {e}")
         return None
 
     ScrapeDispatch.objects.create(collection=collection, ssm_command_id=command_id)
@@ -153,21 +194,27 @@ def poll_scrape_jobs():
         try:
             summary = results_ready(collection.config_folder, dispatch.dispatched_at)
         except Exception as e:
-            print(f"Error checking S3 results for {collection.config_folder}: {e}")
+            logger.error("Error checking S3 results for %s: %s", collection.config_folder, e)
             continue
 
         if summary is not None:
             ingest_scraped_collection.delay(collection.id)
             enqueued += 1
         elif now - dispatch.dispatched_at > stall_timeout:
-            print(
-                f"Scrape stalled for {collection.config_folder}: no fresh results "
-                f"{settings.SCRAPE_STALL_TIMEOUT_HOURS}h after dispatch"
+            logger.error(
+                "Scrape stalled for %s: no fresh results %sh after dispatch",
+                collection.config_folder,
+                settings.SCRAPE_STALL_TIMEOUT_HOURS,
             )
-            collection.workflow_status = WorkflowStatusChoices.SCRAPING_FAILED
-            collection.save()
+            _mark_scrape_failed(collection, f"no results {settings.SCRAPE_STALL_TIMEOUT_HOURS}h after dispatch")
 
     return f"Enqueued ingest for {enqueued} collection(s)."
+
+
+PROD_STATUS_FOR_QC_STATUS = {
+    WorkflowStatusChoices.QUALITY_CHECK_PERFECT: WorkflowStatusChoices.PROD_PERFECT,
+    WorkflowStatusChoices.QUALITY_CHECK_MINOR: WorkflowStatusChoices.PROD_MINOR,
+}
 
 
 def _mint_run_id():
@@ -183,7 +230,6 @@ def _dispatch_index_run(collection_id, target, in_flight_status, failed_status):
     last) -> RunTask -> record IndexDispatch -> set the in-flight status. Never indexes
     in-process; failure lands on the target's failed status and never raises."""
     Collection = apps.get_model("sde_collections", "Collection")
-    IndexDispatch = apps.get_model("sde_collections", "IndexDispatch")
     collection = Collection.objects.get(id=collection_id)
     run_id = _mint_run_id()
     previous_status = collection.workflow_status
@@ -194,7 +240,7 @@ def _dispatch_index_run(collection_id, target, in_flight_status, failed_status):
             raise ValueError("curated set is empty — nothing to index")
         task_arn = run_index_task(collection, target, run_id)
     except Exception as e:
-        print(f"Index dispatch ({target}) failed for {collection.config_folder}: {e}")
+        logger.exception("Index dispatch (%s) failed for %s: %s", target, collection.config_folder, e)
         collection.workflow_status = failed_status
         collection.save()
         return None
@@ -208,7 +254,9 @@ def _dispatch_index_run(collection_id, target, in_flight_status, failed_status):
     )
     collection.workflow_status = in_flight_status
     collection.save()
-    print(f"Dispatched {target} index run {run_id} for {collection.config_folder} ({document_count} documents)")
+    logger.info(
+        "Dispatched %s index run %s for %s (%s documents)", target, run_id, collection.config_folder, document_count
+    )
     return run_id
 
 
@@ -217,7 +265,7 @@ def index_collection_to_test(collection_id):
     """Hand a curated collection to the WEB_COSMOS indexer, test target."""
     return _dispatch_index_run(
         collection_id,
-        target="test",
+        target=IndexDispatch.TARGET_TEST,
         in_flight_status=WorkflowStatusChoices.TEST_INDEXING,
         failed_status=WorkflowStatusChoices.INDEXING_FAILED_ON_TEST,
     )
@@ -228,7 +276,7 @@ def index_collection_to_prod(collection_id):
     """Hand a QC-passed collection to the WEB_COSMOS indexer, prod target."""
     return _dispatch_index_run(
         collection_id,
-        target="prod",
+        target=IndexDispatch.TARGET_PROD,
         in_flight_status=WorkflowStatusChoices.PRODUCTION_INDEXING,
         failed_status=WorkflowStatusChoices.INDEXING_FAILED_ON_PROD,
     )
@@ -252,8 +300,8 @@ def poll_index_runs():
     Collection = apps.get_model("sde_collections", "Collection")
 
     failed_status_for_target = {
-        "test": WorkflowStatusChoices.INDEXING_FAILED_ON_TEST,
-        "prod": WorkflowStatusChoices.INDEXING_FAILED_ON_PROD,
+        IndexDispatch.TARGET_TEST: WorkflowStatusChoices.INDEXING_FAILED_ON_TEST,
+        IndexDispatch.TARGET_PROD: WorkflowStatusChoices.INDEXING_FAILED_ON_PROD,
     }
     stall_timeout = timedelta(hours=settings.INDEX_STALL_TIMEOUT_HOURS)
     now = timezone.now()
@@ -273,12 +321,12 @@ def poll_index_runs():
         try:
             status = fetch_run_status(collection.config_folder, dispatch.run_id)
         except Exception as e:
-            print(f"Error checking index run for {collection.config_folder}: {e}")
+            logger.error("Error checking index run for %s: %s", collection.config_folder, e)
             continue
 
         if status is None:
             if now - dispatch.dispatched_at > stall_timeout:
-                print(f"Index run stalled for {collection.config_folder} (run {dispatch.run_id})")
+                logger.error("Index run stalled for %s (run %s)", collection.config_folder, dispatch.run_id)
                 collection.workflow_status = failed_status_for_target[dispatch.target]
                 collection.save()
                 dispatch.completed_at = now
@@ -288,28 +336,45 @@ def poll_index_runs():
 
         state = status.get("state")
         if state == "succeeded":
-            if dispatch.target == "test":
+            if dispatch.target == IndexDispatch.TARGET_TEST:
                 # Collection stays at TEST_INDEXING; the curator sets QC from the report.
                 try:
                     validation = fetch_validation_report(collection.config_folder, dispatch.run_id)
                     send_indexing_validation_report(collection.name, dispatch.run_id, validation)
                 except Exception as e:
-                    print(f"Error posting validation report for {collection.config_folder}: {e}")
+                    logger.warning("Error posting validation report for %s: %s", collection.config_folder, e)
             else:
-                mirror = {
-                    WorkflowStatusChoices.QUALITY_CHECK_MINOR: WorkflowStatusChoices.PROD_MINOR,
-                }
-                collection.workflow_status = mirror.get(
-                    dispatch.previous_workflow_status, WorkflowStatusChoices.PROD_PERFECT
-                )
-                collection.save()
+                # Explicit map only: a prod run entered from anything other than a QC
+                # status (e.g. a manual re-dispatch) stays at PRODUCTION_INDEXING for a
+                # human to resolve rather than being silently promoted.
+                mirrored = PROD_STATUS_FOR_QC_STATUS.get(dispatch.previous_workflow_status)
+                if mirrored is None:
+                    logger.warning(
+                        "Prod index run %s for %s succeeded but entered from status %r; "
+                        "leaving PRODUCTION_INDEXING for manual resolution",
+                        dispatch.run_id,
+                        collection.config_folder,
+                        dispatch.previous_workflow_status,
+                    )
+                    try:
+                        send_slack_message(
+                            f"Prod indexing of '{collection.name}' succeeded (run {dispatch.run_id}) but the run "
+                            f"was not started from a QC status. Please set the final Prod status by hand."
+                        )
+                    except Exception as e:
+                        logger.warning("Error sending Slack message for %s: %s", collection.name, e)
+                else:
+                    collection.workflow_status = mirrored
+                    collection.save()
         else:
             # "failed" and any unknown state are both failures — needs_confirmation is
             # reserved for future two-phase deletion and must not read as success.
-            error = status.get("error")
-            print(
-                f"Index run for {collection.config_folder} (run {dispatch.run_id}) "
-                f"ended state={state!r} error={error!r}"
+            logger.error(
+                "Index run for %s (run %s) ended state=%r error=%r",
+                collection.config_folder,
+                dispatch.run_id,
+                state,
+                status.get("error"),
             )
             collection.workflow_status = failed_status_for_target[dispatch.target]
             collection.save()
@@ -347,10 +412,11 @@ def ingest_scraped_collection(collection_id, claim=True):
     # Zero-document completion is a failure: without this, an empty crawl would
     # "succeed" and silently publish an empty collection.
     if summary.get("documents_scraped", 0) == 0:
-        Collection.objects.filter(id=collection_id).update(workflow_status=WorkflowStatusChoices.SCRAPING_FAILED)
+        _mark_scrape_failed(collection, "crawl completed with 0 documents")
         return f"Scrape of {cid} completed with 0 documents; marked Scraping Failed."
 
     if claim:
+        old_status = collection.workflow_status
         claimed = Collection.objects.filter(
             id=collection_id,
             workflow_status__in=[
@@ -358,7 +424,10 @@ def ingest_scraped_collection(collection_id, claim=True):
                 WorkflowStatusChoices.ENGINEERING_IN_PROGRESS,
             ],
         ).update(workflow_status=WorkflowStatusChoices.SCRAPING_SUCCESSFUL)
-        if claimed == 0:
+        if claimed:
+            # .update() bypasses post_save, so post the transition message ourselves.
+            notify_status_change(collection.name, collection.id, old_status, WorkflowStatusChoices.SCRAPING_SUCCESSFUL)
+        else:
             # Workflow path not claimable — try the re-scrape path.
             claimed = Collection.objects.filter(
                 id=collection_id,
@@ -368,7 +437,7 @@ def ingest_scraped_collection(collection_id, claim=True):
             return f"{cid} already claimed by another ingest; exiting."
 
     try:
-        documents = fetch_documents(cid)
+        documents = _dedupe_by_url(fetch_documents(cid), cid)
         with transaction.atomic():
             deleted_count, _ = DumpUrl.objects.filter(collection=collection).delete()
             batch_size = 500
@@ -384,13 +453,34 @@ def ingest_scraped_collection(collection_id, claim=True):
                         for document in documents[start : start + batch_size]  # noqa: E203
                     ]
                 )
-        print(f"Ingested {len(documents)} documents for {cid} (replaced {deleted_count}).")
+        logger.info("Ingested %s documents for %s (replaced %s).", len(documents), cid, deleted_count)
 
         collection.refresh_from_db()
         collection.queue_necessary_classifications()
         return f"Ingested {len(documents)} documents for {cid}."
     except Exception as e:
         # Never leave a claimed collection stuck in SCRAPING_SUCCESSFUL with no DumpUrls.
-        print(f"Ingest failed for {cid}: {e}")
-        Collection.objects.filter(id=collection_id).update(workflow_status=WorkflowStatusChoices.SCRAPING_FAILED)
+        # On the re-scrape path the live workflow status is left alone (see _mark_scrape_failed).
+        logger.exception("Ingest failed for %s: %s", cid, e)
+        _mark_scrape_failed(collection, f"ingest error: {e}")
         return None
+
+
+def _dedupe_by_url(documents, cid):
+    """Drop repeated URLs within one crawl output (first occurrence wins).
+
+    BaseUrl.url is unique, so a single duplicate would otherwise abort the whole
+    bulk_create inside the atomic block.
+    """
+    seen = set()
+    unique = []
+    for document in documents:
+        url = document.get("url")
+        if not url or url in seen:
+            continue
+        seen.add(url)
+        unique.append(document)
+    dropped = len(documents) - len(unique)
+    if dropped:
+        logger.warning("Dropped %s duplicate/blank-URL documents from crawl output for %s", dropped, cid)
+    return unique

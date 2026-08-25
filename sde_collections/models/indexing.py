@@ -10,7 +10,9 @@ class IndexDispatch(models.Model):
     can never satisfy a newer dispatch — no LastModified freshness rule needed.
     """
 
-    TARGET_CHOICES = [("test", "test"), ("prod", "prod")]
+    TARGET_TEST = "test"
+    TARGET_PROD = "prod"
+    TARGET_CHOICES = [(TARGET_TEST, TARGET_TEST), (TARGET_PROD, TARGET_PROD)]
 
     collection = models.ForeignKey(
         "sde_collections.Collection",

@@ -377,6 +377,7 @@ INDEXING_DISPATCH_ROLE_ARN = env("INDEXING_DISPATCH_ROLE_ARN", default="")
 # Fargate RunTask needs awsvpc network config; comma-separated ids, from the indexer's VPC.
 INDEXING_SUBNETS = env("INDEXING_SUBNETS", default="")
 INDEXING_SECURITY_GROUPS = env("INDEXING_SECURITY_GROUPS", default="")
+INDEXING_ASSIGN_PUBLIC_IP = env.bool("INDEXING_ASSIGN_PUBLIC_IP", default=True)
 INDEX_POLL_ENABLED = env.bool("INDEX_POLL_ENABLED", default=False)
 # An index run with no status.json after this long is declared dead (indexing is minutes, not hours).
 INDEX_STALL_TIMEOUT_HOURS = env.int("INDEX_STALL_TIMEOUT_HOURS", default=6)

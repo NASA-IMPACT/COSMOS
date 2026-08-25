@@ -36,7 +36,7 @@ INDEXING_SETTINGS = dict(
     SDE_INDEX_BUCKET="sde-cosmos-indexing-dev",
     INDEXING_ECS_CLUSTER="api-scrapers-cluster-dev",
     INDEXING_TASK_FAMILY="web_cosmos-scraper-dev",
-    INDEXING_DISPATCH_ROLE_ARN="arn:aws:iam::998871305517:role/CosmosIndexingDispatchRole-dev",
+    INDEXING_DISPATCH_ROLE_ARN="arn:aws:iam::123456789012:role/CosmosIndexingDispatchRole-dev",
 )
 
 
@@ -182,6 +182,43 @@ class TestRunIndexTask:
             "--run-id",
             RUN_ID,
         ]
+
+    def _run_with_network(self, subnets, security_groups, assign_public_ip=True):
+        collection = CollectionFactory()
+        with (
+            override_settings(
+                **INDEXING_SETTINGS,
+                INDEXING_SUBNETS=subnets,
+                INDEXING_SECURITY_GROUPS=security_groups,
+                INDEXING_ASSIGN_PUBLIC_IP=assign_public_ip,
+            ),
+            patch("sde_collections.indexing.dispatch.boto3.client") as mock_boto3_client,
+            patch("sde_collections.indexing.dispatch.get_boto3_session") as mock_session,
+        ):
+            mock_session.return_value.client.return_value.assume_role.return_value = {
+                "Credentials": {"AccessKeyId": "AK", "SecretAccessKey": "SK", "SessionToken": "TOK"}
+            }
+            ecs = mock_boto3_client.return_value
+            ecs.run_task.return_value = {"tasks": [{"taskArn": "arn:aws:ecs:task/1"}], "failures": []}
+            run_index_task(collection, "test", RUN_ID)
+            return ecs.run_task.call_args.kwargs
+
+    def test_network_config_is_built_from_settings(self):
+        kwargs = self._run_with_network("subnet-a,subnet-b", "sg-1", assign_public_ip=False)
+
+        assert kwargs["networkConfiguration"]["awsvpcConfiguration"] == {
+            "subnets": ["subnet-a", "subnet-b"],
+            "securityGroups": ["sg-1"],
+            "assignPublicIp": "DISABLED",
+        }
+
+    def test_no_network_config_when_both_blank(self):
+        assert "networkConfiguration" not in self._run_with_network("", "")
+
+    def test_subnets_without_security_groups_refuse_to_dispatch(self):
+        """Half-configured networking must fail loudly, not send an empty securityGroups list."""
+        with pytest.raises(ValueError, match="INDEXING_SUBNETS and INDEXING_SECURITY_GROUPS"):
+            self._run_with_network("subnet-a", "")
 
     @override_settings(**INDEXING_SETTINGS)
     @patch("sde_collections.indexing.dispatch.boto3.client")
@@ -361,6 +398,25 @@ class TestPollIndexRuns:
 
         collection.refresh_from_db()
         assert collection.workflow_status == expected
+
+    def test_prod_success_from_non_qc_status_holds_for_manual_resolution(self):
+        """The mirror map is explicit: a prod run that did not enter from a QC status
+        (e.g. a manual re-dispatch) is never silently promoted to PROD_PERFECT."""
+        collection = CollectionFactory(workflow_status=WorkflowStatusChoices.PRODUCTION_INDEXING)
+        dispatch = _dispatched(collection, "prod", WorkflowStatusChoices.INDEXING_FAILED_ON_PROD)
+
+        with (
+            patch("sde_collections.tasks.fetch_run_status", return_value={"state": "succeeded"}),
+            patch("sde_collections.tasks.send_slack_message") as mock_slack,
+        ):
+            poll_index_runs()
+
+        collection.refresh_from_db()
+        assert collection.workflow_status == WorkflowStatusChoices.PRODUCTION_INDEXING
+        dispatch.refresh_from_db()
+        assert dispatch.completed_at is not None  # resolved: not re-polled
+        mock_slack.assert_called_once()
+        assert "by hand" in mock_slack.call_args.args[0]
 
     @pytest.mark.parametrize("state", ["failed", "needs_confirmation", "something_new"])
     @patch("sde_collections.tasks.fetch_run_status")
