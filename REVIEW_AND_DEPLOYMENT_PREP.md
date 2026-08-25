@@ -1,13 +1,14 @@
 # Review & Deployment Prep — `cosmos-rewiring` + `sde-api-scrapers` web indexing
 
-Prepared 2026-08-25 against COSMOS `cosmos-rewiring` @ `c1505d36` (14 commits over `dev`, 130 files, +6440/−9372)
-and `sde-api-scrapers` `web-indexing` @ `8dde345` (local checkout; see §1 — the work itself lives on `develop`).
+Prepared 2026-08-25 against COSMOS `cosmos-rewiring` @ `c1505d36`; review fixes committed the same day as
+`90dbad86` ("bug fixes") — branch is now 16 commits over `dev`, 137 files, +7327/−9375, tree clean.
+`sde-api-scrapers` `web-indexing` @ `8dde345` (local checkout; see §1 — the work itself lives on `develop`).
 
 ---
 
 ## 0. TL;DR
 
-1. **COSMOS branch review findings are applied in the working tree (uncommitted, 2026-08-25)** — §4 has a
+1. **COSMOS branch review findings are fixed and committed (`90dbad86`, 2026-08-25)** — §4 has a
    status column. Fixed: A (`on_commit`), B/C (dead Slack transitions), D (re-scrape clobbering prod status),
    E (unwired-host guard), G (in-crawl URL de-dup), H, I, K, template leftovers, gitleaks config, release notes,
    and the test gaps. Still open: F (whole-crawl-in-memory ingest), L (clock skew), cross-collection duplicate
@@ -24,10 +25,11 @@ and `sde-api-scrapers` `web-indexing` @ `8dde345` (local checkout; see §1 — t
    guard-bypass in prod.
 5. **The production DB password is still in git history** (scrubbed from `SQLDumpRestoration.md` on this branch,
    but present on `dev`). Rotate it; the scrub alone does nothing. The gitleaks hook that should have caught it
-   points at a `gitleaks-config.toml` that does not exist.
-6. Uncommitted: COSMOS `.pre-commit-config.yaml` (pyupgrade bump `v3.20.0→v3.21.2`); scrapers repo has a
-   status-update edit to the task tracker and an **untracked `COSMOS_INDEX_REAL_RUN.md`** which is the best
-   description of the hand-off contract anywhere — commit it.
+   pointed at a missing `gitleaks-config.toml` — that file now exists and the hook passes, but history is
+   history.
+6. COSMOS tree is clean. The scrapers repo still has a status-update edit to the task tracker and an
+   **untracked `COSMOS_INDEX_REAL_RUN.md`** which is the best description of the hand-off contract anywhere —
+   commit it.
 
 ---
 
@@ -35,11 +37,11 @@ and `sde-api-scrapers` `web-indexing` @ `8dde345` (local checkout; see §1 — t
 
 | Repo | Branch | vs base | Notes |
 |---|---|---|---|
-| COSMOS | `cosmos-rewiring` @ `c1505d36` | 14 commits over `dev` (Phase 0–7) | Tree clean except `.pre-commit-config.yaml`. CI (`run_full_test_suite.yml`) runs only on PRs to `dev`, `paths-ignore: '**/*.md'`. |
+| COSMOS | `cosmos-rewiring` @ `90dbad86` | 16 commits over `dev` (Phase 0–7 + review fixes) | Tree clean. CI (`run_full_test_suite.yml`) runs only on PRs to `dev`, `paths-ignore: '**/*.md'`. |
 | sde-api-scrapers | `web-indexing` @ `8dde345` | `origin/develop..web-indexing` = 1 commit (the merge); `web-indexing..origin/develop` = 8 commits | Web indexing merged via PR #47. Diff vs `develop` = removal of `RDR_API_BASE_URLS`/`_resolve_base_url()`/`schedule_enabled` — i.e. it would re-enable the frozen prod RDR EventBridge rule and reintroduce the silent sandbox fallback. |
 
 Uncommitted / untracked:
-- COSMOS: `.pre-commit-config.yaml` — pyupgrade `v3.20.0 → v3.21.2`. Fine to commit with the branch.
+- COSMOS: nothing. (`.pre-commit-config.yaml` pyupgrade bump `v3.20.0 → v3.21.2` went in with `90dbad86`.)
 - scrapers: `Web Indexing - Task Plan & Tracking.md` (records NS.2 done, NS.7 closed, OOB.3 verified, ECR digest
   `ae1c9e02…` co-tagged `c2aebad…`, image linux/amd64 only); `COSMOS_INDEX_REAL_RUN.md` (untracked runbook, "not
   yet executed end to end").
@@ -142,7 +144,7 @@ Removed: `GITHUB_ACCESS_TOKEN`, `SINEQUA_CONFIGS_*`, `XLI_*`, `LRM_*`. Dropped d
 
 ## 4. Code review checklist — COSMOS
 
-Status column reflects the working tree as of 2026-08-25 (fixes applied, uncommitted; full `init.sh` suite green).
+Status column reflects commit `90dbad86` (2026-08-25); full `init.sh` suite green at that commit.
 
 ### High
 
@@ -165,7 +167,7 @@ Status column reflects the working tree as of 2026-08-25 (fixes applied, uncommi
 | J | ⏸ by design | Beat `enabled` re-asserted on every `post_migrate`: flag flips need `migrate`, admin toggles are reverted on deploy. | `sde_collections/signals.py`; same in `inference/signals.py` | Kept (flag is the source of truth). Now in `RELEASE_NOTES.md` and pinned by `test_signals.py::test_flag_is_reasserted_on_every_migrate`. |
 | K | ✅ fixed | `assignPublicIp: ENABLED` hardcoded; SGs only read inside the subnets guard. | `indexing/dispatch.py`; `config/settings/base.py` | New `INDEXING_ASSIGN_PUBLIC_IP` (default `True`; in `.env_sample`). Subnets/SGs read independently; one-without-the-other raises `ValueError`. 3 new tests. |
 | L | ❌ open | `results_ready` compares S3 `LastModified` to the Django host clock — skew makes a fresh summary look stale forever. | `scraping/s3_results.py` `results_ready` | A tolerance window would let a quick re-dispatch accept the previous run's summary. Proper fix: snapshot the prior summary's `LastModified` on `ScrapeDispatch` at dispatch time (needs a migration). Decide in review. |
-| M | ✅ test / ⏸ docs | Real account ID in a test; instance IDs, IPs, ARNs throughout the planning docs. | `tests/test_indexing_dispatch.py` | Test uses `123456789012`. Planning docs left in place (owner will remove). |
+| M | ✅ test / ⏸ docs | Real account ID in a test; instance IDs, IPs, ARNs throughout the planning docs. | `tests/test_indexing_dispatch.py` | Test uses `123456789012`. Planning docs (and this file) are tracked in `90dbad86`; owner decides repo vs wiki before the PR. |
 | N | ✅ hook / ⏸ rotate | Prod DB password + RDS host in git history (`SQLDumpRestoration.md` on `dev`); gitleaks hook pointed at a missing config. | `.pre-commit-config.yaml`; `gitleaks-config.toml` | `gitleaks-config.toml` created (extends default rules); `pre-commit run gitleaks --all-files` passes. **Credential rotation still required** — out of band. |
 
 ### Cleanup / leftovers
@@ -221,7 +223,7 @@ branch fails at credential setup; rollback is `git revert -m 1 <merge>` + push.
 
 ## 6. Pre-merge fix list
 
-**COSMOS (before PR `cosmos-rewiring → dev`)** — applied 2026-08-25 in the working tree (uncommitted); full suite green via `init.sh`
+**COSMOS (before PR `cosmos-rewiring → dev`)** — committed as `90dbad86` on 2026-08-25; full suite green via `init.sh`
 - [x] A — `_enqueue_on_commit` wraps the four `.delay()` calls (`collection.py`)
 - [x] B + C — `notify_status_change` posts for `.update()`-set statuses; `PRODUCTION_INDEXING → PROD_*` pairs added
 - [x] D — `_mark_scrape_failed` leaves the live `workflow_status` alone on the re-scrape path (clears the reindexing request + Slack alert so the poller doesn't loop)
@@ -229,8 +231,8 @@ branch fails at credential setup; rollback is `git revert -m 1 <merge>` + push.
 - [x] Template leftovers removed from `collection_detail.html` (and `generate_deployment_message.py`)
 - [x] Placeholder account ID in `test_indexing_dispatch.py`
 - [x] `gitleaks-config.toml` created (extends defaults) — `pre-commit run gitleaks --all-files` passes
-- [ ] Commit `.pre-commit-config.yaml` (with the rest of these changes)
-- [ ] Decide whether `INDEXING_HANDOFF_TODO.md`, `IMPLEMENTATION_PLAN.md`, `LOCAL_VERIFICATION_GUIDE.md` (instance IDs, IPs, ARNs) belong in a public repo, or move to the wiki
+- [x] Commit `.pre-commit-config.yaml` (in `90dbad86`)
+- [ ] Decide whether `INDEXING_HANDOFF_TODO.md`, `IMPLEMENTATION_PLAN.md`, `LOCAL_VERIFICATION_GUIDE.md` — and this file — (instance IDs, IPs, ARNs) belong in a public repo, or move to the wiki. All four are tracked as of `90dbad86`; removing them later still leaves them in history.
 - [x] Release notes (`RELEASE_NOTES.md` "Unreleased") + `CHANGELOG.md` entry
 - [x] G (in-crawl URL de-dup), H (explicit `PROD_STATUS_FOR_QC_STATUS`; unknown entry status holds at `PRODUCTION_INDEXING` + Slack), I (`logging` in `tasks.py`/`slack_utils.py`), tests for `signals.py` and both mgmt commands
 - [x] K — `INDEXING_ASSIGN_PUBLIC_IP` setting; subnets/SGs validated together (`indexing/dispatch.py`, `base.py`, `.env_sample`)
@@ -364,7 +366,7 @@ in `sde-web-subset` are `astromaterials_data_system` and `aurorasaurus_reporting
 ---
 
 ## 9. Doc discrepancies to fix
-1. `INDEXING_HANDOFF_TODO.md` / `IMPLEMENTATION_PLAN.md` cite HEAD `9e18ced8` and "uncommitted" state; actual HEAD is `c1505d36`, tree clean.
+1. `INDEXING_HANDOFF_TODO.md` / `IMPLEMENTATION_PLAN.md` cite HEAD `9e18ced8` and "uncommitted" state; actual HEAD is `90dbad86`, tree clean.
 2. `INDEXING_HANDOFF_TODO.md` says P7 "10 of 14" in one place and "11 of 14" in another.
 3. `IMPLEMENTATION_PLAN.md` NS.1 prose and the scrapers tracker still call `i-02b3d3e1ac0671952` (production) "the COSMOS host"; the loop runs on staging.
 4. Scrapers `COSMOS_INDEX_REAL_RUN.md` §0 lists NS.3/NS.6 open and COSMOS env "all blank" — NS.6 done 2026-08-20; its worked example uses `nasa_applied_sciences`, which is not in `sde-web-subset`.
