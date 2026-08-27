@@ -139,12 +139,31 @@ class TestExportCuratedToS3:
 
 @pytest.mark.django_db
 class TestRunIndexTask:
+    @override_settings(INDEXING_DISPATCH_ROLE_ARN="", INDEXING_ECS_CLUSTER="", INDEXING_TASK_FAMILY="")
     def test_unconfigured_settings_refuse_to_dispatch(self):
         """Dev-only guard: with the blank defaults, no dispatch can leave the box."""
         collection = CollectionFactory()
 
-        with pytest.raises(ValueError, match="INDEXING_DISPATCH_ROLE_ARN"):
+        with pytest.raises(ValueError, match="INDEXING_ECS_CLUSTER"):
             run_index_task(collection, "test", RUN_ID)
+
+    @override_settings(**{**INDEXING_SETTINGS, "INDEXING_DISPATCH_ROLE_ARN": ""})
+    @patch("sde_collections.indexing.dispatch.boto3.client")
+    @patch("sde_collections.indexing.dispatch.get_boto3_session")
+    def test_blank_role_arn_runs_task_with_session_creds(self, mock_session, mock_boto3_client):
+        """Local dev: no role to assume, so RunTask goes straight through the pipeline
+        session (never through a raw boto3.client with assumed creds)."""
+        collection = CollectionFactory()
+        ecs = MagicMock()
+        ecs.run_task.return_value = {"tasks": [{"taskArn": "arn:aws:ecs:task/direct"}], "failures": []}
+        mock_session.return_value.client.return_value = ecs
+
+        arn = run_index_task(collection, "test", RUN_ID)
+
+        assert arn == "arn:aws:ecs:task/direct"
+        mock_session.return_value.client.assert_called_once_with("ecs")
+        mock_boto3_client.assert_not_called()
+        assert ecs.run_task.call_args.kwargs["taskDefinition"] == "web_cosmos-scraper-dev"
 
     @override_settings(**INDEXING_SETTINGS)
     @patch("sde_collections.indexing.dispatch.boto3.client")

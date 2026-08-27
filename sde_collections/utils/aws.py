@@ -12,6 +12,8 @@ def get_boto3_session():
         return boto3.Session(
             aws_access_key_id=settings.SDE_AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.SDE_AWS_SECRET_ACCESS_KEY,
+            # Set only for temporary (SSO / STS) credentials; blank for long-lived IAM keys.
+            aws_session_token=settings.SDE_AWS_SESSION_TOKEN or None,
             region_name=settings.AWS_REGION,
         )
     return boto3.Session(region_name=settings.AWS_REGION)

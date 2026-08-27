@@ -354,6 +354,8 @@ INFERENCE_ENABLED = env.bool("INFERENCE_ENABLED", default=False)
 # pipeline-scoped credentials for local dev ONLY; blank in AWS (instance role takes over)
 SDE_AWS_ACCESS_KEY_ID = env("SDE_AWS_ACCESS_KEY_ID", default="")
 SDE_AWS_SECRET_ACCESS_KEY = env("SDE_AWS_SECRET_ACCESS_KEY", default="")
+# only needed with temporary creds (e.g. `aws configure export-credentials --profile sde-dev`)
+SDE_AWS_SESSION_TOKEN = env("SDE_AWS_SESSION_TOKEN", default="")
 # COSMOS never talks to OpenSearch or SageMaker: chunk/vectorize/index AND the QC validation
 # report are produced by the WEB_COSMOS task in sde-api-scrapers (branch web-indexing), which
 # holds the AOSS credentials. COSMOS only writes exports to S3, assumes one role, and calls
@@ -373,6 +375,8 @@ SDE_INDEX_BUCKET = env("SDE_INDEX_BUCKET", default="")  # distinct from SDE_S3_B
 INDEXING_ECS_CLUSTER = env("INDEXING_ECS_CLUSTER", default="")
 INDEXING_TASK_FAMILY = env("INDEXING_TASK_FAMILY", default="")
 INDEXING_CONTAINER_NAME = env("INDEXING_CONTAINER_NAME", default="WEB_COSMOSContainer")
+# Blank = RunTask with the pipeline session's own creds (local dev only; the role's trust
+# policy admits just the instance role, so a laptop SSO session can never assume it).
 INDEXING_DISPATCH_ROLE_ARN = env("INDEXING_DISPATCH_ROLE_ARN", default="")
 # Fargate RunTask needs awsvpc network config; comma-separated ids, from the indexer's VPC.
 INDEXING_SUBNETS = env("INDEXING_SUBNETS", default="")

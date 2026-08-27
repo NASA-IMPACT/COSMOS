@@ -38,14 +38,19 @@ CRAWLER_INBOX_PATH='/opt/sde-crawler/jobs/incoming'
 SCRAPE_POLL_ENABLED=False
 SCRAPE_STALL_TIMEOUT_HOURS=24
 INFERENCE_ENABLED=False
+# Real keys and the dev resource ids go in the gitignored .envs/.local/.sde-aws (see
+# .sde-aws.sample); local.yml loads it after this file, so its values win. This file is tracked.
 SDE_AWS_ACCESS_KEY_ID=''
 SDE_AWS_SECRET_ACCESS_KEY=''
+SDE_AWS_SESSION_TOKEN=''
 
-# P7 indexing hand-off — dev-only for now (sde-web-copy); blank = dispatch disabled
+# P7 indexing hand-off — dev-only for now (sde-web-subset); blank = dispatch disabled
 SDE_INDEX_BUCKET=''
 INDEXING_ECS_CLUSTER=''
 INDEXING_TASK_FAMILY=''
 INDEXING_CONTAINER_NAME='WEB_COSMOSContainer'
+# Blank on a laptop: the dispatch role only trusts the instance role, so a local SSO
+# session calls ecs:RunTask with SDE_AWS_* directly. Set in AWS.
 INDEXING_DISPATCH_ROLE_ARN=''
 INDEXING_SUBNETS=''
 INDEXING_SECURITY_GROUPS=''

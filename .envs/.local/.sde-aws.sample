@@ -1,0 +1,22 @@
+# Copy to .envs/.local/.sde-aws (gitignored). local.yml loads it after .django, so
+# anything set here overrides the tracked blanks/defaults.
+
+# Temporary SSO credentials. Refresh with:
+#   aws sso login --profile sde-dev && aws configure export-credentials --profile sde-dev --format env
+# then recreate the containers (docker compose -f local.yml up -d --force-recreate django celeryworker celerybeat).
+SDE_AWS_ACCESS_KEY_ID=
+SDE_AWS_SECRET_ACCESS_KEY=
+SDE_AWS_SESSION_TOKEN=
+
+# Dev pipeline resources — ask a teammate for the current ids; they are not committed.
+SDE_S3_BUCKET=
+CRAWLER_INSTANCE_ID=
+SDE_INDEX_BUCKET=
+INDEXING_ECS_CLUSTER=
+INDEXING_TASK_FAMILY=
+INDEXING_SUBNETS=
+INDEXING_SECURITY_GROUPS=
+
+# Optional: run the S3 pollers on this machine (tracked default is off).
+# SCRAPE_POLL_ENABLED=True
+# INDEX_POLL_ENABLED=True
