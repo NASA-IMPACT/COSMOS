@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 
@@ -34,11 +35,15 @@ def create_periodic_tasks(sender, **kwargs):
                 crontab=weekday_crontab,
                 name=weekday_task_name,
                 task="inference.tasks.process_inference_job_queue",
+                enabled=settings.INFERENCE_ENABLED,
             )
         else:
             weekday_task = PeriodicTask.objects.get(name=weekday_task_name)
             weekday_task.crontab = weekday_crontab
             weekday_task.task = "inference.tasks.process_inference_job_queue"
+            # Re-asserted on every migrate so the flag, not a hand-edit in the admin,
+            # is the source of truth — a manual disable would not survive a deploy.
+            weekday_task.enabled = settings.INFERENCE_ENABLED
             weekday_task.save()
 
         # Check if weekend task exists
@@ -50,9 +55,11 @@ def create_periodic_tasks(sender, **kwargs):
                 crontab=weekend_crontab,
                 name=weekend_task_name,
                 task="inference.tasks.process_inference_job_queue",
+                enabled=settings.INFERENCE_ENABLED,
             )
         else:
             weekend_task = PeriodicTask.objects.get(name=weekend_task_name)
             weekend_task.crontab = weekend_crontab
             weekend_task.task = "inference.tasks.process_inference_job_queue"
+            weekend_task.enabled = settings.INFERENCE_ENABLED
             weekend_task.save()

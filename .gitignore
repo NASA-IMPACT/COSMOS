@@ -282,6 +282,7 @@ sde_indexing_helper/media/
 .env
 .envs/*
 !.envs/.local/
+.envs/.local/.sde-aws
 
 **/.ipynb_checkpoints/
 **/*.xlsx

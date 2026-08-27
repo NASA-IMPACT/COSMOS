@@ -32,29 +32,36 @@ The classification process analyzes content to automatically add metadata, inclu
 - TDAMM tags for Astrophysics content
 - Division classification for General content
 
+Classification is optional and is gated on the `INFERENCE_ENABLED` setting, which
+defaults to `False`. The inference pipeline is currently dormant, so in the default
+configuration no classification stage runs at all.
+
 ### When Classification Happens
-Classification occurs after DumpUrls are created but before they are migrated to DeltaUrls:
+Classification, when enabled, occurs after DumpUrls are created but before they are migrated to DeltaUrls:
 1. DumpUrls are created from scraped content
-2. Classification models analyze DumpUrl content
-3. Classification results are applied to DumpUrls
-4. DumpUrls (with enhanced metadata) are migrated to DeltaUrls
+2. `Collection.queue_necessary_classifications()` is called
+3. If `INFERENCE_ENABLED` is `False`, migration is queued immediately and steps 4–6 are skipped
+4. Classification models analyze DumpUrl content
+5. Classification results are applied to DumpUrls
+6. DumpUrls (with enhanced metadata) are migrated to DeltaUrls
 
 ### Classification Types
 - **TDAMM Classification**: Applied to Astrophysics collections to tag content related to multi-messenger astronomy
 - **Division Classification**: Applied to General collections to suggest appropriate divisions
 
 ### Classification Flow
-1. Check if collection needs classification based on division type
-2. Queue appropriate classification jobs
-3. Process classifications asynchronously
-4. Apply classification results to DumpUrls
-5. Initiate migration to DeltaUrls once all classifications complete
+1. If `INFERENCE_ENABLED` is `False`, immediately queue `migrate_dump_to_delta_and_handle_status_transistions` and stop
+2. Check if collection needs classification based on its configuration
+3. Queue appropriate classification jobs; collections needing none go straight to migration
+4. Process classifications asynchronously
+5. Apply classification results to DumpUrls
+6. Initiate migration to DeltaUrls once all classifications complete
 
 ## Pattern Application
 
 ### When Patterns Are Applied
 Patterns are applied in two scenarios:
-1. During migration from Dump to Delta (after classifications are complete)
+1. During migration from Dump to Delta (after classifications are complete, if any ran)
 2. When a new pattern is created/updated
 
 Patterns are NOT applied during promotion. The effects of patterns (modified titles, document types, etc.) are carried through to CuratedUrls during promotion, but the patterns themselves don't reapply.
@@ -69,7 +76,7 @@ Patterns are NOT applied during promotion. The effects of patterns (modified tit
 
 ### Overview
 Migration converts DumpUrls to DeltaUrls, preserving all fields and applying patterns. This process happens when:
-- New content is scraped and classified
+- New content is scraped (and classified, if `INFERENCE_ENABLED` is on)
 - Content is reindexed
 - Collection is being prepared for curation
 
@@ -268,9 +275,10 @@ curated_url = CuratedUrl(
 - Pattern-set values take precedence over original values
 
 ### Classification Behavior
+- Classifications only run when `INFERENCE_ENABLED` is on; with the flag off (the default) migration runs immediately after the DumpUrls are created
 - Classifications only run on DumpUrls before migration to DeltaUrls
 - Classification results become regular field values and persist through promotion
-- Migration to DeltaUrls waits for all classifications to complete
+- When classifications are queued, migration to DeltaUrls waits for all of them to complete
 
 ### Pattern Behavior
 - Patterns only apply during migration or when patterns themselves are created/updated

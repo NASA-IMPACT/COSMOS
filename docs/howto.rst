@@ -4,7 +4,7 @@ How To - Project Documentation
 Get Started
 ----------------------------------------------------------------------
 
-Documentation can be written as rst files in `sde_indexing_helper/docs`.
+Documentation can be written as rst files in `docs/`.
 
 
 To build and serve docs, use the commands::

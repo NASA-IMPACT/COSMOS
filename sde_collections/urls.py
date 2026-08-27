@@ -23,16 +23,6 @@ urlpatterns = [
     path("", view=views.CollectionListView.as_view(), name="list"),
     path("sde-dashboard/", view=views.SdeDashboardView.as_view(), name="dashboard"),
     path("<int:pk>/", view=views.CollectionDetailView.as_view(), name="detail"),
-    path(
-        "api/collections/push_to_github/",
-        views.PushToGithubView.as_view(),
-        name="push-to-github",
-    ),
-    path(
-        "api/indexing_instructions/",
-        views.IndexingInstructionsView.as_view(),
-        name="indexing_instructions",
-    ),
     path("api/assign-division/<int:pk>/", views.DeltaURLViewSet.as_view({"post": "update_division"})),
     path(
         "delete-required-url/<int:pk>",
@@ -43,11 +33,6 @@ urlpatterns = [
         "<int:pk>/delta-urls",
         view=views.DeltaURLsListView.as_view(),
         name="delta_urls",
-    ),
-    path(
-        "consolidate/",
-        view=views.WebappGitHubConsolidationView.as_view(),
-        name="consolidate_db_and_github_configs",
     ),
     # List all DeltaURL instances: /delta-urls/
     # Retrieve a specific DeltaURL instance: /delta-urls/{id}/

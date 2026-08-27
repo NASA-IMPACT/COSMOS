@@ -1,28 +1,26 @@
 # sde_collections/models/collection.py
-import json
-import urllib.parse
-
 import requests
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
+from django.db import models, transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from model_utils import FieldTracker
 from slugify import slugify
 
-from config_generation.db_to_xml import XmlEditor
 from inference.models.inference_choice_fields import (
     ClassificationType,
     InferenceJobStatus,
 )
 from sde_collections.tasks import (
-    fetch_full_text,
+    dispatch_scrape_job,
+    index_collection_to_prod,
+    index_collection_to_test,
     migrate_dump_to_delta_and_handle_status_transistions,
 )
 
-from ..utils.github_helper import GitHubHandler
 from ..utils.slack_utils import (
     STATUS_CHANGE_NOTIFICATIONS,
     format_slack_message,
@@ -41,7 +39,7 @@ from .collection_choice_fields import (
 from .delta_url import CuratedUrl, DeltaUrl, DumpUrl
 
 User = get_user_model()
-DELTA_COMPARISON_FIELDS = ["scraped_title", "tdamm_tag", "division"]  # Add more fields as needed
+DELTA_COMPARISON_FIELDS = ["scraped_title", "scraped_text", "tdamm_tag", "division"]  # Add more fields as needed
 # TODO: may need to double check how the ml fields are evaluated. we need to ensure that it looks
 # specifically at the ml value, not the default or the manual value.
 
@@ -243,77 +241,9 @@ class Collection(models.Model):
         # Step 4: Reapply patterns to DeltaUrls
         self.refresh_url_lists_for_all_patterns()
 
-    def add_to_public_query(self):
-        """Add the collection to the public query."""
-        if self.workflow_status not in [
-            WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
-            WorkflowStatusChoices.QUALITY_CHECK_MINOR,
-        ]:
-            raise ValueError(f"{self.config_folder} is not ready for public prod, you can't add it to the public query")
-
-        gh = GitHubHandler()
-        query_path = "webservices/query-smd-primary.xml"
-        scraper_content = gh._get_file_contents(query_path)
-        scraper_editor = XmlEditor(scraper_content.decoded_content.decode("utf-8"))
-
-        collections = scraper_editor.get_tag_value("CollectionSelection", strict=True)
-        collections = collections.split(";")
-        collections.append(f"/SDE/{self.config_folder}/")
-        collections = list(set(collections))
-        collections.sort()
-        collections = ";".join(collections)
-
-        scraper_editor.update_or_add_element_value("CollectionSelection", collections)
-        scraper_content = scraper_editor.update_config_xml()
-        gh.create_or_update_file(query_path, scraper_content)
-
-    @property
-    def _scraper_config_path(self) -> str:
-        return f"sources/scrapers/{self.config_folder}/default.xml"
-
-    @property
-    def _indexer_config_path(self) -> str:
-        return f"sources/SDE/{self.config_folder}/default.xml"
-
-    @property
-    def _indexer_job_path(self) -> str:
-        return f"jobs/collection.indexer.{self.config_folder}.xml"
-
-    @property
-    def _scraper_job_path(self) -> str:
-        return f"jobs/collection.indexer.scrapers.{self.config_folder}.xml"
-
     @property
     def tree_root(self) -> str:
         return f"/{self.get_division_display()}/{self.name}/"
-
-    @property
-    def server_url_secret_prod(self) -> str:
-        base_url = "https://sciencediscoveryengine.nasa.gov"  # noqa: E231
-        payload = {
-            "name": "secret-prod",
-            "scope": "All",
-            "text": "",
-            "advanced": {
-                "collection": f"/SDE/{self.config_folder}/",
-            },
-        }
-        encoded_payload = urllib.parse.quote(json.dumps(payload))
-        return f"{base_url}/app/secret-prod/#/search?query={encoded_payload}"
-
-    @property
-    def server_url_prod(self) -> str:
-        base_url = "https://sciencediscoveryengine.nasa.gov"  # noqa: E231
-        payload = {
-            "name": "query-smd-primary",
-            "scope": "All",
-            "text": "",
-            "advanced": {
-                "collection": f"/SDE/{self.config_folder}/",
-            },
-        }
-        encoded_payload = urllib.parse.quote(json.dumps(payload))
-        return f"{base_url}/app/nasa-sba-smd/#/search?query={encoded_payload}"
 
     @property
     def curation_status_button_color(self) -> str:
@@ -354,9 +284,12 @@ class Collection(models.Model):
             20: "btn-info",
             21: "btn-success",
             22: "btn-light",
-            23: "btn-light",
+            23: "btn-danger",
+            24: "btn-danger",
+            25: "btn-danger",
+            26: "btn-light",
         }
-        return color_choices[self.workflow_status]
+        return color_choices.get(self.workflow_status, "btn-light")
 
     @property
     def reindexing_status_button_color(self) -> str:
@@ -371,131 +304,6 @@ class Collection(models.Model):
         }
         return color_choices[self.reindexing_status]
 
-    def _process_exclude_list(self):
-        """Process the exclude list."""
-        return [pattern._process_match_pattern() for pattern in self.excludepattern.all()]
-
-    def _process_include_list(self):
-        """Process the include list."""
-        return [pattern._process_match_pattern() for pattern in self.includepattern.all()]
-
-    def _process_title_list(self):
-        """Process the title list"""
-        title_rules = []
-        for title_pattern in self.titlepattern.all():
-            processed_pattern = {
-                "title_criteria": title_pattern._process_match_pattern(),
-                "title_value": title_pattern.title_pattern,
-            }
-            title_rules.append(processed_pattern)
-        return title_rules
-
-    def _process_document_type_list(self):
-        """Process the document type list"""
-        document_type_rules = []
-        for document_type_pattern in self.documenttypepattern.all():
-            processed_pattern = {
-                "criteria": document_type_pattern._process_match_pattern(),
-                "document_type": document_type_pattern.get_document_type_display(),
-            }
-            document_type_rules.append(processed_pattern)
-        return document_type_rules
-
-    def _write_to_github(self, path, content, overwrite):
-        gh = GitHubHandler()
-        if overwrite:
-            gh.create_or_update_file(path, content)
-        else:
-            gh.create_file(path, content)
-
-    def create_scraper_config(self, overwrite: bool = False):
-        """
-        Reads from the model data and creates the initial scraper config xml file
-
-        if overwrite is True, it will overwrite the existing file
-        """
-
-        scraper_template = open("config_generation/xmls/scraper_template.xml").read()
-        editor = XmlEditor(scraper_template)
-        scraper_config = editor.convert_template_to_scraper(self)
-        self._write_to_github(self._scraper_config_path, scraper_config, overwrite)
-
-    def create_indexer_config(self, overwrite: bool = False):
-        """
-        Reads from the model data and creates the plugin config xml file that calls the api
-
-        if overwrite is True, it will overwrite the existing file
-        """
-
-        # there needs to be a scraper config file before creating the plugin config
-        gh = GitHubHandler()
-        scraper_exists = gh.check_file_exists(self._scraper_config_path)
-        if not scraper_exists:
-            raise ValueError(f"Scraper does not exist for the collection {self.config_folder}")
-        else:
-            scraper_content = gh._get_file_contents(self._scraper_config_path)
-            scraper_content = scraper_content.decoded_content.decode("utf-8")
-            scraper_editor = XmlEditor(scraper_content)
-
-        indexer_template = open("config_generation/xmls/indexer_template.xml").read()
-        indexer_editor = XmlEditor(indexer_template)
-        indexer_config = indexer_editor.convert_template_to_indexer(scraper_editor)
-        self._write_to_github(self._indexer_config_path, indexer_config, overwrite)
-
-    def create_scraper_job(self, overwrite: bool = False):
-        """
-        Reads from the model data and creates the initial scraper job xml file
-
-        if overwrite is True, it will overwrite the existing file
-        """
-
-        scraper_job_template = open("config_generation/xmls/job_template.xml").read()
-        editor = XmlEditor(scraper_job_template)
-        scraper_job = editor.convert_template_to_job(self, "scrapers")
-        self._write_to_github(self._scraper_job_path, scraper_job, overwrite)
-
-    def create_indexer_job(self, overwrite: bool = False):
-        """
-        Reads from the model data and creates indexer job that calls the plugin config
-
-        if overwrite is True, it will overwrite the existing file
-        """
-        indexer_template = open("config_generation/xmls/job_template.xml").read()
-        editor = XmlEditor(indexer_template)
-        indexer_job = editor.convert_template_to_job(self, "SDE")
-        self._write_to_github(self._indexer_job_path, indexer_job, overwrite)
-
-    def update_config_xml(self, original_config_string):
-        """
-        reads from the model data and creates a config that mirrors the
-            - excludes
-            - title rules
-            - doc types
-            - tree root
-        """
-        editor = XmlEditor(original_config_string)
-
-        URL_EXCLUDES = self._process_exclude_list()
-        URL_INCLUDES = self._process_include_list()
-        TITLE_RULES = self._process_title_list()
-        DOCUMENT_TYPE_RULES = self._process_document_type_list()
-
-        # TODO: this was creating duplicates so it was temporarily disabled
-        # if self.tree_root:
-        #     editor.update_or_add_element_value("TreeRoot", self.tree_root)
-
-        for url in URL_EXCLUDES:
-            editor.add_url_exclude(url)
-        for url in URL_INCLUDES:
-            editor.add_url_include(url)
-        for title_rule in TITLE_RULES:
-            editor.add_title_mapping(**title_rule)
-        for rule in DOCUMENT_TYPE_RULES:
-            editor.add_document_type_mapping(**rule)
-
-        updated_config_xml_string = editor.update_config_xml()
-        return updated_config_xml_string
-
     def _compute_config_folder_name(self) -> str:
         """
         Take the human readable `self.name` and create a standardized machine format
@@ -503,43 +311,6 @@ class Collection(models.Model):
         """
 
         return slugify(self.name, separator="_")
-
-    def import_metadata_from_sinequa_config(self) -> bool:
-        """Import metadata from Sinequa."""
-        if not self.config_folder:
-            return False
-
-        gh = GitHubHandler(collections=[self])
-        metadata = gh.fetch_metadata()
-
-        try:
-            metadata[self.config_folder]
-        except KeyError:
-            return False
-
-        print(f"Updating metadata for {self.name}")
-        # tree root
-        tree_root = metadata[self.config_folder]["tree_root"]
-        if tree_root != self.tree_root:
-            print(f"Updating tree root for {self.name} to {tree_root}")
-        self.tree_root = tree_root
-
-        # document type
-        document_type = metadata[self.config_folder]["document_type"]
-        if document_type != self.document_type:
-            print(f"Updating document type for {self.name} to {document_type}")
-        self.document_type = document_type
-
-        # connector
-        # connector = metadata[self.config_folder]["connector"]
-        # if connector != self.connector:
-        #     print(f"Updating connector for {self.name} to {connector}")
-        # self.connector = connector
-
-        self.save()
-        print("\n\n")
-
-        return True
 
     def __str__(self) -> str:
         """Unicode representation of Collection."""
@@ -552,11 +323,6 @@ class Collection(models.Model):
     @property
     def candidate_urls_count(self) -> int:
         return self.candidate_urls.count()
-
-    @property
-    def sinequa_configuration(self) -> str:
-        URL = f"https://github.com/NASA-IMPACT/sde-backend/blob/production/sources/SDE/{self.config_folder}/default.xml"  # noqa: E231, E501
-        return URL
 
     @property
     def github_issue_link(self) -> str:
@@ -691,6 +457,13 @@ class Collection(models.Model):
 
     def queue_necessary_classifications(self):
         """Check if collection needs classification and queue jobs if needed"""
+        if not settings.INFERENCE_ENABLED:
+            # Inference pipeline is dormant: never create an InferenceJob (it would queue
+            # forever and strand the collection before Ready for Curation) — go straight
+            # to migration for every collection, including the TDAMM-listed ones.
+            migrate_dump_to_delta_and_handle_status_transistions.delay(self.id)
+            return
+
         tdamm_collections = [
             "imagine_the_universe",
             "physics_of_the_cosmos",
@@ -730,22 +503,9 @@ class Collection(models.Model):
         if not self.config_folder:
             self.config_folder = self._compute_config_folder_name()
 
-        if not self._state.adding:
-            old_status = Collection.objects.get(id=self.id).workflow_status
-            new_status = self.workflow_status
-            if old_status != new_status:
-                transition = (old_status, new_status)
-                if transition in STATUS_CHANGE_NOTIFICATIONS:
-                    details = STATUS_CHANGE_NOTIFICATIONS[transition]
-                    message = format_slack_message(self.name, details, self.id)
-                    try:
-                        # TODO: find a better way to allow this to work on dev environments with
-                        # no slack integration
-                        send_slack_message(message)
-                    except Exception as e:
-                        print(f"Error sending Slack message: {e}")
-
-        # Call the parent class's save method
+        # Status-change Slack notifications live in the post_save receiver
+        # (handle_workflow_status_change), so a message can never be sent for a save
+        # that then fails.
         super().save(*args, **kwargs)
 
     def __init__(self, *args, **kwargs):
@@ -818,9 +578,12 @@ class WorkflowHistory(models.Model):
             20: "btn-info",
             21: "btn-success",
             22: "btn-light",
-            23: "btn-light",
+            23: "btn-danger",
+            24: "btn-danger",
+            25: "btn-danger",
+            26: "btn-light",
         }
-        return color_choices[self.workflow_status]
+        return color_choices.get(self.workflow_status, "btn-light")
 
 
 @receiver(post_save, sender=Collection)
@@ -868,10 +631,43 @@ class ReindexingHistory(models.Model):
         return color_choices[self.reindexing_status]
 
 
-@receiver(post_save, sender=Collection)
-def create_configs_on_status_change(sender, instance, created, **kwargs):
-    """Creates various config files on certain workflow status changes"""
+def _enqueue_on_commit(task, collection_id):
+    """Enqueue `task` once the surrounding transaction commits (immediately when there
+    is none). Keeps post_save side effects from racing uncommitted writes."""
+    transaction.on_commit(lambda: task.delay(collection_id))
 
+
+def _send_status_change_notification(instance, old_status, new_status):
+    """Slack notification for a committed status transition. Lives in post_save (not
+    Collection.save) so a message can never be sent for a save that then fails, and so
+    it reuses the tracker's old value instead of an extra Collection.objects.get()."""
+    details = STATUS_CHANGE_NOTIFICATIONS.get((old_status, new_status))
+    if details is None:
+        return
+    message = format_slack_message(instance.name, details, instance.id)
+    try:
+        # TODO: find a better way to allow this to work on dev environments with
+        # no slack integration
+        send_slack_message(message)
+    except Exception as e:
+        print(f"Error sending Slack message: {e}")
+
+
+@receiver(post_save, sender=Collection)
+def handle_workflow_status_change(sender, instance, created, **kwargs):
+    """Single dispatcher for status-triggered side effects (WORKFLOW.md steps 12–18).
+
+    workflow_status:
+      READY_FOR_ENGINEERING    -> dispatch_scrape_job         (P3)
+      CURATED                  -> promote_to_curated + test-indexing hand-off
+      QC_PERFECT / QC_MINOR    -> prod-indexing hand-off
+    reindexing_status:
+      REINDEXING_NEEDED_ON_DEV -> dispatch_scrape_job         (P3, re-scrape)
+      REINDEXING_CURATED       -> promote_to_curated
+
+    REINDEXING_FINISHED_ON_DEV deliberately triggers nothing: the P4 ingest sets that
+    status itself, so a trigger here would double-fire.
+    """
     if getattr(instance, "_handling_status_change", False):
         return
 
@@ -879,25 +675,27 @@ def create_configs_on_status_change(sender, instance, created, **kwargs):
         instance._handling_status_change = True
 
         if "workflow_status" in instance.tracker.changed():
-            if instance.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION:
-                instance.create_indexer_config(overwrite=True)
-                instance.create_indexer_job(overwrite=False)
+            old_status = instance.tracker.changed()["workflow_status"]
+            _send_status_change_notification(instance, old_status, instance.workflow_status)
+
+            # Tasks are enqueued on commit: admin change views and callers wrapping the
+            # save in transaction.atomic() would otherwise let the worker start before
+            # the status (and promote_to_curated's CuratedUrl rows) are visible to it.
+            if instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
+                _enqueue_on_commit(dispatch_scrape_job, instance.id)
             elif instance.workflow_status == WorkflowStatusChoices.CURATED:
                 instance.promote_to_curated()
-            elif instance.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING:
-                instance.create_scraper_config(overwrite=False)
-                instance.create_scraper_job(overwrite=False)
-            elif instance.workflow_status == WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV:
-                fetch_full_text.delay(instance.id, "lrm_dev")
+                _enqueue_on_commit(index_collection_to_test, instance.id)
             elif instance.workflow_status in [
                 WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
                 WorkflowStatusChoices.QUALITY_CHECK_MINOR,
             ]:
-                instance.add_to_public_query()
+                _enqueue_on_commit(index_collection_to_prod, instance.id)
 
         if "reindexing_status" in instance.tracker.changed():
-            if instance.reindexing_status == ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV:
-                fetch_full_text.delay(instance.id, "lrm_dev")
+            if instance.reindexing_status == ReindexingStatusChoices.REINDEXING_NEEDED_ON_DEV:
+                # Re-scrape path: replaces the engineer manually re-running a Sinequa job.
+                _enqueue_on_commit(dispatch_scrape_job, instance.id)
             elif instance.reindexing_status == ReindexingStatusChoices.REINDEXING_CURATED:
                 instance.promote_to_curated()
 

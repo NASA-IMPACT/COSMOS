@@ -1,7 +1,11 @@
+import logging
+
 import requests
 from django.conf import settings
 
 from ..models.collection_choice_fields import WorkflowStatusChoices
+
+logger = logging.getLogger(__name__)
 
 SLACK_ID_MAPPING = {
     "Shravan Vishwanathan": "<@U056B4HMGEP>",
@@ -46,6 +50,53 @@ STATUS_CHANGE_NOTIFICATIONS = {
         "message": "{name} is now live on Public Prod! Congrats team! :sparkles:",
         "mention_users": ["channel"],
     },
+    # The prod hand-off passes through PRODUCTION_INDEXING, so the transition the poller
+    # actually makes is PRODUCTION_INDEXING -> PROD_*; keep the QC_* -> PROD_* pairs above
+    # for the manual/legacy path.
+    (WorkflowStatusChoices.PRODUCTION_INDEXING, WorkflowStatusChoices.PROD_PERFECT): {
+        "message": "{name} is now live on Public Prod! Congrats team! :sparkles:",
+        "mention_users": ["channel"],
+    },
+    (WorkflowStatusChoices.PRODUCTION_INDEXING, WorkflowStatusChoices.PROD_MINOR): {
+        "message": "{name} is now live on Public Prod! Congrats team! :sparkles:",
+        "mention_users": ["channel"],
+    },
+    # --- SDE curation pipeline (crawl4ai scraper + web indexing) ---
+    # Detailed scrape counts are posted separately via send_detailed_import_notification on ingest.
+    (WorkflowStatusChoices.READY_FOR_ENGINEERING, WorkflowStatusChoices.SCRAPING_SUCCESSFUL): {
+        "message": "Scraping of {name} finished successfully. Ingest and delta migration underway! :white_check_mark:",
+    },
+    (WorkflowStatusChoices.ENGINEERING_IN_PROGRESS, WorkflowStatusChoices.SCRAPING_SUCCESSFUL): {
+        "message": "Scraping of {name} finished successfully. Ingest and delta migration underway! :white_check_mark:",
+    },
+    (WorkflowStatusChoices.READY_FOR_ENGINEERING, WorkflowStatusChoices.SCRAPING_FAILED): {
+        "message": "Alert: Scraping of {name} has failed! :warning:",
+        "mention_users": ["Shravan Vishwanathan", "Advait Yogaonkar"],
+    },
+    (WorkflowStatusChoices.ENGINEERING_IN_PROGRESS, WorkflowStatusChoices.SCRAPING_FAILED): {
+        "message": "Alert: Scraping of {name} has failed! :warning:",
+        "mention_users": ["Shravan Vishwanathan", "Advait Yogaonkar"],
+    },
+    (WorkflowStatusChoices.CURATED, WorkflowStatusChoices.INDEXING_FAILED_ON_TEST): {
+        "message": "Alert: Indexing of {name} on Test has failed! :warning:",
+    },
+    (WorkflowStatusChoices.TEST_INDEXING, WorkflowStatusChoices.INDEXING_FAILED_ON_TEST): {
+        "message": "Alert: Indexing of {name} on Test has failed! :warning:",
+    },
+    # INDEXING_FAILED_ON_PROD can be reached from any of the prod hand-off statuses;
+    # the lookup is exact (old, new) pairs, so each realistic predecessor is listed.
+    (WorkflowStatusChoices.PRODUCTION_INDEXING, WorkflowStatusChoices.INDEXING_FAILED_ON_PROD): {
+        "message": "Alert: Indexing of {name} on Prod has failed! :warning:",
+        "mention_users": ["Shravan Vishwanathan", "Advait Yogaonkar"],
+    },
+    (WorkflowStatusChoices.QUALITY_CHECK_PERFECT, WorkflowStatusChoices.INDEXING_FAILED_ON_PROD): {
+        "message": "Alert: Indexing of {name} on Prod has failed! :warning:",
+        "mention_users": ["Shravan Vishwanathan", "Advait Yogaonkar"],
+    },
+    (WorkflowStatusChoices.QUALITY_CHECK_MINOR, WorkflowStatusChoices.INDEXING_FAILED_ON_PROD): {
+        "message": "Alert: Indexing of {name} on Prod has failed! :warning:",
+        "mention_users": ["Shravan Vishwanathan", "Advait Yogaonkar"],
+    },
 }
 
 
@@ -75,7 +126,43 @@ def send_detailed_import_notification(
     payload = {"text": message}
     response = requests.post(webhook_url, json=payload)
     if response.status_code != 200:
-        print(f"Error sending Slack message: {response.text}")
+        logger.warning("Error sending Slack message: %s", response.text)
+
+
+def send_indexing_validation_report(collection_name, run_id, validation):
+    """Post the indexer-produced validation.json (WORKFLOW.md steps 22-25 QC report) to
+    the curation channel so the curator can set the QC status from it."""
+    if validation is None:
+        message = (
+            f"Test indexing of '{collection_name}' succeeded (run {run_id}), " f"but no validation report was found."
+        )
+    else:
+        missing = validation.get("titles_missing_in_index") or []
+        extra = validation.get("titles_only_in_index") or []
+        message = (
+            f"Test indexing of '{collection_name}' succeeded (run {run_id}). QC report:\n"
+            f"Expected documents: {validation.get('expected_count')}\n"
+            f"Indexed documents: {validation.get('indexed_count')}\n"
+            f"Counts match: {validation.get('count_matches')}\n"
+            f"Title match rate: {validation.get('title_match_rate')}\n"
+            f"Titles missing from index: {len(missing)}\n"
+            f"Titles only in index: {len(extra)}\n"
+            f"Please review and set the QC status."
+        )
+    send_slack_message(message)
+
+
+def notify_status_change(collection_name, collection_id, old_status, new_status):
+    """Post the mapped message for a transition that was written with a queryset
+    .update() (which bypasses post_save and therefore the model-level notifier).
+    No-op for unmapped transitions; never raises."""
+    details = STATUS_CHANGE_NOTIFICATIONS.get((old_status, new_status))
+    if details is None:
+        return
+    try:
+        send_slack_message(format_slack_message(collection_name, details, collection_id))
+    except Exception as e:
+        logger.warning("Error sending Slack message for %s: %s", collection_name, e)
 
 
 def send_slack_message(message):

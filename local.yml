@@ -18,6 +18,9 @@ services:
     env_file:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
+      # optional, gitignored: local-only AWS creds for the SDE pipeline (overrides .django)
+      - path: ./.envs/.local/.sde-aws
+        required: false
     ports:
       - "8001:8000" # this prevents conflicts with inference pipeline
     command: /start

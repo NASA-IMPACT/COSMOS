@@ -1,0 +1,18 @@
+# gitleaks configuration for the pre-commit hook (.pre-commit-config.yaml).
+# Extends the built-in default ruleset; only allowlists are added here.
+title = "COSMOS gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Paths that legitimately contain example/placeholder values"
+paths = [
+  '''\.env_sample$''',
+  '''\.envs/\.local/''',
+  '''gitleaks-config\.toml$''',
+]
+regexes = [
+  # Placeholder AWS account used in tests
+  '''123456789012''',
+]

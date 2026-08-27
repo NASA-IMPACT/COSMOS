@@ -1,4 +1,28 @@
 # COSMOS Release Notes
+## Unreleased — `cosmos-rewiring` (Sinequa removal, crawl4ai + web-indexing hand-off)
+
+Sinequa, the GitHub config push and XML generation are removed. Collections are now scraped by the
+crawl4ai crawler (dispatched over SSM, results ingested from S3) and indexed by the `sde-api-scrapers`
+`WEB_COSMOS` ECS task (curated export to S3, `ecs:RunTask`, status polled from S3). Six workflow
+statuses are added (Scraping Successful/Failed, Test Indexing, Indexing Failed on Test/Prod,
+Production Indexing). See `WORKFLOW.md` and `sde_collections/DEPLOYMENT.md`.
+
+### Behaviour changes to be aware of
+- **TDAMM classification threshold now takes effect.** `map_classification_to_tdamm_tags` previously
+  accepted `threshold` and ignored it; it is now honoured (`inference/utils/classification_utils.py`).
+  Inference is shipped disabled (`INFERENCE_ENABLED=False`); when re-enabled, collections will receive
+  different TDAMM tags than earlier runs at the same `TDAMM_CLASSIFICATION_THRESHOLD`.
+- **Orphaned workflow statuses.** `Secret Deployment Started` (8), `Ready for LRM Quality Check` (10),
+  `Merge Pending` (17) and `Indexing Finished on Dev` (20) remain selectable but nothing advances them
+  any more (the Sinequa/LRM steps that consumed them are gone). Collections currently parked in those
+  statuses need to be moved by hand — audit them before/after deploying.
+- Celery beat schedules for the two S3 pollers are DB rows written on `post_migrate`; their `enabled`
+  flag is re-asserted from `SCRAPE_POLL_ENABLED` / `INDEX_POLL_ENABLED` on **every** `migrate`.
+  Toggling a poller therefore requires `manage.py migrate`, not just a restart.
+- Status-triggered Celery tasks are now enqueued with `transaction.on_commit`.
+- A failed re-scrape (`Re-Indexing Needed`) no longer rewrites the collection's live workflow status;
+  it clears the reindexing request and posts a Slack alert instead.
+
 ## v3.0.0 from v2.0.1
 
 COSMOS v3.0.0 introduces several major architectural changes that fundamentally enhance the system's capabilities. The primary feature is a new website reindexing system that allows COSMOS to stay up-to-date with source website changes, addressing a key limitation of previous versions where websites could only be scraped once. This release includes comprehensive updates to the data models, frontend interface, rule creation system, and backend processing along with some bugfixes from v2.0.1.

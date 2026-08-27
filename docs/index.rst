@@ -1,21 +1,20 @@
-.. SDE Indexing Helper documentation master file, created by
+.. COSMOS documentation master file, created by
    sphinx-quickstart.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to SDE Indexing Helper's documentation!
+Welcome to COSMOS's documentation!
 ======================================================================
 
 .. toctree::
    :maxdepth: 2
-   :caption: Working with Sinequa:
+   :caption: Project Documentation:
 
-   documentation/sinequa_api
    howto
 
 .. toctree::
    :maxdepth: 2
-   :caption: Using the Indexing Helper:
+   :caption: Using COSMOS:
    
    documentation/indexing_guidelines
 
@@ -24,5 +23,4 @@ Welcome to SDE Indexing Helper's documentation!
 Quick Links
 ==================
 
-* :ref:`sinequa_api`
 * :ref:`indexing_guidelines`

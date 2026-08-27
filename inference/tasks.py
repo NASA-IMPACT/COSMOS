@@ -1,5 +1,6 @@
 # inference/tasks.py
 from celery import shared_task
+from django.conf import settings
 
 from inference.models import InferenceJob, InferenceJobStatus
 from inference.utils.advisory_lock import AdvisoryLock
@@ -11,6 +12,11 @@ def process_inference_job_queue():
     Main job queue processor that runs every 5 minutes between 6pm-7am.
     Uses Postgres advisory locking to ensure only one instance runs at a time.
     """
+    # Belt and braces: the beat rows are disabled when the flag is off, but a manually
+    # enabled row or ad-hoc invocation must not process the queue either.
+    if not settings.INFERENCE_ENABLED:
+        return "Inference pipeline disabled (INFERENCE_ENABLED=False)"
+
     lock = AdvisoryLock("inference_queue_lock")
 
     with lock.hold() as acquired:

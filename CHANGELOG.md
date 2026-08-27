@@ -13,6 +13,17 @@ For each PR made, an entry should be added to this changelog. It should contain
 
 ## Changelog
 ### 3.1.??
+- cosmos-rewiring review fixes
+  - Description: Pre-merge fixes from the branch review. Status-triggered tasks are enqueued on commit; Slack messages are posted for statuses set via queryset `.update()` and for the `PRODUCTION_INDEXING -> PROD_*` transitions; re-scrape failures no longer overwrite the live workflow status; `send_job_to_crawler` refuses to run on a host without `CRAWLER_INSTANCE_ID`; duplicate URLs in crawl output are dropped instead of aborting the ingest; the prod status mirror map is explicit; `print()` replaced by `logging` in `tasks.py`.
+  - Changes:
+    - `sde_collections/models/collection.py`: `_enqueue_on_commit` wraps the four `.delay()` calls in `handle_workflow_status_change`
+    - `sde_collections/tasks.py`: `_mark_scrape_failed`, `_dedupe_by_url`, `PROD_STATUS_FOR_QC_STATUS`, logging
+    - `sde_collections/utils/slack_utils.py`: `notify_status_change`, two new `PRODUCTION_INDEXING -> PROD_*` messages
+    - `sde_collections/scraping/ssm_dispatch.py`: settings guard
+    - `templates/sde_collections/collection_detail.html`: removed the "View on prod" buttons (properties deleted with Sinequa)
+    - New tests: `test_signals.py`, `test_management_commands.py`; additions to the scrape/ingest/indexing/trigger suites
+    - `gitleaks-config.toml` added so the pre-commit gitleaks hook runs (it referenced a missing file)
+    - Deployment: none beyond the branch's existing migration/env steps
 - 1232-process-the-full-text-dump
   - Description: A script was added `/scripts/sde_dump_processing/clean_text_dump.py` which cleans dumps from sinequa. The sinequa dump does not respect normal csv new line formatting, so that a dump of 1.8 million records becomes a csv of 900 million lines. This script can detect the headers and process the dump with the three possible sources TDAMM, SDE, and scripts, in order to create a final, clean csv. It has a simple CLI which allows setting the input and output, the verbosity of the logs, etc. Because the input files can be very large, the script streams them instead of holding them in memory.
   - Changes:

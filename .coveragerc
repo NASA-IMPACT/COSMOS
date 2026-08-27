@@ -1,0 +1,6 @@
+[run]
+source = .
+include = */*.py
+
+[report]
+show_missing = True

@@ -30,10 +30,6 @@
     </div>
     <div class="col-md-6 buttonsCol">
         <div>
-        <a href="{{ collection.server_url_prod }}" target="_blank" style="color:white"><button
-                class="btn buttonColor btn-sm pull-right">View on prod</button></a>
-        <a href="{{ collection.server_url_secret_prod }}" target="_blank" style="color:white"><button
-                class="btn buttonColor btn-sm pull-right">View on secret prod</button></a>
             </div>
                 <div class="badge-container">
                     <div class="dropdown workflow_status_dropdown"
@@ -182,12 +178,6 @@
                     <tr>
                         <th class="detailsHeader">Notes</th>
                         <td class="whiteText">{{ collection.notes }}</td>
-                    </tr>
-                    <tr>
-                        <th class="detailsHeader">Sinequa Configuration</th>
-                        <td>
-                            <a class="urlStyle underline"  href="{{ collection.sinequa_configuration }}" target="_blank">{{collection.sinequa_configuration }}</a>
-                        </td>
                     </tr>
                     <tr>
                         <th class="detailsHeader">GitHub Issue Link</th>

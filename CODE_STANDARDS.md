@@ -47,10 +47,9 @@ The following pre-commit hooks are configured:
 - black: Formats Python code to ensure consistent styling.
 - isort: Sorts imports alphabetically and automatically separated into sections.
 - flake8: Lints code to catch styling errors and potential bugs.
-- mypy: Checks type annotations to catch potential bugs.
+- mypy: Configured to check type annotations, but currently a no-op — the hook sets `exclude: "."`, so no files are checked.
 - bandit: Scans code for common security issues.
-- gitleaks: Prevents secrets from being committed to the repository.
-- hadolint: Lints Dockerfiles to ensure best practices and common conventions are followed.
+- gitleaks: Intended to prevent secrets from being committed to the repository. Known gap: the hook passes `--config=gitleaks-config.toml`, and that file does not exist in the repository, so the hook fails instead of scanning.
 
 ## Continuous Integration (CI)
 When a commit is pushed to a branch that is part of a Pull Request, our Continuous Integration (CI) pipeline automatically runs specified tools to check code quality, style, security and other standards. If these checks fail, the PR cannot be merged until all issues are resolved.

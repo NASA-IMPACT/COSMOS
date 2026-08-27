@@ -1,98 +1,203 @@
 # docker-compose -f local.yml run --rm django pytest sde_collections/tests/test_workflow_status_triggers.py
 
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
-from django.db import transaction
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase
 
+from sde_collections.models.collection import Collection, WorkflowHistory
 from sde_collections.models.collection_choice_fields import (
     ReindexingStatusChoices,
     WorkflowStatusChoices,
 )
-from sde_collections.models.delta_url import DumpUrl
-from sde_collections.tasks import (
-    fetch_full_text,
-    migrate_dump_to_delta_and_handle_status_transistions,
-)
-from sde_collections.tests.factories import CollectionFactory, DumpUrlFactory
+from sde_collections.tests.factories import CollectionFactory
 
 
 class TestWorkflowStatusTransitions(TestCase):
+    """P5 trigger table: the dispatcher (handle_workflow_status_change) drives only the
+    crawl4ai/indexing pipeline — every Sinequa branch is gone."""
+
     def setUp(self):
         self.collection = CollectionFactory()
 
-    @patch("sde_collections.models.collection.GitHubHandler")
-    @patch("sde_collections.models.collection.Collection.create_scraper_config")
-    def test_ready_for_engineering_triggers_config_creation(self, mock_scraper, mock_github_handler):
-        """When status changes to READY_FOR_ENGINEERING, it should create configs"""
+    @patch("sde_collections.tasks.dispatch_scrape_job.delay")
+    def test_ready_for_engineering_triggers_scrape_dispatch(self, mock_dispatch):
+        """When status changes to READY_FOR_ENGINEERING, it should dispatch a scrape job (P3:
+        replaces the Sinequa create_scraper_config/create_scraper_job trigger)."""
+        self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
+        with self.captureOnCommitCallbacks(execute=True):
+            self.collection.save()
+
+        mock_dispatch.assert_called_once_with(self.collection.id)
+
+    @patch("sde_collections.tasks.dispatch_scrape_job.delay")
+    def test_task_is_enqueued_only_after_commit(self, mock_dispatch):
+        """Tasks are enqueued via transaction.on_commit so a worker can never read the
+        collection (or promote_to_curated's rows) before the triggering save commits."""
+        self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
+        with self.captureOnCommitCallbacks() as callbacks:
+            self.collection.save()
+            mock_dispatch.assert_not_called()
+
+        assert len(callbacks) == 1
+        callbacks[0]()
+        mock_dispatch.assert_called_once_with(self.collection.id)
+
+    def _save_and_assert_no_triggers(self, **status_updates):
+        """Set the given status field(s), save, and assert none of the surviving
+        pipeline triggers fire. (The Sinequa methods can't be patched — they no
+        longer exist; test_no_sinequa_methods_remain proves that directly.)"""
+        with (
+            patch("sde_collections.tasks.dispatch_scrape_job.delay") as mock_dispatch,
+            patch("sde_collections.tasks.index_collection_to_test.delay") as mock_test,
+            patch("sde_collections.tasks.index_collection_to_prod.delay") as mock_prod,
+            patch("sde_collections.models.collection.Collection.promote_to_curated") as mock_promote,
+        ):
+            for field, value in status_updates.items():
+                setattr(self.collection, field, value)
+            with self.captureOnCommitCallbacks(execute=True):
+                self.collection.save()
+
+        mock_dispatch.assert_not_called()
+        mock_test.assert_not_called()
+        mock_prod.assert_not_called()
+        mock_promote.assert_not_called()
+
+    def test_indexing_finished_triggers_nothing(self):
+        """INDEXING_FINISHED_ON_DEV is a Sinequa-era status: its full-text-fetch trigger is
+        gone (the P4 ingest replaces the fetch entirely)."""
+        self._save_and_assert_no_triggers(workflow_status=WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV)
+
+    def test_ready_for_curation_triggers_nothing(self):
+        """The Sinequa indexer-config branch on READY_FOR_CURATION is gone."""
+        self._save_and_assert_no_triggers(workflow_status=WorkflowStatusChoices.READY_FOR_CURATION)
+
+    def test_no_sinequa_methods_remain(self):
+        """P6: every Sinequa method is gone from Collection, and fetch_full_text from tasks."""
+        from sde_collections import tasks
+
+        for method in [
+            "add_to_public_query",
+            "create_scraper_config",
+            "create_indexer_config",
+            "create_scraper_job",
+            "create_indexer_job",
+            "update_config_xml",
+            "import_metadata_from_sinequa_config",
+            "sinequa_configuration",
+            "server_url_prod",
+            "server_url_secret_prod",
+            "_write_to_github",
+        ]:
+            assert not hasattr(Collection, method), f"Collection.{method} should be deleted"
+        for task in ["fetch_full_text", "import_candidate_urls_from_api", "push_to_github_task"]:
+            assert not hasattr(tasks, task), f"tasks.{task} should be deleted"
+
+    @patch("sde_collections.tasks.index_collection_to_test.delay")
+    @patch("sde_collections.models.collection.Collection.promote_to_curated")
+    def test_curated_promotes_and_enqueues_test_indexing(self, mock_promote, mock_index_test):
+        """CURATED promotes DeltaUrls to CuratedUrls AND hands off to test indexing."""
+        self.collection.workflow_status = WorkflowStatusChoices.CURATED
+        with self.captureOnCommitCallbacks(execute=True):
+            self.collection.save()
+
+        mock_promote.assert_called_once()
+        mock_index_test.assert_called_once_with(self.collection.id)
+
+    @patch("sde_collections.tasks.index_collection_to_prod.delay")
+    def test_quality_check_statuses_enqueue_prod_indexing(self, mock_index_prod):
+        """QC_PERFECT / QC_MINOR hand off to prod indexing (add_to_public_query is deleted)."""
+        for status in [WorkflowStatusChoices.QUALITY_CHECK_PERFECT, WorkflowStatusChoices.QUALITY_CHECK_MINOR]:
+            collection = CollectionFactory()
+            collection.workflow_status = status
+            with self.captureOnCommitCallbacks(execute=True):
+                collection.save()
+
+            mock_index_prod.assert_called_with(collection.id)
+        assert mock_index_prod.call_count == 2
+
+    @patch("sde_collections.tasks.index_collection_to_test.delay")
+    def test_reentrancy_guard_prevents_recursion(self, mock_index_test):
+        """A save() performed inside a trigger must not re-fire the dispatcher."""
+
+        def promote_and_save_again():
+            # Simulates a trigger mutating and saving the same instance.
+            self.collection.save()
+
+        with patch(
+            "sde_collections.models.collection.Collection.promote_to_curated",
+            side_effect=promote_and_save_again,
+        ) as mock_promote:
+            self.collection.workflow_status = WorkflowStatusChoices.CURATED
+            with self.captureOnCommitCallbacks(execute=True):
+                self.collection.save()
+
+        mock_promote.assert_called_once()
+        mock_index_test.assert_called_once()
+
+
+class TestSlackNotificationOnTransition(TestCase):
+    """P5: the Slack send moved out of Collection.save() into the post_save receiver."""
+
+    def setUp(self):
+        self.collection = CollectionFactory(workflow_status=WorkflowStatusChoices.RESEARCH_IN_PROGRESS)
+
+    @patch("sde_collections.tasks.dispatch_scrape_job.delay")
+    @patch("sde_collections.models.collection.send_slack_message")
+    def test_mapped_transition_sends_message_once(self, mock_send, mock_dispatch):
         self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
         self.collection.save()
 
-        mock_scraper.assert_called_once_with(overwrite=False)
+        mock_send.assert_called_once()
+        message = mock_send.call_args.args[0]
+        assert self.collection.name in message
+        assert "Ready for engineering" in message
 
-    @patch("sde_collections.tasks.fetch_full_text.delay")
-    def test_indexing_finished_triggers_full_text_fetch(self, mock_fetch):
-        """When status changes to INDEXING_FINISHED_ON_DEV, it should trigger full text fetch"""
-        self.collection.workflow_status = WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV
+    def test_prod_handoff_transitions_are_mapped(self):
+        """The prod hand-off goes QC_* -> PRODUCTION_INDEXING -> PROD_*; the 'live on prod'
+        message must be keyed on the transition the poller actually makes."""
+        from sde_collections.utils.slack_utils import STATUS_CHANGE_NOTIFICATIONS
+
+        for final in [WorkflowStatusChoices.PROD_PERFECT, WorkflowStatusChoices.PROD_MINOR]:
+            details = STATUS_CHANGE_NOTIFICATIONS[(WorkflowStatusChoices.PRODUCTION_INDEXING, final)]
+            assert "live on Public Prod" in details["message"]
+
+    @patch("sde_collections.models.collection.send_slack_message")
+    def test_unmapped_transition_sends_nothing(self, mock_send):
+        self.collection.workflow_status = WorkflowStatusChoices.MERGE_PENDING
         self.collection.save()
 
-        mock_fetch.assert_called_once_with(self.collection.id, "lrm_dev")
+        mock_send.assert_not_called()
 
-    @patch("sde_collections.models.collection.Collection.create_indexer_config")
-    @patch("sde_collections.models.collection.GitHubHandler")
-    def test_ready_for_curation_triggers_indexer_config(self, mock_github_handler, mock_indexer):
-        """When status changes to READY_FOR_CURATION, it should create indexer config"""
-        self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_CURATION
-        self.collection.save()
+    @patch("sde_collections.models.collection.send_slack_message", side_effect=Exception("slack down"))
+    @patch("sde_collections.tasks.dispatch_scrape_job.delay")
+    def test_slack_failure_does_not_break_the_save(self, mock_dispatch, mock_send):
+        self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
+        self.collection.save()  # must not raise
 
-        mock_indexer.assert_called_once_with(overwrite=True)
-
-    @patch("sde_collections.models.collection.Collection.promote_to_curated")
-    def test_curated_triggers_promotion(self, mock_promote):
-        """When status changes to CURATED, it should promote DeltaUrls to CuratedUrls"""
-        self.collection.workflow_status = WorkflowStatusChoices.CURATED
-        self.collection.save()
-
-        mock_promote.assert_called_once()
-
-    @patch("sde_collections.models.collection.Collection.add_to_public_query")
-    def test_quality_check_perfect_triggers_public_query(self, mock_add):
-        """When status changes to QUALITY_CHECK_PERFECT, it should add to public query"""
-        self.collection.workflow_status = WorkflowStatusChoices.QUALITY_CHECK_PERFECT
-        self.collection.save()
-
-        mock_add.assert_called_once()
+        self.collection.refresh_from_db()
+        assert self.collection.workflow_status == WorkflowStatusChoices.READY_FOR_ENGINEERING
 
 
 class TestReindexingStatusTransitions(TestCase):
     def setUp(self):
-        # Mock the GitHubHandler to return valid XML content
-        self.mock_github_handler = patch("sde_collections.models.collection.GitHubHandler").start()
-
-        self.mock_github_handler.return_value._get_file_contents.return_value.decoded_content = (
-            b'<?xml version="1.0" encoding="UTF-8"?>\n'
-            b"<Sinequa>\n"
-            b"    <KeepHashFragmentInUrl>false</KeepHashFragmentInUrl>\n"
-            b"    <CollectionSelection>Sample Collection</CollectionSelection>\n"
-            b"</Sinequa>"
-        )
-
-        self.addCleanup(patch.stopall)
-
-        # Create the collection with the mock applied
         self.collection = CollectionFactory(
-            workflow_status=WorkflowStatusChoices.QUALITY_CHECK_PERFECT,
+            workflow_status=WorkflowStatusChoices.PROD_PERFECT,
             reindexing_status=ReindexingStatusChoices.REINDEXING_NOT_NEEDED,
         )
 
-    @patch("sde_collections.tasks.fetch_full_text.delay")
-    def test_reindexing_finished_triggers_full_text_fetch(self, mock_fetch):
-        """When reindexing status changes to FINISHED, it should trigger full text fetch"""
-        self.collection.reindexing_status = ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV
-        self.collection.save()
+    def test_reindexing_finished_triggers_nothing(self):
+        """REINDEXING_FINISHED_ON_DEV must trigger nothing: the P4 ingest sets this status
+        itself — a trigger here would double-fire."""
+        with (
+            patch("sde_collections.tasks.dispatch_scrape_job.delay") as mock_dispatch,
+            patch("sde_collections.models.collection.Collection.promote_to_curated") as mock_promote,
+        ):
+            self.collection.reindexing_status = ReindexingStatusChoices.REINDEXING_FINISHED_ON_DEV
+            self.collection.save()
 
-        mock_fetch.assert_called_once_with(self.collection.id, "lrm_dev")
+        mock_dispatch.assert_not_called()
+        mock_promote.assert_not_called()
 
     @patch("sde_collections.models.collection.Collection.promote_to_curated")
     def test_reindexing_curated_triggers_promotion(self, mock_promote):
@@ -103,381 +208,62 @@ class TestReindexingStatusTransitions(TestCase):
         mock_promote.assert_called_once()
 
 
-class TestFullTextImport(TestCase):
-    def setUp(self):
-        self.collection = CollectionFactory()
-        self.existing_dump = DumpUrlFactory(collection=self.collection)
-        self.api_response = [
-            {"url": "http://example.com/1", "title": "Title 1", "full_text": "Content 1"},
-            {"url": "http://example.com/2", "title": "Title 2", "full_text": "Content 2"},
-        ]
+NEW_PIPELINE_STATUSES = [
+    WorkflowStatusChoices.SCRAPING_SUCCESSFUL,
+    WorkflowStatusChoices.TEST_INDEXING,
+    WorkflowStatusChoices.SCRAPING_FAILED,
+    WorkflowStatusChoices.INDEXING_FAILED_ON_TEST,
+    WorkflowStatusChoices.INDEXING_FAILED_ON_PROD,
+    WorkflowStatusChoices.PRODUCTION_INDEXING,
+]
 
-    @patch("sde_collections.utils.slack_utils.send_detailed_import_notification")
-    @patch("sde_collections.tasks.Api")
-    @patch("sde_collections.models.collection.GitHubHandler")
-    def test_full_text_import_workflow(self, MockGitHub, MockApi, MockSlackNotification):
-        """Test the full process of importing full text data"""
-        # Setup mock GitHub handler with proper XML content
-        mock_github = Mock()
-        mock_github.check_file_exists.return_value = True
-        mock_file_contents = Mock()
-        # Include all the fields that convert_template_to_plugin_indexer checks for
-        mock_xml = """<?xml version="1.0" encoding="UTF-8"?>
-        <Sinequa>
-            <connector>crawler2</connector>
-            <description></description>
-            <identity></identity>
-            <indexers></indexers>
-            <index></index>
-            <domain></domain>
-            <treeRoot></treeRoot>
-            <Revision>1</Revision>
-            <visibility></visibility>
-            <ForceReindexation>false</ForceReindexation>
-            <Url></Url>
-            <Plugin>SMD_Plugins/Sinequa.Plugin.WebCrawler_Index_URLList</Plugin>
-            <WorkerCount>3</WorkerCount>
-            <MaxWorkerPerHost></MaxWorkerPerHost>
-            <UrlList></UrlList>
-            <DynamicUrlList></DynamicUrlList>
-            <IncludedExtensions></IncludedExtensions>
-            <ExcludedExtensions></ExcludedExtensions>
-            <IncludedFilenames></IncludedFilenames>
-            <ExcludedFilenames></ExcludedFilenames>
-            <IncludedFolders></IncludedFolders>
-            <ExcludedFolders></ExcludedFolders>
-            <EnableNeuralIndexing>true</EnableNeuralIndexing>
-            <NeuralSearchSelectionQuery></NeuralSearchSelectionQuery>
-            <UrlStayInside>true</UrlStayInside>
-            <MaxLevel></MaxLevel>
-            <MaxToIndex></MaxToIndex>
-            <MaxToCrawl></MaxToCrawl>
-            <MaxRedirection></MaxRedirection>
-            <CrawlMaxSize></CrawlMaxSize>
-            <CrawlTimeout></CrawlTimeout>
-            <NormalizeUrls>true</NormalizeUrls>
-            <CorrectDomainCookies>false</CorrectDomainCookies>
-            <IgnoreSessionCookies>false</IgnoreSessionCookies>
-            <DownloadImages>true</DownloadImages>
-            <DownloadMedia>true</DownloadMedia>
-            <DownloadCss>false</DownloadCss>
-            <DownloadFtp>true</DownloadFtp>
-            <DownloadFile>true</DownloadFile>
-            <IndexJs>false</IndexJs>
-            <FollowJs>true</FollowJs>
-            <CrawlFlash>true</CrawlFlash>
-            <IndexEmptyPages>true</IndexEmptyPages>
-            <CrawlWebsphereSeedlist>true</CrawlWebsphereSeedlist>
-            <KeepHashFragmentInUrl>false</KeepHashFragmentInUrl>
-            <RetryCount></RetryCount>
-            <RetryPause></RetryPause>
-            <HttpCodesToRetry></HttpCodesToRetry>
-            <UseIfModifiedSince>true</UseIfModifiedSince>
-            <UseIfNoneMatch>no</UseIfNoneMatch>
-            <AcceptWeakETag>false</AcceptWeakETag>
-            <ForcedEncoding></ForcedEncoding>
-            <UseCompression>false</UseCompression>
-            <UseUnsafeHeaderParsing>false</UseUnsafeHeaderParsing>
-            <NormalizeSecureSchemesWhenTestingVisited>false</NormalizeSecureSchemesWhenTestingVisited>
-            <ExactDeduplication>false</ExactDeduplication>
-            <NearDeduplication>false</NearDeduplication>
-            <CrawlPauseDelay></CrawlPauseDelay>
-            <CrawlPauseCount></CrawlPauseCount>
-            <UseRuntimeAutoRedirect>false</UseRuntimeAutoRedirect>
-            <RememberDnsFailure>true</RememberDnsFailure>
-            <RememberConnectFailure>true</RememberConnectFailure>
-            <RememberTrustFailure>true</RememberTrustFailure>
-            <RememberProxyNameResolutionFailure>false</RememberProxyNameResolutionFailure>
-            <UseRobotsNoIndex>false</UseRobotsNoIndex>
-            <UseRobotsNoFollow>true</UseRobotsNoFollow>
-            <UseRobotsTxt>false</UseRobotsTxt>
-            <RobotsTxtCaseSensitive>false</RobotsTxtCaseSensitive>
-            <LoadRobotsTxtSitemapUrls>false</LoadRobotsTxtSitemapUrls>
-            <CheckSitemapUrlLastmodInRealtimeMode>false</CheckSitemapUrlLastmodInRealtimeMode>
-            <AddRobotsTxtAllowUrlsToSeedList>false</AddRobotsTxtAllowUrlsToSeedList>
-            <UseCanonicalLinks>false</UseCanonicalLinks>
-            <UseRelNoFollow>false</UseRelNoFollow>
-            <DownloadSelectionQuery></DownloadSelectionQuery>
-            <FollowSelectionQuery></FollowSelectionQuery>
-            <IndexSelectionQuery></IndexSelectionQuery>
-            <LoadDefaultTags>true</LoadDefaultTags>
-            <LoadDefaultJsTransforms>true</LoadDefaultJsTransforms>
-            <UrlAccess>
-                <UseDefaultCredentials>true</UseDefaultCredentials>
-                <UseDefaultNetworkCredentials>false</UseDefaultNetworkCredentials>
-                <User></User>
-                <Password></Password>
-                <Domain></Domain>
-                <UseRfc1945>false</UseRfc1945>
-                <Timeout></Timeout>
-                <ChangeConnectionGroupNameOnTimeout>false</ChangeConnectionGroupNameOnTimeout>
-                <AllowAuthenticatedConnectionSharing>true</AllowAuthenticatedConnectionSharing>
-                <PreAuthenticate>false</PreAuthenticate>
-                <HttpVersion></HttpVersion>
-                <KeepAlive>true</KeepAlive>
-                <SecurityProtocol></SecurityProtocol>
-                <UserAgent></UserAgent>
-                <ClientCertificateFile></ClientCertificateFile>
-                <ClientCertificatePassword></ClientCertificatePassword>
-                <ClientCertificateStorage></ClientCertificateStorage>
-                <AllowXPathCookies>false</AllowXPathCookies>
-                <UseHttpClientForWebRequests>false</UseHttpClientForWebRequests>
-                <ThrottleManagerCode>expBackoff+headers</ThrottleManagerCode>
-                <UseBrowserForWebRequests>false</UseBrowserForWebRequests>
-                <BrowserForWebRequestsReadinessThreshold></BrowserForWebRequestsReadinessThreshold>
-                <BrowserForWebRequestsInitialDelay></BrowserForWebRequestsInitialDelay>
-                <BrowserForWebRequestsMaxTotalDelay></BrowserForWebRequestsMaxTotalDelay>
-                <BrowserForWebRequestsMaxResourcesDelay></BrowserForWebRequestsMaxResourcesDelay>
-                <BrowserForWebRequestsLogLevel></BrowserForWebRequestsLogLevel>
-                <BrowserForWebRequestsViewportWidth></BrowserForWebRequestsViewportWidth>
-                <BrowserForWebRequestsViewportHeight></BrowserForWebRequestsViewportHeight>
-                <BrowserForWebRequestsAdditionalJavascript></BrowserForWebRequestsAdditionalJavascript>
-                <WebConnectionPluginName></WebConnectionPluginName>
-                <PostLoginUrl></PostLoginUrl>
-                <PostLoginData></PostLoginData>
-                <GetBeforePostLogin>false</GetBeforePostLogin>
-                <PostLoginAutoRedirect>true</PostLoginAutoRedirect>
-                <ReLoginCount></ReLoginCount>
-                <ReLoginDelay></ReLoginDelay>
-                <DetectHtmlLoginPattern></DetectHtmlLoginPattern>
-                <BrowserLogin>
-                    <Activate>false</Activate>
-                    <RemoteDebuggingPort></RemoteDebuggingPort>
-                    <BrowserLogLevel></BrowserLogLevel>
-                    <ShowDevTools>false</ShowDevTools>
-                    <SuccessCondition></SuccessCondition>
-                    <CookieFilter></CookieFilter>
-                </BrowserLogin>
-                <FtpUser></FtpUser>
-                <FtpPassword></FtpPassword>
-                <FtpDomain></FtpDomain>
-                <FtpUseBinary>true</FtpUseBinary>
-                <FtpUsePassive>true</FtpUsePassive>
-                <FtpReadWriteTimeout></FtpReadWriteTimeout>
-                <FtpTimeout></FtpTimeout>
-                <FtpEnableSsl>false</FtpEnableSsl>
-                <FileUser></FileUser>
-                <FilePassword></FilePassword>
-                <FileDomain></FileDomain>
-                <FileTimeout></FileTimeout>
-                <AmazonS3>
-                    <AccessKey></AccessKey>
-                    <SecretKey></SecretKey>
-                    <RegionEndpoint>eu-west-1</RegionEndpoint>
-                    <ServiceURL></ServiceURL>
-                </AmazonS3>
-                <ProxyAutoDetect>true</ProxyAutoDetect>
-                <ProxyAddress></ProxyAddress>
-                <ProxyBypassOnLocal>true</ProxyBypassOnLocal>
-                <ProxyServer></ProxyServer>
-                <ProxyPort></ProxyPort>
-                <ProxyUseDefaultCredentials>true</ProxyUseDefaultCredentials>
-                <ProxyUseDefaultNetworkCredentials>false</ProxyUseDefaultNetworkCredentials>
-                <ProxyUser></ProxyUser>
-                <ProxyPassword></ProxyPassword>
-                <ProxyDomain></ProxyDomain>
-            </UrlAccess>
-            <System>
-                <LogLevel>INFO</LogLevel>
-            </System>
-            <DisplayLongProperties>false</DisplayLongProperties>
-            <LongPropertyLimit></LongPropertyLimit>
-            <UsePerformanceMetrics>true</UsePerformanceMetrics>
-            <LogPerformanceMetricsPeriodically>false</LogPerformanceMetricsPeriodically>
-            <LogPerformanceMetricsPeriod></LogPerformanceMetricsPeriod>
-            <PasswordRepository></PasswordRepository>
-            <StoreDocumentCache></StoreDocumentCache>
-            <AuditEnabled>false</AuditEnabled>
-            <SaveDeniedDocs>false</SaveDeniedDocs>
-            <SavePropertiesToRegistry>false</SavePropertiesToRegistry>
-            <CollectionStateNative>false</CollectionStateNative>
-            <HtmlNavigatorNative>true</HtmlNavigatorNative>
-            <XPathNavigatorNative>false</XPathNavigatorNative>
-            <StatusMaxOk></StatusMaxOk>
-            <DelApiSecret></DelApiSecret>
-            <IndexerClient>
-                <Simulate>false</Simulate>
-                <SimulateGetCollectionState>false</SimulateGetCollectionState>
-                <QueueMaxCount></QueueMaxCount>
-                <SendingThreadFactor></SendingThreadFactor>
-                <DirectFileAccess>false</DirectFileAccess>
-                <UseCompression>false</UseCompression>
-                <SessionIsFinishedWait>false</SessionIsFinishedWait>
-                <SendTimeout></SendTimeout>
-                <RetryConnectCount></RetryConnectCount>
-                <RetryConnectDelay></RetryConnectDelay>
-                <RetryTimeout></RetryTimeout>
-                <RetrySleep></RetrySleep>
-                <DeactivationTimeout></DeactivationTimeout>
-            </IndexerClient>
-            <Indexation>
-                <SimulateLemma>false</SimulateLemma>
-                <SimulateEngine>false</SimulateEngine>
-                <SimulateCache>false</SimulateCache>
-                <SimulateLemmaMin></SimulateLemmaMin>
-                <SimulateLemmaMax></SimulateLemmaMax>
-                <CollectionStateParallelRowFetch></CollectionStateParallelRowFetch>
-                <EngineMetaEnabled>true</EngineMetaEnabled>
-                <ThumbnailHeight></ThumbnailHeight>
-                <ThumbnailWidth></ThumbnailWidth>
-                <ThumbnailSmallTimeout></ThumbnailSmallTimeout>
-                <ThumbnailMediumTimeout></ThumbnailMediumTimeout>
-                <ThumbnailLargeTimeout></ThumbnailLargeTimeout>
-                <SynchThumbnailGen>false</SynchThumbnailGen>
-                <StoreInCollectionCache>false</StoreInCollectionCache>
-                <GetFilePropertiesFromConverter>false</GetFilePropertiesFromConverter>
-            </Indexation>
-            <CollectDocumentProperties>true</CollectDocumentProperties>
-            <DocCountLimitOnCollectProperties></DocCountLimitOnCollectProperties>
-            <ForceBlobSend>false</ForceBlobSend>
-            <ContinueOnError>true</ContinueOnError>
-            <DoDelete>true</DoDelete>
-            <DeleteOnError>false</DeleteOnError>
-            <DeleteOnNetworkOrServerError>false</DeleteOnNetworkOrServerError>
-            <DeleteOnEnumerationError>false</DeleteOnEnumerationError>
-            <AcceptDeleteAll>false</AcceptDeleteAll>
-            <DeleteMaxPercentThreshold></DeleteMaxPercentThreshold>
-            <DeleteMaxThreshold></DeleteMaxThreshold>
-            <DeleteMinRemainingThreshold></DeleteMinRemainingThreshold>
-            <SaveCollectionState>false</SaveCollectionState>
-            <IncrementalState>false</IncrementalState>
-            <RealTimeIncrementalState>true</RealTimeIncrementalState>
-            <RealTimeInfoOnError>false</RealTimeInfoOnError>
-            <ConversionProxies></ConversionProxies>
-            <ConversionPlan></ConversionPlan>
-            <AddBaseHref>true</AddBaseHref>
-            <AddMetaContentType>false</AddMetaContentType>
-            <Throttle></Throttle>
-            <DocumentClass></DocumentClass>
-            <ConnectorLanguage></ConnectorLanguage>
-            <ClearHttpRequestCanonicalizeAsFilePath>true</ClearHttpRequestCanonicalizeAsFilePath>
-            <PdfGen>
-                <ConverterType></ConverterType>
-                <TimeoutSmall></TimeoutSmall>
-                <TimeoutMedium></TimeoutMedium>
-                <TimeoutLarge></TimeoutLarge>
-            </PdfGen>
-            <IndexZipContent>false</IndexZipContent>
-            <IndexPdfAttachments>false</IndexPdfAttachments>
-            <IndexOleAttachments>false</IndexOleAttachments>
-            <IndexMsgContent>false</IndexMsgContent>
-            <IndexMsgAttachments>false</IndexMsgAttachments>
-            <IndexOftContent>false</IndexOftContent>
-            <IndexOftAttachments>false</IndexOftAttachments>
-            <IndexEmlContent>false</IndexEmlContent>
-            <IndexEmlAttachments>false</IndexEmlAttachments>
-            <IndexPstContent>false</IndexPstContent>
-            <IndexOstContent>false</IndexOstContent>
-            <IndexPstMsg>true</IndexPstMsg>
-            <IndexPstMsgAttachments>true</IndexPstMsgAttachments>
-            <IndexPstContact>false</IndexPstContact>
-            <IndexPstCalendar>false</IndexPstCalendar>
-            <IndexPstNote>false</IndexPstNote>
-            <IndexPstTask>false</IndexPstTask>
-            <IndexPstDocument>true</IndexPstDocument>
-            <PstUseSafeId>false</PstUseSafeId>
-            <IndexArchivesExtensions></IndexArchivesExtensions>
-            <ArchiveItemsUseArchiveVersion>false</ArchiveItemsUseArchiveVersion>
-            <UseShortAttachmentId>false</UseShortAttachmentId>
-            <UseExtendedExtensionGuesser>false</UseExtendedExtensionGuesser>
-            <AlwaysScanContainerFiles>false</AlwaysScanContainerFiles>
-            <XmpExtensions></XmpExtensions>
-            <MediaExtensions></MediaExtensions>
-            <ExiftoolExtensions></ExiftoolExtensions>
-            <EarlySelectionQuery></EarlySelectionQuery>
-            <SelectionQuery></SelectionQuery>
-            <AttachmentSelectionQuery></AttachmentSelectionQuery>
-            <ArchiveItemSelectionQuery></ArchiveItemSelectionQuery>
-            <EngineConnectionWait></EngineConnectionWait>
-            <FetchCollectionDataDirectlyFromEngine></FetchCollectionDataDirectlyFromEngine>
-            <CalculateGraphBoost>false</CalculateGraphBoost>
-            <GraphBoostColumn></GraphBoostColumn>
-            <GraphBoostEMColumn></GraphBoostEMColumn>
-            <GraphBoostIterations></GraphBoostIterations>
-            <GraphBoostPower></GraphBoostPower>
-            <GraphBoostAdd></GraphBoostAdd>
-            <UseFieldPermissions>false</UseFieldPermissions>
-            <ShardIndexes></ShardIndexes>
-            <ShardingStrategy></ShardingStrategy>
-            <ShardSelections></ShardSelections>
-            <CurationType></CurationType>
-            <CurationIdPattern></CurationIdPattern>
-            <RunIndexMiningInIndexer>false</RunIndexMiningInIndexer>
-            <Namespace></Namespace>
-            <Mapping>
-                <Name>id</Name>
-                <Value>doc.url1</Value>
-            </Mapping>
-            <UrlRefererStayInside>false</UrlRefererStayInside>
-            <FollowLinks>false</FollowLinks>
-        </Sinequa>"""
-        mock_file_contents.decoded_content = mock_xml.encode("utf-8")
-        mock_github._get_file_contents.return_value = mock_file_contents
-        MockGitHub.return_value = mock_github
-
-        # Setup mock API
-        mock_api = Mock()
-        mock_api.get_full_texts.return_value = iter([self.api_response])
-        MockApi.return_value = mock_api
-
-        # Setup initial workflow state
-        self.collection.workflow_status = WorkflowStatusChoices.INDEXING_FINISHED_ON_DEV
-        self.collection.save()
-
-        # Step 1: Run fetch_full_text
-        with patch("sde_collections.models.collection.Collection.queue_necessary_classifications") as mock_queue:
-            fetch_full_text(self.collection.id, "lrm_dev")
-            mock_queue.assert_called_once()
-
-        # Verify old DumpUrls were cleared and new ones were also created
-        assert not DumpUrl.objects.filter(id=self.existing_dump.id).exists()
-        new_dumps = DumpUrl.objects.filter(collection=self.collection)
-        assert new_dumps.count() == 2
-        assert {dump.url for dump in new_dumps} == {"http://example.com/1", "http://example.com/2"}
-
-        # Step 2: Run migrate_dump_to_delta
-        with patch("sde_collections.models.collection.Collection.migrate_dump_to_delta") as mock_migrate:
-            migrate_dump_to_delta_and_handle_status_transistions(self.collection.id)
-            mock_migrate.assert_called_once()
-
-        # Verify status updates
-        self.collection.refresh_from_db()
-        assert self.collection.workflow_status == WorkflowStatusChoices.READY_FOR_CURATION
+VALID_BUTTON_COLORS = {
+    "btn-light",
+    "btn-danger",
+    "btn-warning",
+    "btn-info",
+    "btn-success",
+    "btn-primary",
+    "btn-secondary",
+}
 
 
-class TestErrorHandling(TransactionTestCase):
-    def setUp(self):
-        self.collection = CollectionFactory(workflow_status=WorkflowStatusChoices.RESEARCH_IN_PROGRESS)
+@pytest.mark.parametrize("status", list(WorkflowStatusChoices))
+def test_collection_button_color_resolves_for_every_status(status):
+    """Regression guard: an unmapped status used to raise KeyError and break the
+    collection list and detail pages. Every enum member must resolve a colour."""
+    collection = Collection(workflow_status=status)
+    assert collection.workflow_status_button_color in VALID_BUTTON_COLORS
 
-    @patch("sde_collections.models.collection.Collection.create_scraper_config")
-    @patch("sde_collections.models.collection.Collection.create_indexer_config")
-    def test_config_creation_failure_handling(self, mock_indexer, mock_scraper):
-        """Test handling of config creation failures"""
-        mock_scraper.side_effect = Exception("Config creation failed")
 
-        initial_status = self.collection.workflow_status
+@pytest.mark.parametrize("status", list(WorkflowStatusChoices))
+def test_workflow_history_button_color_resolves_for_every_status(status):
+    history = WorkflowHistory(workflow_status=status)
+    assert history.workflow_status_button_color in VALID_BUTTON_COLORS
 
-        with pytest.raises(Exception):
-            with transaction.atomic():
-                self.collection.workflow_status = WorkflowStatusChoices.READY_FOR_ENGINEERING
-                self.collection.save()
 
-        # Verify status wasn't changed on error
-        self.collection.refresh_from_db()
-        assert self.collection.workflow_status == initial_status
+def test_unmapped_status_falls_back_to_default_color():
+    assert Collection(workflow_status=999).workflow_status_button_color == "btn-light"
+    assert WorkflowHistory(workflow_status=999).workflow_status_button_color == "btn-light"
 
-    @patch("sde_collections.tasks.Api")
-    def test_full_text_fetch_failure_handling(self, MockApi):
-        """Test handling of full text fetch failures"""
-        mock_api = Mock()
-        mock_api.get_full_texts.side_effect = Exception("API error")
-        MockApi.return_value = mock_api
 
-        initial_status = self.collection.workflow_status
+@pytest.mark.parametrize(
+    "status",
+    [
+        WorkflowStatusChoices.SCRAPING_FAILED,
+        WorkflowStatusChoices.INDEXING_FAILED_ON_TEST,
+        WorkflowStatusChoices.INDEXING_FAILED_ON_PROD,
+    ],
+)
+def test_failure_statuses_do_not_render_neutral(status):
+    assert Collection(workflow_status=status).workflow_status_button_color == "btn-danger"
+    assert WorkflowHistory(workflow_status=status).workflow_status_button_color == "btn-danger"
 
-        with pytest.raises(Exception):
-            fetch_full_text(self.collection.id, "lrm_dev")
 
-        # Verify status wasn't changed on error
-        self.collection.refresh_from_db()
-        assert self.collection.workflow_status == initial_status
+@pytest.mark.django_db
+@pytest.mark.parametrize("status", NEW_PIPELINE_STATUSES)
+def test_setting_new_status_writes_workflow_history(status):
+    collection = CollectionFactory()
+    collection.workflow_status = status
+    collection.save()
+    assert WorkflowHistory.objects.filter(collection=collection, workflow_status=status).exists()

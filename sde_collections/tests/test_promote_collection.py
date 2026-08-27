@@ -138,12 +138,14 @@ def test_promotion_with_overlapping_patterns_and_deletion():
     for url in urls:
         DeltaUrl.objects.create(collection=collection, url=url, scraped_title=f"Title for {url}")
 
-    # Create overlapping patterns that will affect the same URLs
+    # Create overlapping patterns that will affect the same URLs.
+    # NOTE: match patterns are *-wildcards (get_regex_pattern re.escape()s everything
+    # else) — regex-idiom patterns like ".*docs.*" silently match nothing.
     patterns = [
-        {"pattern": ".*docs.*", "title": "Documentation: {title}"},
-        {"pattern": ".*guide.*", "title": "Guide: {title}"},
-        {"pattern": ".*api.*", "title": "API: {title}"},
-        {"pattern": ".*doc[0-9]", "title": "Doc Number: {title}"},
+        {"pattern": "*docs*", "title": "Documentation: {title}"},
+        {"pattern": "*guide*", "title": "Guide: {title}"},
+        {"pattern": "*api*", "title": "API: {title}"},
+        {"pattern": "*api/v1/doc*", "title": "Doc Number: {title}"},
     ]
 
     # Create and apply multiple patterns
@@ -161,27 +163,31 @@ def test_promotion_with_overlapping_patterns_and_deletion():
     # Initial promotion
     collection.promote_to_curated()
 
-    # Verify our complex setup
+    # Every pattern's curated_urls relation must hold exactly its wildcard matches
+    expected_matches = {
+        "*docs*": {"https://example.com/docs/guide1", "https://example.com/docs/guide2"},
+        "*guide*": {"https://example.com/docs/guide1", "https://example.com/docs/guide2"},
+        "*api*": {"https://example.com/api/v1/doc1", "https://example.com/api/v1/doc2"},
+        "*api/v1/doc*": {"https://example.com/api/v1/doc1", "https://example.com/api/v1/doc2"},
+    }
+    assert CuratedUrl.objects.filter(collection=collection).count() == 4
     for pattern in title_patterns:
-        matching_urls = pattern.curated_urls.all()
-        print(f"\nPattern '{pattern.match_pattern}' matches {matching_urls.count()} URLs:")
-        for url in matching_urls:
-            print(f"- {url.url}")
+        matched = set(pattern.curated_urls.values_list("url", flat=True))
+        assert matched == expected_matches[pattern.match_pattern], pattern.match_pattern
 
     # Now create deletion DeltaUrls but with overlapping pattern matches
     urls_to_delete = ["https://example.com/docs/guide1", "https://example.com/api/v1/doc1"]
     for url in urls_to_delete:
         DeltaUrl.objects.create(collection=collection, url=url, to_delete=True)
 
-    # Try the promotion - this should trigger similar conditions to production
+    # The promotion must apply the deletions without corrupting pattern relations
     collection.promote_to_curated()
 
-    # Print final state for debugging
-    print("\nFinal state:")
+    remaining = set(CuratedUrl.objects.filter(collection=collection).values_list("url", flat=True))
+    assert remaining == {"https://example.com/docs/guide2", "https://example.com/api/v1/doc2"}
     for pattern in title_patterns:
-        print(f"\nPattern '{pattern.match_pattern}':")
-        for url in pattern.curated_urls.all():
-            print(f"- {url.url}")
+        matched = set(pattern.curated_urls.values_list("url", flat=True))
+        assert matched == expected_matches[pattern.match_pattern] & remaining, pattern.match_pattern
 
 
 @pytest.mark.django_db
@@ -209,8 +215,13 @@ def test_promotion_with_title_change():
     # Now create new DeltaUrl with updated title
     DeltaUrl.objects.create(collection=collection, url=url, scraped_title="New Title")  # Changed title
 
-    # This should trigger the same error we're seeing in production
+    # Regression guard (production bug): updating a CuratedUrl that has an active
+    # title-pattern relationship must succeed and carry the new title through.
     collection.promote_to_curated()
+
+    curated = CuratedUrl.objects.get(collection=collection, url=url)
+    assert curated.scraped_title == "New Title"
+    assert pattern.curated_urls.filter(id=curated.id).exists()
 
 
 @pytest.mark.django_db

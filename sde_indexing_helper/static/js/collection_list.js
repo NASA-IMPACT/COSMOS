@@ -331,6 +331,16 @@ function handleWorkflowStatusSelect() {
       14: "btn-primary",
       15: "btn-info",
       16: "btn-secondary",
+      17: "btn-light",
+      18: "btn-success",
+      19: "btn-warning",
+      20: "btn-info",
+      21: "btn-success",
+      22: "btn-light",
+      23: "btn-danger",
+      24: "btn-danger",
+      25: "btn-danger",
+      26: "btn-light",
     };
 
     $possible_buttons = $("body").find(

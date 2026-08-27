@@ -338,19 +338,50 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "sde_indexing_helper.utils.exceptions.custom_exception_handler",
 }
 
-GITHUB_ACCESS_TOKEN = env("GITHUB_ACCESS_TOKEN")
-SINEQUA_CONFIGS_GITHUB_REPO = env("SINEQUA_CONFIGS_GITHUB_REPO")
-SINEQUA_CONFIGS_REPO_MASTER_BRANCH = env("SINEQUA_CONFIGS_REPO_MASTER_BRANCH")
-SINEQUA_CONFIGS_REPO_DEV_BRANCH = env("SINEQUA_CONFIGS_REPO_DEV_BRANCH")
-SINEQUA_CONFIGS_REPO_WEBAPP_PR_BRANCH = env("SINEQUA_CONFIGS_REPO_WEBAPP_PR_BRANCH")
 SLACK_WEBHOOK_URL = env("SLACK_WEBHOOK_URL")
-XLI_USER = env("XLI_USER")
-XLI_PASSWORD = env("XLI_PASSWORD")
-LRM_DEV_USER = env("LRM_DEV_USER")
-LRM_DEV_PASSWORD = env("LRM_DEV_PASSWORD")
-LRM_QA_USER = env("LRM_QA_USER")
-LRM_QA_PASSWORD = env("LRM_QA_PASSWORD")
-LRM_DEV_TOKEN = env("LRM_DEV_TOKEN")
-XLI_TOKEN = env("XLI_TOKEN")
 INFERENCE_API_URL = env("INFERENCE_API_URL", default="http://host.docker.internal:8000")
 TDAMM_CLASSIFICATION_THRESHOLD = env("TDAMM_CLASSIFICATION_THRESHOLD", default="0.5")
+
+# --- SDE curation pipeline ---
+AWS_REGION = env("AWS_REGION", default="us-east-1")
+SDE_S3_BUCKET = env("SDE_S3_BUCKET", default="")  # crawler output bucket
+CRAWLER_INSTANCE_ID = env("CRAWLER_INSTANCE_ID", default="")  # i-0b6a61d95888886f4 on dev
+CRAWLER_INBOX_PATH = env("CRAWLER_INBOX_PATH", default="/opt/sde-crawler/jobs/incoming")
+SCRAPE_POLL_ENABLED = env.bool("SCRAPE_POLL_ENABLED", default=False)
+# A dispatched crawl with no fresh S3 summary after this long is declared dead (P4).
+SCRAPE_STALL_TIMEOUT_HOURS = env.int("SCRAPE_STALL_TIMEOUT_HOURS", default=24)
+INFERENCE_ENABLED = env.bool("INFERENCE_ENABLED", default=False)
+# pipeline-scoped credentials for local dev ONLY; blank in AWS (instance role takes over)
+SDE_AWS_ACCESS_KEY_ID = env("SDE_AWS_ACCESS_KEY_ID", default="")
+SDE_AWS_SECRET_ACCESS_KEY = env("SDE_AWS_SECRET_ACCESS_KEY", default="")
+# only needed with temporary creds (e.g. `aws configure export-credentials --profile sde-dev`)
+SDE_AWS_SESSION_TOKEN = env("SDE_AWS_SESSION_TOKEN", default="")
+# COSMOS never talks to OpenSearch or SageMaker: chunk/vectorize/index AND the QC validation
+# report are produced by the WEB_COSMOS task in sde-api-scrapers (branch web-indexing), which
+# holds the AOSS credentials. COSMOS only writes exports to S3, assumes one role, and calls
+# ecs:RunTask.
+#
+# --- P7 indexing hand-off ---
+# ONLY the sde-dev environment is wired today: the indexer's dev deployment targets the
+# disposable sde-web-copy index, and its target->endpoint resolution is tier-capped, so a
+# dev dispatch can never reach prod AOSS. All defaults are blank/off — with any of the
+# required values unset, dispatch fails fast and the poller never runs. Dev values:
+#   SDE_INDEX_BUCKET            sde-cosmos-indexing-dev
+#   INDEXING_ECS_CLUSTER        api-scrapers-cluster-dev
+#   INDEXING_TASK_FAMILY        web_cosmos-scraper-dev
+#   INDEXING_CONTAINER_NAME     WEB_COSMOSContainer
+#   INDEXING_DISPATCH_ROLE_ARN  arn:aws:iam::<indexer acct>:role/CosmosIndexingDispatchRole-dev
+SDE_INDEX_BUCKET = env("SDE_INDEX_BUCKET", default="")  # distinct from SDE_S3_BUCKET (crawler)
+INDEXING_ECS_CLUSTER = env("INDEXING_ECS_CLUSTER", default="")
+INDEXING_TASK_FAMILY = env("INDEXING_TASK_FAMILY", default="")
+INDEXING_CONTAINER_NAME = env("INDEXING_CONTAINER_NAME", default="WEB_COSMOSContainer")
+# Blank = RunTask with the pipeline session's own creds (local dev only; the role's trust
+# policy admits just the instance role, so a laptop SSO session can never assume it).
+INDEXING_DISPATCH_ROLE_ARN = env("INDEXING_DISPATCH_ROLE_ARN", default="")
+# Fargate RunTask needs awsvpc network config; comma-separated ids, from the indexer's VPC.
+INDEXING_SUBNETS = env("INDEXING_SUBNETS", default="")
+INDEXING_SECURITY_GROUPS = env("INDEXING_SECURITY_GROUPS", default="")
+INDEXING_ASSIGN_PUBLIC_IP = env.bool("INDEXING_ASSIGN_PUBLIC_IP", default=True)
+INDEX_POLL_ENABLED = env.bool("INDEX_POLL_ENABLED", default=False)
+# An index run with no status.json after this long is declared dead (indexing is minutes, not hours).
+INDEX_STALL_TIMEOUT_HOURS = env.int("INDEX_STALL_TIMEOUT_HOURS", default=6)
