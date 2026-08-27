@@ -186,6 +186,42 @@ class TestDispatchScrapeJobTask:
         assert dispatch.ssm_command_id == "cmd-abc123"
         assert dispatch.dispatched_at is not None
 
+    @patch("sde_collections.tasks.notify_status_change")
+    @patch("sde_collections.tasks.send_job_to_crawler", return_value="cmd-abc123")
+    def test_successful_dispatch_advances_to_engineering_in_progress(self, mock_send, mock_notify):
+        collection = CollectionFactory(workflow_status=WorkflowStatusChoices.READY_FOR_ENGINEERING)
+
+        dispatch_scrape_job(collection.id)
+
+        collection.refresh_from_db()
+        assert collection.workflow_status == WorkflowStatusChoices.ENGINEERING_IN_PROGRESS
+        history = collection.workflow_history.order_by("-created_at").first()
+        assert history.workflow_status == WorkflowStatusChoices.ENGINEERING_IN_PROGRESS
+        assert history.old_status == WorkflowStatusChoices.READY_FOR_ENGINEERING
+        mock_notify.assert_called_once_with(
+            collection.name,
+            collection.id,
+            WorkflowStatusChoices.READY_FOR_ENGINEERING,
+            WorkflowStatusChoices.ENGINEERING_IN_PROGRESS,
+        )
+        # Only one dispatch: the status advance must not re-trigger the signal handler.
+        assert ScrapeDispatch.objects.filter(collection=collection).count() == 1
+
+    @patch("sde_collections.tasks.notify_status_change")
+    @patch("sde_collections.tasks.send_job_to_crawler", return_value="cmd-abc123")
+    def test_rescrape_dispatch_leaves_prod_status_alone(self, mock_send, mock_notify):
+        """Re-scrape path: the live PROD_* status is not the scrape flow's to rewrite."""
+        collection = CollectionFactory(
+            workflow_status=WorkflowStatusChoices.PROD_PERFECT,
+            reindexing_status=ReindexingStatusChoices.REINDEXING_NEEDED_ON_DEV,
+        )
+
+        dispatch_scrape_job(collection.id)
+
+        collection.refresh_from_db()
+        assert collection.workflow_status == WorkflowStatusChoices.PROD_PERFECT
+        mock_notify.assert_not_called()
+
     @patch("sde_collections.tasks.send_job_to_crawler", side_effect=Exception("SSM unreachable"))
     def test_ssm_failure_sets_scraping_failed_and_does_not_raise(self, mock_send):
         collection = CollectionFactory(workflow_status=WorkflowStatusChoices.READY_FOR_ENGINEERING)

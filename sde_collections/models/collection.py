@@ -39,7 +39,7 @@ from .collection_choice_fields import (
 from .delta_url import CuratedUrl, DeltaUrl, DumpUrl
 
 User = get_user_model()
-DELTA_COMPARISON_FIELDS = ["scraped_title", "tdamm_tag", "division"]  # Add more fields as needed
+DELTA_COMPARISON_FIELDS = ["scraped_title", "scraped_text", "tdamm_tag", "division"]  # Add more fields as needed
 # TODO: may need to double check how the ml fields are evaluated. we need to ensure that it looks
 # specifically at the ml value, not the default or the manual value.
 

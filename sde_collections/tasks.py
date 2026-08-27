@@ -39,6 +39,22 @@ SCRAPE_FLOW_STATUSES = (
 )
 
 
+def _record_status_transition(collection, old_status, new_status):
+    """Side effects of a workflow transition made via queryset .update() rather than
+    save(): the history row and Slack post that post_save would otherwise produce.
+    Tasks update this way on purpose — as a compare-and-swap claim, and so the
+    dispatch trigger can't re-fire — which is exactly why the timeline row must be
+    written here."""
+    WorkflowHistory = apps.get_model("sde_collections", "WorkflowHistory")
+    WorkflowHistory.objects.create(
+        collection=collection,
+        workflow_status=new_status,
+        curated_by=collection.curated_by,
+        old_status=old_status,
+    )
+    notify_status_change(collection.name, collection.id, old_status, new_status)
+
+
 def _mark_scrape_failed(collection, reason):
     """Record a scrape/ingest failure without clobbering a status outside the scrape flow.
 
@@ -49,7 +65,7 @@ def _mark_scrape_failed(collection, reason):
     old_status = Collection.objects.filter(id=collection.id).values_list("workflow_status", flat=True).first()
     if old_status in SCRAPE_FLOW_STATUSES:
         Collection.objects.filter(id=collection.id).update(workflow_status=WorkflowStatusChoices.SCRAPING_FAILED)
-        notify_status_change(collection.name, collection.id, old_status, WorkflowStatusChoices.SCRAPING_FAILED)
+        _record_status_transition(collection, old_status, WorkflowStatusChoices.SCRAPING_FAILED)
         return
     # Re-scrape path: keep the live workflow status, and clear the reindexing request so
     # the poller stops re-enqueueing the same failed run every 5 minutes.
@@ -140,8 +156,10 @@ def dispatch_scrape_job(collection_id):
 
     Triggered by READY_FOR_ENGINEERING and REINDEXING_NEEDED_ON_DEV (and manually via
     the dispatch_scrape management command). On success records a ScrapeDispatch row —
-    the poller's freshness reference and the stall timeout's start time. On failure
-    sets SCRAPING_FAILED and records nothing; the error never raises out of the task.
+    the poller's freshness reference and the stall timeout's start time — and, on the
+    workflow path, moves READY_FOR_ENGINEERING to ENGINEERING_IN_PROGRESS so the board
+    shows the crawler holds the job. On failure sets SCRAPING_FAILED and records
+    nothing; the error never raises out of the task.
     """
     Collection = apps.get_model("sde_collections", "Collection")
     ScrapeDispatch = apps.get_model("sde_collections", "ScrapeDispatch")
@@ -155,6 +173,16 @@ def dispatch_scrape_job(collection_id):
         return None
 
     ScrapeDispatch.objects.create(collection=collection, ssm_command_id=command_id)
+
+    # Compare-and-swap via .update(): only the workflow path advances (a re-scrape keeps
+    # its PROD_* status), and bypassing post_save means the dispatch trigger can't re-fire.
+    advanced = Collection.objects.filter(
+        id=collection_id, workflow_status=WorkflowStatusChoices.READY_FOR_ENGINEERING
+    ).update(workflow_status=WorkflowStatusChoices.ENGINEERING_IN_PROGRESS)
+    if advanced:
+        _record_status_transition(
+            collection, WorkflowStatusChoices.READY_FOR_ENGINEERING, WorkflowStatusChoices.ENGINEERING_IN_PROGRESS
+        )
     return command_id
 
 
@@ -425,8 +453,7 @@ def ingest_scraped_collection(collection_id, claim=True):
             ],
         ).update(workflow_status=WorkflowStatusChoices.SCRAPING_SUCCESSFUL)
         if claimed:
-            # .update() bypasses post_save, so post the transition message ourselves.
-            notify_status_change(collection.name, collection.id, old_status, WorkflowStatusChoices.SCRAPING_SUCCESSFUL)
+            _record_status_transition(collection, old_status, WorkflowStatusChoices.SCRAPING_SUCCESSFUL)
         else:
             # Workflow path not claimable — try the re-scrape path.
             claimed = Collection.objects.filter(

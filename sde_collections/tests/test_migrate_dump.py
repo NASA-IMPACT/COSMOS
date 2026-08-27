@@ -84,7 +84,12 @@ class TestMigrateDumpToDelta:
         collection = CollectionFactory()
 
         # Create DumpUrl with specific values
-        dump_url = DumpUrlFactory(collection=collection, scraped_title="Same Title", division=Divisions.ASTROPHYSICS)
+        dump_url = DumpUrlFactory(
+            collection=collection,
+            scraped_title="Same Title",
+            scraped_text="Same text",
+            division=Divisions.ASTROPHYSICS,
+        )
 
         # Ensure tdamm_tag is explicitly set to match
         dump_url.tdamm_tag_manual = []
@@ -96,6 +101,7 @@ class TestMigrateDumpToDelta:
             collection=collection,
             url=dump_url.url,  # Use the same URL
             scraped_title="Same Title",
+            scraped_text="Same text",
             division=Divisions.ASTROPHYSICS,
         )
 

@@ -153,6 +153,11 @@ class TestIngestScrapedCollection:
             WorkflowStatusChoices.READY_FOR_ENGINEERING,
             WorkflowStatusChoices.SCRAPING_SUCCESSFUL,
         )
+        # SCRAPING_SUCCESSFUL is short-lived (migration follows within seconds); the
+        # timeline row is the only durable evidence it happened.
+        history = collection.workflow_history.order_by("-created_at").first()
+        assert history.workflow_status == WorkflowStatusChoices.SCRAPING_SUCCESSFUL
+        assert history.old_status == WorkflowStatusChoices.READY_FOR_ENGINEERING
 
     @patch("sde_collections.tasks.send_slack_message")
     @patch("sde_collections.tasks.fetch_documents", side_effect=Exception("S3 read died"))
