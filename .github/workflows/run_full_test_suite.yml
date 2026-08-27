@@ -22,23 +22,23 @@ jobs:
       - name: Check out merged code
         uses: actions/checkout@v2
 
-      - name: Set up Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
+      # Compose v2 ships with the runner's Docker. local.yml uses the long-form
+      # optional env_file (Compose >= 2.24), which the EOL v1 binary rejects.
+      - name: Show Docker Compose version
+        run: docker compose version
 
       - name: Build the Docker environment
-        run: docker-compose -f local.yml build
+        run: docker compose -f local.yml build
 
       - name: Run test suite
         env:
           DJANGO_ENV: test
-        run: docker-compose -f local.yml run --rm django bash ./init.sh
+        run: docker compose -f local.yml run --rm django bash ./init.sh
 
       - name: Generate Coverage Report
         env:
           DJANGO_ENV: test
-        run: docker-compose -f local.yml run --rm django bash -c "coverage report"
+        run: docker compose -f local.yml run --rm django bash -c "coverage report"
 
       - name: Cleanup
-        run: docker-compose -f local.yml down --volumes
+        run: docker compose -f local.yml down --volumes
