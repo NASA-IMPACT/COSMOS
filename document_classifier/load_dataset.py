@@ -1,4 +1,4 @@
-""" Module for loading dataset """
+"""Module for loading dataset"""
 
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 

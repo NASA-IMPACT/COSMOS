@@ -42,13 +42,11 @@ class TestPatternApplication(BaseTestCase):
         add_pattern_button.click()
 
         # Fill up the form using JavaScript and close modal properly
-        self.driver.execute_script(
-            """
+        self.driver.execute_script("""
             document.querySelector("#excludePatternModal #match_pattern_input").value = 'example.com/docs/';
             document.querySelector('#excludePatternModal .pattern_type_form_select[value="2"]').click();
             document.querySelector("#excludePatternModal button.btn-primary[type='submit']").click();
-        """
-        )
+        """)
 
         # Verify pattern details
         pattern_row = self.wait.until(
@@ -81,13 +79,11 @@ class TestPatternApplication(BaseTestCase):
         add_pattern_button.click()
 
         # Fill up the form using JavaScript and close modal properly
-        self.driver.execute_script(
-            """
+        self.driver.execute_script("""
             document.querySelector("#includePatternModal #match_pattern_input").value = 'example.com/docs/';
             document.querySelector('#includePatternModal .pattern_type_form_select[value="2"]').click();
             document.querySelector("#includePatternModal button.btn-primary[type='submit']").click();
-        """
-        )
+        """)
 
         # Verify pattern details
         pattern_row = self.wait.until(
@@ -120,14 +116,12 @@ class TestPatternApplication(BaseTestCase):
         add_pattern_button.click()
 
         # Fill up the form using JavaScript and close modal properly
-        self.driver.execute_script(
-            """
+        self.driver.execute_script("""
             document.querySelector("#titlePatternModal #match_pattern_input").value = 'example.com/docs/';
             document.querySelector("#titlePatternModal #title_pattern_input").value = 'Documentation: {title}';
             document.querySelector('#titlePatternModal .pattern_type_form_select[value="2"]').click();
             document.querySelector("#titlePatternModal button.btn-primary[type='submit']").click();
-        """
-        )
+        """)
 
         # Verify pattern details
         pattern_row = self.wait.until(
@@ -172,14 +166,12 @@ class TestPatternApplication(BaseTestCase):
         add_pattern_button.click()
 
         # Fill up the form using JavaScript and close modal properly
-        self.driver.execute_script(
-            """
+        self.driver.execute_script("""
             document.querySelector("#documentTypePatternModal #match_pattern_input").value = 'example.com/docs/';
             document.querySelector('#documentTypePatternModal .document_type_form_select[value="2"]').click();  // DATA
             document.querySelector('#documentTypePatternModal .pattern_type_form_select[value="2"]').click();
             document.querySelector("#documentTypePatternModal button.btn-primary[type='submit']").click();
-        """
-        )
+        """)
 
         # Verify pattern details
         pattern_row = self.wait.until(

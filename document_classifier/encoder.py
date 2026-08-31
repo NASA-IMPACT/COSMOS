@@ -1,4 +1,4 @@
-""" Encoding the url response """
+"""Encoding the url response"""
 
 import pandas as pd
 
